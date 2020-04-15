@@ -31,29 +31,29 @@ import java.util.Map;
  */
 public class Dummy extends CommandInterface {
 
-	private StandardCommandManager _cManager;
+    private StandardCommandManager _cManager;
 
-	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
-    	super.initialize(method, pluginName, cManager);
-    	_cManager = cManager;
+    public void initialize(String method, String pluginName, StandardCommandManager cManager) {
+        super.initialize(method, pluginName, cManager);
+        _cManager = cManager;
     }
 
-	public CommandResponse doDUMMY(CommandRequest request) {
-		return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-	}
+    public CommandResponse doDUMMY(CommandRequest request) {
+        return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
+    }
 
-	private ArrayList<String> getHandledCommands(Class<?> class1) {
-		ArrayList<String> list = new ArrayList<>();
+    private ArrayList<String> getHandledCommands(Class<?> class1) {
+        ArrayList<String> list = new ArrayList<>();
 
-		for (Map.Entry<String, CommandInstanceContainer> element : _cManager.getCommandHandlersMap().entrySet()) {
-			if (element.getValue().getCommandInterfaceInstance().getClass().equals(class1)) {
-				list.add(element.getKey().toUpperCase());
-			}
-		}
-		return list;
-	}
+        for (Map.Entry<String, CommandInstanceContainer> element : _cManager.getCommandHandlersMap().entrySet()) {
+            if (element.getValue().getCommandInterfaceInstance().getClass().equals(class1)) {
+                list.add(element.getKey().toUpperCase());
+            }
+        }
+        return list;
+    }
 
-	public String[] getFeatReplies() {
-		return getHandledCommands(getClass()).toArray(new String[0]);
-	}
+    public String[] getFeatReplies() {
+        return getHandledCommands(getClass()).toArray(new String[0]);
+    }
 }

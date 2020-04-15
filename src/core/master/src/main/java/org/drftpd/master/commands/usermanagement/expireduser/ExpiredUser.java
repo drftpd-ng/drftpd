@@ -17,29 +17,28 @@
  */
 package org.drftpd.master.commands.usermanagement.expireduser;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.StringTokenizer;
-
-
 import org.drftpd.master.commands.*;
 import org.drftpd.master.commands.usermanagement.expireduser.metadata.ExpiredUserData;
 import org.drftpd.master.network.Session;
 import org.drftpd.master.usermanager.User;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.StringTokenizer;
 
 /**
  * @author CyBeR
  */
 public class ExpiredUser extends CommandInterface {
 
-	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
-		super.initialize(method, pluginName, cManager);
-	}
-	
+    public void initialize(String method, String pluginName, StandardCommandManager cManager) {
+        super.initialize(method, pluginName, cManager);
+    }
+
     public CommandResponse doSITE_SETEXPIRE(CommandRequest request) throws ImproperUsageException {
         if (!request.hasArgument()) {
-        	throw new ImproperUsageException();
+            throw new ImproperUsageException();
         }
 
         StringTokenizer st = new StringTokenizer(request.getArgument());
@@ -48,35 +47,35 @@ public class ExpiredUser extends CommandInterface {
             throw new ImproperUsageException();
         }
 
-		Session session = request.getSession();
+        Session session = request.getSession();
 
-		User user = session.getUserNull(st.nextToken());
-		if (user == null) {
-			throw new ImproperUsageException();
-		}
-		
-		if (!st.hasMoreTokens()) {
+        User user = session.getUserNull(st.nextToken());
+        if (user == null) {
             throw new ImproperUsageException();
         }
-		
-		String date = st.nextToken("\n");
-		
-		
-		try {
-			Date myDate = new SimpleDateFormat("yyyy-MM-dd").parse(date);
-			user.getKeyedMap().setObject(ExpiredUserData.EXPIRES, myDate);
-			
-		} catch (ParseException e) {
-			throw new ImproperUsageException();
-		}
-		
-		user.commit();
-		return new CommandResponse(200, "Set Expiry Date For '" + user.getName() + "'");
+
+        if (!st.hasMoreTokens()) {
+            throw new ImproperUsageException();
+        }
+
+        String date = st.nextToken("\n");
+
+
+        try {
+            Date myDate = new SimpleDateFormat("yyyy-MM-dd").parse(date);
+            user.getKeyedMap().setObject(ExpiredUserData.EXPIRES, myDate);
+
+        } catch (ParseException e) {
+            throw new ImproperUsageException();
+        }
+
+        user.commit();
+        return new CommandResponse(200, "Set Expiry Date For '" + user.getName() + "'");
     }
-    
+
     public CommandResponse doSITE_REMOVEEXPIRE(CommandRequest request) throws ImproperUsageException {
         if (!request.hasArgument()) {
-        	throw new ImproperUsageException();
+            throw new ImproperUsageException();
         }
 
         StringTokenizer st = new StringTokenizer(request.getArgument());
@@ -85,16 +84,16 @@ public class ExpiredUser extends CommandInterface {
             throw new ImproperUsageException();
         }
 
-		Session session = request.getSession();
+        Session session = request.getSession();
 
-		User user = session.getUserNull(st.nextToken());
-		if (user == null) {
-			throw new ImproperUsageException();
-		}
+        User user = session.getUserNull(st.nextToken());
+        if (user == null) {
+            throw new ImproperUsageException();
+        }
 
-		user.getKeyedMap().remove(ExpiredUserData.EXPIRES);
-		user.commit();
-		return new CommandResponse(200, "Removed Expiry Date For '" + user.getName() + "'");
+        user.getKeyedMap().remove(ExpiredUserData.EXPIRES);
+        user.commit();
+        return new CommandResponse(200, "Removed Expiry Date For '" + user.getName() + "'");
     }
 
 }

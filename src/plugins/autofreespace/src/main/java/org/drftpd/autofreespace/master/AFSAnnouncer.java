@@ -18,6 +18,7 @@ package org.drftpd.autofreespace.master;
 
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
+import org.drftpd.autofreespace.master.event.AFSEvent;
 import org.drftpd.common.util.Bytes;
 import org.drftpd.master.exceptions.SlaveUnavailableException;
 import org.drftpd.master.sitebot.AbstractAnnouncer;
@@ -27,71 +28,74 @@ import org.drftpd.master.sitebot.config.AnnounceConfig;
 import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.master.util.ReplacerUtils;
 import org.drftpd.master.vfs.InodeHandle;
-import org.drftpd.autofreespace.master.event.AFSEvent;
+
 import java.io.FileNotFoundException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.ResourceBundle;
 
 /**
  * @author scitz0
  */
 public class AFSAnnouncer extends AbstractAnnouncer {
 
-	private AnnounceConfig _config;
+    private AnnounceConfig _config;
 
-	private ResourceBundle _bundle;
+    private ResourceBundle _bundle;
 
-	public void initialise(AnnounceConfig config, ResourceBundle bundle) {
-		_config = config;
-		_bundle = bundle;
+    public void initialise(AnnounceConfig config, ResourceBundle bundle) {
+        _config = config;
+        _bundle = bundle;
 
-		// Subscribe to events
-		AnnotationProcessor.process(this);
-	}
+        // Subscribe to events
+        AnnotationProcessor.process(this);
+    }
 
-	public void stop() {
-		// The plugin is unloading so stop asking for events
-		AnnotationProcessor.unprocess(this);
-	}
+    public void stop() {
+        // The plugin is unloading so stop asking for events
+        AnnotationProcessor.unprocess(this);
+    }
 
-	public String[] getEventTypes() {
-		return new String[] { "autofreespace" };
-	}
+    public String[] getEventTypes() {
+        return new String[]{"autofreespace"};
+    }
 
-	public void setResourceBundle(ResourceBundle bundle) {
-		_bundle = bundle;
-	}
+    public void setResourceBundle(ResourceBundle bundle) {
+        _bundle = bundle;
+    }
 
     @EventSubscriber
-	public void onAFSEvent(AFSEvent event) {
-		AnnounceWriter writer = _config.getSimpleWriter("autofreespace");
-		// Check we got a writer back, if it is null do nothing and ignore the event
-		if (writer != null) {
-			Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
+    public void onAFSEvent(AFSEvent event) {
+        AnnounceWriter writer = _config.getSimpleWriter("autofreespace");
+        // Check we got a writer back, if it is null do nothing and ignore the event
+        if (writer != null) {
+            Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
             InodeHandle inode = event.getInode();
-			RemoteSlave slave = event.getSlave();
-			try {
-				if (inode != null) {
-					env.put("path", inode.getPath());
-					env.put("dir", inode.getName());
-					long inodeSpace = inode.getSize();
-					env.put("size", Bytes.formatBytes(inodeSpace));
-					env.put("date", (new SimpleDateFormat("MM/dd/yy h:mma")).format(new Date(inode.lastModified())));
-				}
-				env.put("slave", slave.getName());
-				long slaveSpace = slave.getSlaveStatus().getDiskSpaceAvailable();
-				env.put("slavesize", Bytes.formatBytes(slaveSpace));
-			} catch (FileNotFoundException e) {
-				// Hmm, file deleted?
-			} catch (SlaveUnavailableException e) {
-				// Slave went offline, announce anyway.
-			}
-			if (inode != null) {
-				sayOutput(ReplacerUtils.jprintf("afs.delete", env, _bundle), writer);
-			} else {
-				sayOutput(ReplacerUtils.jprintf("afs.announce", env, _bundle), writer);
-			}
-		}
-	}
+            RemoteSlave slave = event.getSlave();
+            try {
+                if (inode != null) {
+                    env.put("path", inode.getPath());
+                    env.put("dir", inode.getName());
+                    long inodeSpace = inode.getSize();
+                    env.put("size", Bytes.formatBytes(inodeSpace));
+                    env.put("date", (new SimpleDateFormat("MM/dd/yy h:mma")).format(new Date(inode.lastModified())));
+                }
+                env.put("slave", slave.getName());
+                long slaveSpace = slave.getSlaveStatus().getDiskSpaceAvailable();
+                env.put("slavesize", Bytes.formatBytes(slaveSpace));
+            } catch (FileNotFoundException e) {
+                // Hmm, file deleted?
+            } catch (SlaveUnavailableException e) {
+                // Slave went offline, announce anyway.
+            }
+            if (inode != null) {
+                sayOutput(ReplacerUtils.jprintf("afs.delete", env, _bundle), writer);
+            } else {
+                sayOutput(ReplacerUtils.jprintf("afs.announce", env, _bundle), writer);
+            }
+        }
+    }
 
 }

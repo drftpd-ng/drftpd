@@ -29,7 +29,7 @@ import java.util.Comparator;
  */
 @SuppressWarnings("serial")
 public class UserComparator implements Comparator<User>, Serializable {
-    private String _type;
+    private final String _type;
 
     public UserComparator(String type) {
         _type = type;

@@ -31,107 +31,109 @@ import java.io.Serializable;
  */
 @SuppressWarnings("serial")
 public class LightRemoteInode implements Serializable, InodeHandleInterface {
-	private String _filename;
+    private String _filename;
 
-	private long _lastModified;
+    private final long _lastModified;
 
-	private long _length;
+    private final long _length;
 
-	private boolean _isDirectory;
-	
-	private String _username = "drftpd";
-	
-	private String _group = "drftpd";
+    private boolean _isDirectory;
 
-	private void setName(String name) {
-		if (name.contains("\\")) {
-			throw new RuntimeException(
-					"\\ is not an allowed character in filenames");
-		}
-		_filename = name;
-	}
+    private String _username = "drftpd";
 
-	/**
-	 * Will create a File or Directory depending on what the File Object is.
-	 * @param file
-	 */
-	public LightRemoteInode(File file) {
-		setName(file.getName());
-		_lastModified = file.lastModified();
-		_length = file.length();
-		_isDirectory = file.isDirectory();
-	}
+    private String _group = "drftpd";
 
-	/**
-	 * Will create a file
-	 */
-	public LightRemoteInode(String filename, long lastModified, long length) {
-		setName(filename);
-		_lastModified = lastModified;
-		_length = length;
-	}
+    /**
+     * Will create a File or Directory depending on what the File Object is.
+     *
+     * @param file
+     */
+    public LightRemoteInode(File file) {
+        setName(file.getName());
+        _lastModified = file.lastModified();
+        _length = file.length();
+        _isDirectory = file.isDirectory();
+    }
 
-	/**
-	 * Will create a file
-	 * @param fileName
-	 * @param username
-	 * @param group
-	 * @param size
-	 * @param lastModified
-	 */
-	public LightRemoteInode(String fileName, String username, String group, long lastModified, long size) {
-		this(fileName, lastModified, size);
-		_username = username;
-		_group = group;
-	}
-	
-	public LightRemoteInode(String fileName, String username, String group, boolean isDir, long lastModified, long size) {
-		this(fileName, username, group, lastModified, size);
-		_isDirectory = isDir;
-	}
+    /**
+     * Will create a file
+     */
+    public LightRemoteInode(String filename, long lastModified, long length) {
+        setName(filename);
+        _lastModified = lastModified;
+        _length = length;
+    }
 
-	public boolean isDirectory() {
-		return _isDirectory;
-	}
+    /**
+     * Will create a file
+     *
+     * @param fileName
+     * @param username
+     * @param group
+     * @param size
+     * @param lastModified
+     */
+    public LightRemoteInode(String fileName, String username, String group, long lastModified, long size) {
+        this(fileName, lastModified, size);
+        _username = username;
+        _group = group;
+    }
 
-	public boolean isFile() {
-		return !_isDirectory;
-	}
+    public LightRemoteInode(String fileName, String username, String group, boolean isDir, long lastModified, long size) {
+        this(fileName, username, group, lastModified, size);
+        _isDirectory = isDir;
+    }
 
-	public long lastModified() {
-		return _lastModified;
-	}
+    public boolean isDirectory() {
+        return _isDirectory;
+    }
 
-	public long length() {
-		return _length;
-	}
+    public boolean isFile() {
+        return !_isDirectory;
+    }
 
-	public String getName() {
-		return _filename;
-	}
+    public long lastModified() {
+        return _lastModified;
+    }
 
-	public boolean isAvailable() {
-		return true;
-	}
+    public long length() {
+        return _length;
+    }
 
-	public String getGroup() throws FileNotFoundException {
-		return _group;
-	}
+    public String getName() {
+        return _filename;
+    }
 
-	public long getSize() throws FileNotFoundException {
-		return length();
-	}
+    private void setName(String name) {
+        if (name.contains("\\")) {
+            throw new RuntimeException(
+                    "\\ is not an allowed character in filenames");
+        }
+        _filename = name;
+    }
 
-	public String getUsername() throws FileNotFoundException {
-		return _username;
-	}
+    public boolean isAvailable() {
+        return true;
+    }
 
-	public boolean isLink() throws FileNotFoundException {
-		return false;
-	}
+    public String getGroup() throws FileNotFoundException {
+        return _group;
+    }
 
-	public String getPath() {
-		return "/" + getName();
-	}
+    public long getSize() throws FileNotFoundException {
+        return length();
+    }
+
+    public String getUsername() throws FileNotFoundException {
+        return _username;
+    }
+
+    public boolean isLink() throws FileNotFoundException {
+        return false;
+    }
+
+    public String getPath() {
+        return "/" + getName();
+    }
 
 }

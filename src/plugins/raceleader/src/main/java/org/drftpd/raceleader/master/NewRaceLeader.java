@@ -24,6 +24,7 @@
  */
 
 package org.drftpd.raceleader.master;
+
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.util.UploaderPosition;
 import org.drftpd.master.vfs.DirectoryHandle;
@@ -37,45 +38,45 @@ import java.util.Collection;
  * @version $Id: NewRaceLeader.java 2393 2011-04-11 20:47:51Z cyber1331 $
  */
 public class NewRaceLeader {
-	private DirectoryHandle _dir;
-	private long _time;
-	private String _winner;
+    private final DirectoryHandle _dir;
+    private final long _time;
+    private String _winner;
 
-	public NewRaceLeader(FileHandle file,Collection<UploaderPosition> uploaderposition, String nick) {
-		_dir = file.getParent();
-		_time = System.currentTimeMillis();
+    public NewRaceLeader(FileHandle file, Collection<UploaderPosition> uploaderposition, String nick) {
+        _dir = file.getParent();
+        _time = System.currentTimeMillis();
 
-		if (uploaderposition.iterator().hasNext()) {
-			_winner = uploaderposition.iterator().next().getUsername();
-		} else {
-			_winner = nick;
-		}
+        if (uploaderposition.iterator().hasNext()) {
+            _winner = uploaderposition.iterator().next().getUsername();
+        } else {
+            _winner = nick;
+        }
 
-	}
+    }
 
-	public DirectoryHandle getDir() {
-		return _dir;
-	}
+    public DirectoryHandle getDir() {
+        return _dir;
+    }
 
-	public long getTime() {
-		return _time;
-	}
+    public long getTime() {
+        return _time;
+    }
 
-	public String getWinner() {
-		return _winner;
-	}
+    public String getWinner() {
+        return _winner;
+    }
 
-	public void check(String user, int missing, int files, Collection<UploaderPosition> racers) {
-		UploaderPosition uploaderposition = racers.iterator().next();
-		if ((uploaderposition.getUsername().equals(user)) && (!user.equals(_winner))) {
+    public void check(String user, int missing, int files, Collection<UploaderPosition> racers) {
+        UploaderPosition uploaderposition = racers.iterator().next();
+        if ((uploaderposition.getUsername().equals(user)) && (!user.equals(_winner))) {
 
-			// Ignore on halfway as we already announce leader during this point
-			int halfway = (int) Math.floor((double) files / 2);
-			if (missing != halfway) {
-				GlobalContext.getEventService().publishAsync(new NewRaceLeaderEvent(user,_winner,getDir(),uploaderposition, missing));
-			}
+            // Ignore on halfway as we already announce leader during this point
+            int halfway = (int) Math.floor((double) files / 2);
+            if (missing != halfway) {
+                GlobalContext.getEventService().publishAsync(new NewRaceLeaderEvent(user, _winner, getDir(), uploaderposition, missing));
+            }
 
-			_winner = user;
-		}
-	}
+            _winner = user;
+        }
+    }
 }

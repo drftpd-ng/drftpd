@@ -25,14 +25,14 @@ import org.drftpd.common.network.AsyncResponse;
  */
 @SuppressWarnings("serial")
 public class AsyncResponseChecksum extends AsyncResponse {
-	long _checksum;
+    long _checksum;
 
-	public AsyncResponseChecksum(String index, long checksum) {
-		super(index);
-		_checksum = checksum;
-	}
+    public AsyncResponseChecksum(String index, long checksum) {
+        super(index);
+        _checksum = checksum;
+    }
 
-	public long getChecksum() {
-		return _checksum;
-	}
+    public long getChecksum() {
+        return _checksum;
+    }
 }

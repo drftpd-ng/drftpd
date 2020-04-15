@@ -22,106 +22,106 @@ package org.drftpd.speedtestnet.master;
  */
 public class SpeedTestServer {
 
-	private String url;
-	private String url2;
-	private double latitude;
-	private double longitude;
-	private String name;
-	private String country;
-	private String cc;
-	private String sponsor;
-	private int id;
-	private String host;
-	private int latency;
+    private String url;
+    private String url2;
+    private double latitude;
+    private double longitude;
+    private String name;
+    private String country;
+    private String cc;
+    private String sponsor;
+    private int id;
+    private String host;
+    private int latency;
 
-	public SpeedTestServer(){
-	}
+    public SpeedTestServer() {
+    }
 
-	public String getUrl() {
-		return url;
-	}
+    public String getUrl() {
+        return url;
+    }
 
-	public void setUrl(String url) {
-		this.url = url;
-	}
+    public void setUrl(String url) {
+        this.url = url;
+    }
 
-	public String getUrl2() {
-		return url2;
-	}
+    public String getUrl2() {
+        return url2;
+    }
 
-	public void setUrl2(String url2) {
-		this.url2 = url2;
-	}
+    public void setUrl2(String url2) {
+        this.url2 = url2;
+    }
 
-	public double getLatitude() {
-		return latitude;
-	}
+    public double getLatitude() {
+        return latitude;
+    }
 
-	public void setLatitude(double latitude) {
-		this.latitude = latitude;
-	}
+    public void setLatitude(double latitude) {
+        this.latitude = latitude;
+    }
 
-	public double getLongitude() {
-		return longitude;
-	}
+    public double getLongitude() {
+        return longitude;
+    }
 
-	public void setLongitude(double longitude) {
-		this.longitude = longitude;
-	}
+    public void setLongitude(double longitude) {
+        this.longitude = longitude;
+    }
 
-	public String getName() {
-		return name;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	public String getCountry() {
-		return country;
-	}
+    public String getCountry() {
+        return country;
+    }
 
-	public void setCountry(String country) {
-		this.country = country;
-	}
+    public void setCountry(String country) {
+        this.country = country;
+    }
 
-	public String getCc() {
-		return cc;
-	}
+    public String getCc() {
+        return cc;
+    }
 
-	public void setCc(String cc) {
-		this.cc = cc;
-	}
+    public void setCc(String cc) {
+        this.cc = cc;
+    }
 
-	public String getSponsor() {
-		return sponsor;
-	}
+    public String getSponsor() {
+        return sponsor;
+    }
 
-	public void setSponsor(String sponsor) {
-		this.sponsor = sponsor;
-	}
+    public void setSponsor(String sponsor) {
+        this.sponsor = sponsor;
+    }
 
-	public int getId() {
-		return id;
-	}
+    public int getId() {
+        return id;
+    }
 
-	public void setId(int id) {
-		this.id = id;
-	}
+    public void setId(int id) {
+        this.id = id;
+    }
 
-	public String getHost() {
-		return host;
-	}
+    public String getHost() {
+        return host;
+    }
 
-	public void setHost(String host) {
-		this.host = host;
-	}
+    public void setHost(String host) {
+        this.host = host;
+    }
 
-	public int getLatency() {
-		return latency;
-	}
+    public int getLatency() {
+        return latency;
+    }
 
-	public void setLatency(int latency) {
-		this.latency = latency;
-	}
+    public void setLatency(int latency) {
+        this.latency = latency;
+    }
 }

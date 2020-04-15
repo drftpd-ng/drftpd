@@ -16,17 +16,17 @@
  */
 package org.drftpd.raceleader.master;
 
-import org.drftpd.master.commands.dataconnection.DataConnectionHandler;
+import org.drftpd.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.common.extensibility.CommandHook;
 import org.drftpd.common.extensibility.HookType;
-import org.drftpd.master.util.RankUtils;
-import org.drftpd.common.dynamicdata.KeyNotFoundException;
-import org.drftpd.master.exceptions.NoAvailableSlaveException;
-import org.drftpd.master.exceptions.SlaveUnavailableException;
-import org.drftpd.master.util.UploaderPosition;
-import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.master.commands.CommandRequest;
 import org.drftpd.master.commands.CommandResponse;
+import org.drftpd.master.commands.dataconnection.DataConnectionHandler;
+import org.drftpd.master.exceptions.NoAvailableSlaveException;
+import org.drftpd.master.exceptions.SlaveUnavailableException;
+import org.drftpd.master.util.RankUtils;
+import org.drftpd.master.util.UploaderPosition;
+import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.zipscript.common.sfv.SFVInfo;
 import org.drftpd.zipscript.common.sfv.SFVStatus;
 import org.drftpd.zipscript.master.sfv.SFVTools;
@@ -40,60 +40,60 @@ import java.util.Collection;
  * @author CyBeR
  * @version $Id: NewRaceLeaderHooks.java 2393 2011-04-11 20:47:51Z cyber1331 $
  */
-public class NewRaceLeaderHooks  {
+public class NewRaceLeaderHooks {
 
-	private NewRaceLeaderManager _newraceleadermanager;
+    private final NewRaceLeaderManager _newraceleadermanager;
 
-	public NewRaceLeaderHooks() {
-		_newraceleadermanager = NewRaceLeaderManager.getNewRaceLeaderManager();
-	}
+    public NewRaceLeaderHooks() {
+        _newraceleadermanager = NewRaceLeaderManager.getNewRaceLeaderManager();
+    }
 
-	@CommandHook(commands = "doSTOR", priority = 12, type = HookType.POST)
-	public void doSTORPostHook(CommandRequest request, CommandResponse response) {
-		if (response.getCode() != 226) {
-			// Transfer failed, abort checks
-			return;
-		}
+    @CommandHook(commands = "doSTOR", priority = 12, type = HookType.POST)
+    public void doSTORPostHook(CommandRequest request, CommandResponse response) {
+        if (response.getCode() != 226) {
+            // Transfer failed, abort checks
+            return;
+        }
 
-		FileHandle transferFile;
-		try {
-			transferFile = response.getObject(DataConnectionHandler.TRANSFER_FILE);
-		} catch (KeyNotFoundException e) {
-			// We don't have a file, we shouldn't have ended up here but return anyway
-			return;
-		}
+        FileHandle transferFile;
+        try {
+            transferFile = response.getObject(DataConnectionHandler.TRANSFER_FILE);
+        } catch (KeyNotFoundException e) {
+            // We don't have a file, we shouldn't have ended up here but return anyway
+            return;
+        }
 
-		if (transferFile.getName().contains(".*\\.(sfv|nfo|diz)$")) {
-			// no need to check as these files do not matter
-			return;
-		}
+        if (transferFile.getName().contains(".*\\.(sfv|nfo|diz)$")) {
+            // no need to check as these files do not matter
+            return;
+        }
 
-		ZipscriptVFSDataSFV sfvData = new ZipscriptVFSDataSFV(transferFile.getParent());
-		try {
-			SFVInfo sfvinfo = sfvData.getSFVInfo();
-			// Make sure release is > 5 files (No point in spaming a small release
-			if (sfvinfo.getSize() > 5) {
-				SFVStatus sfvstatus = sfvData.getSFVStatus();
-				Collection<UploaderPosition> racers = RankUtils.userSort(SFVTools.getSFVFiles(transferFile.getParent(), sfvData),"bytes", "high");
+        ZipscriptVFSDataSFV sfvData = new ZipscriptVFSDataSFV(transferFile.getParent());
+        try {
+            SFVInfo sfvinfo = sfvData.getSFVInfo();
+            // Make sure release is > 5 files (No point in spaming a small release
+            if (sfvinfo.getSize() > 5) {
+                SFVStatus sfvstatus = sfvData.getSFVStatus();
+                Collection<UploaderPosition> racers = RankUtils.userSort(SFVTools.getSFVFiles(transferFile.getParent(), sfvData), "bytes", "high");
 
-				// Check if file uploaded is in SFV
-				if (sfvinfo.getEntries().get(transferFile.getName()) == null) {
-					return;
-				}
+                // Check if file uploaded is in SFV
+                if (sfvinfo.getEntries().get(transferFile.getName()) == null) {
+                    return;
+                }
 
-				// Check if release is finished
-				if (sfvstatus.isFinished()) {
-					_newraceleadermanager.delete(transferFile.getParent());
-				} else {
-					_newraceleadermanager.check(transferFile,sfvstatus.getMissing(),sfvinfo.getSize(),racers);
-				}
-			}
-		} catch (FileNotFoundException ex) {
-			//no SFV file - Ignore
-		} catch (IOException ex) {
-			//cannot't read sfv file - Ignore
-		} catch (NoAvailableSlaveException | SlaveUnavailableException e) {
-			//No slaves with SFV - Ignore
-		}
-	}
+                // Check if release is finished
+                if (sfvstatus.isFinished()) {
+                    _newraceleadermanager.delete(transferFile.getParent());
+                } else {
+                    _newraceleadermanager.check(transferFile, sfvstatus.getMissing(), sfvinfo.getSize(), racers);
+                }
+            }
+        } catch (FileNotFoundException ex) {
+            //no SFV file - Ignore
+        } catch (IOException ex) {
+            //cannot't read sfv file - Ignore
+        } catch (NoAvailableSlaveException | SlaveUnavailableException e) {
+            //No slaves with SFV - Ignore
+        }
+    }
 }

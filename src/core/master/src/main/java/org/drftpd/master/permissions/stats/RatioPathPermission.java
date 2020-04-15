@@ -28,21 +28,21 @@ import java.util.regex.PatternSyntaxException;
  * @version $Id$
  */
 public class RatioPathPermission extends GlobPathPermission {
-	private float _ratio;
+    private final float _ratio;
 
-	/**
-	 * @param pattern
-	 * @param ratio
-	 * @param users
-	 * @throws PatternSyntaxException 
-	 */
-	public RatioPathPermission(String pattern, float ratio, Collection<String> users)
-			throws PatternSyntaxException {
-		super(pattern, users);
-		_ratio = ratio;
-	}
+    /**
+     * @param pattern
+     * @param ratio
+     * @param users
+     * @throws PatternSyntaxException
+     */
+    public RatioPathPermission(String pattern, float ratio, Collection<String> users)
+            throws PatternSyntaxException {
+        super(pattern, users);
+        _ratio = ratio;
+    }
 
-	public float getRatio() {
-		return _ratio;
-	}
+    public float getRatio() {
+        return _ratio;
+    }
 }

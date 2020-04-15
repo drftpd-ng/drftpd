@@ -16,10 +16,10 @@
  */
 package org.drftpd.links.master.types.latestdir;
 
-import java.util.Properties;
-
-import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.links.master.LinkType;
+import org.drftpd.master.vfs.DirectoryHandle;
+
+import java.util.Properties;
 
 /**
  * @author freasy
@@ -28,30 +28,30 @@ import org.drftpd.links.master.LinkType;
 
 public class LatestDir extends LinkType {
 
-	public LatestDir(Properties p, int confnum, String type) {
-		super(p, confnum, type);
-	}
+    public LatestDir(Properties p, int confnum, String type) {
+        super(p, confnum, type);
+    }
 
-	/*
-	 * This just passes the target dir through to creating the Link
-	 * No special setup is needed for this type.
-	 */
-	@Override
-	public void doCreateLink(DirectoryHandle targetDir) {
-		createLink(targetDir,targetDir.getPath(),targetDir.getName());
-	}
+    /*
+     * This just passes the target dir through to creating the Link
+     * No special setup is needed for this type.
+     */
+    @Override
+    public void doCreateLink(DirectoryHandle targetDir) {
+        createLink(targetDir, targetDir.getPath(), targetDir.getName());
+    }
 
-	/*
-	 * This just passes the target dir through to creating the Link
-	 * No special setup is needed for this type.
-	 */
-	@Override
-	public void doDeleteLink(DirectoryHandle targetDir) {
-		deleteLink(targetDir,targetDir.getPath(),targetDir.getName());
-		
-	}
-	
-	public void doFixLink(DirectoryHandle dirHandle) {
-	
-	}
+    /*
+     * This just passes the target dir through to creating the Link
+     * No special setup is needed for this type.
+     */
+    @Override
+    public void doDeleteLink(DirectoryHandle targetDir) {
+        deleteLink(targetDir, targetDir.getPath(), targetDir.getName());
+
+    }
+
+    public void doFixLink(DirectoryHandle dirHandle) {
+
+    }
 }

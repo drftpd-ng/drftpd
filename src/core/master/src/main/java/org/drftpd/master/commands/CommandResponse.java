@@ -31,98 +31,98 @@ import java.util.Vector;
  */
 @SuppressWarnings("serial")
 public class CommandResponse extends KeyedMap<Key<?>, Object> implements CommandResponseInterface {
-	
-	public static final Key<Integer> CODE = new Key<>(CommandResponse.class, "code");
 
-	public static final Key<Vector<String>> COMMENT = new Key<>(CommandResponse.class, "comment");
+    public static final Key<Integer> CODE = new Key<>(CommandResponse.class, "code");
 
-	public static final Key<DirectoryHandle> CURRENTDIRECTORY = new Key<>(CommandResponse.class, "currentDirectory");
+    public static final Key<Vector<String>> COMMENT = new Key<>(CommandResponse.class, "comment");
 
-	public static final Key<String> MESSAGE = new Key<>(CommandResponse.class, "message");
+    public static final Key<DirectoryHandle> CURRENTDIRECTORY = new Key<>(CommandResponse.class, "currentDirectory");
 
-	public static final Key<String> USER = new Key<>(CommandResponse.class, "user");
+    public static final Key<String> MESSAGE = new Key<>(CommandResponse.class, "message");
 
-	public CommandResponse(int code) {
-		setCode(code);
-	}
+    public static final Key<String> USER = new Key<>(CommandResponse.class, "user");
 
-	public CommandResponse(int code, String message) {
-		setCode(code);
-		setMessage(message);
-	}
+    public CommandResponse(int code) {
+        setCode(code);
+    }
 
-	public CommandResponse(int code, DirectoryHandle directory, String user) {
-		setCode(code);
-		setCurrentDirectory(directory);
-		setUser(user);
-	}
+    public CommandResponse(int code, String message) {
+        setCode(code);
+        setMessage(message);
+    }
 
-	public CommandResponse(int code, String message, DirectoryHandle directory, String user) {
-		setCode(code);
-		setMessage(message);
-		setCurrentDirectory(directory);
-		setUser(user);
-	}
+    public CommandResponse(int code, DirectoryHandle directory, String user) {
+        setCode(code);
+        setCurrentDirectory(directory);
+        setUser(user);
+    }
 
-	public void addComment(BufferedReader in) throws IOException {
-		String line;
+    public CommandResponse(int code, String message, DirectoryHandle directory, String user) {
+        setCode(code);
+        setMessage(message);
+        setCurrentDirectory(directory);
+        setUser(user);
+    }
 
-		while ((line = in.readLine()) != null) { // throws IOException
-			this.addComment(line);
-		}
-	}
+    public void addComment(BufferedReader in) throws IOException {
+        String line;
 
-	public void addComment(Object comment) {
-		Vector<String> _comments = getComment();
-		String resp = String.valueOf(comment);
+        while ((line = in.readLine()) != null) { // throws IOException
+            this.addComment(line);
+        }
+    }
 
-		if (resp.indexOf('\n') != -1) {
-			String[] lines = resp.split("\n");
+    public void addComment(Object comment) {
+        Vector<String> _comments = getComment();
+        String resp = String.valueOf(comment);
 
-			for (String line : lines) {
-				_comments.add(line);
-			}
-		} else {
-			_comments.add(resp);
-		}
-		setObject(CommandResponse.COMMENT, _comments);
-	}
+        if (resp.indexOf('\n') != -1) {
+            String[] lines = resp.split("\n");
 
-	public void setCode(int code) {
-		setObject(CommandResponse.CODE, code);
-	}
+            for (String line : lines) {
+                _comments.add(line);
+            }
+        } else {
+            _comments.add(resp);
+        }
+        setObject(CommandResponse.COMMENT, _comments);
+    }
 
-	public void setCurrentDirectory(DirectoryHandle currentDirectory) {
-		setObject(CommandResponse.CURRENTDIRECTORY, currentDirectory);
-	}
+    public int getCode() {
+        return getObject(CommandResponse.CODE, 500);
+    }
 
-	public void setMessage(String message) {
-		setObject(CommandResponse.MESSAGE, message);
-	}
+    public void setCode(int code) {
+        setObject(CommandResponse.CODE, code);
+    }
 
-	public void setUser(String currentUser) {
-		if (currentUser != null) {
-			setObject(CommandResponse.USER, currentUser);
-		}
-	}
+    public Vector<String> getComment() {
+        return getObject(CommandResponse.COMMENT, new Vector<>());
+    }
 
-	public int getCode() {
-		return getObject(CommandResponse.CODE, 500);
-	}
+    public DirectoryHandle getCurrentDirectory() {
+        return getObject(CommandResponse.CURRENTDIRECTORY, null);
+    }
 
-	public Vector<String> getComment() {
-		return getObject(CommandResponse.COMMENT, new Vector<>());
-	}
+    public void setCurrentDirectory(DirectoryHandle currentDirectory) {
+        setObject(CommandResponse.CURRENTDIRECTORY, currentDirectory);
+    }
 
-	public DirectoryHandle getCurrentDirectory() {
-		return getObject(CommandResponse.CURRENTDIRECTORY, null);
-	}
+    public String getMessage() {
+        return getObject(CommandResponse.MESSAGE, "");
+    }
 
-	public String getMessage() {
-		return getObject(CommandResponse.MESSAGE, "");
-	}
+    public void setMessage(String message) {
+        setObject(CommandResponse.MESSAGE, message);
+    }
 
-	public String getUser() {
-		return getObject(CommandResponse.USER, null);
-	}
+    public String getUser() {
+        return getObject(CommandResponse.USER, null);
+    }
+
+    public void setUser(String currentUser) {
+        if (currentUser != null) {
+            setObject(CommandResponse.USER, currentUser);
+        }
+    }
 }

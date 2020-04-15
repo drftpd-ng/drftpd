@@ -26,45 +26,45 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class VirtualFileSystemLink extends VirtualFileSystemInode {
 
-	private String _link;
+    private String _link;
 
-	public VirtualFileSystemLink(String user, String group, String link) {
-		super(user, group);
-		_link = link;
-	}
+    public VirtualFileSystemLink(String user, String group, String link) {
+        super(user, group);
+        _link = link;
+    }
 
-	public String getLinkPath() {
-		return _link;
-	}
+    public String getLinkPath() {
+        return _link;
+    }
 
-	public void setLinkPath(String link) {
-		_link = link;
-		commit();
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.drftpd.master.vfs.VirtualFileSystemInode#getSize()
-	 */
-	@Override
-	public long getSize() {
-		return 0L;
-	}
+    public void setLinkPath(String link) {
+        _link = link;
+        commit();
+    }
 
-	/* (non-Javadoc)
-	 * @see org.drftpd.master.vfs.VirtualFileSystemInode#setSize(long)
-	 */
-	@Override
-	public void setSize(long l) {
+    /* (non-Javadoc)
+     * @see org.drftpd.master.vfs.VirtualFileSystemInode#getSize()
+     */
+    @Override
+    public long getSize() {
+        return 0L;
+    }
+
+    /* (non-Javadoc)
+     * @see org.drftpd.master.vfs.VirtualFileSystemInode#setSize(long)
+     */
+    @Override
+    public void setSize(long l) {
         // size of links are always zero
-	}
+    }
 
-	@Override
-	public String toString() {
-		return "Link" + super.toString() + "[link=" + getLinkPath() + "]";
-	}
+    @Override
+    public String toString() {
+        return "Link" + super.toString() + "[link=" + getLinkPath() + "]";
+    }
 
-	protected Map<String,AtomicInteger> getSlaveRefCounts() {
-		// Links don't reside on slaves so return an empty Map
-		return new TreeMap<>();
-	}
+    protected Map<String, AtomicInteger> getSlaveRefCounts() {
+        // Links don't reside on slaves so return an empty Map
+        return new TreeMap<>();
+    }
 }

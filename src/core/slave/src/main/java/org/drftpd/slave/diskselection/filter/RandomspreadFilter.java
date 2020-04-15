@@ -20,27 +20,27 @@ package org.drftpd.slave.diskselection.filter;
 
 import org.drftpd.slave.vfs.Root;
 
-import java.util.Properties;
 import java.security.SecureRandom;
+import java.util.Properties;
 
 /**
  * This filter simply pick a random root and adds 1 point to the current
  * ScoreChart making files spread throught all roots.
- * 
+ *
  * @author fr0w
  * @version $Id$
  */
 public class RandomspreadFilter extends DiskFilter {
 
-	public RandomspreadFilter(DiskSelectionFilter diskSelection, Properties p, Integer i) {
-		super(diskSelection, p, i);
-	}
+    private final SecureRandom _rand = new SecureRandom();
 
-	private SecureRandom _rand = new SecureRandom();
+    public RandomspreadFilter(DiskSelectionFilter diskSelection, Properties p, Integer i) {
+        super(diskSelection, p, i);
+    }
 
-	public void process(ScoreChart sc, String path) {
-		int i = _rand.nextInt(getRootList().size());
-		Root root = getRootList().get(i);
-		sc.addScore(root, 1);
-	}
+    public void process(ScoreChart sc, String path) {
+        int i = _rand.nextInt(getRootList().size());
+        Root root = getRootList().get(i);
+        sc.addScore(root, 1);
+    }
 }

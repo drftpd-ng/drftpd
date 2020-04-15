@@ -54,7 +54,7 @@ import java.util.Properties;
  */
 public class PREBWPostHook {
     private static final Logger logger = LogManager.getLogger(PREBWPostHook.class);
-    private ArrayList<TimeSetting> _timeSettings = new ArrayList<>();
+    private final ArrayList<TimeSetting> _timeSettings = new ArrayList<>();
     private String _exclude;
     private String[] _sections;
     private boolean _realSpeed;
@@ -194,8 +194,13 @@ public class PREBWPostHook {
         }
     }
 
+    @EventSubscriber
+    public void onReloadEvent(ReloadEvent event) {
+        loadConf();
+    }
+
     private class getInfoThread extends Thread {
-        private PreInfo _preInfo;
+        private final PreInfo _preInfo;
 
         public getInfoThread(PreInfo preInfo) {
             _preInfo = preInfo;
@@ -245,10 +250,5 @@ public class PREBWPostHook {
             }
             return speed;
         }
-    }
-
-    @EventSubscriber
-    public void onReloadEvent(ReloadEvent event) {
-        loadConf();
     }
 }

@@ -18,13 +18,13 @@
 package org.drftpd.imdb.master.index;
 
 import org.apache.lucene.index.Term;
+import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.NumericRangeQuery;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.BooleanClause.Occur;
 import org.drftpd.common.dynamicdata.KeyNotFoundException;
-import org.drftpd.master.indexation.LuceneUtils;
 import org.drftpd.master.indexation.AdvancedSearchParams;
+import org.drftpd.master.indexation.LuceneUtils;
 import org.drftpd.master.indexation.QueryTermExtensionInterface;
 
 /**
@@ -33,49 +33,49 @@ import org.drftpd.master.indexation.QueryTermExtensionInterface;
  */
 public class IMDBQueryExtension implements QueryTermExtensionInterface {
 
-	private static final Term TERM_TITLE = new Term("imdbtitle", "");
-	private static final Term TERM_DIRECTOR = new Term("imdbdirector", "");
-	private static final Term TERM_GENRES = new Term("imdbgenres", "");
-	
-	@Override
-	public void addQueryTerms(BooleanQuery query, AdvancedSearchParams params) {
-		try {
-			IMDBQueryParams queryParams = params.getExtensionData(IMDBQueryParams.IMDBQUERYPARAMS);
-			if (queryParams.getTitle() != null) {
-				Query titleQuery = LuceneUtils.analyze("imdbtitle", TERM_TITLE, queryParams.getTitle());
-				query.add(titleQuery, Occur.MUST);
-			}
-			if (queryParams.getDirector() != null) {
-				Query directorQuery = LuceneUtils.analyze("imdbdirector", TERM_DIRECTOR, queryParams.getDirector());
-				query.add(directorQuery, Occur.MUST);
-			}
-			if (queryParams.getGenres() != null) {
-				Query genresQuery = LuceneUtils.analyze("imdbgenres", TERM_GENRES, queryParams.getGenres());
-				query.add(genresQuery, Occur.MUST);
-			}
-			if (queryParams.getMinVotes() != null || queryParams.getMaxVotes() != null) {
-				Query votesQuery = NumericRangeQuery.newIntRange("imdbvotes",
-						queryParams.getMinVotes(), queryParams.getMaxVotes(), true, true);
-				query.add(votesQuery, Occur.MUST);
-			}
-			if (queryParams.getMinRating() != null || queryParams.getMaxRating() != null) {
-				Query ratingQuery = NumericRangeQuery.newIntRange("imdbrating",
-						queryParams.getMinRating(), queryParams.getMaxRating(), true, true);
-				query.add(ratingQuery, Occur.MUST);
-			}
-			if (queryParams.getMinYear() != null || queryParams.getMaxYear() != null) {
-				Query yearQuery = NumericRangeQuery.newIntRange("imdbyear",
-						queryParams.getMinYear(), queryParams.getMaxYear(), true, true);
-				query.add(yearQuery, Occur.MUST);
-			}
-			if (queryParams.getMinRuntime() != null || queryParams.getMaxRuntime() != null) {
-				Query runtimeQuery = NumericRangeQuery.newIntRange("imdbruntime",
-						queryParams.getMinRuntime(), queryParams.getMaxRuntime(), true, true);
-				query.add(runtimeQuery, Occur.MUST);
-			}
-		} catch (KeyNotFoundException e) {
-			// No IMDB terms to include, return without amending query
-		}
-	}
+    private static final Term TERM_TITLE = new Term("imdbtitle", "");
+    private static final Term TERM_DIRECTOR = new Term("imdbdirector", "");
+    private static final Term TERM_GENRES = new Term("imdbgenres", "");
+
+    @Override
+    public void addQueryTerms(BooleanQuery query, AdvancedSearchParams params) {
+        try {
+            IMDBQueryParams queryParams = params.getExtensionData(IMDBQueryParams.IMDBQUERYPARAMS);
+            if (queryParams.getTitle() != null) {
+                Query titleQuery = LuceneUtils.analyze("imdbtitle", TERM_TITLE, queryParams.getTitle());
+                query.add(titleQuery, Occur.MUST);
+            }
+            if (queryParams.getDirector() != null) {
+                Query directorQuery = LuceneUtils.analyze("imdbdirector", TERM_DIRECTOR, queryParams.getDirector());
+                query.add(directorQuery, Occur.MUST);
+            }
+            if (queryParams.getGenres() != null) {
+                Query genresQuery = LuceneUtils.analyze("imdbgenres", TERM_GENRES, queryParams.getGenres());
+                query.add(genresQuery, Occur.MUST);
+            }
+            if (queryParams.getMinVotes() != null || queryParams.getMaxVotes() != null) {
+                Query votesQuery = NumericRangeQuery.newIntRange("imdbvotes",
+                        queryParams.getMinVotes(), queryParams.getMaxVotes(), true, true);
+                query.add(votesQuery, Occur.MUST);
+            }
+            if (queryParams.getMinRating() != null || queryParams.getMaxRating() != null) {
+                Query ratingQuery = NumericRangeQuery.newIntRange("imdbrating",
+                        queryParams.getMinRating(), queryParams.getMaxRating(), true, true);
+                query.add(ratingQuery, Occur.MUST);
+            }
+            if (queryParams.getMinYear() != null || queryParams.getMaxYear() != null) {
+                Query yearQuery = NumericRangeQuery.newIntRange("imdbyear",
+                        queryParams.getMinYear(), queryParams.getMaxYear(), true, true);
+                query.add(yearQuery, Occur.MUST);
+            }
+            if (queryParams.getMinRuntime() != null || queryParams.getMaxRuntime() != null) {
+                Query runtimeQuery = NumericRangeQuery.newIntRange("imdbruntime",
+                        queryParams.getMinRuntime(), queryParams.getMaxRuntime(), true, true);
+                query.add(runtimeQuery, Occur.MUST);
+            }
+        } catch (KeyNotFoundException e) {
+            // No IMDB terms to include, return without amending query
+        }
+    }
 
 }

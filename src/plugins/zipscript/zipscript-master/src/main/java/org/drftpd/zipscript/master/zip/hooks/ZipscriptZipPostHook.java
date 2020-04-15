@@ -66,7 +66,7 @@ public class ZipscriptZipPostHook extends ZipTools {
 
     private static final Logger logger = LogManager.getLogger(ZipscriptZipPostHook.class);
 
-    private ResourceBundle _bundle;
+    private final ResourceBundle _bundle;
 
 
     public ZipscriptZipPostHook() {

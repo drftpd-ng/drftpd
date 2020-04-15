@@ -16,19 +16,20 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 package org.drftpd.statistics.master;
-import org.drftpd.master.commands.dataconnection.DataConnectionHandler;
-import org.drftpd.master.commands.dir.Dir;
+
 import org.drftpd.common.extensibility.CommandHook;
 import org.drftpd.common.extensibility.HookType;
+import org.drftpd.common.slave.TransferStatus;
 import org.drftpd.master.GlobalContext;
+import org.drftpd.master.commands.CommandRequest;
+import org.drftpd.master.commands.CommandResponse;
+import org.drftpd.master.commands.dataconnection.DataConnectionHandler;
+import org.drftpd.master.commands.dir.Dir;
 import org.drftpd.master.usermanager.NoSuchUserException;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.usermanager.UserFileException;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.FileHandle;
-import org.drftpd.master.commands.CommandRequest;
-import org.drftpd.master.commands.CommandResponse;
-import org.drftpd.common.slave.TransferStatus;
 
 /**
  * @author fr0w
@@ -36,92 +37,92 @@ import org.drftpd.common.slave.TransferStatus;
  */
 public class StatsPostHook {
 
-	@CommandHook(commands = "doRETR", priority = 100, type = HookType.POST)
-	public void doRETRPostHook(CommandRequest request, CommandResponse response) {
-		DirectoryHandle dir = request.getCurrentDirectory();
-		User user = request.getSession().getUserNull(request.getUser());
+    @CommandHook(commands = "doRETR", priority = 100, type = HookType.POST)
+    public void doRETRPostHook(CommandRequest request, CommandResponse response) {
+        DirectoryHandle dir = request.getCurrentDirectory();
+        User user = request.getSession().getUserNull(request.getUser());
 
-		TransferStatus status = response.getObject(DataConnectionHandler.XFER_STATUS, null);
-		if (status != null) {
-			// creditloss routine.
-			float ratio = StatsManager.getStatsManager().getCreditLossRatio(dir, user);
-			long transferredSize = status.getTransfered();
-			long creditsLoss = (long) ratio * transferredSize;
-			user.updateCredits(-creditsLoss);
-			
-			// nostatdn routine.
-			if (!GlobalContext.getConfig().checkPathPermission("nostatsdn", user, dir)) {
-				user.updateDownloadedBytes(status.getTransfered());
-				user.updateDownloadedTime(status.getElapsed());
-				user.updateDownloadedFiles(1);
-			}
-			
-			user.commit();
-		}
-	}
+        TransferStatus status = response.getObject(DataConnectionHandler.XFER_STATUS, null);
+        if (status != null) {
+            // creditloss routine.
+            float ratio = StatsManager.getStatsManager().getCreditLossRatio(dir, user);
+            long transferredSize = status.getTransfered();
+            long creditsLoss = (long) ratio * transferredSize;
+            user.updateCredits(-creditsLoss);
 
-	@CommandHook(commands = "doSTOR", priority = 999999, type = HookType.POST)
-	public void doSTORPostHook(CommandRequest request, CommandResponse response) {
-		DirectoryHandle dir = request.getCurrentDirectory();
-		User user = request.getSession().getUserNull(request.getUser());
+            // nostatdn routine.
+            if (!GlobalContext.getConfig().checkPathPermission("nostatsdn", user, dir)) {
+                user.updateDownloadedBytes(status.getTransfered());
+                user.updateDownloadedTime(status.getElapsed());
+                user.updateDownloadedFiles(1);
+            }
 
-		TransferStatus status = response.getObject(DataConnectionHandler.XFER_STATUS, null);
-		FileHandle transferFile = response.getObject(DataConnectionHandler.TRANSFER_FILE, null);
-		if (status != null && transferFile != null && transferFile.exists()) {
-			// creditcheck routine.
-			float ratio = StatsManager.getStatsManager().getCreditCheckRatio(dir, user);
-			long transferredSize = status.getTransfered();
-			long creditsCheck = (long) ratio * transferredSize;
-			user.updateCredits(creditsCheck);
-			
-			// nostatdn routine.
-			if (!GlobalContext.getConfig().checkPathPermission("nostatsup", user, dir)) {
-				user.updateUploadedBytes(status.getTransfered());
-				user.updateUploadedTime(status.getElapsed());
-				user.updateUploadedFiles(1);
-			}
-			
-			user.commit();
-		}
-	}
+            user.commit();
+        }
+    }
 
-	@CommandHook(commands = "doDELE", priority = 999999, type = HookType.POST)
-	public void doDELEPostHook(CommandRequest request, CommandResponse response) {
-		if (response.getCode() != 250) {
-			// Delete failed, abort update
-			return;
-		}
+    @CommandHook(commands = "doSTOR", priority = 999999, type = HookType.POST)
+    public void doSTORPostHook(CommandRequest request, CommandResponse response) {
+        DirectoryHandle dir = request.getCurrentDirectory();
+        User user = request.getSession().getUserNull(request.getUser());
 
-		if (!response.getObjectBoolean(Dir.ISFILE)) {
-			return;
-		}
+        TransferStatus status = response.getObject(DataConnectionHandler.XFER_STATUS, null);
+        FileHandle transferFile = response.getObject(DataConnectionHandler.TRANSFER_FILE, null);
+        if (status != null && transferFile != null && transferFile.exists()) {
+            // creditcheck routine.
+            float ratio = StatsManager.getStatsManager().getCreditCheckRatio(dir, user);
+            long transferredSize = status.getTransfered();
+            long creditsCheck = (long) ratio * transferredSize;
+            user.updateCredits(creditsCheck);
 
-		String userName = response.getObject(Dir.USERNAME, null);
-		long fileSize  = response.getObjectLong(Dir.FILESIZE);
-		long xferTime = response.getObjectLong(Dir.XFERTIME);
+            // nostatdn routine.
+            if (!GlobalContext.getConfig().checkPathPermission("nostatsup", user, dir)) {
+                user.updateUploadedBytes(status.getTransfered());
+                user.updateUploadedTime(status.getElapsed());
+                user.updateUploadedFiles(1);
+            }
 
-		try {
-			DirectoryHandle dir = request.getCurrentDirectory();
-			User user = GlobalContext.getGlobalContext().getUserManager().getUserByName(userName);
-			
-			// updating credits
-			float ratio = StatsManager.getStatsManager().getCreditCheckRatio(dir, user);
-			long creditsCheck = (long) ratio * fileSize;
-			user.updateCredits(-creditsCheck);
-			
-			
-			// updating stats
-			if (!GlobalContext.getConfig().checkPathPermission("nostatsup", user, dir)) {
-				user.updateUploadedBytes(-fileSize);
-				user.updateUploadedFiles(-1);
-				user.updateUploadedTime(-xferTime);
-			}
+            user.commit();
+        }
+    }
 
-			user.commit();
-		} catch (UserFileException e) {
-			response.addComment("Error updating credits & stats: "+ e.getMessage());
-		} catch (NoSuchUserException e) {
-			response.addComment("User " +userName+ " does not exist, cannot remove credits on deletion");
-		}
-	}
+    @CommandHook(commands = "doDELE", priority = 999999, type = HookType.POST)
+    public void doDELEPostHook(CommandRequest request, CommandResponse response) {
+        if (response.getCode() != 250) {
+            // Delete failed, abort update
+            return;
+        }
+
+        if (!response.getObjectBoolean(Dir.ISFILE)) {
+            return;
+        }
+
+        String userName = response.getObject(Dir.USERNAME, null);
+        long fileSize = response.getObjectLong(Dir.FILESIZE);
+        long xferTime = response.getObjectLong(Dir.XFERTIME);
+
+        try {
+            DirectoryHandle dir = request.getCurrentDirectory();
+            User user = GlobalContext.getGlobalContext().getUserManager().getUserByName(userName);
+
+            // updating credits
+            float ratio = StatsManager.getStatsManager().getCreditCheckRatio(dir, user);
+            long creditsCheck = (long) ratio * fileSize;
+            user.updateCredits(-creditsCheck);
+
+
+            // updating stats
+            if (!GlobalContext.getConfig().checkPathPermission("nostatsup", user, dir)) {
+                user.updateUploadedBytes(-fileSize);
+                user.updateUploadedFiles(-1);
+                user.updateUploadedTime(-xferTime);
+            }
+
+            user.commit();
+        } catch (UserFileException e) {
+            response.addComment("Error updating credits & stats: " + e.getMessage());
+        } catch (NoSuchUserException e) {
+            response.addComment("User " + userName + " does not exist, cannot remove credits on deletion");
+        }
+    }
 }

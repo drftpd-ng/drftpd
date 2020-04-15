@@ -19,12 +19,12 @@ package org.drftpd.imdb.master.find;
 
 import org.apache.commons.text.WordUtils;
 import org.drftpd.find.master.action.ActionInterface;
+import org.drftpd.imdb.common.IMDBInfo;
 import org.drftpd.imdb.master.vfs.IMDBVFSDataNFO;
-import org.drftpd.master.vfs.DirectoryHandle;
-import org.drftpd.master.vfs.InodeHandle;
 import org.drftpd.master.commands.CommandRequest;
 import org.drftpd.master.commands.ImproperUsageException;
-import org.drftpd.imdb.common.IMDBInfo;
+import org.drftpd.master.vfs.DirectoryHandle;
+import org.drftpd.master.vfs.InodeHandle;
 
 /**
  * @author scitz0

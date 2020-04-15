@@ -17,11 +17,11 @@
  */
 package org.drftpd.master.tests;
 
-import org.drftpd.master.slavemanagement.DummyRemoteSlave;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
+import org.drftpd.master.protocol.MasterProtocolCentral;
+import org.drftpd.master.slavemanagement.DummyRemoteSlave;
 import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.master.slavemanagement.SlaveManager;
-import org.drftpd.master.protocol.MasterProtocolCentral;
 import org.drftpd.slave.exceptions.ObjectNotFoundException;
 
 import java.util.Collection;
@@ -33,19 +33,19 @@ import java.util.HashMap;
  * @version $Id$
  */
 public class DummySlaveManager extends SlaveManager {
-	public void setSlaves(HashMap<String,RemoteSlave> rslaves) {
-        _rslaves = rslaves;
-    }
-
     public DummySlaveManager() {
         _central = new MasterProtocolCentral();
+    }
+
+    public void setSlaves(HashMap<String, RemoteSlave> rslaves) {
+        _rslaves = rslaves;
     }
 
     public Collection<RemoteSlave> getAvailableSlaves() throws NoAvailableSlaveException {
         return getSlaves();
     }
-    
+
     public RemoteSlave getRemoteSlave(String s) throws ObjectNotFoundException {
-    	return new DummyRemoteSlave(s);
+        return new DummyRemoteSlave(s);
     }
 }

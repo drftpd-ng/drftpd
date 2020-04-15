@@ -20,9 +20,9 @@ package org.drftpd.master.slaveselection.filter;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
+import org.drftpd.master.slavemanagement.DummyRemoteSlave;
 import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.master.tests.DummyGlobalContext;
-import org.drftpd.master.slavemanagement.DummyRemoteSlave;
 import org.drftpd.master.tests.DummySlaveManager;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.slave.exceptions.ObjectNotFoundException;
@@ -42,7 +42,7 @@ public class MatchdirFilterTest extends TestCase {
             new DummyRemoteSlave("slave1"),
             new DummyRemoteSlave("slave2"),
             new DummyRemoteSlave("slave3")
-        };
+    };
 
     public MatchdirFilterTest(String fName) {
         super(fName);
@@ -51,19 +51,19 @@ public class MatchdirFilterTest extends TestCase {
     public static TestSuite suite() {
         return new TestSuite(MatchdirFilterTest.class);
     }
-    
+
     public void setUp() {
         AssignSlave.setGlobalContext(new DummyGlobalContext());
         DummyGlobalContext dgctx = (DummyGlobalContext) AssignSlave.getGlobalContext();
-        dgctx.setSlaveManager(new DummySlaveManager());    
+        dgctx.setSlaveManager(new DummySlaveManager());
     }
 
-   public void testSimple()
-        throws ObjectNotFoundException, NoAvailableSlaveException {
+    public void testSimple()
+            throws ObjectNotFoundException, NoAvailableSlaveException {
         Properties p = new Properties();
         p.put("1.assign", "slave1+100, slave2-100");
         p.put("1.match", "/path1/*");
-        
+
         Filter f = new MatchdirFilter(1, p);
         ScoreChart sc = new ScoreChart(Arrays.asList(rslaves));
 
@@ -83,8 +83,8 @@ public class MatchdirFilterTest extends TestCase {
         Assert.assertEquals(0, sc.getScoreForSlave(rslaves[2]).getScore());
     }
 
-   public void testAll()
-        throws ObjectNotFoundException, NoAvailableSlaveException {
+    public void testAll()
+            throws ObjectNotFoundException, NoAvailableSlaveException {
         Properties p = new Properties();
         p.put("1.assign", "ALL+100");
         p.put("1.match", "/path2/*");
@@ -104,7 +104,7 @@ public class MatchdirFilterTest extends TestCase {
     }
 
     public void testRemove()
-        throws NoAvailableSlaveException, ObjectNotFoundException {
+            throws NoAvailableSlaveException, ObjectNotFoundException {
         Properties p = new Properties();
         p.put("1.assign", "slave2-remove");
         p.put("1.match", "/path1/*");

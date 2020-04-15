@@ -17,17 +17,12 @@
  */
 package org.drftpd.master.network;
 
-import org.drftpd.master.GlobalContext;
-import org.drftpd.master.commands.usermanagement.UserManagement;
-import org.drftpd.common.util.Bytes;
 import org.drftpd.common.dynamicdata.Key;
 import org.drftpd.common.dynamicdata.KeyedMap;
-import org.drftpd.master.usermanager.Group;
-import org.drftpd.master.usermanager.NoSuchUserException;
-import org.drftpd.master.usermanager.NoSuchGroupException;
-import org.drftpd.master.usermanager.User;
-import org.drftpd.master.usermanager.UserFileException;
-import org.drftpd.master.usermanager.GroupFileException;
+import org.drftpd.common.util.Bytes;
+import org.drftpd.master.GlobalContext;
+import org.drftpd.master.commands.usermanagement.UserManagement;
+import org.drftpd.master.usermanager.*;
 import org.drftpd.master.util.ReplacerUtils;
 
 import java.util.*;
@@ -39,108 +34,108 @@ import java.util.*;
 @SuppressWarnings("serial")
 public abstract class Session extends KeyedMap<Key<?>, Object> {
 
-	public static final Key<HashMap<String, Properties>> COMMANDS = new Key<>(Session.class, "commands");
+    public static final Key<HashMap<String, Properties>> COMMANDS = new Key<>(Session.class, "commands");
 
-	private boolean _aborted = false;
+    private boolean _aborted = false;
 
-	public void setCommands(HashMap<String,Properties> commands) {
-		setObject(Session.COMMANDS, commands);
-	}
+    public HashMap<String, Properties> getCommands() {
+        return getObject(Session.COMMANDS, null);
+    }
 
-	public HashMap<String, Properties> getCommands() {
-		return getObject(Session.COMMANDS, null);
-	}
+    public void setCommands(HashMap<String, Properties> commands) {
+        setObject(Session.COMMANDS, commands);
+    }
 
-	public Map<String, Object> getReplacerEnvironment(Map<String, Object> inheritedEnv, User user) {
-		Map<String, Object> env = new HashMap<>();
-		if (inheritedEnv != null) env.putAll(inheritedEnv);
-		if (user != null) {
-			for (Map.Entry<Key<?>, Object> entry : user.getKeyedMap().getAllObjects().entrySet()) {
-				String key = entry.getKey().toString();
-				String value = entry.getValue().toString();
-				if (key.equals("org.drftpd.master.commands.nuke.metadata.NukeUserData@nukedBytes"))
-					value = Bytes.formatBytes(Long.parseLong(value));
-				env.put(key, value);
-			}
-			env.put("user", user.getName());
-			env.put("username", user.getName());
-			env.put("idletime", "" + user.getIdleTime());
-			env.put("credits", Bytes.formatBytes(user.getCredits()));
-			env.put("ratio", ""+ user.getKeyedMap().get(UserManagement.RATIO));
-			env.put("tagline", user.getKeyedMap().get(UserManagement.TAGLINE));
-			env.put("uploaded", Bytes.formatBytes(user.getUploadedBytes()));
-			env.put("downloaded", Bytes.formatBytes(user.getDownloadedBytes()));
-			env.put("group", user.getGroup());
-			env.put("groups", user.getGroups());
-			env.put("averagespeed", Bytes.formatBytes((user.getDownloadedBytes()+user.getUploadedBytes())
-					/ (((user.getDownloadedTime()+user.getUploadedTime())/1000)+1)));
-			env.put("ipmasks", user.getHostMaskCollection().toString());
-			env.put("isbanned",""+ (user.getKeyedMap().getObject(UserManagement.BAN_TIME, new Date()).getTime() > System.currentTimeMillis()));
-		}
-		return env;
-	}
-	
-	public User getUserNull(String user) {
-		if (user == null) {
-			return null;
-		}
-		try {
-			return GlobalContext.getGlobalContext().getUserManager().getUserByNameUnchecked(user);
-		} catch (NoSuchUserException | UserFileException e) {
-			return null;
-		}
-	}
-	
-	protected User getUserObject(String user) throws NoSuchUserException, UserFileException {
-		return GlobalContext.getGlobalContext().getUserManager().getUserByName(user);
-	}
+    public Map<String, Object> getReplacerEnvironment(Map<String, Object> inheritedEnv, User user) {
+        Map<String, Object> env = new HashMap<>();
+        if (inheritedEnv != null) env.putAll(inheritedEnv);
+        if (user != null) {
+            for (Map.Entry<Key<?>, Object> entry : user.getKeyedMap().getAllObjects().entrySet()) {
+                String key = entry.getKey().toString();
+                String value = entry.getValue().toString();
+                if (key.equals("org.drftpd.master.commands.nuke.metadata.NukeUserData@nukedBytes"))
+                    value = Bytes.formatBytes(Long.parseLong(value));
+                env.put(key, value);
+            }
+            env.put("user", user.getName());
+            env.put("username", user.getName());
+            env.put("idletime", "" + user.getIdleTime());
+            env.put("credits", Bytes.formatBytes(user.getCredits()));
+            env.put("ratio", "" + user.getKeyedMap().get(UserManagement.RATIO));
+            env.put("tagline", user.getKeyedMap().get(UserManagement.TAGLINE));
+            env.put("uploaded", Bytes.formatBytes(user.getUploadedBytes()));
+            env.put("downloaded", Bytes.formatBytes(user.getDownloadedBytes()));
+            env.put("group", user.getGroup());
+            env.put("groups", user.getGroups());
+            env.put("averagespeed", Bytes.formatBytes((user.getDownloadedBytes() + user.getUploadedBytes())
+                    / (((user.getDownloadedTime() + user.getUploadedTime()) / 1000) + 1)));
+            env.put("ipmasks", user.getHostMaskCollection().toString());
+            env.put("isbanned", "" + (user.getKeyedMap().getObject(UserManagement.BAN_TIME, new Date()).getTime() > System.currentTimeMillis()));
+        }
+        return env;
+    }
 
-	public Group getGroupNull(String group) {
-		if (group == null) {
-			return null;
-		}
-		try {
-			return GlobalContext.getGlobalContext().getUserManager().getGroupByNameUnchecked(group);
-		} catch (NoSuchGroupException | GroupFileException e) {
-			return null;
-		}
-	}
-	
-	protected Group getGroupObject(String group) throws NoSuchGroupException, GroupFileException {
-		return GlobalContext.getGlobalContext().getUserManager().getGroupByName(group);
-	}
+    public User getUserNull(String user) {
+        if (user == null) {
+            return null;
+        }
+        try {
+            return GlobalContext.getGlobalContext().getUserManager().getUserByNameUnchecked(user);
+        } catch (NoSuchUserException | UserFileException e) {
+            return null;
+        }
+    }
 
-	public String jprintf(ResourceBundle bundle, String key, String user) {
-		return ReplacerUtils.jprintf(key, getReplacerEnvironment(null, getUserNull(user)), bundle);
-	}
-	
-	public String jprintf(ResourceBundle bundle, Map<String, Object> inheritedEnv, String key) {
-		return ReplacerUtils.jprintf(key, getReplacerEnvironment(inheritedEnv, null), bundle);
-	}
+    protected User getUserObject(String user) throws NoSuchUserException, UserFileException {
+        return GlobalContext.getGlobalContext().getUserManager().getUserByName(user);
+    }
 
-	public String jprintf(ResourceBundle bundle, String key, Map<String, Object> env, String user) {
-		return ReplacerUtils.jprintf(key, getReplacerEnvironment(env, getUserNull(user)), bundle);
-	}
+    public Group getGroupNull(String group) {
+        if (group == null) {
+            return null;
+        }
+        try {
+            return GlobalContext.getGlobalContext().getUserManager().getGroupByNameUnchecked(group);
+        } catch (NoSuchGroupException | GroupFileException e) {
+            return null;
+        }
+    }
 
-	public String jprintf(ResourceBundle bundle, String key, Map<String, Object> inheritedEnv, User user) {
-		return ReplacerUtils.jprintf(key, getReplacerEnvironment(inheritedEnv, user), bundle);
-	}
+    protected Group getGroupObject(String group) throws NoSuchGroupException, GroupFileException {
+        return GlobalContext.getGlobalContext().getUserManager().getGroupByName(group);
+    }
 
-	public abstract boolean isSecure();
+    public String jprintf(ResourceBundle bundle, String key, String user) {
+        return ReplacerUtils.jprintf(key, getReplacerEnvironment(null, getUserNull(user)), bundle);
+    }
 
-	public abstract void printOutput(Object o);
+    public String jprintf(ResourceBundle bundle, Map<String, Object> inheritedEnv, String key) {
+        return ReplacerUtils.jprintf(key, getReplacerEnvironment(inheritedEnv, null), bundle);
+    }
 
-	public abstract void printOutput(int code, Object o);
+    public String jprintf(ResourceBundle bundle, String key, Map<String, Object> env, String user) {
+        return ReplacerUtils.jprintf(key, getReplacerEnvironment(env, getUserNull(user)), bundle);
+    }
 
-	public void abortCommand() {
-		_aborted = true;
-	}
+    public String jprintf(ResourceBundle bundle, String key, Map<String, Object> inheritedEnv, User user) {
+        return ReplacerUtils.jprintf(key, getReplacerEnvironment(inheritedEnv, user), bundle);
+    }
 
-	public void clearAborted() {
-		_aborted = false;
-	}
+    public abstract boolean isSecure();
 
-	public boolean isAborted() {
-		return _aborted;
-	}
+    public abstract void printOutput(Object o);
+
+    public abstract void printOutput(int code, Object o);
+
+    public void abortCommand() {
+        _aborted = true;
+    }
+
+    public void clearAborted() {
+        _aborted = false;
+    }
+
+    public boolean isAborted() {
+        return _aborted;
+    }
 }

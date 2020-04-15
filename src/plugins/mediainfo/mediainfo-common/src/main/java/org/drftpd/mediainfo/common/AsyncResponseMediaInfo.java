@@ -24,18 +24,18 @@ import org.drftpd.common.network.AsyncResponse;
  */
 @SuppressWarnings("serial")
 public class AsyncResponseMediaInfo extends AsyncResponse {
-	private MediaInfo _mediaInfo;
+    private final MediaInfo _mediaInfo;
 
-	public AsyncResponseMediaInfo(String index, MediaInfo mediaInfo) {
-		super(index);
-		_mediaInfo = mediaInfo;
-	}
+    public AsyncResponseMediaInfo(String index, MediaInfo mediaInfo) {
+        super(index);
+        _mediaInfo = mediaInfo;
+    }
 
-	public MediaInfo getMediaInfo() {
-		return _mediaInfo;
-	}
+    public MediaInfo getMediaInfo() {
+        return _mediaInfo;
+    }
 
-	public String toString() {
-		return getClass().getName();
-	}
+    public String toString() {
+        return getClass().getName();
+    }
 }

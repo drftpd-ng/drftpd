@@ -24,24 +24,25 @@ import java.util.Set;
 
 /**
  * This event is fired whenever a slave is added or removed from a {@link VirtualFileSystemFile}
+ *
  * @author fr0w
  * @version $Id$
  */
 public class VirtualFileSystemSlaveEvent extends VirtualFileSystemEvent {
 
-	private Set<String> _slaves;
+    private final Set<String> _slaves;
 
-	public VirtualFileSystemSlaveEvent(VirtualFileSystemFile file, String path, Set<String> slaves) {
-		super(file, path);
-		
-		_slaves = slaves;
-	}
-	
-	/**
-	 * @return the new set of Slaves
-	 */
-	public Set<String> getSlaves() {
-		return _slaves;
-	}
-	
+    public VirtualFileSystemSlaveEvent(VirtualFileSystemFile file, String path, Set<String> slaves) {
+        super(file, path);
+
+        _slaves = slaves;
+    }
+
+    /**
+     * @return the new set of Slaves
+     */
+    public Set<String> getSlaves() {
+        return _slaves;
+    }
+
 }

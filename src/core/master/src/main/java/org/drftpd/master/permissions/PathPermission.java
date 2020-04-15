@@ -26,9 +26,9 @@ import java.util.Collection;
  * @version $Id$
  */
 public abstract class PathPermission extends Permission {
-	public PathPermission(Collection<String> users) {
-		super(users);
-	}
+    public PathPermission(Collection<String> users) {
+        super(users);
+    }
 
-	public abstract boolean checkPath(InodeHandle inode);
+    public abstract boolean checkPath(InodeHandle inode);
 }

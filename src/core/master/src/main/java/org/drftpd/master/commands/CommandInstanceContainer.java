@@ -24,19 +24,19 @@ import java.lang.reflect.Method;
  */
 public class CommandInstanceContainer {
 
-	private Method _method = null;
-	private CommandInterface _interfaceInstance = null;
-	
-	public CommandInstanceContainer(Method m, CommandInterface interfaceInstance) {
-		_method = m;
-		_interfaceInstance = interfaceInstance;
-	}
-	
-	public Method getMethod() {
-		return _method;
-	}
-	
-	public CommandInterface getCommandInterfaceInstance() {
-		return _interfaceInstance;
-	}	
+    private Method _method = null;
+    private CommandInterface _interfaceInstance = null;
+
+    public CommandInstanceContainer(Method m, CommandInterface interfaceInstance) {
+        _method = m;
+        _interfaceInstance = interfaceInstance;
+    }
+
+    public Method getMethod() {
+        return _method;
+    }
+
+    public CommandInterface getCommandInterfaceInstance() {
+        return _interfaceInstance;
+    }
 }

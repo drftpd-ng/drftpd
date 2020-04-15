@@ -16,20 +16,20 @@
  */
 package org.drftpd.master.sitebot.plugins.dailystats.announce;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.ResourceBundle;
-
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.master.sitebot.AbstractAnnouncer;
+import org.drftpd.master.sitebot.AnnounceWriter;
 import org.drftpd.master.sitebot.SiteBot;
 import org.drftpd.master.sitebot.config.AnnounceConfig;
 import org.drftpd.master.sitebot.plugins.dailystats.UserStats;
 import org.drftpd.master.sitebot.plugins.dailystats.event.StatsEvent;
 import org.drftpd.master.util.ReplacerUtils;
-import org.drftpd.master.sitebot.AnnounceWriter;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.ResourceBundle;
 
 /**
  * @author djb61
@@ -37,65 +37,64 @@ import org.drftpd.master.sitebot.AnnounceWriter;
  */
 public class StatsAnnouncer extends AbstractAnnouncer {
 
-	private AnnounceConfig _config;
+    private AnnounceConfig _config;
 
-	private ResourceBundle _bundle;
+    private ResourceBundle _bundle;
 
 
+    public void initialise(AnnounceConfig config, ResourceBundle bundle) {
+        _config = config;
+        _bundle = bundle;
 
-	public void initialise(AnnounceConfig config, ResourceBundle bundle) {
-		_config = config;
-		_bundle = bundle;
+        // Subscribe to events
+        AnnotationProcessor.process(this);
+    }
 
-		// Subscribe to events
-		AnnotationProcessor.process(this);
-	}
+    public void stop() {
+        // The plugin is unloading so stop asking for events
+        AnnotationProcessor.unprocess(this);
+    }
 
-	public void stop() {
-		// The plugin is unloading so stop asking for events
-		AnnotationProcessor.unprocess(this);
-	}
+    public String[] getEventTypes() {
+        String[] types = {"dailystats.daydn", "dailystats.dayup", "dailystats.wkdn",
+                "dailystats.wkup", "dailystats.monthdn", "dailystats.monthup"};
+        return types;
+    }
 
-	public String[] getEventTypes() {
-		String[] types = {"dailystats.daydn", "dailystats.dayup", "dailystats.wkdn",
-				"dailystats.wkup", "dailystats.monthdn", "dailystats.monthup"};
-		return types;
-	}
-	
-	public void setResourceBundle(ResourceBundle bundle) {
-		_bundle = bundle;
-	}
+    public void setResourceBundle(ResourceBundle bundle) {
+        _bundle = bundle;
+    }
 
-	@EventSubscriber
-	public void onStatsEvent(StatsEvent event) {
-		String statsType = event.getType();
-		AnnounceWriter writer = switch (statsType) {
-			case "dayup" -> _config.getSimpleWriter("dailystats.dayup");
-			case "daydn" -> _config.getSimpleWriter("dailystats.daydn");
-			case "wkup" -> _config.getSimpleWriter("dailystats.wkup");
-			case "wkdn" -> _config.getSimpleWriter("dailystats.wkdn");
-			case "monthup" -> _config.getSimpleWriter("dailystats.monthup");
-			case "monthdn" -> _config.getSimpleWriter("dailystats.monthdn");
-			default -> null;
-		};
+    @EventSubscriber
+    public void onStatsEvent(StatsEvent event) {
+        String statsType = event.getType();
+        AnnounceWriter writer = switch (statsType) {
+            case "dayup" -> _config.getSimpleWriter("dailystats.dayup");
+            case "daydn" -> _config.getSimpleWriter("dailystats.daydn");
+            case "wkup" -> _config.getSimpleWriter("dailystats.wkup");
+            case "wkdn" -> _config.getSimpleWriter("dailystats.wkdn");
+            case "monthup" -> _config.getSimpleWriter("dailystats.monthup");
+            case "monthdn" -> _config.getSimpleWriter("dailystats.monthdn");
+            default -> null;
+        };
 
-		// Check we got a writer back, if it is null do nothing and ignore the event
-		if (writer != null) {
-			Collection<UserStats> outputStats = event.getOutputStats();
-			Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
-			sayOutput(ReplacerUtils.jprintf(statsType, env, _bundle), writer);
-			int count = 1;
-			for (UserStats line : outputStats) {
-				env.put("num",count);
-				env.put("name",line.getName());
-				env.put("files",line.getFiles());
-				env.put("bytes",line.getBytes());
-				sayOutput(ReplacerUtils.jprintf(statsType+".item", env, _bundle), writer);
-				count++;
-			}
-			if (count == 1) {
-				sayOutput(ReplacerUtils.jprintf(statsType+".none", env, _bundle), writer);
-			}
-		}
-	}
+        // Check we got a writer back, if it is null do nothing and ignore the event
+        if (writer != null) {
+            Collection<UserStats> outputStats = event.getOutputStats();
+            Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
+            sayOutput(ReplacerUtils.jprintf(statsType, env, _bundle), writer);
+            int count = 1;
+            for (UserStats line : outputStats) {
+                env.put("num", count);
+                env.put("name", line.getName());
+                env.put("files", line.getFiles());
+                env.put("bytes", line.getBytes());
+                sayOutput(ReplacerUtils.jprintf(statsType + ".item", env, _bundle), writer);
+                count++;
+            }
+            if (count == 1) {
+                sayOutput(ReplacerUtils.jprintf(statsType + ".none", env, _bundle), writer);
+            }
+        }
+    }
 }

@@ -33,7 +33,7 @@ import java.util.*;
  */
 
 public class AutoFreeSpace implements PluginInterface {
-    private static Logger logger = LogManager.getLogger(AutoFreeSpace.class);
+    private static final Logger logger = LogManager.getLogger(AutoFreeSpace.class);
     private HashMap<String, Section> sections;
     private ArrayList<String> _excludeFiles;
     private ArrayList<String> _excludeSlaves;
@@ -104,11 +104,35 @@ public class AutoFreeSpace implements PluginInterface {
         _timer.schedule(new MrCleanit(_excludeFiles, minFreeSpace, sections), cycleTime, cycleTime);
     }
 
+    static class Section {
+        private final int id;
+        private final String name;
+        private final long wipeAfter;
+
+        public Section(int id, String name, long wipeAfter) {
+            this.id = id;
+            this.name = name;
+            this.wipeAfter = wipeAfter;
+        }
+
+        public int getId() {
+            return this.id;
+        }
+
+        public String getName() {
+            return this.name;
+        }
+
+        public long getWipeAfter() {
+            return this.wipeAfter;
+        }
+    }
+
     private class MrCleanit extends TimerTask {
-        private ArrayList<String> _excludeFiles;
-        private HashMap<String, Section> _sections;
-        private long _minFreeSpace;
-        private ArrayList<String> checkedReleases = new ArrayList<>();
+        private final ArrayList<String> _excludeFiles;
+        private final HashMap<String, Section> _sections;
+        private final long _minFreeSpace;
+        private final ArrayList<String> checkedReleases = new ArrayList<>();
 
         public MrCleanit(ArrayList<String> excludeFiles, long minFreeSpace, HashMap<String, Section> sections) {
             _excludeFiles = excludeFiles;
@@ -123,26 +147,6 @@ public class AutoFreeSpace implements PluginInterface {
                 }
             }
             return false;
-        }
-
-        private class AgeComparator implements Comparator<InodeHandle> {
-
-            // Compare two InodeHandle.
-            public final int compare(InodeHandle a, InodeHandle b) {
-                Long aLong, bLong;
-                try {
-                    aLong = a.creationTime();
-                    bLong = b.creationTime();
-                } catch (FileNotFoundException fnfe) {
-                    logger.warn("AUTODELETE: File missing when comparing age", fnfe.getCause());
-                    return 0;
-                }
-                int result = aLong.compareTo(bLong);
-                if (result == 0)
-                    return a.getName().compareTo(b.getName());
-                else
-                    return result;
-            }
         }
 
         private InodeHandle getOldestFile(DirectoryHandle dir, RemoteSlave slave) throws FileNotFoundException {
@@ -309,29 +313,25 @@ public class AutoFreeSpace implements PluginInterface {
                 logger.warn("AUTODELETE: No slaves online, no point in running the cleaning procedure");
             }
         }
-    }
 
-    static class Section {
-        private int id;
-        private String name;
-        private long wipeAfter;
+        private class AgeComparator implements Comparator<InodeHandle> {
 
-        public Section(int id, String name, long wipeAfter) {
-            this.id = id;
-            this.name = name;
-            this.wipeAfter = wipeAfter;
-        }
-
-        public int getId() {
-            return this.id;
-        }
-
-        public String getName() {
-            return this.name;
-        }
-
-        public long getWipeAfter() {
-            return this.wipeAfter;
+            // Compare two InodeHandle.
+            public final int compare(InodeHandle a, InodeHandle b) {
+                Long aLong, bLong;
+                try {
+                    aLong = a.creationTime();
+                    bLong = b.creationTime();
+                } catch (FileNotFoundException fnfe) {
+                    logger.warn("AUTODELETE: File missing when comparing age", fnfe.getCause());
+                    return 0;
+                }
+                int result = aLong.compareTo(bLong);
+                if (result == 0)
+                    return a.getName().compareTo(b.getName());
+                else
+                    return result;
+            }
         }
     }
 }

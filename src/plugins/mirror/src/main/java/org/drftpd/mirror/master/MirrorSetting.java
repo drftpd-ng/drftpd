@@ -26,61 +26,61 @@ import java.util.HashSet;
  * @author lh
  */
 public class MirrorSetting {
-	private int nbrOfMirrors;
-	private int priority;
-	private ArrayList<String> paths;
-	private ArrayList<String> excludedPaths;
-	private HashSet<RemoteSlave> slaves;
-	private HashSet<RemoteSlave> excludedSlaves;
+    private int nbrOfMirrors;
+    private int priority;
+    private ArrayList<String> paths;
+    private ArrayList<String> excludedPaths;
+    private HashSet<RemoteSlave> slaves;
+    private HashSet<RemoteSlave> excludedSlaves;
 
-	public MirrorSetting() {
-	}
+    public MirrorSetting() {
+    }
 
-	public int getNbrOfMirrors() {
-		return nbrOfMirrors;
-	}
+    public int getNbrOfMirrors() {
+        return nbrOfMirrors;
+    }
 
-	public void setNbrOfMirrors(int nbrOfMirrors) {
-		this.nbrOfMirrors = nbrOfMirrors;
-	}
+    public void setNbrOfMirrors(int nbrOfMirrors) {
+        this.nbrOfMirrors = nbrOfMirrors;
+    }
 
-	public int getPriority() {
-		return priority;
-	}
+    public int getPriority() {
+        return priority;
+    }
 
-	public void setPriority(int priority) {
-		this.priority = priority;
-	}
+    public void setPriority(int priority) {
+        this.priority = priority;
+    }
 
-	public ArrayList<String> getPaths() {
-		return paths;
-	}
+    public ArrayList<String> getPaths() {
+        return paths;
+    }
 
-	public void setPaths(ArrayList<String> paths) {
-		this.paths = paths;
-	}
+    public void setPaths(ArrayList<String> paths) {
+        this.paths = paths;
+    }
 
-	public ArrayList<String> getExcludedPaths() {
-		return excludedPaths;
-	}
+    public ArrayList<String> getExcludedPaths() {
+        return excludedPaths;
+    }
 
-	public void setExcludedPaths(ArrayList<String> excludedPaths) {
-		this.excludedPaths = excludedPaths;
-	}
+    public void setExcludedPaths(ArrayList<String> excludedPaths) {
+        this.excludedPaths = excludedPaths;
+    }
 
-	public HashSet<RemoteSlave> getSlaves() {
-		return slaves;
-	}
+    public HashSet<RemoteSlave> getSlaves() {
+        return slaves;
+    }
 
-	public void setSlaves(HashSet<RemoteSlave> slaves) {
-		this.slaves = slaves;
-	}
+    public void setSlaves(HashSet<RemoteSlave> slaves) {
+        this.slaves = slaves;
+    }
 
-	public HashSet<RemoteSlave> getExcludedSlaves() {
-		return excludedSlaves;
-	}
+    public HashSet<RemoteSlave> getExcludedSlaves() {
+        return excludedSlaves;
+    }
 
-	public void setExcludedSlaves(HashSet<RemoteSlave> excludedSlaves) {
-		this.excludedSlaves = excludedSlaves;
-	}
+    public void setExcludedSlaves(HashSet<RemoteSlave> excludedSlaves) {
+        this.excludedSlaves = excludedSlaves;
+    }
 }

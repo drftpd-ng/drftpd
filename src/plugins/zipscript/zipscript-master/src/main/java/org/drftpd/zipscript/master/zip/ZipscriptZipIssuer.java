@@ -17,10 +17,10 @@
  */
 package org.drftpd.zipscript.master.zip;
 
+import org.drftpd.common.network.AsyncCommandArgument;
+import org.drftpd.common.protocol.AbstractIssuer;
 import org.drftpd.master.exceptions.SlaveUnavailableException;
 import org.drftpd.master.slavemanagement.RemoteSlave;
-import org.drftpd.common.protocol.AbstractIssuer;
-import org.drftpd.common.network.AsyncCommandArgument;
 
 /**
  * @author djb61
@@ -28,24 +28,24 @@ import org.drftpd.common.network.AsyncCommandArgument;
  */
 public class ZipscriptZipIssuer extends AbstractIssuer {
 
-	@Override
-	public String getProtocolName() {
-		return "ZipscriptZipProtocol";
-	}
+    @Override
+    public String getProtocolName() {
+        return "ZipscriptZipProtocol";
+    }
 
-	public String issueZipCRCToSlave(RemoteSlave rslave, String path)throws SlaveUnavailableException {
-		String index = rslave.fetchIndex();
-		AsyncCommandArgument ac = new AsyncCommandArgument(index, "zipCRC", path);
-		rslave.sendCommand(ac);
+    public String issueZipCRCToSlave(RemoteSlave rslave, String path) throws SlaveUnavailableException {
+        String index = rslave.fetchIndex();
+        AsyncCommandArgument ac = new AsyncCommandArgument(index, "zipCRC", path);
+        rslave.sendCommand(ac);
 
-		return index;
-	}
+        return index;
+    }
 
-	public String issueZipDizInfoToSlave(RemoteSlave rslave, String path)throws SlaveUnavailableException {
-		String index = rslave.fetchIndex();
-		AsyncCommandArgument ac = new AsyncCommandArgument(index, "zipDiz", path);
-		rslave.sendCommand(ac);
+    public String issueZipDizInfoToSlave(RemoteSlave rslave, String path) throws SlaveUnavailableException {
+        String index = rslave.fetchIndex();
+        AsyncCommandArgument ac = new AsyncCommandArgument(index, "zipDiz", path);
+        rslave.sendCommand(ac);
 
-		return index;
-	}
+        return index;
+    }
 }

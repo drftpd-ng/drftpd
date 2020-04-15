@@ -24,14 +24,22 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Holds a queue of NukeItems to nuke
+ *
  * @author scitz0
  */
 public class DirsToNuke {
     private static DirsToNuke ref;
-    private ConcurrentLinkedQueue<NukeItem> _dirsToNuke;
+    private final ConcurrentLinkedQueue<NukeItem> _dirsToNuke;
 
     private DirsToNuke() {
         _dirsToNuke = new ConcurrentLinkedQueue<>();
+    }
+
+    public static synchronized DirsToNuke getDirsToNuke() {
+        if (ref == null)
+            // it's ok, we can call this constructor
+            ref = new DirsToNuke();
+        return ref;
     }
 
     public ConcurrentLinkedQueue<NukeItem> get() {
@@ -39,53 +47,46 @@ public class DirsToNuke {
     }
 
     public boolean add(NukeItem ni) {
-		for (NukeItem tmpni : _dirsToNuke) {
-			if (tmpni.getDir().equals(ni.getDir())) {
-				// Dir already exist in nuke queue
-				return false;
-			}
-		}
-		_dirsToNuke.add(ni);
-		return true;
+        for (NukeItem tmpni : _dirsToNuke) {
+            if (tmpni.getDir().equals(ni.getDir())) {
+                // Dir already exist in nuke queue
+                return false;
+            }
+        }
+        _dirsToNuke.add(ni);
+        return true;
     }
 
-	public boolean del(DirectoryHandle dir) {
-		return del(dir.getPath());
+    public boolean del(DirectoryHandle dir) {
+        return del(dir.getPath());
     }
 
-	public boolean del(String path) {
-		for (Iterator<NukeItem> iter = _dirsToNuke.iterator(); iter.hasNext();) {
-			NukeItem ni = iter.next();
-			DirectoryHandle dir = ni.getDir();
-			if (ni.isSubdir()) {
-				dir = dir.getParent();
-			}
-			if (dir.getPath().equals(path)) {
-				iter.remove();
-				return true;
-			}
-		}
-		return false;
+    public boolean del(String path) {
+        for (Iterator<NukeItem> iter = _dirsToNuke.iterator(); iter.hasNext(); ) {
+            NukeItem ni = iter.next();
+            DirectoryHandle dir = ni.getDir();
+            if (ni.isSubdir()) {
+                dir = dir.getParent();
+            }
+            if (dir.getPath().equals(path)) {
+                iter.remove();
+                return true;
+            }
+        }
+        return false;
     }
 
     public int clear() {
-		int itemsInList = _dirsToNuke.size();
+        int itemsInList = _dirsToNuke.size();
         _dirsToNuke.clear();
-		return itemsInList;
+        return itemsInList;
     }
 
-	public boolean empty() {
-		return _dirsToNuke.isEmpty();
-	}
+    public boolean empty() {
+        return _dirsToNuke.isEmpty();
+    }
 
-	public int size() {
-		return _dirsToNuke.size();
-	}
-
-    public static synchronized DirsToNuke getDirsToNuke() {
-      if (ref == null)
-          // it's ok, we can call this constructor
-          ref = new DirsToNuke();
-      return ref;
+    public int size() {
+        return _dirsToNuke.size();
     }
 }

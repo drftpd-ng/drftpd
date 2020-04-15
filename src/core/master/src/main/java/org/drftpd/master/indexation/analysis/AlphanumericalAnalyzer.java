@@ -17,10 +17,10 @@
  */
 package org.drftpd.master.indexation.analysis;
 
-import java.io.Reader;
-
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
+
+import java.io.Reader;
 
 /**
  * @author fr0w
@@ -28,8 +28,8 @@ import org.apache.lucene.analysis.TokenStream;
  */
 public class AlphanumericalAnalyzer extends Analyzer {
 
-	@Override
-	public TokenStream tokenStream(String fieldName, Reader input) {
-		return new AlphanumericalTokenizer(input);
-	}
+    @Override
+    public TokenStream tokenStream(String fieldName, Reader input) {
+        return new AlphanumericalTokenizer(input);
+    }
 }

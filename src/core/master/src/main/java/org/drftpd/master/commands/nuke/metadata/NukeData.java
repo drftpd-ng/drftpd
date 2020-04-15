@@ -34,146 +34,146 @@ public class NukeData implements Serializable {
 
     private String _user;
 
-	private String _path;
+    private String _path;
 
-	private String _reason;
+    private String _reason;
 
-	private Map<String, Long> _nukees;
+    private Map<String, Long> _nukees;
 
-	private int _multiplier;
+    private int _multiplier;
 
-	private long _amount;
+    private long _amount;
 
-	private long _size;
+    private long _size;
 
-	private long _time;
+    private long _time;
 
-	/**
-	 * @return the username of who issued the nuke/unnuke command.
-	 */
-	public String getUser() {
-		return _user;
-	}
+    /**
+     * @return the username of who issued the nuke/unnuke command.
+     */
+    public String getUser() {
+        return _user;
+    }
 
-	/**
-	 * Modifies the user name of who issued the nuke/unnuke command.
-	 *
-	 * @param user
-	 */
-	public void setUser(String user) {
-		_user = user;
-	}
+    /**
+     * Modifies the user name of who issued the nuke/unnuke command.
+     *
+     * @param user
+     */
+    public void setUser(String user) {
+        _user = user;
+    }
 
-	/**
-	 * @return the nuked path.
-	 */
-	public String getPath() {
-		return _path;
-	}
+    /**
+     * @return the nuked path.
+     */
+    public String getPath() {
+        return _path;
+    }
 
-	/**
-	 * Modifies the nuked path.
-	 *
-	 * @param path
-	 */
-	public void setPath(String path) {
-		_path = path;
-	}
+    /**
+     * Modifies the nuked path.
+     *
+     * @param path
+     */
+    public void setPath(String path) {
+        _path = path;
+    }
 
-	/**
-	 * @return the Nuke multiplier.
-	 */
-	public int getMultiplier() {
-		return _multiplier;
-	}
+    /**
+     * @return the Nuke multiplier.
+     */
+    public int getMultiplier() {
+        return _multiplier;
+    }
 
-	/**
-	 * Modifies the Nuke multiplier.
-	 *
-	 * @param multiplier
-	 */
-	public void setMultiplier(int multiplier) {
-		_multiplier = multiplier;
-	}
+    /**
+     * Modifies the Nuke multiplier.
+     *
+     * @param multiplier
+     */
+    public void setMultiplier(int multiplier) {
+        _multiplier = multiplier;
+    }
 
-	/**
-	 * @return the amount of nuked bytes.
-	 */
-	public long getAmount() {
-		return _amount;
-	}
+    /**
+     * @return the amount of nuked bytes.
+     */
+    public long getAmount() {
+        return _amount;
+    }
 
-	/**
-	 * Modifies the amount of nuked bytes.
-	 *
-	 * @param amount
-	 */
-	public void setAmount(long amount) {
-		_amount = amount;
-	}
+    /**
+     * Modifies the amount of nuked bytes.
+     *
+     * @param amount
+     */
+    public void setAmount(long amount) {
+        _amount = amount;
+    }
 
-	/**
-	 * @return the nuke/unnuke reason.
-	 */
-	public String getReason() {
-		return _reason;
-	}
+    /**
+     * @return the nuke/unnuke reason.
+     */
+    public String getReason() {
+        return _reason;
+    }
 
-	/**
-	 * Modifies the reason of the Nuke.
-	 *
-	 * @param reason
-	 */
-	public void setReason(String reason) {
-		_reason = reason;
-	}
+    /**
+     * Modifies the reason of the Nuke.
+     *
+     * @param reason
+     */
+    public void setReason(String reason) {
+        _reason = reason;
+    }
 
-	/**
-	 * @return the size of the nuked dir.
-	 */
-	public long getSize() {
-		return _size;
-	}
+    /**
+     * @return the size of the nuked dir.
+     */
+    public long getSize() {
+        return _size;
+    }
 
-	/**
-	 * Modifies the size of the nuked dir.
-	 *
-	 * @param size
-	 */
-	public void setSize(long size) {
-		_size = size;
-	}
+    /**
+     * Modifies the size of the nuked dir.
+     *
+     * @param size
+     */
+    public void setSize(long size) {
+        _size = size;
+    }
 
-	/**
-	 * @return the Map of the nuked users.
-	 */
-	public Map<String, Long> getNukees() {
-		return _nukees;
-	}
+    /**
+     * @return the Map of the nuked users.
+     */
+    public Map<String, Long> getNukees() {
+        return _nukees;
+    }
 
-	/**
-	 * Modifies the current Map of nuked users.
-	 *
-	 * @param map
-	 */
-	public void setNukees(Map<String, Long> map) {
-		_nukees = map;
-	}
+    /**
+     * Modifies the current Map of nuked users.
+     *
+     * @param map
+     */
+    public void setNukees(Map<String, Long> map) {
+        _nukees = map;
+    }
 
-	/**
-	 * @return the date of the nuke.
-	 */
-	public long getTime() {
-		return _time;
-	}
+    /**
+     * @return the date of the nuke.
+     */
+    public long getTime() {
+        return _time;
+    }
 
-	/**
-	 * Edit the date of nuke.
-	 *
-	 * @param time
-	 */
-	public void setTime(long time) {
-		_time = time;
-	}
+    /**
+     * Edit the date of nuke.
+     *
+     * @param time
+     */
+    public void setTime(long time) {
+        _time = time;
+    }
 
 }

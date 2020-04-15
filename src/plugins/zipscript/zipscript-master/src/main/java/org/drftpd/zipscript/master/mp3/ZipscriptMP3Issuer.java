@@ -17,10 +17,10 @@
  */
 package org.drftpd.zipscript.master.mp3;
 
+import org.drftpd.common.network.AsyncCommandArgument;
+import org.drftpd.common.protocol.AbstractIssuer;
 import org.drftpd.master.exceptions.SlaveUnavailableException;
 import org.drftpd.master.slavemanagement.RemoteSlave;
-import org.drftpd.common.protocol.AbstractIssuer;
-import org.drftpd.common.network.AsyncCommandArgument;
 
 /**
  * @author djb61
@@ -28,16 +28,16 @@ import org.drftpd.common.network.AsyncCommandArgument;
  */
 public class ZipscriptMP3Issuer extends AbstractIssuer {
 
-	@Override
-	public String getProtocolName() {
-		return "ZipscriptMP3Protocol";
-	}
+    @Override
+    public String getProtocolName() {
+        return "ZipscriptMP3Protocol";
+    }
 
-	public String issueMP3FileToSlave(RemoteSlave rslave, String path)throws SlaveUnavailableException {
-		String index = rslave.fetchIndex();
-		AsyncCommandArgument ac = new AsyncCommandArgument(index, "mp3file", path);
-		rslave.sendCommand(ac);
+    public String issueMP3FileToSlave(RemoteSlave rslave, String path) throws SlaveUnavailableException {
+        String index = rslave.fetchIndex();
+        AsyncCommandArgument ac = new AsyncCommandArgument(index, "mp3file", path);
+        rslave.sendCommand(ac);
 
-		return index;
-	}
+        return index;
+    }
 }

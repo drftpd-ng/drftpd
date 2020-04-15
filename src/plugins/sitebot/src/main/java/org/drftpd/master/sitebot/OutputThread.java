@@ -17,9 +17,8 @@
  */
 package org.drftpd.master.sitebot;
 
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
+import org.apache.logging.log4j.Logger;
 
 import java.io.BufferedWriter;
 
@@ -30,74 +29,71 @@ import java.io.BufferedWriter;
  */
 public class OutputThread extends Thread {
 
-	private static final Logger logger = LogManager.getLogger(OutputThread.class);
-	private SiteBot _bot = null;
-	private Queue _outQueue = null;
+    private static final Logger logger = LogManager.getLogger(OutputThread.class);
+    private SiteBot _bot = null;
+    private Queue _outQueue = null;
 
-	/**
-	 * Constructs an OutputThread for the underlying SiteBot.  All messages
-	 * sent to the IRC server are sent by this OutputThread to avoid hammering
-	 * the server.  Messages are sent immediately if possible.  If there are
-	 * multiple messages queued, then there is a delay imposed.
-	 * 
-	 * @param bot The underlying SiteBot instance.
-	 * @param outQueue The Queue from which we will obtain our messages.
-	 */
-	OutputThread(SiteBot bot, Queue outQueue) {
-		_bot = bot;
-		_outQueue = outQueue;
-		this.setName(bot.getBotName() + "-OutputThread");
-	}
+    /**
+     * Constructs an OutputThread for the underlying SiteBot.  All messages
+     * sent to the IRC server are sent by this OutputThread to avoid hammering
+     * the server.  Messages are sent immediately if possible.  If there are
+     * multiple messages queued, then there is a delay imposed.
+     *
+     * @param bot      The underlying SiteBot instance.
+     * @param outQueue The Queue from which we will obtain our messages.
+     */
+    OutputThread(SiteBot bot, Queue outQueue) {
+        _bot = bot;
+        _outQueue = outQueue;
+        this.setName(bot.getBotName() + "-OutputThread");
+    }
 
-	/**
-	 * A static method to write a line to a BufferedOutputStream and then pass
-	 * the line to the log method of the supplied SiteBot instance.
-	 * 
-	 * @param bot The underlying SiteBot instance.
-	 * @param line The line to be written. "\r\n" is appended to the end.
-	 */
-	static void sendRawLine(SiteBot bot, BufferedWriter bwriter, String line) {
-		if (line.length() > bot.getConfig().getMaxLineLength() - 2) {
-			line = line.substring(0, bot.getConfig().getMaxLineLength() - 2);
-		}
-		synchronized(bwriter) {
-			try {
-				bwriter.write(line + "\r\n");
-				bwriter.flush();
+    /**
+     * A static method to write a line to a BufferedOutputStream and then pass
+     * the line to the log method of the supplied SiteBot instance.
+     *
+     * @param bot  The underlying SiteBot instance.
+     * @param line The line to be written. "\r\n" is appended to the end.
+     */
+    static void sendRawLine(SiteBot bot, BufferedWriter bwriter, String line) {
+        if (line.length() > bot.getConfig().getMaxLineLength() - 2) {
+            line = line.substring(0, bot.getConfig().getMaxLineLength() - 2);
+        }
+        synchronized (bwriter) {
+            try {
+                bwriter.write(line + "\r\n");
+                bwriter.flush();
                 logger.debug("[RAW OUTPUT]: " + line);
-			}
-			catch (Exception e) {
-				logger.debug("We were unable to send message due to some exception", e);
-				// Silent response - just lose the line.
-			}
-		}
-	}
+            } catch (Exception e) {
+                logger.debug("We were unable to send message due to some exception", e);
+                // Silent response - just lose the line.
+            }
+        }
+    }
 
-	/**
-	 * This method starts the Thread consuming from the outgoing message
-	 * Queue and sending lines to the server.
-	 */
-	public void run() {
-		try {
-			boolean running = true;
-			while (running) {
-				if (_bot.getMessageDelay() > 0) {
-					// Small delay to prevent spamming of the channel
-					Thread.sleep(_bot.getMessageDelay());
-				}
+    /**
+     * This method starts the Thread consuming from the outgoing message
+     * Queue and sending lines to the server.
+     */
+    public void run() {
+        try {
+            boolean running = true;
+            while (running) {
+                if (_bot.getMessageDelay() > 0) {
+                    // Small delay to prevent spamming of the channel
+                    Thread.sleep(_bot.getMessageDelay());
+                }
 
-				String line = _outQueue.next();
-				if (line != null) {
-					_bot.sendRawLine(line);
-				}
-				else {
-					logger.debug("Got null line");
-					running = false;
-				}
-			}
-		}
-		catch (InterruptedException e) {
-			// Just let the method return naturally...
-		}
-	}
+                String line = _outQueue.next();
+                if (line != null) {
+                    _bot.sendRawLine(line);
+                } else {
+                    logger.debug("Got null line");
+                    running = false;
+                }
+            }
+        } catch (InterruptedException e) {
+            // Just let the method return naturally...
+        }
+    }
 }

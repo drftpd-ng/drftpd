@@ -21,15 +21,16 @@ import org.drftpd.master.vfs.DirectoryHandle;
 
 /**
  * Item that holds nuke data
+ *
  * @author scitz0
  */
 public class NukeItem {
-    private long _time;
-    private DirectoryHandle _dir;
-    private String _reason;
-    private int _mult;
-    private boolean _isSubdir;
-	private boolean _debug;
+    private final long _time;
+    private final DirectoryHandle _dir;
+    private final String _reason;
+    private final int _mult;
+    private final boolean _isSubdir;
+    private final boolean _debug;
 
     public NukeItem(long time, DirectoryHandle dir, String reason, int mult, boolean isSubdir, boolean debug) {
         _time = time;
@@ -37,7 +38,7 @@ public class NukeItem {
         _reason = reason;
         _mult = mult;
         _isSubdir = isSubdir;
-		_debug = debug;
+        _debug = debug;
     }
 
     public long getTime() {
@@ -60,7 +61,7 @@ public class NukeItem {
         return _isSubdir;
     }
 
-	public boolean debug() {
+    public boolean debug() {
         return _debug;
     }
 }

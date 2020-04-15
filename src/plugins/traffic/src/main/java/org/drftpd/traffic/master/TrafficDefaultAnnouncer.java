@@ -16,19 +16,18 @@
  */
 package org.drftpd.traffic.master;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.ResourceBundle;
-
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.common.util.Bytes;
+import org.drftpd.master.sitebot.AbstractAnnouncer;
+import org.drftpd.master.sitebot.AnnounceWriter;
 import org.drftpd.master.sitebot.SiteBot;
 import org.drftpd.master.sitebot.config.AnnounceConfig;
 import org.drftpd.master.util.ReplacerUtils;
 
-import org.drftpd.master.sitebot.AbstractAnnouncer;
-import org.drftpd.master.sitebot.AnnounceWriter;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.ResourceBundle;
 
 /**
  * @author CyBeR
@@ -39,7 +38,7 @@ public class TrafficDefaultAnnouncer extends AbstractAnnouncer {
     private AnnounceConfig _config;
 
     private ResourceBundle _bundle;
-    
+
     public void initialise(AnnounceConfig config, ResourceBundle bundle) {
         _config = config;
         _bundle = bundle;
@@ -75,9 +74,9 @@ public class TrafficDefaultAnnouncer extends AbstractAnnouncer {
                 env.put("speed", Bytes.formatBytes(event.getSpeed()) + "/s");
 
                 if (event.isStor()) {
-                    sayOutput(ReplacerUtils.jprintf( "traffic.default.up", env, _bundle), writer);
+                    sayOutput(ReplacerUtils.jprintf("traffic.default.up", env, _bundle), writer);
                 } else {
-                    sayOutput(ReplacerUtils.jprintf( "traffic.default.dn", env, _bundle), writer);
+                    sayOutput(ReplacerUtils.jprintf("traffic.default.dn", env, _bundle), writer);
                 }
             }
         }

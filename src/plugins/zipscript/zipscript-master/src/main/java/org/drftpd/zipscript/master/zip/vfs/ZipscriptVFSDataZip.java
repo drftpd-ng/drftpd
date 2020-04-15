@@ -19,19 +19,19 @@ package org.drftpd.zipscript.master.zip.vfs;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.drftpd.zipscript.common.zip.AsyncResponseDizInfo;
-import org.drftpd.zipscript.common.zip.DizInfo;
-import org.drftpd.zipscript.common.zip.DizStatus;
-import org.drftpd.zipscript.master.zip.ZipTools;
-import org.drftpd.master.GlobalContext;
 import org.drftpd.common.dynamicdata.KeyNotFoundException;
+import org.drftpd.common.exceptions.RemoteIOException;
+import org.drftpd.master.GlobalContext;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.exceptions.SlaveUnavailableException;
 import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.master.vfs.InodeHandle;
-import org.drftpd.common.exceptions.RemoteIOException;
+import org.drftpd.zipscript.common.zip.AsyncResponseDizInfo;
+import org.drftpd.zipscript.common.zip.DizInfo;
+import org.drftpd.zipscript.common.zip.DizStatus;
+import org.drftpd.zipscript.master.zip.ZipTools;
 import org.drftpd.zipscript.master.zip.ZipscriptZipIssuer;
 
 import java.io.FileNotFoundException;
@@ -43,61 +43,61 @@ import java.io.IOException;
  */
 public class ZipscriptVFSDataZip {
 
-	private static final Logger logger = LogManager.getLogger(ZipscriptVFSDataZip.class);
-	private DirectoryHandle _dir;
+    private static final Logger logger = LogManager.getLogger(ZipscriptVFSDataZip.class);
+    private final DirectoryHandle _dir;
 
-	public ZipscriptVFSDataZip(DirectoryHandle dir) {
-		_dir = dir;
-	}
+    public ZipscriptVFSDataZip(DirectoryHandle dir) {
+        _dir = dir;
+    }
 
-	public DizInfo getDizInfo() throws IOException, NoAvailableSlaveException {
-		try {
-			return getDizInfoFromInode(_dir);
-		} catch (KeyNotFoundException e1) {
-			// bah, let's load it
-		}
-		// There is no existing dizinfo so we need to retrieve it and set it
-		// Find the info for the first zip file we come across and use that
-		DizInfo dizInfo = null;
-		for (FileHandle file : _dir.getFilesUnchecked()) {
-			if (file.getName().toLowerCase().endsWith(".zip") && file.getSize() > 0 && file.getXfertime() != -1) {
-				RemoteSlave rslave = file.getASlaveForFunction();
-				String index;
-				try {
-					index = getZipIssuer().issueZipDizInfoToSlave(rslave, file.getPath());
-					dizInfo = fetchDizInfoFromIndex(rslave, index);
-				} catch (SlaveUnavailableException e) {
-					// okay, it went offline while trying, try next file
-				} catch (RemoteIOException e) {
-					// continue, the next zip might work
-				}
-				if (dizInfo != null && dizInfo.isValid()) {
-					break;
-				}
-			}
-		}
-		if (dizInfo != null) {
-			if (dizInfo.isValid()) {
-				_dir.addPluginMetaData(DizInfo.DIZINFO, dizInfo);
-				return dizInfo;
-			}
-		}
-		throw new FileNotFoundException("No usable zip files found in directory");
-	}
+    public static ZipscriptZipIssuer getZipIssuer() {
+        return (ZipscriptZipIssuer) GlobalContext.getGlobalContext().getSlaveManager().getProtocolCentral().getIssuerForClass(ZipscriptZipIssuer.class);
+    }
 
-	public DizStatus getDizStatus() throws IOException, NoAvailableSlaveException {
-		return ZipTools.getDizStatus(getDizInfo(), _dir);
-	}
+    public DizInfo getDizInfo() throws IOException, NoAvailableSlaveException {
+        try {
+            return getDizInfoFromInode(_dir);
+        } catch (KeyNotFoundException e1) {
+            // bah, let's load it
+        }
+        // There is no existing dizinfo so we need to retrieve it and set it
+        // Find the info for the first zip file we come across and use that
+        DizInfo dizInfo = null;
+        for (FileHandle file : _dir.getFilesUnchecked()) {
+            if (file.getName().toLowerCase().endsWith(".zip") && file.getSize() > 0 && file.getXfertime() != -1) {
+                RemoteSlave rslave = file.getASlaveForFunction();
+                String index;
+                try {
+                    index = getZipIssuer().issueZipDizInfoToSlave(rslave, file.getPath());
+                    dizInfo = fetchDizInfoFromIndex(rslave, index);
+                } catch (SlaveUnavailableException e) {
+                    // okay, it went offline while trying, try next file
+                } catch (RemoteIOException e) {
+                    // continue, the next zip might work
+                }
+                if (dizInfo != null && dizInfo.isValid()) {
+                    break;
+                }
+            }
+        }
+        if (dizInfo != null) {
+            if (dizInfo.isValid()) {
+                _dir.addPluginMetaData(DizInfo.DIZINFO, dizInfo);
+                return dizInfo;
+            }
+        }
+        throw new FileNotFoundException("No usable zip files found in directory");
+    }
 
-	private DizInfo getDizInfoFromInode(InodeHandle vfsInodeHandle) throws FileNotFoundException, KeyNotFoundException {
-		return vfsInodeHandle.getPluginMetaData(DizInfo.DIZINFO);
-	}
+    public DizStatus getDizStatus() throws IOException, NoAvailableSlaveException {
+        return ZipTools.getDizStatus(getDizInfo(), _dir);
+    }
 
-	private DizInfo fetchDizInfoFromIndex(RemoteSlave rslave, String index) throws RemoteIOException, SlaveUnavailableException {
-		return ((AsyncResponseDizInfo) rslave.fetchResponse(index)).getDizInfo();
-	}
+    private DizInfo getDizInfoFromInode(InodeHandle vfsInodeHandle) throws FileNotFoundException, KeyNotFoundException {
+        return vfsInodeHandle.getPluginMetaData(DizInfo.DIZINFO);
+    }
 
-	public static ZipscriptZipIssuer getZipIssuer() {
-		return (ZipscriptZipIssuer) GlobalContext.getGlobalContext().getSlaveManager().getProtocolCentral().getIssuerForClass(ZipscriptZipIssuer.class);
-	}
+    private DizInfo fetchDizInfoFromIndex(RemoteSlave rslave, String index) throws RemoteIOException, SlaveUnavailableException {
+        return ((AsyncResponseDizInfo) rslave.fetchResponse(index)).getDizInfo();
+    }
 }

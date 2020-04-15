@@ -25,23 +25,23 @@ import org.drftpd.common.network.AsyncResponse;
  */
 @SuppressWarnings("serial")
 public class AsyncResponseSFVInfo extends AsyncResponse {
-	private SFVInfo _sfv;
+    private final SFVInfo _sfv;
 
-	public AsyncResponseSFVInfo(String index, SFVInfo sfv) {
-		super(index);
+    public AsyncResponseSFVInfo(String index, SFVInfo sfv) {
+        super(index);
 
-		if (sfv == null) {
-			throw new IllegalArgumentException("sfv cannot be null");
-		}
+        if (sfv == null) {
+            throw new IllegalArgumentException("sfv cannot be null");
+        }
 
-		_sfv = sfv;
-	}
+        _sfv = sfv;
+    }
 
-	public SFVInfo getSFV() {
-		return _sfv;
-	}
+    public SFVInfo getSFV() {
+        return _sfv;
+    }
 
-	public String toString() {
-		return getClass().getName();
-	}
+    public String toString() {
+        return getClass().getName();
+    }
 }

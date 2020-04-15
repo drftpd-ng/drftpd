@@ -17,13 +17,13 @@
  */
 package org.drftpd.speedtestnet.master.protocol;
 
+import org.drftpd.common.exceptions.RemoteIOException;
 import org.drftpd.master.GlobalContext;
-import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.master.exceptions.SlaveUnavailableException;
-import org.drftpd.speedtestnet.master.SpeedTestServer;
+import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.speedtestnet.common.AsyncResponseSpeedTestInfo;
 import org.drftpd.speedtestnet.common.SpeedTestInfo;
-import org.drftpd.common.exceptions.RemoteIOException;
+import org.drftpd.speedtestnet.master.SpeedTestServer;
 
 import java.util.HashMap;
 import java.util.concurrent.Callable;
@@ -34,40 +34,40 @@ import java.util.concurrent.ExecutionException;
  */
 public class SpeedTestCallable implements Callable<SpeedTestInfo> {
 
-	private RemoteSlave _rslave;
-	private HashMap<String, SpeedTestServer> _testServers;
+    private final RemoteSlave _rslave;
+    private final HashMap<String, SpeedTestServer> _testServers;
 
-	public SpeedTestCallable(RemoteSlave rslave, HashMap<String, SpeedTestServer> testServers) {
-		_rslave = rslave;
-		_testServers = testServers;
-	}
+    public SpeedTestCallable(RemoteSlave rslave, HashMap<String, SpeedTestServer> testServers) {
+        _rslave = rslave;
+        _testServers = testServers;
+    }
 
-	@Override
-	public SpeedTestInfo call() throws Exception {
-		// Send speedtest request to slave
-		SpeedTestInfo result;
-		try {
-			String testServerURLs = "";
-			for (String url : _testServers.keySet()) {
-				testServerURLs += " " + url;
-			}
-			String index = getSpeedTestIssuer().issueSpeedTestToSlave(_rslave, testServerURLs.trim());
-			result = fetchSpeedTestInfoFromIndex(_rslave, index);
-		} catch (SlaveUnavailableException e) {
-			throw new ExecutionException(_rslave.getName() + " went offline trying to run speedtest!", e);
-		} catch (RemoteIOException e) {
-			throw new ExecutionException("Error: " + e.getMessage(), e);
-		}
-		result.setSlaveName(_rslave.getName());
-		return result;
-	}
+    @Override
+    public SpeedTestInfo call() throws Exception {
+        // Send speedtest request to slave
+        SpeedTestInfo result;
+        try {
+            String testServerURLs = "";
+            for (String url : _testServers.keySet()) {
+                testServerURLs += " " + url;
+            }
+            String index = getSpeedTestIssuer().issueSpeedTestToSlave(_rslave, testServerURLs.trim());
+            result = fetchSpeedTestInfoFromIndex(_rslave, index);
+        } catch (SlaveUnavailableException e) {
+            throw new ExecutionException(_rslave.getName() + " went offline trying to run speedtest!", e);
+        } catch (RemoteIOException e) {
+            throw new ExecutionException("Error: " + e.getMessage(), e);
+        }
+        result.setSlaveName(_rslave.getName());
+        return result;
+    }
 
-	private SpeedTestInfo fetchSpeedTestInfoFromIndex(RemoteSlave rslave, String index) throws RemoteIOException, SlaveUnavailableException {
-		return ((AsyncResponseSpeedTestInfo) rslave.fetchResponse(index)).getSpeedTest();
-	}
+    private SpeedTestInfo fetchSpeedTestInfoFromIndex(RemoteSlave rslave, String index) throws RemoteIOException, SlaveUnavailableException {
+        return ((AsyncResponseSpeedTestInfo) rslave.fetchResponse(index)).getSpeedTest();
+    }
 
-	private SpeedTestIssuer getSpeedTestIssuer() {
-		return (SpeedTestIssuer) GlobalContext.getGlobalContext().getSlaveManager()
-				.getProtocolCentral().getIssuerForClass(SpeedTestIssuer.class);
-	}
+    private SpeedTestIssuer getSpeedTestIssuer() {
+        return (SpeedTestIssuer) GlobalContext.getGlobalContext().getSlaveManager()
+                .getProtocolCentral().getIssuerForClass(SpeedTestIssuer.class);
+    }
 }

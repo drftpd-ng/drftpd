@@ -16,11 +16,11 @@
  */
 package org.drftpd.zipscript.master.zip;
 
+import org.drftpd.common.exceptions.RemoteIOException;
 import org.drftpd.master.exceptions.SlaveUnavailableException;
 import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.FileHandle;
-import org.drftpd.common.exceptions.RemoteIOException;
 import org.drftpd.zipscript.common.zip.AsyncResponseZipCRCInfo;
 import org.drftpd.zipscript.common.zip.DizInfo;
 import org.drftpd.zipscript.common.zip.DizStatus;
@@ -36,78 +36,78 @@ import java.util.Collection;
  */
 public class ZipTools {
 
-	public static Collection<FileHandle> getZipFiles(DirectoryHandle dir) 
-	throws IOException, FileNotFoundException {
-		Collection<FileHandle> files = new ArrayList<>();
+    public static Collection<FileHandle> getZipFiles(DirectoryHandle dir)
+            throws IOException {
+        Collection<FileHandle> files = new ArrayList<>();
 
-		for (FileHandle file : dir.getFilesUnchecked()) {
-			if (file.getName().toLowerCase().endsWith(".zip") && file.getXfertime() != -1) {
-				files.add(file);
-			}
-		}
-		return files;
-	}
+        for (FileHandle file : dir.getFilesUnchecked()) {
+            if (file.getName().toLowerCase().endsWith(".zip") && file.getXfertime() != -1) {
+                files.add(file);
+            }
+        }
+        return files;
+    }
 
-	public static long getZipTotalBytes(DirectoryHandle dir) 
-	throws IOException, FileNotFoundException {
-		long totalBytes = 0;
+    public static long getZipTotalBytes(DirectoryHandle dir)
+            throws IOException {
+        long totalBytes = 0;
 
-		for (FileHandle file : getZipFiles(dir)) {
-			totalBytes += file.getSize();
-		}
-		return totalBytes;
-	}
+        for (FileHandle file : getZipFiles(dir)) {
+            totalBytes += file.getSize();
+        }
+        return totalBytes;
+    }
 
-	public static long getZipLargestFileBytes(DirectoryHandle dir) 
-	throws IOException, FileNotFoundException {
-		long largestFileBytes = 0;
+    public static long getZipLargestFileBytes(DirectoryHandle dir)
+            throws IOException {
+        long largestFileBytes = 0;
 
-		for (FileHandle file : getZipFiles(dir)) {
-			if (file.getSize() > largestFileBytes) {
-				largestFileBytes = file.getSize();
-			}
-		}
-		return largestFileBytes;
-	}
+        for (FileHandle file : getZipFiles(dir)) {
+            if (file.getSize() > largestFileBytes) {
+                largestFileBytes = file.getSize();
+            }
+        }
+        return largestFileBytes;
+    }
 
-	public static long getZipTotalXfertime(DirectoryHandle dir)
-	throws IOException, FileNotFoundException {
-		long totalXfertime = 0;
+    public static long getZipTotalXfertime(DirectoryHandle dir)
+            throws IOException {
+        long totalXfertime = 0;
 
-		for (FileHandle file : getZipFiles(dir)) {
-			totalXfertime += file.getXfertime();
-		}
-		return totalXfertime;
-	}
+        for (FileHandle file : getZipFiles(dir)) {
+            totalXfertime += file.getXfertime();
+        }
+        return totalXfertime;
+    }
 
-	public static long getXferspeed(DirectoryHandle dir)
-	throws IOException, FileNotFoundException {
-		long totalXfertime = getZipTotalXfertime(dir);
-		if (totalXfertime / 1000 == 0) {
-			return 0;
-		}
+    public static long getXferspeed(DirectoryHandle dir)
+            throws IOException {
+        long totalXfertime = getZipTotalXfertime(dir);
+        if (totalXfertime / 1000 == 0) {
+            return 0;
+        }
 
-		return getZipTotalBytes(dir) / (totalXfertime / 1000);
-	}
+        return getZipTotalBytes(dir) / (totalXfertime / 1000);
+    }
 
-	public static boolean getZipIntegrityFromIndex(RemoteSlave rslave, String index) throws RemoteIOException, SlaveUnavailableException {
-		return ((AsyncResponseZipCRCInfo) rslave.fetchResponse(index)).isOk();
-	}
+    public static boolean getZipIntegrityFromIndex(RemoteSlave rslave, String index) throws RemoteIOException, SlaveUnavailableException {
+        return ((AsyncResponseZipCRCInfo) rslave.fetchResponse(index)).isOk();
+    }
 
-	public static DizStatus getDizStatus(DizInfo dizInfo, DirectoryHandle dir)
-	throws IOException, FileNotFoundException {
-		int offline = 0;
-		int present = 0;
-		for (FileHandle file : dir.getFilesUnchecked()) {
-			if (file.isFile() && file.getName().toLowerCase().endsWith(".zip")) {
-				if (!file.isUploading()) {
-					present++;
-				}
-				if (!file.isAvailable()) {
-					offline++;
-				}
-			}
-		}
-		return new DizStatus(dizInfo.getTotal(), offline, present);
-	}
+    public static DizStatus getDizStatus(DizInfo dizInfo, DirectoryHandle dir)
+            throws IOException {
+        int offline = 0;
+        int present = 0;
+        for (FileHandle file : dir.getFilesUnchecked()) {
+            if (file.isFile() && file.getName().toLowerCase().endsWith(".zip")) {
+                if (!file.isUploading()) {
+                    present++;
+                }
+                if (!file.isAvailable()) {
+                    offline++;
+                }
+            }
+        }
+        return new DizStatus(dizInfo.getTotal(), offline, present);
+    }
 }

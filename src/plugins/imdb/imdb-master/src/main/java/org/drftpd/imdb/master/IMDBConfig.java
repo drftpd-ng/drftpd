@@ -36,33 +36,31 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * @author scitz0
  */
 public class IMDBConfig {
-    private static IMDBConfig ourInstance;
-
     private static final Logger logger = LogManager.getLogger(IMDBConfig.class);
-
-    private ArrayList<SectionInterface> _rSections = new ArrayList<>();
-    private ArrayList<SectionInterface> _sSDSections = new ArrayList<>();
-    private ArrayList<SectionInterface> _sHDSections = new ArrayList<>();
+    private static IMDBConfig ourInstance;
+    private final ArrayList<SectionInterface> _rSections = new ArrayList<>();
+    private final ArrayList<SectionInterface> _sSDSections = new ArrayList<>();
+    private final ArrayList<SectionInterface> _sHDSections = new ArrayList<>();
     private int _startDelay, _endDelay;
     private String _exclude;
-    private ArrayList<String> _filters = new ArrayList<>();
+    private final ArrayList<String> _filters = new ArrayList<>();
     private boolean _bar_enabled, _bar_directory, _sRelease;
 
-    private IMDBThread _imdbThread = new IMDBThread();
-    private ConcurrentLinkedQueue<DirectoryHandle> _parseQueue = new ConcurrentLinkedQueue<>();
-
-    public static IMDBConfig getInstance() {
-        if (ourInstance == null)
-            // it's ok, we can call this constructor
-            ourInstance = new IMDBConfig();
-        return ourInstance;
-    }
+    private final IMDBThread _imdbThread = new IMDBThread();
+    private final ConcurrentLinkedQueue<DirectoryHandle> _parseQueue = new ConcurrentLinkedQueue<>();
 
     private IMDBConfig() {
         // Subscribe to events
         AnnotationProcessor.process(this);
         loadConfig();
         _imdbThread.start();
+    }
+
+    public static IMDBConfig getInstance() {
+        if (ourInstance == null)
+            // it's ok, we can call this constructor
+            ourInstance = new IMDBConfig();
+        return ourInstance;
     }
 
     private void loadConfig() {

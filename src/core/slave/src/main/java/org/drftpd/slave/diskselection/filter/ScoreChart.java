@@ -25,121 +25,122 @@ import java.util.ArrayList;
 
 /**
  * Keep RootScore organized
- * 
+ *
  * @author fr0w
  * @version $Id$
  */
 public class ScoreChart {
 
-	private RootCollection _rootCollection;
+    private final RootCollection _rootCollection;
 
-	private ArrayList<RootScore> _scoreList;
+    private final ArrayList<RootScore> _scoreList;
 
-	/**
-	 * Creates the ArrayList<RootScore>
-	 * 
-	 * @param rootCollection
-	 */
-	public ScoreChart(RootCollection rootCollection) {
-		_rootCollection = rootCollection;
-		_scoreList = new ArrayList<>();
+    /**
+     * Creates the ArrayList<RootScore>
+     *
+     * @param rootCollection
+     */
+    public ScoreChart(RootCollection rootCollection) {
+        _rootCollection = rootCollection;
+        _scoreList = new ArrayList<>();
 
-		for (Root root : _rootCollection.getRootList()) {
-			_scoreList.add(new RootScore(root, 0));
-		}
-	}
+        for (Root root : _rootCollection.getRootList()) {
+            _scoreList.add(new RootScore(root, 0));
+        }
+    }
 
-	/**
-	 * @param root
-	 * @return <code>root</code> score.
-	 */
-	public long getRootScore(Root root) {
-		return getRootScoreObject(root).getScore();
-	}
+    /**
+     * @param root
+     * @return <code>root</code> score.
+     */
+    public long getRootScore(Root root) {
+        return getRootScoreObject(root).getScore();
+    }
 
-	/**
-	 * @return ArrayList<RootScore>
-	 */
-	public ArrayList<RootScore> getScoreList() {
-		return _scoreList;
-	}
+    /**
+     * @return ArrayList<RootScore>
+     */
+    public ArrayList<RootScore> getScoreList() {
+        return _scoreList;
+    }
 
-	/**
-	 * Adds <code>score</score> to <code>root</code>.
-	 * @param root
-	 * @param score
-	 */
-	public void addScore(Root root, long score) {
-		getRootScoreObject(root).addScore(score);
-	}
+    /**
+     * Adds <code>score</score> to <code>root</code>.
+     *
+     * @param root
+     * @param score
+     */
+    public void addScore(Root root, long score) {
+        getRootScoreObject(root).addScore(score);
+    }
 
-	/**
-	 * Removes <code>root</code> from the ScoreChart.
-	 * 
-	 * @param root
-	 */
-	public void removeFromChart(Root root) {
-		_scoreList.remove(getRootScoreObject(root));
-	}
+    /**
+     * Removes <code>root</code> from the ScoreChart.
+     *
+     * @param root
+     */
+    public void removeFromChart(Root root) {
+        _scoreList.remove(getRootScoreObject(root));
+    }
 
-	/**
-	 * Iterates thought the ScoreChart and trying to match <code>root</code>
-	 * 
-	 * @param root
-	 */
-	public RootScore getRootScoreObject(Root root) {
-		if (root == null) {
-			throw new IllegalArgumentException("Argument to getRootScoreObject() cannot be null");
-		}
-		
-		for (RootScore rootScore : _scoreList) {
-			Root o = rootScore.getRoot();
-			if (o.equals(root))
-				return rootScore;
-		}
-		// should never happen;
-		return null;
-	}
-	
-	public String toString() {
-		StringBuilder sb = new StringBuilder();
-		sb.append(getClass().getName()+'[');
-		
-		for (int i = 0; i < _scoreList.size(); i++) {
-			RootScore rs = _scoreList.get(i);
-			sb.append(rs.getRoot().toString()+'='+rs.getScore());
-			
-			if (i+1 != _scoreList.size()) {
-				sb.append(',');
-			}
-		}
-		
-		sb.append(']');
-		
-		return sb.toString();
-	}
+    /**
+     * Iterates thought the ScoreChart and trying to match <code>root</code>
+     *
+     * @param root
+     */
+    public RootScore getRootScoreObject(Root root) {
+        if (root == null) {
+            throw new IllegalArgumentException("Argument to getRootScoreObject() cannot be null");
+        }
 
-	public static class RootScore {
+        for (RootScore rootScore : _scoreList) {
+            Root o = rootScore.getRoot();
+            if (o.equals(root))
+                return rootScore;
+        }
+        // should never happen;
+        return null;
+    }
 
-		private Root _root;
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(getClass().getName() + '[');
 
-		private long _score;
+        for (int i = 0; i < _scoreList.size(); i++) {
+            RootScore rs = _scoreList.get(i);
+            sb.append(rs.getRoot().toString() + '=' + rs.getScore());
 
-		public RootScore(Root root, long score) {
-			_root = root;
-			_score = score;
-		}
+            if (i + 1 != _scoreList.size()) {
+                sb.append(',');
+            }
+        }
 
-		public void addScore(long score) {
-			_score += score;
-		}
+        sb.append(']');
 
-		public long getScore() {
-			return _score;
-		}
+        return sb.toString();
+    }
 
-		public Root getRoot() {
-			return _root;
-		}
-	}
+    public static class RootScore {
+
+        private final Root _root;
+
+        private long _score;
+
+        public RootScore(Root root, long score) {
+            _root = root;
+            _score = score;
+        }
+
+        public void addScore(long score) {
+            _score += score;
+        }
+
+        public long getScore() {
+            return _score;
+        }
+
+        public Root getRoot() {
+            return _root;
+        }
+    }
 }

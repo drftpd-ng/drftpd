@@ -23,21 +23,21 @@ package org.drftpd.master.exceptions;
  */
 public class SlaveFileException extends Exception {
 
-	private static final long serialVersionUID = 1053787666019821920L;
+    private static final long serialVersionUID = 1053787666019821920L;
 
-	public SlaveFileException() {
-		super();
-	}
+    public SlaveFileException() {
+        super();
+    }
 
-	public SlaveFileException(String message) {
-		super(message);
-	}
+    public SlaveFileException(String message) {
+        super(message);
+    }
 
-	public SlaveFileException(Throwable cause) {
-		super(cause);
-	}
+    public SlaveFileException(Throwable cause) {
+        super(cause);
+    }
 
-	public SlaveFileException(String message, Throwable cause) {
-		super(message, cause);
-	}
+    public SlaveFileException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

@@ -25,19 +25,19 @@ import org.drftpd.common.network.AsyncResponse;
 @SuppressWarnings("serial")
 public class AsyncResponseFlacInfo extends AsyncResponse {
 
-	private FlacInfo _flacinfo;
+    private final FlacInfo _flacinfo;
 
-	public AsyncResponseFlacInfo(String index, FlacInfo flacinfo) {
-		super(index);
+    public AsyncResponseFlacInfo(String index, FlacInfo flacinfo) {
+        super(index);
 
-		_flacinfo = flacinfo;
-	}
+        _flacinfo = flacinfo;
+    }
 
-	public FlacInfo getFlacInfo() {
-		return _flacinfo;
-	}
+    public FlacInfo getFlacInfo() {
+        return _flacinfo;
+    }
 
-	public String toString() {
-		return getClass().getName();
-	}
+    public String toString() {
+        return getClass().getName();
+    }
 }

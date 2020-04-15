@@ -21,12 +21,13 @@ import org.drftpd.master.vfs.VirtualFileSystemInode;
 
 /**
  * This event is fired whenever an inode is created.
+ *
  * @author fr0w
  * @version $Id$
  */
 public class VirtualFileSystemInodeCreatedEvent extends VirtualFileSystemEvent {
-	
-	public VirtualFileSystemInodeCreatedEvent(VirtualFileSystemInode inode, String path) {
-		super(inode, path);
-	}
+
+    public VirtualFileSystemInodeCreatedEvent(VirtualFileSystemInode inode, String path) {
+        super(inode, path);
+    }
 }

@@ -23,65 +23,72 @@ import java.util.ArrayList;
 
 /**
  * Holds all general AutoNuke settings
+ *
  * @author scitz0
  */
 public class AutoNukeSettings {
     private static AutoNukeSettings ref;
-    private ArrayList<SectionInterface> _excludedSections;
+    private final ArrayList<SectionInterface> _excludedSections;
     private String _excludedDirs, _excludedSubDirs;
-	private boolean _debug;
-	private String _nukeUser;
+    private boolean _debug;
+    private String _nukeUser;
 
-	private AutoNukeSettings() {
+    private AutoNukeSettings() {
         _excludedSections = new ArrayList<>();
-		_excludedDirs = "";
-		_excludedSubDirs = "";
-		_debug = true;
-		_nukeUser = "drftpd";
+        _excludedDirs = "";
+        _excludedSubDirs = "";
+        _debug = true;
+        _nukeUser = "drftpd";
     }
 
-	public void addExcludedSection(SectionInterface sec) {
-		_excludedSections.add(sec);
-	}
-    public ArrayList<SectionInterface> getExcludedSections() {
-		return _excludedSections;
-	}
-	public void clearExcludedSections() {
-		_excludedSections.clear();
-	}
-
-	public void setExcludedDirs(String excludedDirs) {
-		_excludedDirs = excludedDirs;
-	}
-	public String getExcludedDirs() {
-		return _excludedDirs;
-	}
-
-	public void setExcludedSubDirs(String excludedSubDirs) {
-		_excludedSubDirs = excludedSubDirs;
-	}
-	public String getExcludedSubDirs() {
-		return _excludedSubDirs;
-	}
-
-	public void setDebug(boolean debug) {
-		_debug = debug;
-	}
-	public boolean debug() {
-		return _debug;
-	}
-
-	public void setNukeUser(String nukeUser) {
-		_nukeUser = nukeUser;
-	}
-	public String getNukeUser() {
-		return _nukeUser;
-	}
-
     public static synchronized AutoNukeSettings getSettings() {
-      if (ref == null)
-          // it's ok, we can call this constructor
-          ref = new AutoNukeSettings();
-      return ref;
+        if (ref == null)
+            // it's ok, we can call this constructor
+            ref = new AutoNukeSettings();
+        return ref;
+    }
+
+    public void addExcludedSection(SectionInterface sec) {
+        _excludedSections.add(sec);
+    }
+
+    public ArrayList<SectionInterface> getExcludedSections() {
+        return _excludedSections;
+    }
+
+    public void clearExcludedSections() {
+        _excludedSections.clear();
+    }
+
+    public String getExcludedDirs() {
+        return _excludedDirs;
+    }
+
+    public void setExcludedDirs(String excludedDirs) {
+        _excludedDirs = excludedDirs;
+    }
+
+    public String getExcludedSubDirs() {
+        return _excludedSubDirs;
+    }
+
+    public void setExcludedSubDirs(String excludedSubDirs) {
+        _excludedSubDirs = excludedSubDirs;
+    }
+
+    public void setDebug(boolean debug) {
+        _debug = debug;
+    }
+
+    public boolean debug() {
+        return _debug;
+    }
+
+    public String getNukeUser() {
+        return _nukeUser;
+    }
+
+    public void setNukeUser(String nukeUser) {
+        _nukeUser = nukeUser;
     }
 }

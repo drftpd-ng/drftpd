@@ -21,24 +21,25 @@ import org.drftpd.master.vfs.VirtualFileSystemInode;
 
 /**
  * This event is fired whenever the size of an inode changes
+ *
  * @author scitz0
  * @version $Id$
  */
 public class VirtualFileSystemLastModifiedEvent extends VirtualFileSystemEvent {
 
-	private long _lastmodified;
+    private final long _lastmodified;
 
-	public VirtualFileSystemLastModifiedEvent(VirtualFileSystemInode inode, String path, long lastmodified) {
-		super(inode, path);
-		
-		_lastmodified = lastmodified;
-	}
+    public VirtualFileSystemLastModifiedEvent(VirtualFileSystemInode inode, String path, long lastmodified) {
+        super(inode, path);
 
-	/**
-	 * @return the new size of the inode
-	 */
-	public long getLastmodified() {
-		return _lastmodified;
-	}
+        _lastmodified = lastmodified;
+    }
+
+    /**
+     * @return the new size of the inode
+     */
+    public long getLastmodified() {
+        return _lastmodified;
+    }
 
 }

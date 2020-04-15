@@ -10,6 +10,8 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 public @interface CommandHook {
     String[] commands();
+
     int priority() default 1;
+
     HookType type() default HookType.POST;
 }

@@ -24,13 +24,13 @@ package org.drftpd.common.network;
  * @version $Id$
  */
 @SuppressWarnings("serial")
-public class AsyncCommand extends AsyncCommandArgument  {
-	public AsyncCommand(String index, String name) {
-		super(index,name, "");
-	}
+public class AsyncCommand extends AsyncCommandArgument {
+    public AsyncCommand(String index, String name) {
+        super(index, name, "");
+    }
 
-	public String toString() {
-		return getClass().getName() + "[index=" + getIndex() + ",name="
-				+ getName() + "]";
-	}
+    public String toString() {
+        return getClass().getName() + "[index=" + getIndex() + ",name="
+                + getName() + "]";
+    }
 }

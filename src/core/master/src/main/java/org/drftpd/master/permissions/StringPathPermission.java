@@ -27,14 +27,14 @@ import java.util.Collection;
  * @version $Id$
  */
 public class StringPathPermission extends PathPermission {
-	private String _path;
+    private final String _path;
 
-	public StringPathPermission(String path, Collection<String> users) {
-		super(users);
-		_path = VirtualFileSystem.fixPath(path);
-	}
+    public StringPathPermission(String path, Collection<String> users) {
+        super(users);
+        _path = VirtualFileSystem.fixPath(path);
+    }
 
-	public boolean checkPath(InodeHandle inode) {
-		return inode.getPath().startsWith(_path);
-	}
+    public boolean checkPath(InodeHandle inode) {
+        return inode.getPath().startsWith(_path);
+    }
 }

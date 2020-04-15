@@ -22,8 +22,10 @@ import org.apache.logging.log4j.Logger;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.usermanager.User;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.StringTokenizer;
 
 /**
  * @author mog
@@ -47,6 +49,16 @@ public class Permission {
 
     public Permission(String permissionString) {
         this(makeUsers(new StringTokenizer(permissionString)));
+    }
+
+    public static ArrayList<String> makeUsers(Enumeration<Object> st) {
+        ArrayList<String> users = new ArrayList<>();
+
+        while (st.hasMoreElements()) {
+            users.add((String) st.nextElement());
+        }
+
+        return users;
     }
 
     /**
@@ -108,15 +120,5 @@ public class Permission {
 
         // didn't match..
         return _invert && (!allow);
-    }
-
-    public static ArrayList<String> makeUsers(Enumeration<Object> st) {
-        ArrayList<String> users = new ArrayList<>();
-
-        while (st.hasMoreElements()) {
-            users.add((String) st.nextElement());
-        }
-
-        return users;
     }
 }

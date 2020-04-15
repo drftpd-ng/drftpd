@@ -22,42 +22,41 @@ import java.io.OutputStream;
 
 /**
  * OutputStream filter that strips the \r from \r\n sequences.
- * 
+ *
  * @author mog
  * @version $Id$
  */
 public class StripAsciiOutputStream extends OutputStream {
-	private OutputStream _out;
+    boolean _lastWasCarriageReturn = false;
+    private final OutputStream _out;
 
-	boolean _lastWasCarriageReturn = false;
+    public StripAsciiOutputStream(OutputStream out) {
+        _out = out;
+    }
 
-	public StripAsciiOutputStream(OutputStream out) {
-		_out = out;
-	}
+    public void write(int b) throws IOException {
+        if (b == '\r') {
+            _lastWasCarriageReturn = true;
 
-	public void write(int b) throws IOException {
-		if (b == '\r') {
-			_lastWasCarriageReturn = true;
+            return;
+        }
 
-			return;
-		}
+        if (_lastWasCarriageReturn) {
+            _lastWasCarriageReturn = false;
 
-		if (_lastWasCarriageReturn) {
-			_lastWasCarriageReturn = false;
+            if (b != '\n') {
+                _out.write('\r');
+            }
+        }
 
-			if (b != '\n') {
-				_out.write('\r');
-			}
-		}
+        _out.write(b);
+    }
 
-		_out.write(b);
-	}
+    public void close() throws IOException {
+        _out.close();
+    }
 
-	public void close() throws IOException {
-		_out.close();
-	}
-
-	public void flush() throws IOException {
-		_out.flush();
-	}
+    public void flush() throws IOException {
+        _out.flush();
+    }
 }

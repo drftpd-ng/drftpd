@@ -28,18 +28,19 @@ import java.util.Date;
  * E.g., Jan 2nd, 2:00 PM, ONLY resetHour() is called
  * On top of this, when a week resets, it will be called as well
  * So in resetMonth() in your interface, most will make sure it calls resetDay()
+ *
  * @author zubov
  */
 public interface TimeEventInterface {
 
-	void resetDay(Date d);
-	
-	void resetWeek(Date d);
-	
-	void resetMonth(Date d);
-	
-	void resetYear(Date d);
-	
-	void resetHour(Date d);
+    void resetDay(Date d);
+
+    void resetWeek(Date d);
+
+    void resetMonth(Date d);
+
+    void resetYear(Date d);
+
+    void resetHour(Date d);
 
 }

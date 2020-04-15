@@ -18,12 +18,12 @@
 package org.drftpd.master.slaveselection.filter;
 
 import junit.framework.TestCase;
-import org.drftpd.master.exceptions.NoAvailableSlaveException;
-import org.drftpd.master.slavemanagement.RemoteSlave;
-import org.drftpd.master.slavemanagement.DummyRemoteSlave;
-import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.common.slave.DiskStatus;
+import org.drftpd.master.exceptions.NoAvailableSlaveException;
+import org.drftpd.master.slavemanagement.DummyRemoteSlave;
+import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.master.slavemanagement.SlaveStatus;
+import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.slave.network.Transfer;
 import org.junit.Assert;
 
@@ -41,10 +41,11 @@ public class MaxbandwidthFilterTest extends TestCase {
     RemoteSlave[] rslaves = {
             new RS("slave1", Collections.emptyList()),
             new RS("slave2", Collections.emptyList())
-        };
+    };
 
     /**
      * Constructor for MaxbandwidthFilterTest.
+     *
      * @param arg0
      */
     public MaxbandwidthFilterTest(String arg0) {
@@ -73,10 +74,10 @@ public class MaxbandwidthFilterTest extends TestCase {
 
         public SlaveStatus getSlaveStatusAvailable() {
             if (getName().equals("slave2")) {
-                return new SlaveStatus(new DiskStatus(0,0), 0, 0, 0, 0, 0, 0);
+                return new SlaveStatus(new DiskStatus(0, 0), 0, 0, 0, 0, 0, 0);
             }
 
-            return new SlaveStatus(new DiskStatus(0,0), 0, 0, 9999999, 1, 9999999, 1);
+            return new SlaveStatus(new DiskStatus(0, 0), 0, 0, 9999999, 1, 9999999, 1);
         }
     }
 }

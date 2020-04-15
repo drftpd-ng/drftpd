@@ -45,7 +45,7 @@ import java.util.ResourceBundle;
  */
 public class ZipscriptFlacPostHook {
 
-    private ResourceBundle _bundle;
+    private final ResourceBundle _bundle;
 
 
     public ZipscriptFlacPostHook() {

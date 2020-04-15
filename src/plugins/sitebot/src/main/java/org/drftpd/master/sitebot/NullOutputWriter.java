@@ -23,8 +23,8 @@ package org.drftpd.master.sitebot;
  */
 public class NullOutputWriter extends OutputWriter {
 
-	@Override
-	public void sendMessage(String message) {
-		// Do nothing, we just want to ignore the message
-	}
+    @Override
+    public void sendMessage(String message) {
+        // Do nothing, we just want to ignore the message
+    }
 }

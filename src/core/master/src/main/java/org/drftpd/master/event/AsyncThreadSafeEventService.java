@@ -28,81 +28,81 @@ import java.util.concurrent.LinkedBlockingQueue;
  */
 public final class AsyncThreadSafeEventService extends ThreadSafeEventService {
 
-	private LinkedBlockingQueue<QueuedAsyncEvent> _eventQueue = new LinkedBlockingQueue<>();
+    private final LinkedBlockingQueue<QueuedAsyncEvent> _eventQueue = new LinkedBlockingQueue<>();
 
-	public AsyncThreadSafeEventService() {
-		super();
-		new Thread(new EventHandler()).start();
-	}
+    public AsyncThreadSafeEventService() {
+        super();
+        new Thread(new EventHandler()).start();
+    }
 
-	public void publishAsync(Object event) {
-		_eventQueue.add(new QueuedAsyncEvent(event));
-	}
+    public void publishAsync(Object event) {
+        _eventQueue.add(new QueuedAsyncEvent(event));
+    }
 
-	public void publishAsync(Type genericType, Object event) {
-		_eventQueue.add(new QueuedAsyncEvent(genericType,event));
-	}
+    public void publishAsync(Type genericType, Object event) {
+        _eventQueue.add(new QueuedAsyncEvent(genericType, event));
+    }
 
-	public void publishAsync(String topicName, Object eventObj) {
-		_eventQueue.add(new QueuedAsyncEvent(topicName,eventObj));
-	}
+    public void publishAsync(String topicName, Object eventObj) {
+        _eventQueue.add(new QueuedAsyncEvent(topicName, eventObj));
+    }
 
-	public int getQueueSize() {
-		return _eventQueue.size();
-	}
+    public int getQueueSize() {
+        return _eventQueue.size();
+    }
 
-	private static class QueuedAsyncEvent {
+    private static class QueuedAsyncEvent {
 
-		private Object _event;
-		private String _topic;
-		private Type _genericType;
+        private final Object _event;
+        private String _topic;
+        private Type _genericType;
 
-		private QueuedAsyncEvent(Object event) {
-			_event = event;
-		}
+        private QueuedAsyncEvent(Object event) {
+            _event = event;
+        }
 
-		private QueuedAsyncEvent(String topic, Object event) {
-			_topic = topic;
-			_event = event;
-		}
+        private QueuedAsyncEvent(String topic, Object event) {
+            _topic = topic;
+            _event = event;
+        }
 
-		private QueuedAsyncEvent(Type genericType, Object event) {
-			_genericType = genericType;
-			_event = event;
-		}
+        private QueuedAsyncEvent(Type genericType, Object event) {
+            _genericType = genericType;
+            _event = event;
+        }
 
-		private Object getEvent() {
-			return _event;
-		}
+        private Object getEvent() {
+            return _event;
+        }
 
-		private String getTopic() {
-			return _topic;
-		}
+        private String getTopic() {
+            return _topic;
+        }
 
-		private Type getGenericType() {
-			return _genericType;
-		}
-	}
+        private Type getGenericType() {
+            return _genericType;
+        }
+    }
 
-	private class EventHandler implements Runnable {
+    private class EventHandler implements Runnable {
 
-		public void run() {
-			Thread.currentThread().setName("AsyncEventHandler");
-			//noinspection InfiniteLoopStatement
-			while (true) {
-				try {
-					QueuedAsyncEvent queuedEvent = _eventQueue.take();
-					if (queuedEvent.getTopic() != null) {
-						publish(queuedEvent.getTopic(),queuedEvent.getEvent());
-					} else if (queuedEvent.getGenericType() != null) {
-						publish(queuedEvent.getGenericType(),queuedEvent.getEvent());
-					} else {
-						publish(queuedEvent.getEvent());
-					}
-				} catch (InterruptedException e) {
-					// Do nothing just loop and try again
-				}
-			}
-		}
-	}
+        public void run() {
+            Thread.currentThread().setName("AsyncEventHandler");
+            //noinspection InfiniteLoopStatement
+            while (true) {
+                try {
+                    QueuedAsyncEvent queuedEvent = _eventQueue.take();
+                    if (queuedEvent.getTopic() != null) {
+                        publish(queuedEvent.getTopic(), queuedEvent.getEvent());
+                    } else if (queuedEvent.getGenericType() != null) {
+                        publish(queuedEvent.getGenericType(), queuedEvent.getEvent());
+                    } else {
+                        publish(queuedEvent.getEvent());
+                    }
+                } catch (InterruptedException e) {
+                    // Do nothing just loop and try again
+                }
+            }
+        }
+    }
 }

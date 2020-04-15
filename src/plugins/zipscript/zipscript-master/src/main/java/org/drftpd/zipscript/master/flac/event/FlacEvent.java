@@ -25,25 +25,25 @@ import org.drftpd.zipscript.common.flac.FlacInfo;
  */
 public class FlacEvent {
 
-	private FlacInfo _flacinfo;
-	private DirectoryHandle _dir;
-	private boolean _isFirst;
+    private final FlacInfo _flacinfo;
+    private final DirectoryHandle _dir;
+    private final boolean _isFirst;
 
-	public FlacEvent(FlacInfo flacinfo, DirectoryHandle dir, boolean isFirst) {
-		_flacinfo = flacinfo;
-		_dir = dir;
-		_isFirst = isFirst;
-	}
+    public FlacEvent(FlacInfo flacinfo, DirectoryHandle dir, boolean isFirst) {
+        _flacinfo = flacinfo;
+        _dir = dir;
+        _isFirst = isFirst;
+    }
 
-	public DirectoryHandle getDir() {
-		return _dir;
-	}
+    public DirectoryHandle getDir() {
+        return _dir;
+    }
 
-	public FlacInfo getFlacInfo() {
-		return _flacinfo;
-	}
+    public FlacInfo getFlacInfo() {
+        return _flacinfo;
+    }
 
-	public boolean isFirst() {
-		return _isFirst;
-	}
+    public boolean isFirst() {
+        return _isFirst;
+    }
 }

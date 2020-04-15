@@ -19,8 +19,8 @@ package org.drftpd.master.slaveselection.filter;
 
 import junit.framework.TestCase;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
-import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.master.slavemanagement.DummyRemoteSlave;
+import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.slave.exceptions.ObjectNotFoundException;
 import org.drftpd.slave.network.Transfer;
 import org.junit.Assert;
@@ -35,6 +35,7 @@ import java.util.Arrays;
 public class CycleFilterTest extends TestCase {
     /**
      * Constructor for CycleFilterTest.
+     *
      * @param arg0
      */
     public CycleFilterTest(String arg0) {
@@ -46,12 +47,12 @@ public class CycleFilterTest extends TestCase {
     }
 
     public void testProcess()
-        throws NoAvailableSlaveException, ObjectNotFoundException {
+            throws NoAvailableSlaveException, ObjectNotFoundException {
         RemoteSlave[] rslaves = {
                 new DummyRemoteSlave("slave1"),
                 new DummyRemoteSlave("slave2"),
                 new DummyRemoteSlave("slave3")
-            };
+        };
         ScoreChart sc = new ScoreChart(Arrays.asList(rslaves));
         Filter f = new CycleFilter(0, null);
         f.process(sc, null, null, Transfer.TRANSFER_SENDING_DOWNLOAD, null, null);

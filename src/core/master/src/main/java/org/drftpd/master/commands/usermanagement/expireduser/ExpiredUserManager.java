@@ -37,7 +37,7 @@ import java.util.Properties;
  */
 public class ExpiredUserManager implements UserResetHookInterface {
 
-    private static Logger logger = LogManager.getLogger(ExpiredUserManager.class);
+    private static final Logger logger = LogManager.getLogger(ExpiredUserManager.class);
 
     private boolean _delete;
     private boolean _purge;

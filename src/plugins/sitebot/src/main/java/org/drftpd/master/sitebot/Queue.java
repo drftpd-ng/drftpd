@@ -26,59 +26,59 @@ import java.util.concurrent.LinkedBlockingQueue;
  */
 public class Queue {
 
-	private LinkedBlockingQueue<String> _queue;
+    private final LinkedBlockingQueue<String> _queue;
 
-	/**
-	 * Constructs a Queue object of Integer.MAX_VALUE size.
-	 */
-	public Queue() {
-		_queue = new LinkedBlockingQueue<>();
-	}
+    /**
+     * Constructs a Queue object of Integer.MAX_VALUE size.
+     */
+    public Queue() {
+        _queue = new LinkedBlockingQueue<>();
+    }
 
-	/**
-	 * Adds a String to the Queue.
-	 *
-	 * @param s The String to be added to the Queue.
-	 */
-	public void add(String s) {
-		_queue.add(s);
-	}
+    /**
+     * Adds a String to the Queue.
+     *
+     * @param s The String to be added to the Queue.
+     */
+    public void add(String s) {
+        _queue.add(s);
+    }
 
-	/**
-	 * Returns the String at the front of the Queue.  This
-	 * String is then removed from the Queue.  If the Queue
-	 * is empty, then this method shall block until there
-	 * is a String in the Queue to return.
-	 *
-	 * @return The next item from the front of the queue.
-	 */
-	public String next() {
+    /**
+     * Returns the String at the front of the Queue.  This
+     * String is then removed from the Queue.  If the Queue
+     * is empty, then this method shall block until there
+     * is a String in the Queue to return.
+     *
+     * @return The next item from the front of the queue.
+     */
+    public String next() {
 
-		String next = null;
-		try {
-			next = _queue.take();
-		} catch (InterruptedException e) {
-			// do nothing
-		}
-		return next;
-	}
+        String next = null;
+        try {
+            next = _queue.take();
+        } catch (InterruptedException e) {
+            // do nothing
+        }
+        return next;
+    }
 
-	/**
-	 * Returns true if the Queue is not empty.  If another
-	 * Thread empties the Queue before <b>next()</b> is
-	 * called, then the call to <b>next()</b> shall block
-	 * until the Queue has been populated again.
-	 *
-	 * @return True only if the Queue not empty.
-	 */
-	public boolean hasNext() {
-		return !_queue.isEmpty();
-	}
+    /**
+     * Returns true if the Queue is not empty.  If another
+     * Thread empties the Queue before <b>next()</b> is
+     * called, then the call to <b>next()</b> shall block
+     * until the Queue has been populated again.
+     *
+     * @return True only if the Queue not empty.
+     */
+    public boolean hasNext() {
+        return !_queue.isEmpty();
+    }
 
-	/**
-	 * Clears the contents of the Queue.
-	 */
-	public void clear() {
-		_queue.clear();
-	}
+    /**
+     * Clears the contents of the Queue.
+     */
+    public void clear() {
+        _queue.clear();
+    }
 }

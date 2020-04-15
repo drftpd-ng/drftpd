@@ -17,9 +17,8 @@
  */
 package org.drftpd.master.indexation;
 
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
+import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.index.Term;
@@ -38,55 +37,55 @@ import java.util.Set;
  * @version $Id$
  */
 public class LuceneUtils {
-	private static final Logger logger = LogManager.getLogger(LuceneEngine.class);
+    private static final Logger logger = LogManager.getLogger(LuceneEngine.class);
 
-	/**
-	 * Parses the name removing unwanted chars from it.
-	 *
-	 * @param field
-	 * @param term
-	 * @param name
-	 * @return Query
-	 */
-	public static Query analyze(String field, Term term, String name) {
-		TokenStream ts = LuceneEngine.ANALYZER.tokenStream(field, new StringReader(name));
+    /**
+     * Parses the name removing unwanted chars from it.
+     *
+     * @param field
+     * @param term
+     * @param name
+     * @return Query
+     */
+    public static Query analyze(String field, Term term, String name) {
+        TokenStream ts = LuceneEngine.ANALYZER.tokenStream(field, new StringReader(name));
 
-		BooleanQuery bQuery = new BooleanQuery();
-		WildcardQuery wQuery;
+        BooleanQuery bQuery = new BooleanQuery();
+        WildcardQuery wQuery;
 
-		Set<String> tokens = new HashSet<>(); // avoids repeated terms.
+        Set<String> tokens = new HashSet<>(); // avoids repeated terms.
 
-		// get the CharTermAttribute from the TokenStream
-		CharTermAttribute termAtt = ts.addAttribute(CharTermAttribute.class);
+        // get the CharTermAttribute from the TokenStream
+        CharTermAttribute termAtt = ts.addAttribute(CharTermAttribute.class);
 
-		try {
-			ts.reset();
-			while (ts.incrementToken()) {
-				tokens.add(termAtt.toString());
-			}
-			ts.end();
-			ts.close();
-		} catch (IOException e) {
-			logger.error("IOException analyzing string", e);
-		}
+        try {
+            ts.reset();
+            while (ts.incrementToken()) {
+                tokens.add(termAtt.toString());
+            }
+            ts.end();
+            ts.close();
+        } catch (IOException e) {
+            logger.error("IOException analyzing string", e);
+        }
 
-		for (String text : tokens) {
-			wQuery = new WildcardQuery(term.createTerm(text));
-			bQuery.add(wQuery, BooleanClause.Occur.MUST);
-		}
+        for (String text : tokens) {
+            wQuery = new WildcardQuery(term.createTerm(text));
+            bQuery.add(wQuery, BooleanClause.Occur.MUST);
+        }
 
-		return bQuery;
-	}
+        return bQuery;
+    }
 
-	/**
-	 * Parses the text and checks if wildcards given are valid or not, ie not allowed within first three chars.
-	 *
-	 * @param text
-	 * @return boolean
-	 */
-	public static boolean validWildcards(String text) {
-		int wc1 = text.indexOf("*");
-		int wc2 = text.indexOf("?");
-		return !((wc1 > 0 && wc1 <= 3) || (wc2 > 0 && wc2 <= 3));
-	}
+    /**
+     * Parses the text and checks if wildcards given are valid or not, ie not allowed within first three chars.
+     *
+     * @param text
+     * @return boolean
+     */
+    public static boolean validWildcards(String text) {
+        int wc1 = text.indexOf("*");
+        int wc2 = text.indexOf("?");
+        return !((wc1 > 0 && wc1 <= 3) || (wc2 > 0 && wc2 <= 3));
+    }
 }

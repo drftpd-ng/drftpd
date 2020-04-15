@@ -18,11 +18,11 @@
 package org.drftpd.find.master.action;
 
 import org.drftpd.find.master.FindUtils;
+import org.drftpd.master.commands.CommandRequest;
+import org.drftpd.master.commands.ImproperUsageException;
 import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.master.vfs.InodeHandle;
-import org.drftpd.master.commands.CommandRequest;
-import org.drftpd.master.commands.ImproperUsageException;
 
 import java.util.HashSet;
 
@@ -31,46 +31,46 @@ import java.util.HashSet;
  * @version $Id$
  */
 public class DeleteFromSlavesAction implements ActionInterface {
-	private HashSet<RemoteSlave> _deleteFromSlaves;
+    private HashSet<RemoteSlave> _deleteFromSlaves;
 
-	@Override
-	public String name() {
-		return "DeleteFromSlaves";
-	}
+    @Override
+    public String name() {
+        return "DeleteFromSlaves";
+    }
 
-	@Override
-	public void initialize(String action, String[] args) throws ImproperUsageException {
-		// -deletefromslaves <slave[ slave ..]>
-		_deleteFromSlaves = FindUtils.parseSlaves(args);
-	}
+    @Override
+    public void initialize(String action, String[] args) throws ImproperUsageException {
+        // -deletefromslaves <slave[ slave ..]>
+        _deleteFromSlaves = FindUtils.parseSlaves(args);
+    }
 
-	@Override
-	public String exec(CommandRequest request, InodeHandle inode) {
-		FileHandle file = (FileHandle) inode;
+    @Override
+    public String exec(CommandRequest request, InodeHandle inode) {
+        FileHandle file = (FileHandle) inode;
 
-		HashSet<RemoteSlave> deleteFromSlaves = new HashSet<>(_deleteFromSlaves);
-		String ret = file.getPath() + " deleted from ";
+        HashSet<RemoteSlave> deleteFromSlaves = new HashSet<>(_deleteFromSlaves);
+        String ret = file.getPath() + " deleted from ";
 
-		for (RemoteSlave rslave : deleteFromSlaves) {
-			rslave.simpleDelete(file.getPath());
-			ret = ret + rslave.getName() + ",";
-		}
+        for (RemoteSlave rslave : deleteFromSlaves) {
+            rslave.simpleDelete(file.getPath());
+            ret = ret + rslave.getName() + ",";
+        }
 
-		return ret.substring(0, ret.length() - 1);
-	}
+        return ret.substring(0, ret.length() - 1);
+    }
 
-	@Override
-	public boolean execInDirs() {
-		return false;
-	}
+    @Override
+    public boolean execInDirs() {
+        return false;
+    }
 
-	@Override
-	public boolean execInFiles() {
-		return true;
-	}
+    @Override
+    public boolean execInFiles() {
+        return true;
+    }
 
-	@Override
-	public boolean failed() {
-		return false;
-	}
+    @Override
+    public boolean failed() {
+        return false;
+    }
 }

@@ -38,7 +38,7 @@ import java.util.*;
  */
 public class DailyStats implements UserResetHookInterface {
 
-    private static Logger logger = LogManager.getLogger(DailyStats.class);
+    private static final Logger logger = LogManager.getLogger(DailyStats.class);
 
     private boolean _showzero = false;
     private int _outputnum;

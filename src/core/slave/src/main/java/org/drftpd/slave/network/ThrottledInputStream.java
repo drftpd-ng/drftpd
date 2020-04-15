@@ -1,15 +1,15 @@
 package org.drftpd.slave.network;
 
 import java.io.IOException;
-import java.io.InputStream; 
+import java.io.InputStream;
 
 public class ThrottledInputStream extends InputStream {
     private long _counter;
-    private InputStream _in;
+    private final InputStream _in;
     private long _lastCounter;
     private long _lastMillis;
     private long _maxBytesPerSecond;
-    private Object _monitor;
+    private final Object _monitor;
 
     public ThrottledInputStream(InputStream input, long maximumBytesPerSecond) {
         _in = input;
@@ -29,6 +29,10 @@ public class ThrottledInputStream extends InputStream {
 
     public long getCounter() {
         return _counter;
+    }
+
+    public void setCounter(long newValue) {
+        _counter = newValue;
     }
 
     @Override
@@ -55,7 +59,7 @@ public class ThrottledInputStream extends InputStream {
     public int read(byte[] b, int off, int len) throws IOException {
         int result = _in.read(b, off, len);
         if (result > 0) {
-        	_counter += result;
+            _counter += result;
             waitIfNecessary();
         }
         return result;
@@ -65,13 +69,9 @@ public class ThrottledInputStream extends InputStream {
         setCounter(0);
     }
 
-    public void setCounter(long newValue) {
-        _counter = newValue;
-    }
-
     public void setMaxBytesPerSecond(long maxBytes) {
         if (maxBytes < 0) {
-        	throw new IllegalArgumentException("Maximum bytes per second must be at least one.");
+            throw new IllegalArgumentException("Maximum bytes per second must be at least one.");
         }
         _maxBytesPerSecond = maxBytes;
     }
@@ -80,16 +80,16 @@ public class ThrottledInputStream extends InputStream {
     public long skip(long n) throws IOException {
         return _in.skip(n);
     }
-    
+
     public void wake() {
-    	synchronized (_monitor) {
-    		_monitor.notify();
-    	}
+        synchronized (_monitor) {
+            _monitor.notify();
+        }
     }
 
     private void waitIfNecessary() {
         if (_maxBytesPerSecond == 0) {
-        	return;
+            return;
         }
 
         long diffBytes = _counter - _lastCounter;
@@ -98,16 +98,15 @@ public class ThrottledInputStream extends InputStream {
         long waitMillis = (1000 * diffBytes - diffMillis * _maxBytesPerSecond) / _maxBytesPerSecond;
 
         if (waitMillis > 0) {
-        	synchronized (_monitor) {
-	            try {
-	                _monitor.wait(waitMillis);
-	            }
-	            catch (InterruptedException ie) {
-	            }
-        	}
+            synchronized (_monitor) {
+                try {
+                    _monitor.wait(waitMillis);
+                } catch (InterruptedException ie) {
+                }
+            }
         }
 
         _lastCounter = _counter;
         _lastMillis = System.currentTimeMillis();
-    } 
+    }
 }

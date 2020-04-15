@@ -17,13 +17,12 @@
  */
 package org.drftpd.find.master.action;
 
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
+import org.apache.logging.log4j.Logger;
 import org.drftpd.common.io.PermissionDeniedException;
-import org.drftpd.master.vfs.InodeHandle;
 import org.drftpd.master.commands.CommandRequest;
 import org.drftpd.master.commands.ImproperUsageException;
+import org.drftpd.master.vfs.InodeHandle;
 
 import java.io.FileNotFoundException;
 
@@ -32,44 +31,44 @@ import java.io.FileNotFoundException;
  * @version $Id$
  */
 public class WipeAction implements ActionInterface {
-	public static final Logger logger = LogManager.getLogger(WipeAction.class);
+    public static final Logger logger = LogManager.getLogger(WipeAction.class);
 
-	private boolean _failed;
+    private boolean _failed;
 
-	@Override
-	public String name() {
-		return "Wipe";
-	}
+    @Override
+    public String name() {
+        return "Wipe";
+    }
 
-	@Override
-	public void initialize(String action, String[] args) throws ImproperUsageException {
-	}
+    @Override
+    public void initialize(String action, String[] args) throws ImproperUsageException {
+    }
 
-	@Override
-	public String exec(CommandRequest request, InodeHandle inode) {
-		try {
-			inode.delete(request.getSession().getUserNull(request.getUser()));
-		} catch (FileNotFoundException e) {
-			logger.error("The file was there and now it's gone, how?", e);
-		} catch (PermissionDeniedException e) {
-			_failed = true;
-			return "You do not have the proper permissions to wipe " + inode.getPath();
-		}
-		return "Wiped " + inode.getPath();
-	}
+    @Override
+    public String exec(CommandRequest request, InodeHandle inode) {
+        try {
+            inode.delete(request.getSession().getUserNull(request.getUser()));
+        } catch (FileNotFoundException e) {
+            logger.error("The file was there and now it's gone, how?", e);
+        } catch (PermissionDeniedException e) {
+            _failed = true;
+            return "You do not have the proper permissions to wipe " + inode.getPath();
+        }
+        return "Wiped " + inode.getPath();
+    }
 
-	@Override
-	public boolean execInDirs() {
-		return true;
-	}
+    @Override
+    public boolean execInDirs() {
+        return true;
+    }
 
-	@Override
-	public boolean execInFiles() {
-		return true;
-	}
+    @Override
+    public boolean execInFiles() {
+        return true;
+    }
 
-	@Override
-	public boolean failed() {
-		return _failed;
-	}
+    @Override
+    public boolean failed() {
+        return _failed;
+    }
 }

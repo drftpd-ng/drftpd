@@ -25,26 +25,26 @@ import java.util.LinkedList;
  */
 public class AutoNukeEvent {
 
-	private NukeItem _nukeItem;
-	private String _ircString;
-	private LinkedList<String> _data;
+    private final NukeItem _nukeItem;
+    private final String _ircString;
+    private final LinkedList<String> _data;
 
-	public AutoNukeEvent(NukeItem nukeItem, String ircString, LinkedList<String> data) {
-		_nukeItem = nukeItem;
-		_ircString = ircString;
-		_data = data;
-	}
+    public AutoNukeEvent(NukeItem nukeItem, String ircString, LinkedList<String> data) {
+        _nukeItem = nukeItem;
+        _ircString = ircString;
+        _data = data;
+    }
 
-	public NukeItem getNukeItem() {
-		return _nukeItem;
-	}
+    public NukeItem getNukeItem() {
+        return _nukeItem;
+    }
 
-	public String getIRCString() {
-		return _ircString;
-	}
+    public String getIRCString() {
+        return _ircString;
+    }
 
-	public LinkedList<String> getData() {
-		return _data;
-	}
+    public LinkedList<String> getData() {
+        return _data;
+    }
 
 }

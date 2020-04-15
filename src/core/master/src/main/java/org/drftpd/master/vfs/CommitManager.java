@@ -18,9 +18,8 @@
 
 package org.drftpd.master.vfs;
 
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
+import org.apache.logging.log4j.Logger;
 import org.drftpd.common.util.PropertyHelper;
 import org.drftpd.master.GlobalContext;
 
@@ -33,215 +32,218 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * This classes handle all XML commits.
  * The main purpose of having this is to avoiding serializing the same object tons of times,
- * even if it data was not changed. 
+ * even if it data was not changed.
+ *
  * @author zubov
  * @version $Id$
  */
 public class CommitManager {
 
-	private static final Logger logger = LogManager.getLogger(CommitManager.class);
+    private static final Logger logger = LogManager.getLogger(CommitManager.class);
 
-	private static CommitManager _instance;
+    private static CommitManager _instance;
 
-	private ConcurrentLinkedQueue<CommitableWrapper> _commitQueue;
-	private boolean _isStarted;
-	private AtomicInteger _queueSize;
-	private volatile boolean _drainQueue;
-	private Thread _commitThread;
+    private final ConcurrentLinkedQueue<CommitableWrapper> _commitQueue;
+    private boolean _isStarted;
+    private final AtomicInteger _queueSize;
+    private volatile boolean _drainQueue;
+    private Thread _commitThread;
 
-	/**
-	 * Private constructor in order to make this class a Singleton.
-	 */
-	private CommitManager() {
-		_commitQueue = new ConcurrentLinkedQueue<>();
-		_queueSize = new AtomicInteger();
-	}
+    /**
+     * Private constructor in order to make this class a Singleton.
+     */
+    private CommitManager() {
+        _commitQueue = new ConcurrentLinkedQueue<>();
+        _queueSize = new AtomicInteger();
+    }
 
-	/**
-	 * @return the unique CommitManager instance, creating the instance if it does not exist yet.
-	 */
-	public static CommitManager getCommitManager() {
-		if (_instance == null) {
-			_instance = new CommitManager();
-		}
-		return _instance;
-	}
+    /**
+     * @return the unique CommitManager instance, creating the instance if it does not exist yet.
+     */
+    public static CommitManager getCommitManager() {
+        if (_instance == null) {
+            _instance = new CommitManager();
+        }
+        return _instance;
+    }
 
-	/**
-	 * Starts the {@link CommitHandler}.
-	 * @throws IllegalStateException if the thread has already started.
-	 */
-	public void start() {
-		if (_isStarted) {
-			throw new IllegalStateException("The CommitManager is already started");
-		}
-		
-		_isStarted = true;
-		_commitThread = new Thread(new CommitHandler());
-		_commitThread.start();
-	}
+    /**
+     * Starts the {@link CommitHandler}.
+     *
+     * @throws IllegalStateException if the thread has already started.
+     */
+    public void start() {
+        if (_isStarted) {
+            throw new IllegalStateException("The CommitManager is already started");
+        }
 
-	/**
-	 * Adds a {@link Commitable} object to the commit queue.
-	 * If the object is already present on the queue, this call is just ignored.
-	 * @param object
-	 */
-	public void add(Commitable object) {
-		if (contains(object)) {
-			return;
-			// object already queued to write
-		}
-		_commitQueue.offer(new CommitableWrapper(object));
-		_queueSize.incrementAndGet();
-	}
-	
+        _isStarted = true;
+        _commitThread = new Thread(new CommitHandler());
+        _commitThread.start();
+    }
 
-	/**
-	 * @param object
-	 * @return true if the object was removed from the CommitQueue, false otherwise.
-	 */
-	public boolean remove(Commitable object) {
-		if (object == null) return false;
-		for (Iterator<CommitableWrapper> iter = _commitQueue.iterator(); iter.hasNext();) {
-			CommitableWrapper cw = iter.next();
-			if (cw != null && cw.equals(object)) {
-				iter.remove();
-				_queueSize.decrementAndGet();
-				return true;
-			}
-		}
-		return false;
-	}
-	
-	/**
-	 * @param object
-	 * @return true if the object is present on the CommitQueue, false otherwise.
-	 */
-	public boolean contains(Commitable object) {
-		if (object == null) return false;
-		for (CommitableWrapper cw : _commitQueue) {
-			if (cw != null && cw.equals(object)) {
-				return true;
-			}
-		}
-		return false;
-	}
+    /**
+     * Adds a {@link Commitable} object to the commit queue.
+     * If the object is already present on the queue, this call is just ignored.
+     *
+     * @param object
+     */
+    public void add(Commitable object) {
+        if (contains(object)) {
+            return;
+            // object already queued to write
+        }
+        _commitQueue.offer(new CommitableWrapper(object));
+        _queueSize.incrementAndGet();
+    }
 
-	/**
-	 * 
-	 * @return the number of outstanding objects to commit.
-	 */
-	public int getQueueSize() {
-		return _queueSize.get();
-	}
 
-	/**
-	 * Forces the immediate write of a (@link Commitable) if present in the commit queue.
-	 * @param object
-	 */
-	public void flushImmediate(Commitable object) {
-		if (contains(object)) {
-			ClassLoader prevCL = Thread.currentThread().getContextClassLoader();
-			writeCommitable(object);
-			Thread.currentThread().setContextClassLoader(prevCL);
-		}
-	}
+    /**
+     * @param object
+     * @return true if the object was removed from the CommitQueue, false otherwise.
+     */
+    public boolean remove(Commitable object) {
+        if (object == null) return false;
+        for (Iterator<CommitableWrapper> iter = _commitQueue.iterator(); iter.hasNext(); ) {
+            CommitableWrapper cw = iter.next();
+            if (cw != null && cw.equals(object)) {
+                iter.remove();
+                _queueSize.decrementAndGet();
+                return true;
+            }
+        }
+        return false;
+    }
 
-	/**
-	 * Instructs the commitmanager to write all queued items regardless of age, this cannot
-	 * be undone and is used only when the process enters shutdown mode.
-	 */
-	public void enableQueueDrain() {
-		_drainQueue = true;
-		// Wakeup the commit thread incase it is sleeping
-		if (_commitThread != null) {
-			_commitThread.interrupt();
-		}
-	}
+    /**
+     * @param object
+     * @return true if the object is present on the CommitQueue, false otherwise.
+     */
+    public boolean contains(Commitable object) {
+        if (object == null) return false;
+        for (CommitableWrapper cw : _commitQueue) {
+            if (cw != null && cw.equals(object)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
-	private long getCommitDelay() {
-		Properties cfg = GlobalContext.getConfig().getMainProperties();
-		try {
-			return Long.parseLong(PropertyHelper.getProperty(cfg, "disk.commit.delay","10000"));
-		} catch (NumberFormatException e) {
-		}
-		return 10000;
-	}
-	
-	private void processAllLoop() {
-		while (true) {
-			long delay = getCommitDelay();
-			long time = System.currentTimeMillis() - delay;
-			for (Iterator<CommitableWrapper> iter = _commitQueue.iterator(); iter.hasNext();) {
-				CommitableWrapper cw = iter.next();
-				if (cw.getTime() < time || _drainQueue) {
-					if (writeCommitable(cw.getCommitable())) {
-						iter.remove();
-						_queueSize.decrementAndGet();
-					}
-				}
-			}
-			
-			try {
-				Thread.sleep(delay);
-			} catch (InterruptedException e) {
-			}
-		}
-	}
+    /**
+     * @return the number of outstanding objects to commit.
+     */
+    public int getQueueSize() {
+        return _queueSize.get();
+    }
 
-	private boolean writeCommitable(Commitable item) {
-		try {
-			item.writeToDisk();
-			return true;
-		} catch (IOException e) {
+    /**
+     * Forces the immediate write of a (@link Commitable) if present in the commit queue.
+     *
+     * @param object
+     */
+    public void flushImmediate(Commitable object) {
+        if (contains(object)) {
+            ClassLoader prevCL = Thread.currentThread().getContextClassLoader();
+            writeCommitable(object);
+            Thread.currentThread().setContextClassLoader(prevCL);
+        }
+    }
+
+    /**
+     * Instructs the commitmanager to write all queued items regardless of age, this cannot
+     * be undone and is used only when the process enters shutdown mode.
+     */
+    public void enableQueueDrain() {
+        _drainQueue = true;
+        // Wakeup the commit thread incase it is sleeping
+        if (_commitThread != null) {
+            _commitThread.interrupt();
+        }
+    }
+
+    private long getCommitDelay() {
+        Properties cfg = GlobalContext.getConfig().getMainProperties();
+        try {
+            return Long.parseLong(PropertyHelper.getProperty(cfg, "disk.commit.delay", "10000"));
+        } catch (NumberFormatException e) {
+        }
+        return 10000;
+    }
+
+    private void processAllLoop() {
+        while (true) {
+            long delay = getCommitDelay();
+            long time = System.currentTimeMillis() - delay;
+            for (Iterator<CommitableWrapper> iter = _commitQueue.iterator(); iter.hasNext(); ) {
+                CommitableWrapper cw = iter.next();
+                if (cw.getTime() < time || _drainQueue) {
+                    if (writeCommitable(cw.getCommitable())) {
+                        iter.remove();
+                        _queueSize.decrementAndGet();
+                    }
+                }
+            }
+
+            try {
+                Thread.sleep(delay);
+            } catch (InterruptedException e) {
+            }
+        }
+    }
+
+    private boolean writeCommitable(Commitable item) {
+        try {
+            item.writeToDisk();
+            return true;
+        } catch (IOException e) {
             logger.error("Error writing object to disk - {}", item.descriptiveName(), e);
-		} catch (Exception e) {
+        } catch (Exception e) {
             logger.error("Error writing object to disk - {}", item.descriptiveName(), e);
-		}
-		return false;
-	}
+        }
+        return false;
+    }
 
-	private class CommitHandler implements Runnable {
+    /**
+     * Creates a wrapping object for the Commitable object and current time.
+     */
+    private static class CommitableWrapper {
+        private final Commitable _object;
+        private final long _time;
 
-		private CommitHandler() {
-		}
+        private CommitableWrapper(Commitable object) {
+            _object = object;
+            _time = System.currentTimeMillis();
+        }
 
-		public void run() {
-			Thread.currentThread().setName("CommitHandler");
-			processAllLoop();
-		}
-	}
+        public Commitable getCommitable() {
+            return _object;
+        }
 
-	/**
-	 * Creates a wrapping object for the Commitable object and current time.
-	 */
-	private static class CommitableWrapper {
-		private Commitable _object;
-		private long _time;
+        public long getTime() {
+            return _time;
+        }
 
-		private CommitableWrapper(Commitable object) {
-			_object = object;
-			_time = System.currentTimeMillis();
-		}
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == this) return true;
+            if (obj == null) return false;
+            return (obj instanceof Commitable) && _object.equals(obj);
+        }
 
-		public Commitable getCommitable() {
-			return _object;
-		}
+        @Override
+        public int hashCode() {
+            return _object.hashCode();
+        }
+    }
 
-		public long getTime() {
-			return _time;
-		}
+    private class CommitHandler implements Runnable {
 
-		@Override
-		public boolean equals(Object obj) {
-			if (obj == this) return true;
-			if (obj == null) return false;
-			return (obj instanceof Commitable) && _object.equals(obj);
-		}
+        private CommitHandler() {
+        }
 
-		@Override
-		public int hashCode() {
-			return _object.hashCode();
-		}
-	}
+        public void run() {
+            Thread.currentThread().setName("CommitHandler");
+            processAllLoop();
+        }
+    }
 }

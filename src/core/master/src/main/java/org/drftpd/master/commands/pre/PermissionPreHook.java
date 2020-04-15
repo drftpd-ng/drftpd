@@ -18,8 +18,8 @@ package org.drftpd.master.commands.pre;
 
 import org.drftpd.common.extensibility.CommandHook;
 import org.drftpd.common.extensibility.HookType;
-import org.drftpd.master.commands.CommandRequestInterface;
 import org.drftpd.master.commands.CommandRequest;
+import org.drftpd.master.commands.CommandRequestInterface;
 import org.drftpd.master.commands.CommandResponse;
 import org.drftpd.master.permissions.Permission;
 import org.drftpd.master.usermanager.User;

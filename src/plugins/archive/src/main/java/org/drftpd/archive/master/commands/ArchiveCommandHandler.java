@@ -17,23 +17,22 @@
  */
 package org.drftpd.archive.master.commands;
 
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
-
-import org.drftpd.master.GlobalContext;
-import org.drftpd.common.extensibility.PluginInterface;
-import org.drftpd.master.slavemanagement.RemoteSlave;
-import org.drftpd.master.commands.*;
-import org.drftpd.master.sections.SectionInterface;
-import org.drftpd.master.usermanager.User;
-import org.drftpd.master.vfs.DirectoryHandle;
-import org.drftpd.master.vfs.ObjectNotValidException;
+import org.apache.logging.log4j.Logger;
 import org.drftpd.archive.master.Archive;
 import org.drftpd.archive.master.DuplicateArchiveException;
 import org.drftpd.archive.master.archivetypes.ArchiveHandler;
 import org.drftpd.archive.master.archivetypes.ArchiveType;
+import org.drftpd.common.extensibility.PluginInterface;
+import org.drftpd.master.GlobalContext;
+import org.drftpd.master.commands.*;
+import org.drftpd.master.sections.SectionInterface;
+import org.drftpd.master.slavemanagement.RemoteSlave;
+import org.drftpd.master.usermanager.User;
+import org.drftpd.master.vfs.DirectoryHandle;
+import org.drftpd.master.vfs.ObjectNotValidException;
 import org.drftpd.slave.exceptions.ObjectNotFoundException;
+
 import java.io.FileNotFoundException;
 import java.util.*;
 
@@ -45,36 +44,36 @@ import java.util.*;
 public class ArchiveCommandHandler extends CommandInterface {
     private static final Logger logger = LogManager.getLogger(ArchiveCommandHandler.class);
 
-	private ResourceBundle _bundle;
-	
-    public void initialize(String method, String pluginName, StandardCommandManager cManager) {
-    	super.initialize(method, pluginName, cManager);
-    	_bundle = cManager.getResourceBundle();
+    private ResourceBundle _bundle;
 
-    }
-    
     public ArchiveCommandHandler() {
         super();
     }
-    
+
+    public void initialize(String method, String pluginName, StandardCommandManager cManager) {
+        super.initialize(method, pluginName, cManager);
+        _bundle = cManager.getResourceBundle();
+
+    }
+
     private Archive getArchive() throws ObjectNotFoundException {
-    	Archive archive = null;
-		List<PluginInterface> pluginList = GlobalContext.getGlobalContext().getPlugins();
-		for (PluginInterface pi : pluginList) {
-			if (pi instanceof Archive) {
-				archive = (Archive) pi;
-				return archive;
-			}
-		}
-		throw new ObjectNotFoundException("Archive is not loaded");
-	}
+        Archive archive = null;
+        List<PluginInterface> pluginList = GlobalContext.getGlobalContext().getPlugins();
+        for (PluginInterface pi : pluginList) {
+            if (pi instanceof Archive) {
+                archive = (Archive) pi;
+                return archive;
+            }
+        }
+        throw new ObjectNotFoundException("Archive is not loaded");
+    }
 
     public CommandResponse doARCHIVE(CommandRequest request) throws ImproperUsageException {
-    	CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
+        CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
         Map<String, Object> env = new HashMap<>();
-        
+
         if (!request.hasArgument()) {
-        	throw new ImproperUsageException();
+            throw new ImproperUsageException();
         }
 
         StringTokenizer st = new StringTokenizer(request.getArgument());
@@ -83,23 +82,23 @@ public class ArchiveCommandHandler extends CommandInterface {
         User user = request.getSession().getUserNull(request.getUser());
 
         try {
-			dir = request.getCurrentDirectory().getDirectory(dirname, user);
-		} catch (FileNotFoundException e1) {
-			env.put("dirname", dirname);
-			response.addComment(request.getSession().jprintf(_bundle, env,  "baddir"));
+            dir = request.getCurrentDirectory().getDirectory(dirname, user);
+        } catch (FileNotFoundException e1) {
+            env.put("dirname", dirname);
+            response.addComment(request.getSession().jprintf(_bundle, env, "baddir"));
 
-			return response;
-		} catch (ObjectNotValidException e) {
-			response.addComment("Archive only works on Directories");
-			return response;
-		}
+            return response;
+        } catch (ObjectNotValidException e) {
+            response.addComment("Archive only works on Directories");
+            return response;
+        }
 
         Archive archive;
 
         try {
             archive = getArchive();
         } catch (ObjectNotFoundException e3) {
-        	response.addComment(request.getSession().jprintf(_bundle, env, "loadarchive"));
+            response.addComment(request.getSession().jprintf(_bundle, env, "loadarchive"));
             return response;
         }
 
@@ -107,7 +106,7 @@ public class ArchiveCommandHandler extends CommandInterface {
         ArchiveType archiveType = null;
 
         SectionInterface section = GlobalContext.getGlobalContext().getSectionManager().lookup(dir);
-        
+
         if (st.hasMoreTokens()) { // load the specific type
             archiveTypeName = st.nextToken();
 
@@ -116,14 +115,14 @@ public class ArchiveCommandHandler extends CommandInterface {
             while (st.hasMoreTokens()) {
                 addConfig(props, st.nextToken());
             }
-            
-            archiveType = archive.getArchiveType(0,archiveTypeName,section,props);
+
+            archiveType = archive.getArchiveType(0, archiveTypeName, section, props);
             if (archiveType == null) {
                 logger.error("Serious error, ArchiveType: {} does not exists", archiveTypeName);
-				env.put("archivetypename", archiveTypeName);
-				response.addComment(request.getSession().jprintf(_bundle, env, "incompatible"));
-				return response;
-			}
+                env.put("archivetypename", archiveTypeName);
+                response.addComment(request.getSession().jprintf(_bundle, env, "incompatible"));
+                return response;
+            }
         }
 
         HashSet<RemoteSlave> slaveSet = new HashSet<>();
@@ -142,7 +141,7 @@ public class ArchiveCommandHandler extends CommandInterface {
 
         archiveType.setDirectory(dir);
 
-        
+
         try {
             archive.checkPathForArchiveStatus(dir.getPath());
         } catch (DuplicateArchiveException e) {
@@ -183,7 +182,7 @@ public class ArchiveCommandHandler extends CommandInterface {
     }
 
     public CommandResponse doLISTARCHIVETYPES(CommandRequest request) {
-    	CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
+        CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
         int x = 1;
         Map<String, Object> env = new HashMap<>();
         Archive archive;
@@ -191,20 +190,20 @@ public class ArchiveCommandHandler extends CommandInterface {
         try {
             archive = getArchive();
         } catch (ObjectNotFoundException e) {
-        	response.addComment(request.getSession().jprintf(_bundle, env, "loadarchive"));
+            response.addComment(request.getSession().jprintf(_bundle, env, "loadarchive"));
             return response;
         }
 
-        for (Iterator<String> iter = archive.getTypesMap().keySet().iterator();iter.hasNext();x++) {
-        	String type = iter.next();
-            response.addComment(x + ": " + type);        	
+        for (Iterator<String> iter = archive.getTypesMap().keySet().iterator(); iter.hasNext(); x++) {
+            String type = iter.next();
+            response.addComment(x + ": " + type);
         }
-        
+
         return response;
     }
 
     public String[] getFeatReplies() {
         return null;
     }
-    
+
 }

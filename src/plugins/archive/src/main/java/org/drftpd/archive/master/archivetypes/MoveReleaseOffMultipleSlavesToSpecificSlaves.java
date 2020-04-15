@@ -17,13 +17,13 @@
  */
 package org.drftpd.archive.master.archivetypes;
 
+import org.drftpd.archive.master.Archive;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
-import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.master.sections.SectionInterface;
+import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.master.vfs.InodeHandle;
-import org.drftpd.archive.master.Archive;
 
 import java.io.FileNotFoundException;
 import java.util.Collections;
@@ -35,35 +35,35 @@ import java.util.Set;
  */
 public class MoveReleaseOffMultipleSlavesToSpecificSlaves extends ArchiveType {
 
-	/*
-	 * Constructor:
-	 */
-	public MoveReleaseOffMultipleSlavesToSpecificSlaves(Archive archive, SectionInterface section, Properties props, int confnum) {
-		super(archive, section, props, confnum);
+    /*
+     * Constructor:
+     */
+    public MoveReleaseOffMultipleSlavesToSpecificSlaves(Archive archive, SectionInterface section, Properties props, int confnum) {
+        super(archive, section, props, confnum);
 
-		if (_slaveList.isEmpty()) {
-			throw new NullPointerException("Cannot continue, 0 destination slaves found for MoveReleaseOffSlavesToMostFreeSlaves for conf number " + confnum);
-		}
+        if (_slaveList.isEmpty()) {
+            throw new NullPointerException("Cannot continue, 0 destination slaves found for MoveReleaseOffSlavesToMostFreeSlaves for conf number " + confnum);
+        }
 
-		if (_numOfSlaves < 1) {
-			throw new IllegalArgumentException("numOfSlaves has to be > 0 for conf number " + confnum);
-		}
-	}
+        if (_numOfSlaves < 1) {
+            throw new IllegalArgumentException("numOfSlaves has to be > 0 for conf number " + confnum);
+        }
+    }
 
-	/*
-	 *  This finds
-	 */
-	@Override
-	public Set<RemoteSlave> findDestinationSlaves() {
-		return _slaveList == null ? null : Collections.unmodifiableSet(_slaveList);
-	}
+    /*
+     *  This finds
+     */
+    @Override
+    public Set<RemoteSlave> findDestinationSlaves() {
+        return _slaveList == null ? null : Collections.unmodifiableSet(_slaveList);
+    }
 
-	/*
-	 * Checks if the dir/file is already archived
-	 * Also checks if it is removed from all slaves.
-	 */
-	@Override
-	protected boolean isArchivedDir(DirectoryHandle lrf) throws IncompleteDirectoryException, OfflineSlaveException, FileNotFoundException {
+    /*
+     * Checks if the dir/file is already archived
+     * Also checks if it is removed from all slaves.
+     */
+    @Override
+    protected boolean isArchivedDir(DirectoryHandle lrf) throws IncompleteDirectoryException, OfflineSlaveException, FileNotFoundException {
         for (InodeHandle inode : lrf.getInodeHandlesUnchecked()) {
             if (inode.isLink()) {
             } else if (inode instanceof DirectoryHandle) {
@@ -92,14 +92,14 @@ public class MoveReleaseOffMultipleSlavesToSpecificSlaves extends ArchiveType {
 
             }
         }
-		return isArchivedToSpecificSlaves(lrf, _numOfSlaves,_slaveList);
-	}
+        return isArchivedToSpecificSlaves(lrf, _numOfSlaves, _slaveList);
+    }
 
-	/*
-	 * Outs this as a string to show what is being archived.
-	 */
-	@Override
-	public String toString() {
-		return "MoveReleaseOffSlavesToMostFreeSlaves=[directory=[" + getDirectory().getPath() + "]dest=[" + outputSlaves(findDestinationSlaves()) + "]numOfSlaves=[" + _numOfSlaves + "]]";
-	}
+    /*
+     * Outs this as a string to show what is being archived.
+     */
+    @Override
+    public String toString() {
+        return "MoveReleaseOffSlavesToMostFreeSlaves=[directory=[" + getDirectory().getPath() + "]dest=[" + outputSlaves(findDestinationSlaves()) + "]numOfSlaves=[" + _numOfSlaves + "]]";
+    }
 }

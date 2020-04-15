@@ -24,5 +24,5 @@ import org.drftpd.master.cron.TimeEventInterface;
  */
 public interface UserResetHookInterface extends TimeEventInterface {
 
-	void init();
+    void init();
 }

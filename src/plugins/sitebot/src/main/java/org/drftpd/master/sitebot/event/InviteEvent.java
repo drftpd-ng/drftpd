@@ -22,32 +22,31 @@ import org.drftpd.master.usermanager.User;
 
 /**
  * @author mog
- * 
  * @version $Id$
  */
 public class InviteEvent extends Event {
-	private String _ircNick;
+    private final String _ircNick;
 
-	private User _user;
+    private final User _user;
 
-	private String _targetBot;
+    private final String _targetBot;
 
-	public InviteEvent(String command, String ircUser, User user, String targetBot) {
-		super(command, System.currentTimeMillis());
-		_ircNick = ircUser;
-		_user = user;
-		_targetBot = targetBot;
-	}
+    public InviteEvent(String command, String ircUser, User user, String targetBot) {
+        super(command, System.currentTimeMillis());
+        _ircNick = ircUser;
+        _user = user;
+        _targetBot = targetBot;
+    }
 
-	public String getIrcNick() {
-		return _ircNick;
-	}
+    public String getIrcNick() {
+        return _ircNick;
+    }
 
-	public User getUser() {
-		return _user;
-	}
+    public User getUser() {
+        return _user;
+    }
 
-	public String getTargetBot() {
-		return _targetBot;
-	}
+    public String getTargetBot() {
+        return _targetBot;
+    }
 }

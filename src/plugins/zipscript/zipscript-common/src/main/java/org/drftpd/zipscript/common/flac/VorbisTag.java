@@ -25,7 +25,7 @@ import java.io.Serializable;
 @SuppressWarnings("serial")
 public class VorbisTag implements Serializable {
 
-	private String _artist = "";
+    private String _artist = "";
     private String _album = "";
     private String _title = "";
     private String _year = "";

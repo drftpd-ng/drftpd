@@ -27,26 +27,26 @@ import java.io.IOException;
  * @version $Id$
  */
 public class PropertyBuilder {
-	private File _baseFile;
+    private final File _baseFile;
 
-	private int _prefixLength;
+    private final int _prefixLength;
 
-	public PropertyBuilder(File file) {
-		_baseFile = file;
-		_prefixLength = file.getPath().length() + 1;
-	}
+    public PropertyBuilder(File file) {
+        _baseFile = file;
+        _prefixLength = file.getPath().length() + 1;
+    }
 
-	public static void main(String[] args) throws IOException {
-		PropertyBuilder pb = new PropertyBuilder(new File(args[0]));
-		pb.findAndReadFiles();
-	}
+    public static void main(String[] args) throws IOException {
+        PropertyBuilder pb = new PropertyBuilder(new File(args[0]));
+        pb.findAndReadFiles();
+    }
 
-	public void findAndReadFiles() throws IOException {
-		findAndReadFiles(_baseFile);
-	}
+    public void findAndReadFiles() throws IOException {
+        findAndReadFiles(_baseFile);
+    }
 
-	private void findAndReadFiles(File file) throws IOException {
-		File[] files = file.listFiles();
+    private void findAndReadFiles(File file) throws IOException {
+        File[] files = file.listFiles();
 
         for (File file2 : files) {
             if (file2.isDirectory()) {
@@ -79,5 +79,5 @@ public class PropertyBuilder {
                 }
             }
         }
-	}
+    }
 }

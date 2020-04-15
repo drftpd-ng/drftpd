@@ -24,13 +24,13 @@
  *    Alternately, this acknowledgment may appear in the software itself,
  *    if and wherever such third-party acknowledgments normally appear.
  *
- * 4. The names "Apache" and "Apache Software Foundation", "Jakarta-Oro" 
+ * 4. The names "Apache" and "Apache Software Foundation", "Jakarta-Oro"
  *    must not be used to endorse or promote products derived from this
  *    software without prior written permission. For written
  *    permission, please contact apache@apache.org.
  *
- * 5. Products derived from this software may not be called "Apache" 
- *    or "Jakarta-Oro", nor may "Apache" or "Jakarta-Oro" appear in their 
+ * 5. Products derived from this software may not be called "Apache"
+ *    or "Jakarta-Oro", nor may "Apache" or "Jakarta-Oro" appear in their
  *    name, without prior written permission of the Apache Software Foundation.
  *
  * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
@@ -51,11 +51,12 @@
  * individuals on behalf of the Apache Software Foundation.  For more
  * information on the Apache Software Foundation, please see
  * <http://www.apache.org/>.
- * 
- * 
+ *
+ *
  */
 
 package org.drftpd.common.util;
+
 import java.util.regex.Pattern;
 
 
@@ -66,11 +67,11 @@ import java.util.regex.Pattern;
  * matching glob expressions, we have simply reused the Perl5 regular expression
  * classes from java.util.regex by making GlobPattern translate a
  * glob expression into a Perl5 expression that is compiled by a Pattern.
- * 
+ * <p>
  * The code is taken from Apache's Jakarta ORO implementation from
  * https://svn.apache.org/repos/asf/jakarta/oro/trunk/docs/api/org/apache/oro/text/GlobCompiler.html
- * 
- *  * <p>
+ * <p>
+ * * <p>
  * The GlobCompiler expression syntax is based on Unix shell glob expressions
  * but should be usable to simulate Win32 wildcards. The following syntax is
  * supported:
@@ -100,139 +101,138 @@ import java.util.regex.Pattern;
  * Please remember that the when you construct a Java string in Java code, the
  * backslash character is itself a special Java character, and it must be double
  * backslashed to represent single backslash in a regular expression.
- *
  */
 public class GlobPattern {
 
-	private static boolean __isPerl5MetaCharacter(char ch) {
-		return (ch == '*' || ch == '?' || ch == '+' || ch == '[' || ch == ']' || ch == '(' || ch == ')' || ch == '|'
-				|| ch == '^' || ch == '$' || ch == '.' || ch == '{' || ch == '}' || ch == '\\');
-	}
+    /**
+     * Inhibit construction, a Pattern would be nice, but we can't inherit from it
+     */
+    private GlobPattern() {
+    }
 
-	private static boolean __isGlobMetaCharacter(char ch) {
-		return (ch == '*' || ch == '?' || ch == '[' || ch == ']');
-	}
+    private static boolean __isPerl5MetaCharacter(char ch) {
+        return (ch == '*' || ch == '?' || ch == '+' || ch == '[' || ch == ']' || ch == '(' || ch == ')' || ch == '|'
+                || ch == '^' || ch == '$' || ch == '.' || ch == '{' || ch == '}' || ch == '\\');
+    }
 
-	/**
-	 * This static method is the basic engine of the Glob PatternCompiler
-	 * implementation. It takes a glob expression in the form of a character array
-	 * and converts it into a String representation of a Perl5 pattern. The method
-	 * is made public so that programmers may use it for their own purposes.
-	 * However, the GlobCompiler compile methods work by converting the glob pattern
-	 * to a Perl5 pattern using this method, and then invoking the compile() method
-	 * of an internally stored Perl5Compiler instance.
-	 * <p>
-	 * 
-	 * @param pattern A character array representation of a Glob pattern.
-	 * @return A String representation of a Perl5 pattern equivalent to the Glob
-	 *         pattern.
-	 */
-	public static String toUnixRegexPattern(char[] pattern) {
-		boolean inCharSet;
-		int ch;
-		StringBuffer buffer;
+    private static boolean __isGlobMetaCharacter(char ch) {
+        return (ch == '*' || ch == '?' || ch == '[' || ch == ']');
+    }
 
-		buffer = new StringBuffer(2 * pattern.length);
-		inCharSet = false;
+    /**
+     * This static method is the basic engine of the Glob PatternCompiler
+     * implementation. It takes a glob expression in the form of a character array
+     * and converts it into a String representation of a Perl5 pattern. The method
+     * is made public so that programmers may use it for their own purposes.
+     * However, the GlobCompiler compile methods work by converting the glob pattern
+     * to a Perl5 pattern using this method, and then invoking the compile() method
+     * of an internally stored Perl5Compiler instance.
+     * <p>
+     *
+     * @param pattern A character array representation of a Glob pattern.
+     * @return A String representation of a Perl5 pattern equivalent to the Glob
+     * pattern.
+     */
+    public static String toUnixRegexPattern(char[] pattern) {
+        boolean inCharSet;
+        int ch;
+        StringBuffer buffer;
 
-		for (ch = 0; ch < pattern.length; ch++) {
-			switch (pattern[ch]) {
-			case '*':
-				if (inCharSet)
-					buffer.append('*');
-				else {
-					buffer.append(".*");
-				}
-				break;
-			case '?':
-				if (inCharSet)
-					buffer.append('?');
-				else {
-					buffer.append('.');
-				}
-				break;
-			case '[':
-				inCharSet = true;
-				buffer.append(pattern[ch]);
+        buffer = new StringBuffer(2 * pattern.length);
+        inCharSet = false;
 
-				if (ch + 1 < pattern.length) {
-					switch (pattern[ch + 1]) {
-					case '!':
-					case '^':
-						buffer.append('^');
-						++ch;
-						continue;
-					case ']':
-						buffer.append(']');
-						++ch;
-						continue;
-					}
-				}
-				break;
-			case ']':
-				inCharSet = false;
-				buffer.append(pattern[ch]);
-				break;
-			case '\\':
-				buffer.append('\\');
-				if (ch == pattern.length - 1) {
-					buffer.append('\\');
-				} else if (__isGlobMetaCharacter(pattern[ch + 1]))
-					buffer.append(pattern[++ch]);
-				else
-					buffer.append('\\');
-				break;
-			default:
-				if (!inCharSet && __isPerl5MetaCharacter(pattern[ch]))
-					buffer.append('\\');
-				buffer.append(pattern[ch]);
-				break;
-			}
-		}
+        for (ch = 0; ch < pattern.length; ch++) {
+            switch (pattern[ch]) {
+                case '*':
+                    if (inCharSet)
+                        buffer.append('*');
+                    else {
+                        buffer.append(".*");
+                    }
+                    break;
+                case '?':
+                    if (inCharSet)
+                        buffer.append('?');
+                    else {
+                        buffer.append('.');
+                    }
+                    break;
+                case '[':
+                    inCharSet = true;
+                    buffer.append(pattern[ch]);
 
-		return buffer.toString();
-	}
+                    if (ch + 1 < pattern.length) {
+                        switch (pattern[ch + 1]) {
+                            case '!':
+                            case '^':
+                                buffer.append('^');
+                                ++ch;
+                                continue;
+                            case ']':
+                                buffer.append(']');
+                                ++ch;
+                                continue;
+                        }
+                    }
+                    break;
+                case ']':
+                    inCharSet = false;
+                    buffer.append(pattern[ch]);
+                    break;
+                case '\\':
+                    buffer.append('\\');
+                    if (ch == pattern.length - 1) {
+                        buffer.append('\\');
+                    } else if (__isGlobMetaCharacter(pattern[ch + 1]))
+                        buffer.append(pattern[++ch]);
+                    else
+                        buffer.append('\\');
+                    break;
+                default:
+                    if (!inCharSet && __isPerl5MetaCharacter(pattern[ch]))
+                        buffer.append('\\');
+                    buffer.append(pattern[ch]);
+                    break;
+            }
+        }
 
-	/**
-	 * Inhibit construction, a Pattern would be nice, but we can't inherit from it
-	 */
-	private GlobPattern() {
-	}
+        return buffer.toString();
+    }
 
-	/**
-	 * Transparent call of the Pattern compile, with a translated regex from
-	 * globPattern
-	 * 
-	 * @param globPattern globbing expression to use for the regexp
-	 * @return a full fledged Pattern
-	 */
-	public static Pattern compile(String globPattern) {
+    /**
+     * Transparent call of the Pattern compile, with a translated regex from
+     * globPattern
+     *
+     * @param globPattern globbing expression to use for the regexp
+     * @return a full fledged Pattern
+     */
+    public static Pattern compile(String globPattern) {
 
-		return Pattern.compile(toUnixRegexPattern(globPattern.toCharArray()));
-	}
+        return Pattern.compile(toUnixRegexPattern(globPattern.toCharArray()));
+    }
 
-	/**
-	 * Transparent call of the Pattern compile, with a translated regex from
-	 * globPattern with optional flags. This can be used mostly with
-	 * Pattern.CASE_INSENSITIVE
-	 * 
-	 * @param globPattern globbing expression to use for the regexp
-	 * @param flags       flags, as set in Patterns constant
-	 * @return a full fledged Pattern
-	 */
-	public static Pattern compile(String globPattern, int flags) {
+    /**
+     * Transparent call of the Pattern compile, with a translated regex from
+     * globPattern with optional flags. This can be used mostly with
+     * Pattern.CASE_INSENSITIVE
+     *
+     * @param globPattern globbing expression to use for the regexp
+     * @param flags       flags, as set in Patterns constant
+     * @return a full fledged Pattern
+     */
+    public static Pattern compile(String globPattern, int flags) {
 
-		return Pattern.compile(toUnixRegexPattern(globPattern.toCharArray()), flags);
-	}
+        return Pattern.compile(toUnixRegexPattern(globPattern.toCharArray()), flags);
+    }
 
-	/**
-	 * Transparent wrapper for Pattern.matches to avoid the Pattern/Matcher dance
-	 * 
-	 * @param globPattern globbing expression to use for the regexp
-	 * @param input       what to compare
-	 * @return did the string match
-	 */
-	public static boolean matches(String globPattern, CharSequence input) {
-		return Pattern.matches(toUnixRegexPattern(globPattern.toCharArray()), input);
-	}
+    /**
+     * Transparent wrapper for Pattern.matches to avoid the Pattern/Matcher dance
+     *
+     * @param globPattern globbing expression to use for the regexp
+     * @param input       what to compare
+     * @return did the string match
+     */
+    public static boolean matches(String globPattern, CharSequence input) {
+        return Pattern.matches(toUnixRegexPattern(globPattern.toCharArray()), input);
+    }
 }

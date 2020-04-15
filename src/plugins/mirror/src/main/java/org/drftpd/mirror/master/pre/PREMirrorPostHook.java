@@ -86,8 +86,13 @@ public class PREMirrorPostHook {
         }
     }
 
+    @EventSubscriber
+    public void onReloadEvent(ReloadEvent event) {
+        loadConf();
+    }
+
     private class PRETask extends TimerTask {
-        private DirectoryHandle dir;
+        private final DirectoryHandle dir;
 
         public PRETask(DirectoryHandle dir) {
             this.dir = dir;
@@ -100,10 +105,5 @@ public class PREMirrorPostHook {
                 logger.error("Unmirror error: {}", e.getMessage());
             }
         }
-    }
-
-    @EventSubscriber
-    public void onReloadEvent(ReloadEvent event) {
-        loadConf();
     }
 }

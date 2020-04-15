@@ -25,19 +25,19 @@ import java.util.Map;
  */
 public class IMDBEvent {
 
-	private Map<String, Object> _env;
-	private DirectoryHandle _dir;
-	
-	public IMDBEvent(Map<String, Object> env, DirectoryHandle dir) {
-		_env = env;
-		_dir = dir;
-	}
+    private final Map<String, Object> _env;
+    private final DirectoryHandle _dir;
 
-	public Map<String, Object> getEnv() {
-		return _env;
-	}
+    public IMDBEvent(Map<String, Object> env, DirectoryHandle dir) {
+        _env = env;
+        _dir = dir;
+    }
 
-	public DirectoryHandle getDir() {
-		return _dir;
-	}
+    public Map<String, Object> getEnv() {
+        return _env;
+    }
+
+    public DirectoryHandle getDir() {
+        return _dir;
+    }
 }

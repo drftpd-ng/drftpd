@@ -22,19 +22,19 @@ package org.drftpd.jobs.master;
  */
 @SuppressWarnings("serial")
 public class SourceSlaveException extends SlaveException {
-	public SourceSlaveException() {
-		super();
-	}
+    public SourceSlaveException() {
+        super();
+    }
 
-	public SourceSlaveException(Exception e) {
-		super(e);
-	}
+    public SourceSlaveException(Exception e) {
+        super(e);
+    }
 
-	public SourceSlaveException(String s) {
-		super(s);
-	}
+    public SourceSlaveException(String s) {
+        super(s);
+    }
 
-	public SourceSlaveException(Throwable throwable) {
-		super(throwable);
-	}
+    public SourceSlaveException(Throwable throwable) {
+        super(throwable);
+    }
 }

@@ -26,19 +26,19 @@ import java.util.TreeMap;
  */
 public class RootPathContents {
 
-	private long _lastModified;
-	private TreeMap<String,File> _inodes;
+    private final long _lastModified;
+    private final TreeMap<String, File> _inodes;
 
-	public RootPathContents(long lastModified, TreeMap<String,File> inodes) {
-		_lastModified = lastModified;
-		_inodes = inodes;
-	}
+    public RootPathContents(long lastModified, TreeMap<String, File> inodes) {
+        _lastModified = lastModified;
+        _inodes = inodes;
+    }
 
-	public long getLastModified() {
-		return _lastModified;
-	}
+    public long getLastModified() {
+        return _lastModified;
+    }
 
-	public TreeMap<String,File> getInodes() {
-		return _inodes;
-	}
+    public TreeMap<String, File> getInodes() {
+        return _inodes;
+    }
 }

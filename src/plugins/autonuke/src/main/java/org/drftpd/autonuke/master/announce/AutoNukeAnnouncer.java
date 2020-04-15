@@ -16,23 +16,23 @@
  */
 package org.drftpd.autonuke.master.announce;
 
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
+import org.apache.logging.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.autonuke.master.NukeItem;
 import org.drftpd.autonuke.master.event.AutoNukeEvent;
+import org.drftpd.common.util.Bytes;
 import org.drftpd.master.GlobalContext;
+import org.drftpd.master.sections.SectionInterface;
 import org.drftpd.master.sitebot.AbstractAnnouncer;
 import org.drftpd.master.sitebot.AnnounceWriter;
 import org.drftpd.master.sitebot.SiteBot;
 import org.drftpd.master.sitebot.config.AnnounceConfig;
-import org.drftpd.master.util.Time;
-import org.drftpd.common.util.Bytes;
-import org.drftpd.master.sections.SectionInterface;
 import org.drftpd.master.util.ReplacerUtils;
+import org.drftpd.master.util.Time;
 import org.drftpd.master.vfs.DirectoryHandle;
+
 import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.Map;
@@ -42,59 +42,59 @@ import java.util.ResourceBundle;
  * @author scitz0
  */
 public class AutoNukeAnnouncer extends AbstractAnnouncer {
-	private static final Logger logger = LogManager.getLogger(AutoNukeAnnouncer.class);
+    private static final Logger logger = LogManager.getLogger(AutoNukeAnnouncer.class);
 
-	private AnnounceConfig _config;
+    private AnnounceConfig _config;
 
-	public void initialise(AnnounceConfig config, ResourceBundle bundle) {
-		_config = config;
-		// Subscribe to events
-		AnnotationProcessor.process(this);
-	}
+    public void initialise(AnnounceConfig config, ResourceBundle bundle) {
+        _config = config;
+        // Subscribe to events
+        AnnotationProcessor.process(this);
+    }
 
-	public void stop() {
-		// The plugin is unloading so stop asking for events
-		AnnotationProcessor.unprocess(this);
-	}
+    public void stop() {
+        // The plugin is unloading so stop asking for events
+        AnnotationProcessor.unprocess(this);
+    }
 
-	public String[] getEventTypes() {
-		return new String[] { "autonuke" };
-	}
+    public String[] getEventTypes() {
+        return new String[]{"autonuke"};
+    }
 
-	public void setResourceBundle(ResourceBundle bundle) {
-	}
+    public void setResourceBundle(ResourceBundle bundle) {
+    }
 
     @EventSubscriber
-	public void onAutoNukeEvent(AutoNukeEvent event) {
-		NukeItem ni = event.getNukeItem();
-		DirectoryHandle dir = ni.getDir();
-		if (ni.isSubdir()) {
-			dir = dir.getParent();
-		}
-		AnnounceWriter writer = _config.getPathWriter("autonuke", dir);
-		// Check we got a writer back, if it is null do nothing and ignore the event
-		if (writer != null) {
-			Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
-			env.put("dir", dir.getName());
-			env.put("path", dir.getPath());
-			SectionInterface section = GlobalContext.getGlobalContext().getSectionManager().lookup(dir);
-			env.put("section", section.getName());
-			env.put("sectioncolor", section.getColor());
-			try {
-				env.put("user", dir.getUsername());
-				env.put("group", dir.getGroup());
-				env.put("dirsize", Bytes.formatBytes(dir.getSize()));
-				env.put("timeleft", Time.formatTime(ni.getTime() - System.currentTimeMillis()));
-			} catch (FileNotFoundException e) {
+    public void onAutoNukeEvent(AutoNukeEvent event) {
+        NukeItem ni = event.getNukeItem();
+        DirectoryHandle dir = ni.getDir();
+        if (ni.isSubdir()) {
+            dir = dir.getParent();
+        }
+        AnnounceWriter writer = _config.getPathWriter("autonuke", dir);
+        // Check we got a writer back, if it is null do nothing and ignore the event
+        if (writer != null) {
+            Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
+            env.put("dir", dir.getName());
+            env.put("path", dir.getPath());
+            SectionInterface section = GlobalContext.getGlobalContext().getSectionManager().lookup(dir);
+            env.put("section", section.getName());
+            env.put("sectioncolor", section.getColor());
+            try {
+                env.put("user", dir.getUsername());
+                env.put("group", dir.getGroup());
+                env.put("dirsize", Bytes.formatBytes(dir.getSize()));
+                env.put("timeleft", Time.formatTime(ni.getTime() - System.currentTimeMillis()));
+            } catch (FileNotFoundException e) {
                 logger.warn("AutoNukeAnnouncer: Dir gone :( - {}", dir.getPath());
-			}
-			int i = 1;
-			for (String var : event.getData()) {
-				env.put("var"+i, var);
-				i++;
-			}
+            }
+            int i = 1;
+            for (String var : event.getData()) {
+                env.put("var" + i, var);
+                i++;
+            }
 
-			sayOutput(ReplacerUtils.jprintf(event.getIRCString(), env), writer);
-		}
-	}
+            sayOutput(ReplacerUtils.jprintf(event.getIRCString(), env), writer);
+        }
+    }
 }

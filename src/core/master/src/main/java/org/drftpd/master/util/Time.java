@@ -22,59 +22,59 @@ package org.drftpd.master.util;
  * @version $Id$
  */
 public class Time {
-	/**
-	 * @return human readable string for time.
-	 */
-	public static String formatTime(long time) {
-		if (time == 0) {
-			return "0m 0s";
-		}
+    /**
+     * @return human readable string for time.
+     */
+    public static String formatTime(long time) {
+        if (time == 0) {
+            return "0m 0s";
+        }
 
-		// Less than a minute...
-		if (time < (60 * 1000)) {
-			float s = time / 1000F;
-			
-			return s + "s";
-		}
-		
-		// Less than an hour...
-		if (time < (60 * 60 * 1000)) {
-			long min = time / 60000;
-			long s = (time - (min * 60000)) / 1000;
+        // Less than a minute...
+        if (time < (60 * 1000)) {
+            float s = time / 1000F;
 
-			return min + "m " + ((s > 9) ? ("" + s) : (" " + s)) + "s";
-		}
+            return s + "s";
+        }
 
-		// Less than a day...
-		if (time < (24 * 60 * 60 * 1000)) {
-			long h = time / (60 * 60000);
-			long min = (time - (h * 60 * 60000)) / 60000;
+        // Less than an hour...
+        if (time < (60 * 60 * 1000)) {
+            long min = time / 60000;
+            long s = (time - (min * 60000)) / 1000;
 
-			return h + "h " + ((min > 9) ? ("" + min) : (" " + min)) + "m";
-		}
+            return min + "m " + ((s > 9) ? ("" + s) : (" " + s)) + "s";
+        }
 
-		// Over a day...
-		long d = time / (24 * 60 * 60000);
-		long h = (time - (d * 24 * 60 * 60000)) / (60 * 60000);
+        // Less than a day...
+        if (time < (24 * 60 * 60 * 1000)) {
+            long h = time / (60 * 60000);
+            long min = (time - (h * 60 * 60000)) / 60000;
 
-		return d + "d " + ((h > 9) ? ("" + h) : (" " + h)) + "h";
-	}
+            return h + "h " + ((min > 9) ? ("" + min) : (" " + min)) + "m";
+        }
 
-	public static long parseTime(String s) {
-		s = s.toLowerCase();
+        // Over a day...
+        long d = time / (24 * 60 * 60000);
+        long h = (time - (d * 24 * 60 * 60000)) / (60 * 60000);
 
-		if (s.endsWith("ms")) {
-			return Long.parseLong(s.substring(0, s.length() - 2));
-		}
+        return d + "d " + ((h > 9) ? ("" + h) : (" " + h)) + "h";
+    }
 
-		if (s.endsWith("s")) {
-			return Long.parseLong(s.substring(0, s.length() - 1)) * 1000;
-		}
+    public static long parseTime(String s) {
+        s = s.toLowerCase();
 
-		if (s.endsWith("m")) {
-			return Long.parseLong(s.substring(0, s.length() - 1)) * 60000;
-		}
+        if (s.endsWith("ms")) {
+            return Long.parseLong(s.substring(0, s.length() - 2));
+        }
 
-		return Long.parseLong(s);
-	}
+        if (s.endsWith("s")) {
+            return Long.parseLong(s.substring(0, s.length() - 1)) * 1000;
+        }
+
+        if (s.endsWith("m")) {
+            return Long.parseLong(s.substring(0, s.length() - 1)) * 60000;
+        }
+
+        return Long.parseLong(s);
+    }
 }

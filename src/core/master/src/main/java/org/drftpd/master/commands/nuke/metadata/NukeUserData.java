@@ -28,7 +28,7 @@ import java.io.Serializable;
 @SuppressWarnings("serial")
 public class NukeUserData implements Serializable {
 
-	public static final Key<Integer> NUKED = new Key<>(NukeUserData.class, "nuked");
+    public static final Key<Integer> NUKED = new Key<>(NukeUserData.class, "nuked");
     public static final Key<Long> NUKEDBYTES = new Key<>(NukeUserData.class, "nukedBytes");
     public static final Key<Long> LASTNUKED = new Key<>(NukeUserData.class, "lastNuked");
 

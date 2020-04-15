@@ -24,23 +24,23 @@ import org.drftpd.common.network.AsyncResponse;
  */
 @SuppressWarnings("serial")
 public class AsyncResponseSpeedTestInfo extends AsyncResponse {
-	private SpeedTestInfo _speedtest;
+    private final SpeedTestInfo _speedtest;
 
-	public AsyncResponseSpeedTestInfo(String index, SpeedTestInfo speedtest) {
-		super(index);
+    public AsyncResponseSpeedTestInfo(String index, SpeedTestInfo speedtest) {
+        super(index);
 
-		if (speedtest == null) {
-			throw new IllegalArgumentException("speedtest cannot be null");
-		}
+        if (speedtest == null) {
+            throw new IllegalArgumentException("speedtest cannot be null");
+        }
 
-		_speedtest = speedtest;
-	}
+        _speedtest = speedtest;
+    }
 
-	public SpeedTestInfo getSpeedTest() {
-		return _speedtest;
-	}
+    public SpeedTestInfo getSpeedTest() {
+        return _speedtest;
+    }
 
-	public String toString() {
-		return getClass().getName();
-	}
+    public String toString() {
+        return getClass().getName();
+    }
 }

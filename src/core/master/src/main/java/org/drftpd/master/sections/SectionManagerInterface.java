@@ -27,19 +27,19 @@ import java.util.Map;
  * @version $Id$
  */
 public interface SectionManagerInterface {
-	Collection<SectionInterface> getSections();
-	
-	Map<String, SectionInterface> getSectionsMap();
+    Collection<SectionInterface> getSections();
 
-	/**
-	 * getSectionByName()
-	 */
+    Map<String, SectionInterface> getSectionsMap();
+
+    /**
+     * getSectionByName()
+     */
     SectionInterface getSection(String string);
 
-	void reload();
+    void reload();
 
-	/**
-	 * Return the section the Directory is in.
-	 */
+    /**
+     * Return the section the Directory is in.
+     */
     SectionInterface lookup(DirectoryHandle dir);
 }

@@ -64,7 +64,7 @@ import static org.drftpd.master.GlobalContext.getGlobalContext;
 public class ZipscriptPostHook extends SFVTools {
 
     private static final Logger logger = LogManager.getLogger(ZipscriptPostHook.class);
-    private ResourceBundle _bundle;
+    private final ResourceBundle _bundle;
 
     public ZipscriptPostHook() {
         _bundle = Master.getConnectionManager().getCommandManager().getResourceBundle();

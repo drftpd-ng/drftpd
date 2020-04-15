@@ -40,7 +40,7 @@ import java.util.Properties;
 public class StandardCommandManager implements CommandManagerInterface {
 
     private static final Logger logger = LogManager.getLogger(StandardCommandManager.class);
-    private static HashMap<String, CommandResponse> _genericResponses = initGenericResponses();
+    private static final HashMap<String, CommandResponse> _genericResponses = initGenericResponses();
 
     private ThemeResourceBundle _theme;
 
@@ -53,92 +53,6 @@ public class StandardCommandManager implements CommandManagerInterface {
     public StandardCommandManager() {
         // Subscribe to events
         AnnotationProcessor.process(this);
-    }
-
-    public synchronized void initialize(HashMap<String, Properties> requiredCmds, String themeDir) {
-        loadThemes(themeDir);
-
-        HashMap<String, CommandInstanceContainer> commands = new HashMap<>();
-
-        /*	Iterate over the ArrayList of commands that the calling frontend
-         * 	has stated it needs. Check to see whether we have a valid Command
-         * 	extension attached for the command, is so add it to the commands
-         * 	map to be used
-         */
-        for (Entry<String, Properties> requiredCmd : requiredCmds.entrySet()) {
-            Properties properties = requiredCmd.getValue();
-            String methodString = properties.getProperty("method");
-            String classString = properties.getProperty("class");
-            String pluginString = properties.getProperty("plugin");
-            String permsString = properties.getProperty("perms");
-            if (methodString == null || classString == null || pluginString == null || permsString == null) {
-                throw new FatalException("Cannot load command " + requiredCmd.getKey()
-                        + ", make sure method, class, perms and plugin are all specified");
-            }
-
-            try {
-                Class<?> aClass = Class.forName(pluginString + "." + classString);
-                Method commandMethod = aClass.getMethod(methodString, CommandRequest.class);
-                CommandInterface cmdInstance = (CommandInterface) aClass.getConstructor().newInstance();
-                cmdInstance.initialize(methodString, pluginString, this);
-                commands.put(requiredCmd.getKey(), new CommandInstanceContainer(commandMethod, cmdInstance));
-                logger.debug("Adding command implementation {}", requiredCmd.getKey());
-            } catch (Exception e) {
-                // Should be safe to continue, just means this command class won't be available
-                logger.info("Failed to add command handler: {}", requiredCmd, e);
-            }
-        }
-        _commands = commands;
-    }
-
-    private void loadThemes(String themeDir) {
-        // Load the default theme for the frontend as well as any user overrides
-        _theme = new ThemeResourceBundle(themeDir);
-    }
-
-    public CommandResponseInterface execute(CommandRequestInterface request) {
-        CommandInstanceContainer commandContainer = _commands.get(request.getCommand());
-        if (commandContainer == null) {
-            return genericResponse("RESPONSE_502_COMMAND_NOT_IMPLEMENTED");
-        }
-        request.setProperties(request.getSession().getCommands().get(request.getCommand()));
-        CommandResponseInterface response;
-        request = commandContainer.getCommandInterfaceInstance().doPreHooks(request);
-        if (!request.isAllowed()) {
-            response = request.getDeniedResponse();
-            if (response == null) {
-                response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-            }
-            return response;
-        }
-        try {
-            try {
-                response = (CommandResponseInterface) commandContainer.getMethod().invoke(commandContainer.getCommandInterfaceInstance(), new Object[]{request});
-            } catch (InvocationTargetException e) {
-                throw e.getCause();
-            }
-        } catch (ImproperUsageException e) {
-            response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-            String helpString = request.getProperties().getProperty("help.specific");
-            if (helpString == null) {
-                response.addComment("Bug your siteop to add help for the \"" + request.getCommand() + "\" command");
-            } else {
-                Map<String, Object> env = new HashMap<>();
-                env.put("command", request.getCommand().toUpperCase());
-                String answerMessage = ReplacerUtils.jprintf(helpString, env);
-                response.addComment(answerMessage);
-            }
-        } catch (Throwable t) {
-            if (!(t instanceof Error)) {
-                CommandResponseInterface cmdFailed = new CommandResponse(540, "Command execution failed");
-                logger.error("Command {} failed: '{}'", request.getCommand(), request.getArgument(), t);
-                return cmdFailed;
-            }
-            throw (Error) t;
-        }
-
-        commandContainer.getCommandInterfaceInstance().doPostHooks(request, response);
-        return response;
     }
 
     public static CommandResponse genericResponse(String type) {
@@ -246,6 +160,92 @@ public class StandardCommandManager implements CommandManagerInterface {
         genericResponses.put("RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN_FILE_EXISTS", new CommandResponse(553, "Requested action not taken. File exists."));
 
         return genericResponses;
+    }
+
+    public synchronized void initialize(HashMap<String, Properties> requiredCmds, String themeDir) {
+        loadThemes(themeDir);
+
+        HashMap<String, CommandInstanceContainer> commands = new HashMap<>();
+
+        /*	Iterate over the ArrayList of commands that the calling frontend
+         * 	has stated it needs. Check to see whether we have a valid Command
+         * 	extension attached for the command, is so add it to the commands
+         * 	map to be used
+         */
+        for (Entry<String, Properties> requiredCmd : requiredCmds.entrySet()) {
+            Properties properties = requiredCmd.getValue();
+            String methodString = properties.getProperty("method");
+            String classString = properties.getProperty("class");
+            String pluginString = properties.getProperty("plugin");
+            String permsString = properties.getProperty("perms");
+            if (methodString == null || classString == null || pluginString == null || permsString == null) {
+                throw new FatalException("Cannot load command " + requiredCmd.getKey()
+                        + ", make sure method, class, perms and plugin are all specified");
+            }
+
+            try {
+                Class<?> aClass = Class.forName(pluginString + "." + classString);
+                Method commandMethod = aClass.getMethod(methodString, CommandRequest.class);
+                CommandInterface cmdInstance = (CommandInterface) aClass.getConstructor().newInstance();
+                cmdInstance.initialize(methodString, pluginString, this);
+                commands.put(requiredCmd.getKey(), new CommandInstanceContainer(commandMethod, cmdInstance));
+                logger.debug("Adding command implementation {}", requiredCmd.getKey());
+            } catch (Exception e) {
+                // Should be safe to continue, just means this command class won't be available
+                logger.info("Failed to add command handler: {}", requiredCmd, e);
+            }
+        }
+        _commands = commands;
+    }
+
+    private void loadThemes(String themeDir) {
+        // Load the default theme for the frontend as well as any user overrides
+        _theme = new ThemeResourceBundle(themeDir);
+    }
+
+    public CommandResponseInterface execute(CommandRequestInterface request) {
+        CommandInstanceContainer commandContainer = _commands.get(request.getCommand());
+        if (commandContainer == null) {
+            return genericResponse("RESPONSE_502_COMMAND_NOT_IMPLEMENTED");
+        }
+        request.setProperties(request.getSession().getCommands().get(request.getCommand()));
+        CommandResponseInterface response;
+        request = commandContainer.getCommandInterfaceInstance().doPreHooks(request);
+        if (!request.isAllowed()) {
+            response = request.getDeniedResponse();
+            if (response == null) {
+                response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
+            }
+            return response;
+        }
+        try {
+            try {
+                response = (CommandResponseInterface) commandContainer.getMethod().invoke(commandContainer.getCommandInterfaceInstance(), new Object[]{request});
+            } catch (InvocationTargetException e) {
+                throw e.getCause();
+            }
+        } catch (ImproperUsageException e) {
+            response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+            String helpString = request.getProperties().getProperty("help.specific");
+            if (helpString == null) {
+                response.addComment("Bug your siteop to add help for the \"" + request.getCommand() + "\" command");
+            } else {
+                Map<String, Object> env = new HashMap<>();
+                env.put("command", request.getCommand().toUpperCase());
+                String answerMessage = ReplacerUtils.jprintf(helpString, env);
+                response.addComment(answerMessage);
+            }
+        } catch (Throwable t) {
+            if (!(t instanceof Error)) {
+                CommandResponseInterface cmdFailed = new CommandResponse(540, "Command execution failed");
+                logger.error("Command {} failed: '{}'", request.getCommand(), request.getArgument(), t);
+                return cmdFailed;
+            }
+            throw (Error) t;
+        }
+
+        commandContainer.getCommandInterfaceInstance().doPostHooks(request, response);
+        return response;
     }
 
     public CommandRequestInterface newRequest(String originalCommand, String argument, DirectoryHandle directory, String user, Session session, Properties config) {

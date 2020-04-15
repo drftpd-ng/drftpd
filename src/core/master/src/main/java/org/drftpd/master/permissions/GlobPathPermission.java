@@ -30,33 +30,33 @@ import java.util.regex.PatternSyntaxException;
  * @version $Id$
  */
 public class GlobPathPermission extends PathPermission {
-	Pattern _pat;
+    Pattern _pat;
 
-	public GlobPathPermission(Pattern pat, Collection<String> users) {
-		super(users);
-		_pat = pat;
-	}
+    public GlobPathPermission(Pattern pat, Collection<String> users) {
+        super(users);
+        _pat = pat;
+    }
 
-	public GlobPathPermission(String pattern, Collection<String> users) throws PatternSyntaxException {
-		super(users);
-		_pat = GlobPattern.compile(pattern);
-	}
+    public GlobPathPermission(String pattern, Collection<String> users) throws PatternSyntaxException {
+        super(users);
+        _pat = GlobPattern.compile(pattern);
+    }
 
-	public boolean checkPath(InodeHandle inode) {
+    public boolean checkPath(InodeHandle inode) {
 
-		String path = inode.getPath();
-		if (inode.isDirectory() && !inode.getPath().endsWith("/")) {
-			path = inode.getPath().concat("/");
-		}
+        String path = inode.getPath();
+        if (inode.isDirectory() && !inode.getPath().endsWith("/")) {
+            path = inode.getPath().concat("/");
+        }
 
-		return _pat.matcher(path).matches();
-	}
+        return _pat.matcher(path).matches();
+    }
 
-	public Pattern getPattern() {
-		return _pat;
-	}
+    public Pattern getPattern() {
+        return _pat;
+    }
 
-	public String toString() {
-		return getClass().getCanonicalName() + ",pat=" + _pat.pattern() + ",users=" + _users.toString();
-	}
+    public String toString() {
+        return getClass().getCanonicalName() + ",pat=" + _pat.pattern() + ",users=" + _users.toString();
+    }
 }

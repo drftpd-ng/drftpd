@@ -27,19 +27,19 @@ import org.drftpd.common.network.AsyncResponse;
 @SuppressWarnings("serial")
 public class AsyncResponseZipCRCInfo extends AsyncResponse {
 
-	private boolean _integrityOk;
+    private final boolean _integrityOk;
 
-	public AsyncResponseZipCRCInfo(String index, boolean integrityOk) {
-		super(index);
+    public AsyncResponseZipCRCInfo(String index, boolean integrityOk) {
+        super(index);
 
-		_integrityOk = integrityOk;
-	}
+        _integrityOk = integrityOk;
+    }
 
-	public boolean isOk() {
-		return _integrityOk;
-	}
+    public boolean isOk() {
+        return _integrityOk;
+    }
 
-	public String toString() {
-		return getClass().getName();
-	}
+    public String toString() {
+        return getClass().getName();
+    }
 }

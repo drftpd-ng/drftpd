@@ -17,14 +17,16 @@
  */
 package org.drftpd.master.commands.nuke;
 
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
+import org.apache.logging.log4j.Logger;
+import org.drftpd.common.dynamicdata.KeyNotFoundException;
+import org.drftpd.master.GlobalContext;
 import org.drftpd.master.commands.nuke.metadata.NukeData;
 import org.drftpd.master.commands.nuke.metadata.NukeUserData;
-import org.drftpd.master.GlobalContext;
 import org.drftpd.master.commands.usermanagement.UserManagement;
-import org.drftpd.common.dynamicdata.KeyNotFoundException;
+import org.drftpd.master.indexation.AdvancedSearchParams;
+import org.drftpd.master.indexation.IndexEngineInterface;
+import org.drftpd.master.indexation.IndexException;
 import org.drftpd.master.usermanager.NoSuchUserException;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.usermanager.UserFileException;
@@ -32,9 +34,6 @@ import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.InodeHandle;
 import org.drftpd.master.vfs.ObjectNotValidException;
 import org.drftpd.master.vfs.VirtualFileSystem;
-import org.drftpd.master.indexation.AdvancedSearchParams;
-import org.drftpd.master.indexation.IndexEngineInterface;
-import org.drftpd.master.indexation.IndexException;
 import org.drftpd.slave.exceptions.FileExistsException;
 import org.drftpd.slave.exceptions.ObjectNotFoundException;
 
@@ -47,357 +46,356 @@ import java.util.Map;
 
 /**
  * Some nuke misc methods.
+ *
  * @author fr0w
  * @author scitz0
  * @version $Id$
  */
 public class NukeUtils {
-	private static final Logger logger = LogManager.getLogger(NukeUtils.class);
+    public static final String _nukePrefix = "[NUKED]-";
+    private static final Logger logger = LogManager.getLogger(NukeUtils.class);
+    private static final Object _lock = new Object();
 
-	private static final Object _lock = new Object();
+    /**
+     * Calculates the amount of nuked bytes according to the ratio of the user,
+     * size of the release and the multiplier. The formula is this: size * ratio +
+     * size * (multiplier - 1) - size * ratio = will remove the credits the user
+     * won. - size * (multiplier - 1) = that's the penaltie.
+     *
+     * @param size
+     * @param ratio
+     * @param multiplier
+     * @return the amount of nuked bytes.
+     */
+    public static long calculateNukedAmount(long size, float ratio,
+                                            int multiplier) {
+        if (size != 0 && ratio != 0 && multiplier != 0) {
+            return (long) ((size * ratio) + (size * (multiplier - 1)));
+        }
+        /* If size is 0 then there are no nuked bytes.  If ratio is 0
+         * then this user should not lose credits because they do not
+         * earn credits by uploading files.  If multiplier is 0 then
+         * this user is exempt from losing credits due to this nuke.
+         */
 
-	public static final String _nukePrefix = "[NUKED]-";
+        return 0L;
+    }
 
-	/**
-	 * Calculates the amount of nuked bytes according to the ratio of the user,
-	 * size of the release and the multiplier. The formula is this: size * ratio +
-	 * size * (multiplier - 1) - size * ratio = will remove the credits the user
-	 * won. - size * (multiplier - 1) = that's the penaltie.
-	 * 
-	 * @param size
-	 * @param ratio
-	 * @param multiplier
-	 * @return the amount of nuked bytes.
-	 */
-	public static long calculateNukedAmount(long size, float ratio,
-                                                int multiplier) {
-            if (size != 0 && ratio != 0 && multiplier != 0) {
-                return (long) ((size * ratio) + (size * (multiplier - 1)));
-            } 
-            /* If size is 0 then there are no nuked bytes.  If ratio is 0
-             * then this user should not lose credits because they do not
-             * earn credits by uploading files.  If multiplier is 0 then
-             * this user is exempt from losing credits due to this nuke.
-             */
+    public static void getNukeUsers(DirectoryHandle nukeDir,
+                                    Hashtable<String, Long> nukees) throws FileNotFoundException {
+        for (InodeHandle inode : nukeDir.getInodeHandlesUnchecked()) {
 
-            return 0L;
-	}
+            try {
+                if (inode.isDirectory()) {
+                    getNukeUsers((DirectoryHandle) inode, nukees);
+                }
+            } catch (FileNotFoundException e) {
+                continue;
+            }
 
-	public static void getNukeUsers(DirectoryHandle nukeDir,
-			Hashtable<String, Long> nukees) throws FileNotFoundException {
-		for (InodeHandle inode : nukeDir.getInodeHandlesUnchecked()) {
+            try {
+                if (inode.isFile()) {
+                    String owner = inode.getUsername();
+                    Long total = nukees.get(owner);
 
-			try {
-				if (inode.isDirectory()) {
-					getNukeUsers((DirectoryHandle) inode, nukees);
-				}
-			} catch (FileNotFoundException e) {
-				continue;
-			}
+                    if (total == null) {
+                        total = 0L;
+                    }
 
-			try {
-				if (inode.isFile()) {
-					String owner = inode.getUsername();
-					Long total = nukees.get(owner);
+                    total = total + inode.getSize();
+                    nukees.put(owner, total);
+                }
+            } catch (FileNotFoundException e) {
+                // Continue
+            }
+        }
+    }
 
-					if (total == null) {
-						total = 0L;
-					}
+    public static ArrayList<DirectoryHandle> findNukeDirs(DirectoryHandle currentDir, User user, String name, String caller) throws FileNotFoundException {
+        IndexEngineInterface ie = GlobalContext.getGlobalContext().getIndexEngine();
+        Map<String, String> inodes;
 
-					total = total + inode.getSize();
-					nukees.put(owner, total);
-				}
-			} catch (FileNotFoundException e) {
-				// Continue
-			}
-		}
-	}
+        AdvancedSearchParams params = new AdvancedSearchParams();
 
-	public static ArrayList<DirectoryHandle> findNukeDirs(DirectoryHandle currentDir, User user, String name, String caller) throws FileNotFoundException {
-		IndexEngineInterface ie = GlobalContext.getGlobalContext().getIndexEngine();
-		Map<String,String> inodes;
+        params.setExact(name);
+        params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
+        params.setSortField("lastmodified");
+        params.setSortOrder(true);
 
-		AdvancedSearchParams params = new AdvancedSearchParams();
+        try {
+            inodes = ie.advancedFind(currentDir, params, caller);
+        } catch (IndexException e) {
+            throw new FileNotFoundException("Index Exception: " + e.getMessage());
+        }
 
-		params.setExact(name);
-		params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
-		params.setSortField("lastmodified");
-		params.setSortOrder(true);
+        ArrayList<DirectoryHandle> dirsToNuke = new ArrayList<>();
 
-		try {
-			inodes = ie.advancedFind(currentDir, params, caller);
-		} catch (IndexException e) {
-			throw new FileNotFoundException("Index Exception: "+e.getMessage());
-		}
+        for (Map.Entry<String, String> item : inodes.entrySet()) {
+            try {
+                DirectoryHandle inode = new DirectoryHandle(VirtualFileSystem.fixPath(item.getKey()));
+                if (!inode.isHidden(user) && inode.getName().equals(name)) {
+                    dirsToNuke.add(inode);
+                }
+            } catch (FileNotFoundException e) {
+                // This is ok, could be multiple nukes fired and
+                // that is has not yet been reflected in index due to async event.
+            }
+        }
 
-		ArrayList<DirectoryHandle> dirsToNuke = new ArrayList<>();
+        return dirsToNuke;
+    }
 
-		for (Map.Entry<String,String> item : inodes.entrySet()) {
-			try {
-				DirectoryHandle inode = new DirectoryHandle(VirtualFileSystem.fixPath(item.getKey()));
-				if (!inode.isHidden(user) && inode.getName().equals(name)) {
-					dirsToNuke.add(inode);
-				}
-			} catch (FileNotFoundException e) {
-				// This is ok, could be multiple nukes fired and
-				// that is has not yet been reflected in index due to async event.
-			}
-		}
+    /*
+     * Method that stripes nuke prefix from dirs path
+     */
+    public static String getPathWithoutNukePrefix(String path) {
+        String nukeDir = VirtualFileSystem.getLast(path);
+        if (!nukeDir.startsWith(_nukePrefix)) {
+            // No nuke prefix, just return path;
+            return path;
+        }
+        // Get path for dir without nuke prefix
+        String unnukedPath = VirtualFileSystem.stripLast(path);
+        if (!unnukedPath.equals(VirtualFileSystem.separator)) {
+            unnukedPath += VirtualFileSystem.separator;
+        }
+        return unnukedPath + nukeDir.substring(_nukePrefix.length());
+    }
 
-		return dirsToNuke;
-	}
+    /*
+     * Method that adds nuke prefix to path
+     */
+    public static String getPathWithNukePrefix(String path) {
+        String nukeDir = VirtualFileSystem.getLast(path);
+        if (nukeDir.startsWith(_nukePrefix)) {
+            // nuke prefix already added, just return path;
+            return path;
+        }
+        // Get path for dir with nuke prefix
+        String nukedPath = VirtualFileSystem.stripLast(path);
+        if (!nukedPath.equals(VirtualFileSystem.separator)) {
+            nukedPath += VirtualFileSystem.separator;
+        }
+        return nukedPath + _nukePrefix + nukeDir;
+    }
 
-	/*
-	 * Method that stripes nuke prefix from dirs path
-	 */
-	public static String getPathWithoutNukePrefix(String path) {
-		String nukeDir = VirtualFileSystem.getLast(path);
-		if (!nukeDir.startsWith(_nukePrefix)) {
-			// No nuke prefix, just return path;
-			return path;
-		}
-		// Get path for dir without nuke prefix
-		String unnukedPath = VirtualFileSystem.stripLast(path);
-		if (!unnukedPath.equals(VirtualFileSystem.separator)) {
-			unnukedPath += VirtualFileSystem.separator;
-		}
-		return unnukedPath + nukeDir.substring(_nukePrefix.length());
-	}
+    /*
+     * Core functionality to nuke a directory.
+     * Adds NukeData to nukelog and as directory metadata.
+     * Remove credits from users according to multiplier
+     */
+    public static NukeData nuke(DirectoryHandle nukeDir, int multiplier, String reason, User user)
+            throws NukeException {
+        synchronized (_lock) {
+            //Start with checking if this dir is already nuked
+            NukeData end = NukeBeans.getNukeBeans().findPath(getPathWithoutNukePrefix(nukeDir.getPath()));
+            if (end != null) {
+                throw new NukeException(end.getPath() + " already nuked for '" + end.getReason() + "'");
+            }
 
-	/*
-	 * Method that adds nuke prefix to path
-	 */
-	public static String getPathWithNukePrefix(String path) {
-		String nukeDir = VirtualFileSystem.getLast(path);
-		if (nukeDir.startsWith(_nukePrefix)) {
-			// nuke prefix already added, just return path;
-			return path;
-		}
-		// Get path for dir with nuke prefix
-		String nukedPath = VirtualFileSystem.stripLast(path);
-		if (!nukedPath.equals(VirtualFileSystem.separator)) {
-			nukedPath += VirtualFileSystem.separator;
-		}
-		return nukedPath + _nukePrefix + nukeDir;
-	}
+            // aborting transfers on the nuked dir.
+            GlobalContext.getGlobalContext().getSlaveManager().cancelTransfersInDirectory(nukeDir);
 
-	/*
-	 * Core functionality to nuke a directory.
-	 * Adds NukeData to nukelog and as directory metadata.
-	 * Remove credits from users according to multiplier
-	 */
-	public static NukeData nuke(DirectoryHandle nukeDir, int multiplier, String reason, User user)
-			throws NukeException {
-		synchronized (_lock) {
-			//Start with checking if this dir is already nuked
-			NukeData end = NukeBeans.getNukeBeans().findPath(getPathWithoutNukePrefix(nukeDir.getPath()));
-			if (end != null) {
-				throw new NukeException(end.getPath() + " already nuked for '" + end.getReason() + "'");
-			}
+            //get nukees with string as key
+            Hashtable<String, Long> nukees = new Hashtable<>();
 
-			// aborting transfers on the nuked dir.
-			GlobalContext.getGlobalContext().getSlaveManager().cancelTransfersInDirectory(nukeDir);
+            try {
+                getNukeUsers(nukeDir, nukees);
+            } catch (FileNotFoundException e) {
+                // how come this happened? the dir was just there!
+                throw new NukeException("Nuke failed, dir gone!", e);
+            }
 
-			//get nukees with string as key
-			Hashtable<String, Long> nukees = new Hashtable<>();
+            // Converting the String Map to a User Map.
+            HashMap<User, Long> nukees2 = new HashMap<>(nukees.size());
 
-			try {
-				getNukeUsers(nukeDir, nukees);
-			} catch (FileNotFoundException e) {
-				// how come this happened? the dir was just there!
-				throw new NukeException("Nuke failed, dir gone!", e);
-			}
+            for (Map.Entry<String, Long> entry : nukees.entrySet()) {
+                String username = entry.getKey();
+                User nukee;
 
-			// Converting the String Map to a User Map.
-			HashMap<User, Long> nukees2 = new HashMap<>(nukees.size());
-
-			for (Map.Entry<String, Long> entry : nukees.entrySet()) {
-				String username = entry.getKey();
-				User nukee;
-
-				try {
-					nukee = GlobalContext.getGlobalContext().getUserManager().getUserByName(username);
-				} catch (NoSuchUserException e) {
+                try {
+                    nukee = GlobalContext.getGlobalContext().getUserManager().getUserByName(username);
+                } catch (NoSuchUserException e) {
                     logger.warn("Cannot remove credits from {}: {}", username, e.getMessage(), e);
-					nukee = null;
-				} catch (UserFileException e) {
-					throw new NukeException("Cannot read user data for " + username +
-							": " + e.getMessage(), e);
-				}
+                    nukee = null;
+                } catch (UserFileException e) {
+                    throw new NukeException("Cannot read user data for " + username +
+                            ": " + e.getMessage(), e);
+                }
 
-				// nukees contains credits as value
-				if (nukee == null) {
-					Long add = nukees2.get(null);
+                // nukees contains credits as value
+                if (nukee == null) {
+                    Long add = nukees2.get(null);
 
-					if (add == null) {
-						add = 0L;
-					}
+                    if (add == null) {
+                        add = 0L;
+                    }
 
-					nukees2.put(null, add + entry.getValue());
-				} else {
-					nukees2.put(nukee, entry.getValue());
-				}
-			}
+                    nukees2.put(null, add + entry.getValue());
+                } else {
+                    nukees2.put(nukee, entry.getValue());
+                }
+            }
 
-			long nukeDirSize = 0;
-			long nukedAmount = 0;
+            long nukeDirSize = 0;
+            long nukedAmount = 0;
 
-			//update credits, nukedbytes, timesNuked, lastNuked
-			for (Map.Entry<User, Long> entry : nukees2.entrySet()) {
-				User nukee = entry.getKey();
+            //update credits, nukedbytes, timesNuked, lastNuked
+            for (Map.Entry<User, Long> entry : nukees2.entrySet()) {
+                User nukee = entry.getKey();
 
-				long size = entry.getValue();
-				nukeDirSize += size;
+                long size = entry.getValue();
+                nukeDirSize += size;
 
-				if (nukee == null) {
-					continue;
-				}
+                if (nukee == null) {
+                    continue;
+                }
 
-				long debt = NukeUtils.calculateNukedAmount(size,
-						nukee.getKeyedMap().getObjectFloat(UserManagement.RATIO), multiplier);
+                long debt = NukeUtils.calculateNukedAmount(size,
+                        nukee.getKeyedMap().getObjectFloat(UserManagement.RATIO), multiplier);
 
-				nukedAmount += debt;
+                nukedAmount += debt;
 
-				nukee.updateCredits(-debt);
-				nukee.updateUploadedBytes(-size);
+                nukee.updateCredits(-debt);
+                nukee.updateUploadedBytes(-size);
 
-				nukee.getKeyedMap().incrementLong(NukeUserData.NUKEDBYTES, debt);
+                nukee.getKeyedMap().incrementLong(NukeUserData.NUKEDBYTES, debt);
 
-				nukee.getKeyedMap().incrementInt(NukeUserData.NUKED);
-				nukee.getKeyedMap().setObject(NukeUserData.LASTNUKED, System.currentTimeMillis());
+                nukee.getKeyedMap().incrementInt(NukeUserData.NUKED);
+                nukee.getKeyedMap().setObject(NukeUserData.LASTNUKED, System.currentTimeMillis());
 
-				nukee.commit();
-			}
+                nukee.commit();
+            }
 
-			//rename
-			String toDirPath = nukeDir.getParent().getPath();
-			String toName = _nukePrefix + nukeDir.getName();
-			String toFullPath = toDirPath + "/" + toName;
+            //rename
+            String toDirPath = nukeDir.getParent().getPath();
+            String toName = _nukePrefix + nukeDir.getName();
+            String toFullPath = toDirPath + "/" + toName;
 
-			// Save path before rename to add to nukelog
-			String nukeDirPath = nukeDir.getPath();
+            // Save path before rename to add to nukelog
+            String nukeDirPath = nukeDir.getPath();
 
-			try {
-				DirectoryHandle root = GlobalContext.getGlobalContext().getRoot();
-				// Rename
-				nukeDir.renameToUnchecked(root.getNonExistentDirectoryHandle(toFullPath));
-				// Updating reference.
-				nukeDir = root.getDirectoryUnchecked(toFullPath);
-			} catch (IOException ex) {
-				logger.warn(ex, ex);
-				throw new NukeException("Could not rename to '" + toFullPath + "': " + ex.getMessage(), ex);
-			} catch (ObjectNotValidException e) {
-				throw new NukeException(toFullPath + " is not a directory");
-			}
+            try {
+                DirectoryHandle root = GlobalContext.getGlobalContext().getRoot();
+                // Rename
+                nukeDir.renameToUnchecked(root.getNonExistentDirectoryHandle(toFullPath));
+                // Updating reference.
+                nukeDir = root.getDirectoryUnchecked(toFullPath);
+            } catch (IOException ex) {
+                logger.warn(ex, ex);
+                throw new NukeException("Could not rename to '" + toFullPath + "': " + ex.getMessage(), ex);
+            } catch (ObjectNotValidException e) {
+                throw new NukeException(toFullPath + " is not a directory");
+            }
 
-			NukeData nd = new NukeData();
-			nd.setUser(user.getName());
-			nd.setPath(nukeDirPath);
-			nd.setReason(reason);
-			nd.setNukees(nukees);
-			nd.setMultiplier(multiplier);
-			nd.setAmount(nukedAmount);
-			nd.setSize(nukeDirSize);
-			nd.setTime(System.currentTimeMillis());
+            NukeData nd = new NukeData();
+            nd.setUser(user.getName());
+            nd.setPath(nukeDirPath);
+            nd.setReason(reason);
+            nd.setNukees(nukees);
+            nd.setMultiplier(multiplier);
+            nd.setAmount(nukedAmount);
+            nd.setSize(nukeDirSize);
+            nd.setTime(System.currentTimeMillis());
 
-			// adding to the nukelog.
-			NukeBeans.getNukeBeans().add(nd);
+            // adding to the nukelog.
+            NukeBeans.getNukeBeans().add(nd);
 
-			// adding nuke metadata to dir.
-			try {
-				nukeDir.addPluginMetaData(NukeData.NUKEDATA, nd);
-			} catch (FileNotFoundException e) {
+            // adding nuke metadata to dir.
+            try {
+                nukeDir.addPluginMetaData(NukeData.NUKEDATA, nd);
+            } catch (FileNotFoundException e) {
                 logger.warn("Failed to add nuke metadata, dir gone: {}", nukeDir.getPath(), e);
-			}
+            }
 
-			return nd;
-		}
-	}
+            return nd;
+        }
+    }
 
 
-	/*
-	 * Core functionality to unnuke a directory.
-	 * Removes NukeData from nukelog and as directory metadata.
-	 * Readds removed credits from previous nuke.
-	 */
-	public static NukeData unnuke(DirectoryHandle nukeDir, String reason)
-			throws NukeException {
-		synchronized (_lock) {
-			NukeData nd;
+    /*
+     * Core functionality to unnuke a directory.
+     * Removes NukeData from nukelog and as directory metadata.
+     * Readds removed credits from previous nuke.
+     */
+    public static NukeData unnuke(DirectoryHandle nukeDir, String reason)
+            throws NukeException {
+        synchronized (_lock) {
+            NukeData nd;
 
-			String unnukedPath = getPathWithoutNukePrefix(nukeDir.getPath());
+            String unnukedPath = getPathWithoutNukePrefix(nukeDir.getPath());
 
-			try {
-				nd = nukeDir.getPluginMetaData(NukeData.NUKEDATA);
-			} catch (KeyNotFoundException ex) {
-				// Try to get NukeData from nukelog instead
-				try {
-					nd = NukeBeans.getNukeBeans().get(unnukedPath);
-				} catch (ObjectNotFoundException e) {
-					throw new NukeException("Unable to unnuke, dir is not nuked.");
-				}
-			} catch (FileNotFoundException ex) {
-				throw new NukeException("Could not find directory: " + nukeDir.getPath());
-			}
+            try {
+                nd = nukeDir.getPluginMetaData(NukeData.NUKEDATA);
+            } catch (KeyNotFoundException ex) {
+                // Try to get NukeData from nukelog instead
+                try {
+                    nd = NukeBeans.getNukeBeans().get(unnukedPath);
+                } catch (ObjectNotFoundException e) {
+                    throw new NukeException("Unable to unnuke, dir is not nuked.");
+                }
+            } catch (FileNotFoundException ex) {
+                throw new NukeException("Could not find directory: " + nukeDir.getPath());
+            }
 
-			GlobalContext.getGlobalContext().getSlaveManager().cancelTransfersInDirectory(nukeDir);
+            GlobalContext.getGlobalContext().getSlaveManager().cancelTransfersInDirectory(nukeDir);
 
-			try {
-				DirectoryHandle root = GlobalContext.getGlobalContext().getRoot();
-				// Rename
-				nukeDir.renameToUnchecked(root.getNonExistentDirectoryHandle(unnukedPath));
-				// Updating reference.
-				nukeDir = root.getDirectoryUnchecked(unnukedPath);
-			} catch (FileExistsException e) {
-				throw new NukeException("Error renaming nuke, target dir already exist");
-			} catch (FileNotFoundException e) {
-				throw new NukeException("Could not find directory: " + nukeDir.getPath());
-			} catch (ObjectNotValidException e) {
-				throw new NukeException(unnukedPath + " is not a directory");
-			}
+            try {
+                DirectoryHandle root = GlobalContext.getGlobalContext().getRoot();
+                // Rename
+                nukeDir.renameToUnchecked(root.getNonExistentDirectoryHandle(unnukedPath));
+                // Updating reference.
+                nukeDir = root.getDirectoryUnchecked(unnukedPath);
+            } catch (FileExistsException e) {
+                throw new NukeException("Error renaming nuke, target dir already exist");
+            } catch (FileNotFoundException e) {
+                throw new NukeException("Could not find directory: " + nukeDir.getPath());
+            } catch (ObjectNotValidException e) {
+                throw new NukeException(unnukedPath + " is not a directory");
+            }
 
-			for (NukedUser nukeeObj : NukeBeans.getNukeeList(nd)) {
-				String nukeeName = nukeeObj.getUsername();
-				User nukee;
+            for (NukedUser nukeeObj : NukeBeans.getNukeeList(nd)) {
+                String nukeeName = nukeeObj.getUsername();
+                User nukee;
 
-				try {
-					nukee = GlobalContext.getGlobalContext().getUserManager().getUserByName(nukeeName);
-				} catch (NoSuchUserException e) {
-					continue;
-				} catch (UserFileException e) {
-					logger.fatal("error reading userfile", e);
-					continue;
-				}
+                try {
+                    nukee = GlobalContext.getGlobalContext().getUserManager().getUserByName(nukeeName);
+                } catch (NoSuchUserException e) {
+                    continue;
+                } catch (UserFileException e) {
+                    logger.fatal("error reading userfile", e);
+                    continue;
+                }
 
-				long nukedAmount = NukeUtils.calculateNukedAmount(nukeeObj.getAmount(),
-						nukee.getKeyedMap().getObjectFloat(UserManagement.RATIO),
-						nd.getMultiplier());
+                long nukedAmount = NukeUtils.calculateNukedAmount(nukeeObj.getAmount(),
+                        nukee.getKeyedMap().getObjectFloat(UserManagement.RATIO),
+                        nd.getMultiplier());
 
-				nukee.updateCredits(nukedAmount);
-				nukee.updateUploadedBytes(nukeeObj.getAmount());
+                nukee.updateCredits(nukedAmount);
+                nukee.updateUploadedBytes(nukeeObj.getAmount());
 
-				nukee.getKeyedMap().incrementInt(NukeUserData.NUKED, -1);
-				nukee.getKeyedMap().incrementLong(NukeUserData.NUKEDBYTES, -nukedAmount);
+                nukee.getKeyedMap().incrementInt(NukeUserData.NUKED, -1);
+                nukee.getKeyedMap().incrementLong(NukeUserData.NUKEDBYTES, -nukedAmount);
 
-				nukee.commit();
-			}
+                nukee.commit();
+            }
 
-			try {
-				NukeBeans.getNukeBeans().remove(unnukedPath);
-			} catch (ObjectNotFoundException e) {
-				logger.warn("Error removing nukelog entry, unnuking anyway.");
-			}
+            try {
+                NukeBeans.getNukeBeans().remove(unnukedPath);
+            } catch (ObjectNotFoundException e) {
+                logger.warn("Error removing nukelog entry, unnuking anyway.");
+            }
 
-			try {
-				nukeDir.removePluginMetaData(NukeData.NUKEDATA);
-			} catch (FileNotFoundException e) {
+            try {
+                nukeDir.removePluginMetaData(NukeData.NUKEDATA);
+            } catch (FileNotFoundException e) {
                 logger.error("Failed to remove nuke metadata from '{}', dir does not exist anymore", nukeDir.getPath(), e);
-			}
+            }
 
-			nd.setReason(reason);
-			nd.setTime(System.currentTimeMillis());
+            nd.setReason(reason);
+            nd.setTime(System.currentTimeMillis());
 
-			return nd;
-		}
-	}
+            return nd;
+        }
+    }
 }

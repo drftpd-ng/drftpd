@@ -25,61 +25,61 @@ import org.drftpd.common.dynamicdata.Key;
  */
 public class ZipscriptQueryParams {
 
-	public static final Key<ZipscriptQueryParams> ZIPSCRIPTQUERYPARAMS =
+    public static final Key<ZipscriptQueryParams> ZIPSCRIPTQUERYPARAMS =
             new Key<>(ZipscriptQueryParams.class, "zipscriptqueryparams");
-	
-	private Integer _minPresent;
-	private Integer _maxPresent;
-	private Integer _minMissing;
-	private Integer _maxMissing;
-	private Integer _minPercent;
-	private Integer _maxPercent;
-	
-	public Integer getMinPresent() {
-		return _minPresent;
-	}
 
-	public Integer getMaxPresent() {
-		return _maxPresent;
-	}
+    private Integer _minPresent;
+    private Integer _maxPresent;
+    private Integer _minMissing;
+    private Integer _maxMissing;
+    private Integer _minPercent;
+    private Integer _maxPercent;
 
-	public Integer getMinMissing() {
-		return _minMissing;
-	}
+    public Integer getMinPresent() {
+        return _minPresent;
+    }
 
-	public Integer getMaxMissing() {
-		return _maxMissing;
-	}
+    public void setMinPresent(Integer present) {
+        _minPresent = present;
+    }
 
-	public Integer getMinPercent() {
-		return _minPercent;
-	}
+    public Integer getMaxPresent() {
+        return _maxPresent;
+    }
 
-	public Integer getMaxPercent() {
-		return _maxPercent;
-	}
-	
-	public void setMinPresent(Integer present) {
-		_minPresent = present;
-	}
+    public void setMaxPresent(Integer present) {
+        _maxPresent = present;
+    }
 
-	public void setMaxPresent(Integer present) {
-		_maxPresent = present;
-	}
+    public Integer getMinMissing() {
+        return _minMissing;
+    }
 
-	public void setMinMissing(Integer missing) {
-		_minMissing = missing;
-	}
+    public void setMinMissing(Integer missing) {
+        _minMissing = missing;
+    }
 
-	public void setMaxMissing(Integer missing) {
-		_maxMissing = missing;
-	}
+    public Integer getMaxMissing() {
+        return _maxMissing;
+    }
 
-	public void setMinPercent(Integer percent) {
-		_minPercent = percent;
-	}
+    public void setMaxMissing(Integer missing) {
+        _maxMissing = missing;
+    }
 
-	public void setMaxPercent(Integer percent) {
-		_maxPercent = percent;
-	}
+    public Integer getMinPercent() {
+        return _minPercent;
+    }
+
+    public void setMinPercent(Integer percent) {
+        _minPercent = percent;
+    }
+
+    public Integer getMaxPercent() {
+        return _maxPercent;
+    }
+
+    public void setMaxPercent(Integer percent) {
+        _maxPercent = percent;
+    }
 }

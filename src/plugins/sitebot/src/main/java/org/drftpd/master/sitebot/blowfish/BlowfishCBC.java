@@ -1,18 +1,17 @@
 /*
-* BlowfishCBC.java version 1.00.00
-*
-* Code Written by k2r (k2r.contact@gmail.com)
-*
-* This program is free software; you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
-* (at your option) any later version.
-*/
+ * BlowfishCBC.java version 1.00.00
+ *
+ * Code Written by k2r (k2r.contact@gmail.com)
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ */
 package org.drftpd.master.sitebot.blowfish;
 
-import javax.crypto.*;
-import javax.crypto.spec.*;
-
+import javax.crypto.Cipher;
+import javax.crypto.spec.IvParameterSpec;
 import java.security.SecureRandom;
 import java.util.Base64;
 
@@ -23,19 +22,19 @@ import java.util.Base64;
  * Permit to crypt/decrypt string in CBC Blowfish mode
  * Tks to Mouser for his precious help.
  * Tks to Murx for correct Padding and Long key.
- *
+ * <p>
  * Use "encrypt" with the text to encrypt
- *      -> The function will encrypt and return the text with +OK * at the beginning"
- *
+ * -> The function will encrypt and return the text with +OK * at the beginning"
+ * <p>
  * Use "decrypt" with the text to decrypt
- *      -> The text must include the +OK * at the front"
- *
+ * -> The text must include the +OK * at the front"
+ * <p>
  * To Use Key > 16 char, you must update two jar files in your jre or jdk.
- *      Java Cryptography Extension (JCE) Unlimited Strength Jurisdiction Policy Files 8
- *      https://www.oracle.com/technetwork/java/javase/downloads/jce-all-download-5170447.html
+ * Java Cryptography Extension (JCE) Unlimited Strength Jurisdiction Policy Files 8
+ * https://www.oracle.com/technetwork/java/javase/downloads/jce-all-download-5170447.html
  * Update the two files in jre\lib\security
- *      -> local_policy.jar
- *      -> US_export_policy.jar
+ * -> local_policy.jar
+ * -> US_export_policy.jar
  */
 public class BlowfishCBC extends Blowfish {
 
@@ -43,16 +42,14 @@ public class BlowfishCBC extends Blowfish {
      * Default charset for encoding
      */
     private static final String ENCODED_CHARSET = "ISO_8859_1";
-
-    /**
-     * Initial Vector
-     */
-    private final byte[] INIT_IV = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-
     /**
      * CBC irc prefix
      */
     private static final String CBC_PREFIX = "+OK *";
+    /**
+     * Initial Vector
+     */
+    private final byte[] INIT_IV = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
     public BlowfishCBC(String key) {
         super(key, "Blowfish/CBC/NoPadding");
@@ -60,7 +57,7 @@ public class BlowfishCBC extends Blowfish {
 
     public String decrypt(String textToDecrypt) throws Exception {
         if (textToDecrypt.startsWith(CBC_PREFIX)) {
-            textToDecrypt = textToDecrypt.substring(CBC_PREFIX.length(), textToDecrypt.length());
+            textToDecrypt = textToDecrypt.substring(CBC_PREFIX.length());
         } else {
             //Not correct encrypted string, return the source string
             return textToDecrypt;

@@ -50,7 +50,7 @@ public class DiskSelectionFilter extends DiskSelectionInterface {
     private static final Logger logger = LogManager.getLogger(Slave.class);
 
     private ArrayList<DiskFilter> _filters;
-    private RootCollection _rootCollection;
+    private final RootCollection _rootCollection;
     private CaseInsensitiveHashMap<String, Class<? extends DiskFilter>> _filtersMap;
 
     public DiskSelectionFilter(Slave slave) throws IOException {

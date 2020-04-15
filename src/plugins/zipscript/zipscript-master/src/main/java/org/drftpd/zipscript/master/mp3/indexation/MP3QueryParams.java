@@ -25,60 +25,60 @@ import org.drftpd.common.dynamicdata.Key;
  */
 public class MP3QueryParams {
 
-	public static final Key<MP3QueryParams> MP3QUERYPARAMS = new Key<>(MP3QueryParams.class, "mp3queryparams");
-	
-	private String _genre;
-	private String _title;
-	private String _artist;
-	private String _album;
-	private Integer _fromYear;
-	private Integer _toYear;
-	
-	public String getGenre() {
-		return _genre;
-	}
-	
-	public String getTitle() {
-		return _title;
-	}
+    public static final Key<MP3QueryParams> MP3QUERYPARAMS = new Key<>(MP3QueryParams.class, "mp3queryparams");
 
-	public String getArtist() {
-		return _artist;
-	}
+    private String _genre;
+    private String _title;
+    private String _artist;
+    private String _album;
+    private Integer _fromYear;
+    private Integer _toYear;
 
-	public String getAlbum() {
-		return _album;
-	}
+    public String getGenre() {
+        return _genre;
+    }
 
-	public Integer getMinYear() {
-		return _fromYear;
-	}
+    public void setGenre(String genre) {
+        _genre = genre;
+    }
 
-	public Integer getMaxYear() {
-		return _toYear;
-	}
-	
-	public void setGenre(String genre) {
-		_genre = genre;
-	}
-	
-	public void setTitle(String title) {
-		_title = title;
-	}
+    public String getTitle() {
+        return _title;
+    }
 
-	public void setArtist(String artist) {
-		_artist = artist;
-	}
+    public void setTitle(String title) {
+        _title = title;
+    }
 
-	public void setAlbum(String album) {
-		_album = album;
-	}
+    public String getArtist() {
+        return _artist;
+    }
 
-	public void setMinYear(Integer year) {
-		_fromYear = year;
-	}
+    public void setArtist(String artist) {
+        _artist = artist;
+    }
 
-	public void setMaxYear(Integer year) {
-		_toYear = year;
-	}
+    public String getAlbum() {
+        return _album;
+    }
+
+    public void setAlbum(String album) {
+        _album = album;
+    }
+
+    public Integer getMinYear() {
+        return _fromYear;
+    }
+
+    public void setMinYear(Integer year) {
+        _fromYear = year;
+    }
+
+    public Integer getMaxYear() {
+        return _toYear;
+    }
+
+    public void setMaxYear(Integer year) {
+        _toYear = year;
+    }
 }

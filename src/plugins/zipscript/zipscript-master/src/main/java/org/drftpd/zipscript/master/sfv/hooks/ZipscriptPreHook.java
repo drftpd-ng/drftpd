@@ -51,15 +51,15 @@ public class ZipscriptPreHook {
 
     private static final Logger logger = LogManager.getLogger(ZipscriptPreHook.class);
 
-    private boolean _sfvFirstRequired;
+    private final boolean _sfvFirstRequired;
 
-    private boolean _sfvFirstAllowNoExt;
+    private final boolean _sfvFirstAllowNoExt;
 
-    private boolean _sfvDenySubDir;
+    private final boolean _sfvDenySubDir;
 
-    private String _sfvDenySubDirInclude;
+    private final String _sfvDenySubDirInclude;
 
-    private String _sfvDenySubDirExclude;
+    private final String _sfvDenySubDirExclude;
 
     public ZipscriptPreHook() {
         Properties cfg = ConfigLoader.loadPluginConfig("zipscript.conf");

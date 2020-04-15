@@ -45,6 +45,15 @@ public class TrafficManager implements PluginInterface {
 
     private ArrayList<TrafficType> _traffictypes;
 
+    public static TrafficManager getTrafficManager() {
+        for (PluginInterface plugin : GlobalContext.getGlobalContext().getPlugins()) {
+            if (plugin instanceof TrafficManager) {
+                return (TrafficManager) plugin;
+            }
+        }
+        throw new RuntimeException("TrafficManager plugin is not loaded.");
+    }
+
     @Override
     public void startPlugin() {
         AnnotationProcessor.process(this);
@@ -61,15 +70,6 @@ public class TrafficManager implements PluginInterface {
     @EventSubscriber
     public void onReloadEvent(ReloadEvent event) {
         loadConf();
-    }
-
-    public static TrafficManager getTrafficManager() {
-        for (PluginInterface plugin : GlobalContext.getGlobalContext().getPlugins()) {
-            if (plugin instanceof TrafficManager) {
-                return (TrafficManager) plugin;
-            }
-        }
-        throw new RuntimeException("TrafficManager plugin is not loaded.");
     }
 
     /*

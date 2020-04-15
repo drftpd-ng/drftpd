@@ -17,19 +17,18 @@
  */
 package org.drftpd.find.master.action;
 
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
-import org.drftpd.master.GlobalContext;
-import org.drftpd.master.commands.usermanagement.UserManagement;
+import org.apache.logging.log4j.Logger;
 import org.drftpd.common.io.PermissionDeniedException;
+import org.drftpd.master.GlobalContext;
+import org.drftpd.master.commands.CommandRequest;
+import org.drftpd.master.commands.ImproperUsageException;
+import org.drftpd.master.commands.usermanagement.UserManagement;
 import org.drftpd.master.usermanager.NoSuchUserException;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.usermanager.UserFileException;
 import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.master.vfs.InodeHandle;
-import org.drftpd.master.commands.CommandRequest;
-import org.drftpd.master.commands.ImproperUsageException;
 
 import java.io.FileNotFoundException;
 
@@ -38,67 +37,67 @@ import java.io.FileNotFoundException;
  * @version $Id$
  */
 public class DeleteAction implements ActionInterface {
-	public static final Logger logger = LogManager.getLogger(DeleteAction.class);
+    public static final Logger logger = LogManager.getLogger(DeleteAction.class);
 
-	private boolean _failed;
+    private boolean _failed;
 
-	@Override
-	public String name() {
-		return "Delete";
-	}
+    @Override
+    public String name() {
+        return "Delete";
+    }
 
-	@Override
-	public void initialize(String action, String[] args) throws ImproperUsageException {
-	}
+    @Override
+    public void initialize(String action, String[] args) throws ImproperUsageException {
+    }
 
-	private String doDELE(CommandRequest request, InodeHandle inode) {
-		String reply = "";
-		try {
-			// check permission
-			User user = request.getSession().getUserNull(request.getUser());
-			FileHandle file = (FileHandle) inode;
+    private String doDELE(CommandRequest request, InodeHandle inode) {
+        String reply = "";
+        try {
+            // check permission
+            User user = request.getSession().getUserNull(request.getUser());
+            FileHandle file = (FileHandle) inode;
 
-			try {
-				file.delete(user);
-			} catch (PermissionDeniedException e) {
-				_failed = true;
-				return "Access denied for " + file.getPath();
-			}
+            try {
+                file.delete(user);
+            } catch (PermissionDeniedException e) {
+                _failed = true;
+                return "Access denied for " + file.getPath();
+            }
 
-			reply = "Deleted " + file.getPath();
+            reply = "Deleted " + file.getPath();
 
-			User uploader = GlobalContext.getGlobalContext().getUserManager().getUserByName(file.getUsername());
-			uploader.updateCredits((long) -(file.getSize() * uploader.getKeyedMap().getObjectFloat(UserManagement.RATIO)));
-		} catch (UserFileException e) {
-			reply += " - Error removing credits: " + e.getMessage();
-			_failed = true;
-		} catch (NoSuchUserException e) {
-			reply += " - Error removing credits: " + e.getMessage();
-			_failed = true;
-		} catch (FileNotFoundException e) {
-			logger.error("The file was there and now it's gone, how?", e);
-		}
+            User uploader = GlobalContext.getGlobalContext().getUserManager().getUserByName(file.getUsername());
+            uploader.updateCredits((long) -(file.getSize() * uploader.getKeyedMap().getObjectFloat(UserManagement.RATIO)));
+        } catch (UserFileException e) {
+            reply += " - Error removing credits: " + e.getMessage();
+            _failed = true;
+        } catch (NoSuchUserException e) {
+            reply += " - Error removing credits: " + e.getMessage();
+            _failed = true;
+        } catch (FileNotFoundException e) {
+            logger.error("The file was there and now it's gone, how?", e);
+        }
 
-		return reply;
-	}
+        return reply;
+    }
 
-	@Override
-	public boolean execInDirs() {
-		return false;
-	}
+    @Override
+    public boolean execInDirs() {
+        return false;
+    }
 
-	@Override
-	public boolean execInFiles() {
-		return true;
-	}
+    @Override
+    public boolean execInFiles() {
+        return true;
+    }
 
-	@Override
-	public boolean failed() {
-		return _failed;
-	}
+    @Override
+    public boolean failed() {
+        return _failed;
+    }
 
-	@Override
-	public String exec(CommandRequest request, InodeHandle file) {
-		return doDELE(request, file);
-	}
+    @Override
+    public String exec(CommandRequest request, InodeHandle file) {
+        return doDELE(request, file);
+    }
 }

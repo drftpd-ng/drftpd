@@ -26,7 +26,7 @@ import java.util.regex.Pattern;
 
 /**
  * Sample configuration.
- * 
+ *
  * <pre>
  *  X.filter=matchdir
  *  X.assign=&lt;rootNumber&gt;+100000
@@ -34,61 +34,61 @@ import java.util.regex.Pattern;
  *  X.assume.remove=&lt;true&gt;
  *  X.negate.expression=&lt;true&gt;
  * </pre>
- * 
+ *
  * @author scitz0
  * @version $Id$
  */
 public class MatchdirExFilter extends DiskFilter {
 
-	private Pattern _p;
+    private final Pattern _p;
 
-	private boolean _negateExpr;
+    private final boolean _negateExpr;
 
-	public MatchdirExFilter(DiskSelectionFilter diskSelection, Properties p, Integer i) {
-		super(diskSelection, p, i);
-		_assignList = AssignRoot.parseAssign(this, PropertyHelper.getProperty(p, i+ ".assign"));
+    public MatchdirExFilter(DiskSelectionFilter diskSelection, Properties p, Integer i) {
+        super(diskSelection, p, i);
+        _assignList = AssignRoot.parseAssign(this, PropertyHelper.getProperty(p, i + ".assign"));
 
-		boolean assumeRemove = PropertyHelper.getProperty(p, i + ".assume.remove", "false").
-				equalsIgnoreCase("true");
-		// If assume.remove=true, add all roots not assigned a score to be removed
-		if (assumeRemove) {
-			int roots = diskSelection.getRootCollection().getRootList().size();
-			for (int j = 1; j <= roots; j++) {
-				boolean assigned = false;
-				for (AssignParser ap : _assignList) {
-					if (j == ap.getRoot()) {
-						// Score added to root already, skip
-						assigned = true;
-						break;
-					}
-				}
-				if (!assigned) {
-					// Add root to be remove
-					_assignList.add(new AssignParser(j+"+remove"));
-				}
-			}
-		}
+        boolean assumeRemove = PropertyHelper.getProperty(p, i + ".assume.remove", "false").
+                equalsIgnoreCase("true");
+        // If assume.remove=true, add all roots not assigned a score to be removed
+        if (assumeRemove) {
+            int roots = diskSelection.getRootCollection().getRootList().size();
+            for (int j = 1; j <= roots; j++) {
+                boolean assigned = false;
+                for (AssignParser ap : _assignList) {
+                    if (j == ap.getRoot()) {
+                        // Score added to root already, skip
+                        assigned = true;
+                        break;
+                    }
+                }
+                if (!assigned) {
+                    // Add root to be remove
+                    _assignList.add(new AssignParser(j + "+remove"));
+                }
+            }
+        }
 
-		_negateExpr = PropertyHelper.getProperty(p, i + ".negate.expression", "false").
-				equalsIgnoreCase("true");
+        _negateExpr = PropertyHelper.getProperty(p, i + ".negate.expression", "false").
+                equalsIgnoreCase("true");
 
-		try {
-			_p = Pattern.compile(PropertyHelper.getProperty(p, i + ".match"),
-					Pattern.CASE_INSENSITIVE);
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-	}
+        try {
+            _p = Pattern.compile(PropertyHelper.getProperty(p, i + ".match"),
+                    Pattern.CASE_INSENSITIVE);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-	public void process(ScoreChart sc, String path) {
-		Matcher m = _p.matcher(path);
-		boolean validPath = _negateExpr != m.find();
-		if (validPath) {
-			AssignRoot.addScoresToChart(this, _assignList, sc);
-		}
-	}
-	
-	public String toString() {
-		return getClass().getName()+"[pattern="+_p.toString()+",roots="+getAssignList()+"]";
-	}
+    public void process(ScoreChart sc, String path) {
+        Matcher m = _p.matcher(path);
+        boolean validPath = _negateExpr != m.find();
+        if (validPath) {
+            AssignRoot.addScoresToChart(this, _assignList, sc);
+        }
+    }
+
+    public String toString() {
+        return getClass().getName() + "[pattern=" + _p.toString() + ",roots=" + getAssignList() + "]";
+    }
 }

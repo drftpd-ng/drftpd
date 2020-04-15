@@ -25,45 +25,45 @@ import java.io.Serializable;
  */
 @SuppressWarnings("serial")
 public class Key<T> implements Serializable {
-	private String _key;
+    private final String _key;
 
-	private Class<?> _owner;
+    private final Class<?> _owner;
 
-	public Key(Class<?> owner, String key) {
-		assert owner != null;
-		assert key != null;
-		_owner = owner;
-		_key = key;
-	}
-	
-	@SuppressWarnings("unchecked")
-	public boolean equals(Object o) {
-		if (!(o instanceof Key)) {
-			return false;
-		}
+    public Key(Class<?> owner, String key) {
+        assert owner != null;
+        assert key != null;
+        _owner = owner;
+        _key = key;
+    }
 
-		Key<T> ok = (Key<T>) o;
+    @SuppressWarnings("unchecked")
+    public boolean equals(Object o) {
+        if (!(o instanceof Key)) {
+            return false;
+        }
 
-		return ok.getOwner().equals(getOwner()) && ok.getKey().equals(getKey());
-	}
+        Key<T> ok = (Key<T>) o;
 
-	public String getKey() {
-		return _key;
-	}
+        return ok.getOwner().equals(getOwner()) && ok.getKey().equals(getKey());
+    }
 
-	public Class<?> getOwner() {
-		return _owner;
-	}
+    public String getKey() {
+        return _key;
+    }
 
-	public String toString() {
-		return getOwner().getName() + '@' + getKey();
-	}
-	
-	public String toString(T value) {
-		return value.toString();
-	}
+    public Class<?> getOwner() {
+        return _owner;
+    }
 
-	public int hashCode() {
-		return toString().hashCode();
-	}
+    public String toString() {
+        return getOwner().getName() + '@' + getKey();
+    }
+
+    public String toString(T value) {
+        return value.toString();
+    }
+
+    public int hashCode() {
+        return toString().hashCode();
+    }
 }

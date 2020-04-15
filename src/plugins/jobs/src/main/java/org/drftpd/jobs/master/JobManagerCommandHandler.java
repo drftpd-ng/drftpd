@@ -18,9 +18,8 @@ package org.drftpd.jobs.master;
 
 
 import org.drftpd.common.extensibility.PluginInterface;
-import org.drftpd.master.GlobalContext;
-
 import org.drftpd.common.util.Bytes;
+import org.drftpd.master.GlobalContext;
 import org.drftpd.master.commands.*;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.vfs.FileHandle;
@@ -41,14 +40,14 @@ public class JobManagerCommandHandler extends CommandInterface {
 
     private ResourceBundle _bundle;
 
+    public JobManagerCommandHandler() {
+        super();
+    }
+
     public void initialize(String method, String pluginName, StandardCommandManager cManager) {
         super.initialize(method, pluginName, cManager);
         _bundle = cManager.getResourceBundle();
 
-    }
-
-    public JobManagerCommandHandler() {
-        super();
     }
 
     /**
@@ -220,7 +219,8 @@ public class JobManagerCommandHandler extends CommandInterface {
             throw new ImproperUsageException();
         }
         class Range {
-            long _low, _high;
+            final long _low;
+            final long _high;
 
             Range(long low, long high) {
                 if (0 >= low || low > high) {

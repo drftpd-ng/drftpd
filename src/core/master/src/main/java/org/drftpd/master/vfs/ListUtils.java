@@ -32,6 +32,6 @@ public class ListUtils {
         }
 
         return (fileName.indexOf('/') == -1) && (fileName.indexOf('\\') == -1) && (fileName.indexOf('*') == -1) &&
-        !fileName.equals(".") && !fileName.equals("..");
+                !fileName.equals(".") && !fileName.equals("..");
     }
 }

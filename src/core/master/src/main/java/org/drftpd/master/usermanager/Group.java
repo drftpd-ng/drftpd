@@ -27,41 +27,40 @@ import java.util.List;
  * @version $Id$
  */
 public abstract class Group implements Entity {
-	public abstract UserManager getUserManager();
+    public abstract UserManager getUserManager();
 
-	public abstract KeyedMap<Key<?>, Object> getKeyedMap();
+    public abstract KeyedMap<Key<?>, Object> getKeyedMap();
 
-	/**
-	 * Commit changes.
-	 */
-	public abstract void commit();
+    /**
+     * Commit changes.
+     */
+    public abstract void commit();
 
-	public abstract String getName();
+    public abstract String getName();
 
-	public abstract void rename(String groupname) throws GroupExistsException, GroupFileException;
+    public abstract void rename(String groupname) throws GroupExistsException, GroupFileException;
 
-	public abstract List<User> getAdmins();
+    public abstract List<User> getAdmins();
 
-	public abstract boolean isAdmin(User u);
+    public abstract boolean isAdmin(User u);
 
-	// useless for group objects
-	public boolean isMemberOf(String ignore)
-	{
-		return false;
-	}
+    // useless for group objects
+    public boolean isMemberOf(String ignore) {
+        return false;
+    }
 
-	public abstract void purge();
+    public abstract void purge();
 
-	public abstract void addAdmin(User u) throws DuplicateElementException;
+    public abstract void addAdmin(User u) throws DuplicateElementException;
 
-	public abstract void removeAdmin(User u) throws NoSuchFieldException;
+    public abstract void removeAdmin(User u) throws NoSuchFieldException;
 
-	public abstract float getMinRatio();
+    public abstract float getMinRatio();
 
-	public abstract float getMaxRatio();
+    public abstract void setMinRatio(float minRatio);
 
-	public abstract void setMinRatio(float minRatio);
+    public abstract float getMaxRatio();
 
-	public abstract void setMaxRatio(float MaxRatio);
+    public abstract void setMaxRatio(float MaxRatio);
 
 }

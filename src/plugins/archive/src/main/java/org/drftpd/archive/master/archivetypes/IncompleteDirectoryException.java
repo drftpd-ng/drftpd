@@ -23,19 +23,19 @@ package org.drftpd.archive.master.archivetypes;
  */
 @SuppressWarnings("serial")
 public class IncompleteDirectoryException extends Exception {
-	public IncompleteDirectoryException() {
-		super();
-	}
+    public IncompleteDirectoryException() {
+        super();
+    }
 
-	public IncompleteDirectoryException(String arg0) {
-		super(arg0);
-	}
+    public IncompleteDirectoryException(String arg0) {
+        super(arg0);
+    }
 
-	public IncompleteDirectoryException(String arg0, Throwable arg1) {
-		super(arg0, arg1);
-	}
+    public IncompleteDirectoryException(String arg0, Throwable arg1) {
+        super(arg0, arg1);
+    }
 
-	public IncompleteDirectoryException(Throwable arg0) {
-		super(arg0);
-	}
+    public IncompleteDirectoryException(Throwable arg0) {
+        super(arg0);
+    }
 }

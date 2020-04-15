@@ -16,10 +16,6 @@
  */
 package org.drftpd.archive.master;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.ResourceBundle;
-
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.archive.master.event.ArchiveFailedEvent;
@@ -31,85 +27,89 @@ import org.drftpd.master.sitebot.SiteBot;
 import org.drftpd.master.sitebot.config.AnnounceConfig;
 import org.drftpd.master.util.ReplacerUtils;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.ResourceBundle;
+
 /**
  * @author CyBeR
  * @version $Id: ArchiveAnnouncer.java 2072 2010-09-18 22:01:23Z djb61 $
  */
 public class ArchiveAnnouncer extends AbstractAnnouncer {
 
-	private AnnounceConfig _config;
+    private AnnounceConfig _config;
 
-	private ResourceBundle _bundle;
-	
-	public void initialise(AnnounceConfig config, ResourceBundle bundle) {
-		_config = config;
-		_bundle = bundle;
+    private ResourceBundle _bundle;
 
-		// Subscribe to events
-		AnnotationProcessor.process(this);
-	}
+    public void initialise(AnnounceConfig config, ResourceBundle bundle) {
+        _config = config;
+        _bundle = bundle;
 
-	public void stop() {
-		AnnotationProcessor.unprocess(this);
-	}
-
-	public String[] getEventTypes() {
-		return new String[] { "archive_finish", "archive_start", "archive_failed" };
-	}
-	
-	public void setResourceBundle(ResourceBundle bundle) {
-		_bundle = bundle;
-	}
-
-    @EventSubscriber
-	public void onArchiveStartEvent(ArchiveStartEvent event) {
-		AnnounceWriter writer = _config.getPathWriter("archive_start", event.getArchiveType().getDirectory());
-		if (writer != null) {
-			Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
-            
-			env.put("type", event.getArchiveType().getClass().getSimpleName());
-			env.put("rls", event.getArchiveType().getDirectory().getName());
-			env.put("files", event.getJobs().size());
-			env.put("srcdir", event.getArchiveType().getDirectory().getParent().getPath());
-
-			sayOutput(ReplacerUtils.jprintf("archive.start", env, _bundle), writer);
-		}
-	}
-    
-    @EventSubscriber
-	public void onArchiveFinishEvent(ArchiveFinishEvent event) {
-    	AnnounceWriter writer = _config.getPathWriter("archive_finish", event.getArchiveType().getDirectory());
-		if (writer != null) {
-			Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
-            
-			env.put("type", event.getArchiveType().getClass().getSimpleName());
-			env.put("rls", event.getArchiveType().getDirectory().getName());
-			env.put("time", event.getArchiveTime());
-			env.put("srcdir", event.getArchiveType().getDirectory().getParent().getPath());
-			
-			if (event.getArchiveType().getDestinationDirectory() != null) {
-				env.put("destdir", event.getArchiveType().getDestinationDirectory().getParent().getPath());
-				sayOutput(ReplacerUtils.jprintf("archive.finish.move", env, _bundle), writer);
-			} else {
-				sayOutput(ReplacerUtils.jprintf("archive.finish", env, _bundle), writer);
-			}
-		}
+        // Subscribe to events
+        AnnotationProcessor.process(this);
     }
-    
+
+    public void stop() {
+        AnnotationProcessor.unprocess(this);
+    }
+
+    public String[] getEventTypes() {
+        return new String[]{"archive_finish", "archive_start", "archive_failed"};
+    }
+
+    public void setResourceBundle(ResourceBundle bundle) {
+        _bundle = bundle;
+    }
+
     @EventSubscriber
-	public void onArchiveFailedEvent(ArchiveFailedEvent event) {
-    	AnnounceWriter writer = _config.getPathWriter("archive_failed", event.getArchiveType().getDirectory());
-		if (writer != null) {
-			Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
-            
-			env.put("type", event.getArchiveType().getClass().getSimpleName());
-			env.put("rls", event.getArchiveType().getDirectory().getName());
-			env.put("time", event.getArchiveTime());
-			env.put("srcdir", event.getArchiveType().getDirectory().getParent().getPath());
-			env.put("reason", event.getFailReason());
-			
-			sayOutput(ReplacerUtils.jprintf("archive.failed", env, _bundle), writer);
-		}
+    public void onArchiveStartEvent(ArchiveStartEvent event) {
+        AnnounceWriter writer = _config.getPathWriter("archive_start", event.getArchiveType().getDirectory());
+        if (writer != null) {
+            Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
+
+            env.put("type", event.getArchiveType().getClass().getSimpleName());
+            env.put("rls", event.getArchiveType().getDirectory().getName());
+            env.put("files", event.getJobs().size());
+            env.put("srcdir", event.getArchiveType().getDirectory().getParent().getPath());
+
+            sayOutput(ReplacerUtils.jprintf("archive.start", env, _bundle), writer);
+        }
+    }
+
+    @EventSubscriber
+    public void onArchiveFinishEvent(ArchiveFinishEvent event) {
+        AnnounceWriter writer = _config.getPathWriter("archive_finish", event.getArchiveType().getDirectory());
+        if (writer != null) {
+            Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
+
+            env.put("type", event.getArchiveType().getClass().getSimpleName());
+            env.put("rls", event.getArchiveType().getDirectory().getName());
+            env.put("time", event.getArchiveTime());
+            env.put("srcdir", event.getArchiveType().getDirectory().getParent().getPath());
+
+            if (event.getArchiveType().getDestinationDirectory() != null) {
+                env.put("destdir", event.getArchiveType().getDestinationDirectory().getParent().getPath());
+                sayOutput(ReplacerUtils.jprintf("archive.finish.move", env, _bundle), writer);
+            } else {
+                sayOutput(ReplacerUtils.jprintf("archive.finish", env, _bundle), writer);
+            }
+        }
+    }
+
+    @EventSubscriber
+    public void onArchiveFailedEvent(ArchiveFailedEvent event) {
+        AnnounceWriter writer = _config.getPathWriter("archive_failed", event.getArchiveType().getDirectory());
+        if (writer != null) {
+            Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
+
+            env.put("type", event.getArchiveType().getClass().getSimpleName());
+            env.put("rls", event.getArchiveType().getDirectory().getName());
+            env.put("time", event.getArchiveTime());
+            env.put("srcdir", event.getArchiveType().getDirectory().getParent().getPath());
+            env.put("reason", event.getFailReason());
+
+            sayOutput(ReplacerUtils.jprintf("archive.failed", env, _bundle), writer);
+        }
     }
 
 }

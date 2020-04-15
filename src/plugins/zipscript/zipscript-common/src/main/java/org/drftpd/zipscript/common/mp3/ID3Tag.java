@@ -26,13 +26,13 @@ import java.io.Serializable;
 @SuppressWarnings("serial")
 public class ID3Tag implements Serializable {
 
-	private String _artist = "";
+    byte _genre = -1;
+    byte _track = 0;
+    private String _artist = "";
     private String _album = "";
     private String _title = "";
     private String _comment = "";
     private String _year = "";
-    byte _genre = -1;
-    byte _track = 0;
 
     public ID3Tag() {
     }

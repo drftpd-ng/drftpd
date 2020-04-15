@@ -27,70 +27,70 @@ import java.nio.charset.StandardCharsets;
  * @version $Id$
  */
 public class SafeFileWriter extends Writer {
-	private File _actualFile;
+    private final File _actualFile;
 
-	private OutputStreamWriter _out;
+    private final OutputStreamWriter _out;
 
-	private File _tempFile;
+    private final File _tempFile;
 
-	private boolean failed = false;
+    private boolean failed = false;
 
-	public SafeFileWriter(File file) throws IOException {
-		_actualFile = file;
+    public SafeFileWriter(File file) throws IOException {
+        _actualFile = file;
 
-		if (!_actualFile.getAbsoluteFile().getParentFile().canWrite()) {
-			throw new IOException("Can't write to target dir");
-		}
+        if (!_actualFile.getAbsoluteFile().getParentFile().canWrite()) {
+            throw new IOException("Can't write to target dir");
+        }
 
-		File dir = _actualFile.getParentFile();
+        File dir = _actualFile.getParentFile();
 
-		if (dir == null) {
-			dir = new File(".");
-		}
+        if (dir == null) {
+            dir = new File(".");
+        }
 
-		_tempFile = File.createTempFile(_actualFile.getName(), null, dir);
-		_out = new OutputStreamWriter(new FileOutputStream(_tempFile), StandardCharsets.UTF_8);
-	}
+        _tempFile = File.createTempFile(_actualFile.getName(), null, dir);
+        _out = new OutputStreamWriter(new FileOutputStream(_tempFile), StandardCharsets.UTF_8);
+    }
 
-	/**
-	 * @see java.io.File#File(java.lang.String)
-	 */
-	public SafeFileWriter(String fileName) throws IOException {
-		this(new File(fileName));
-	}
+    /**
+     * @see java.io.File#File(java.lang.String)
+     */
+    public SafeFileWriter(String fileName) throws IOException {
+        this(new File(fileName));
+    }
 
-	public void close() throws IOException {
-		_out.flush();
-		_out.close();
+    public void close() throws IOException {
+        _out.flush();
+        _out.close();
 
-		if (!failed) {
+        if (!failed) {
             LogManager.getLogger(SafeFileWriter.class).debug("Renaming {} ({}) to {}", _tempFile, _tempFile.length(), _actualFile);
 
-			if (_actualFile.exists() && !_actualFile.delete()) {
-				throw new IOException("delete() failed");
-			}
+            if (_actualFile.exists() && !_actualFile.delete()) {
+                throw new IOException("delete() failed");
+            }
 
-			if (!_tempFile.exists()) {
-				throw new IOException("source doesn't exist");
-			}
+            if (!_tempFile.exists()) {
+                throw new IOException("source doesn't exist");
+            }
 
-			if (!_tempFile.renameTo(_actualFile)) {
-				throw new IOException("renameTo(" + _tempFile + ", "
-						+ _actualFile + ") failed");
-			}
-		}
-	}
+            if (!_tempFile.renameTo(_actualFile)) {
+                throw new IOException("renameTo(" + _tempFile + ", "
+                        + _actualFile + ") failed");
+            }
+        }
+    }
 
-	public void flush() throws IOException {
-		_out.flush();
-	}
+    public void flush() throws IOException {
+        _out.flush();
+    }
 
-	public void write(char[] cbuf, int off, int len) throws IOException {
-		try {
-			_out.write(cbuf, off, len);
-		} catch (IOException e) {
-			failed = true;
-			throw e;
-		}
-	}
+    public void write(char[] cbuf, int off, int len) throws IOException {
+        try {
+            _out.write(cbuf, off, len);
+        } catch (IOException e) {
+            failed = true;
+            throw e;
+        }
+    }
 }

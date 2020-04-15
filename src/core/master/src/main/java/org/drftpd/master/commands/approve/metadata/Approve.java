@@ -29,17 +29,17 @@ public class Approve implements Serializable {
 
     public static final Key<Boolean> APPROVE = new Key<>(Approve.class, "approve");
 
-	public static boolean isApproved(DirectoryHandle dir) {
-		try {
-			if (dir.getPluginMetaData(APPROVE)) {
-				return true;
-			}
-		} catch (FileNotFoundException e) {
-			// Dir does not exist 
-		} catch (KeyNotFoundException e) {
-			// Key doesn't exist (Good) - ignore
-		}
-		return false;
-	}
-    
+    public static boolean isApproved(DirectoryHandle dir) {
+        try {
+            if (dir.getPluginMetaData(APPROVE)) {
+                return true;
+            }
+        } catch (FileNotFoundException e) {
+            // Dir does not exist
+        } catch (KeyNotFoundException e) {
+            // Key doesn't exist (Good) - ignore
+        }
+        return false;
+    }
+
 }

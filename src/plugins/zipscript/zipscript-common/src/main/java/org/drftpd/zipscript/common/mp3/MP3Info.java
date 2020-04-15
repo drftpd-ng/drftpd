@@ -17,9 +17,9 @@
  */
 package org.drftpd.zipscript.common.mp3;
 
-import java.io.Serializable;
-
 import org.drftpd.common.dynamicdata.Key;
+
+import java.io.Serializable;
 
 /**
  * @author djb61
@@ -28,68 +28,68 @@ import org.drftpd.common.dynamicdata.Key;
 @SuppressWarnings("serial")
 public class MP3Info implements Serializable {
 
-	public static final Key<MP3Info> MP3INFO = new Key<>(MP3Info.class, "mp3");
+    public static final Key<MP3Info> MP3INFO = new Key<>(MP3Info.class, "mp3");
 
-	private ID3Tag _id3tag;
+    private ID3Tag _id3tag;
 
-	private int _bitrate = 0;
+    private int _bitrate = 0;
 
-	private String _samplerate = "";
+    private String _samplerate = "";
 
-	private String _encodingtype = "";
+    private String _encodingtype = "";
 
-	private String _stereoMode = "";
+    private String _stereoMode = "";
 
-	private float _runtime = 0;
+    private float _runtime = 0;
 
-	public MP3Info() {
-	}
+    public MP3Info() {
+    }
 
-	public ID3Tag getID3Tag() {
-		return _id3tag;
-	}
+    public ID3Tag getID3Tag() {
+        return _id3tag;
+    }
 
-	public void setID3Tag(ID3Tag id3tag) {
-		_id3tag = id3tag;
-	}
+    public void setID3Tag(ID3Tag id3tag) {
+        _id3tag = id3tag;
+    }
 
-	public int getBitrate() {
-		return _bitrate;
-	}
+    public int getBitrate() {
+        return _bitrate;
+    }
 
-	public void setBitrate(int bitrate) {
-		_bitrate = bitrate;
-	}
+    public void setBitrate(int bitrate) {
+        _bitrate = bitrate;
+    }
 
-	public String getSamplerate() {
-		return _samplerate;
-	}
+    public String getSamplerate() {
+        return _samplerate;
+    }
 
-	public void setSamplerate(String samplerate) {
-		_samplerate = samplerate;
-	}
+    public void setSamplerate(String samplerate) {
+        _samplerate = samplerate;
+    }
 
-	public String getEncodingtype() {
-		return _encodingtype;
-	}
+    public String getEncodingtype() {
+        return _encodingtype;
+    }
 
-	public void setEncodingtype(String encodingtype) {
-		_encodingtype = encodingtype;
-	}
+    public void setEncodingtype(String encodingtype) {
+        _encodingtype = encodingtype;
+    }
 
-	public String getStereoMode() {
-		return _stereoMode;
-	}
+    public String getStereoMode() {
+        return _stereoMode;
+    }
 
-	public void setStereoMode(String stereoMode) {
-		_stereoMode = stereoMode;
-	}
+    public void setStereoMode(String stereoMode) {
+        _stereoMode = stereoMode;
+    }
 
-	public float getRuntime() {
-		return _runtime;
-	}
+    public float getRuntime() {
+        return _runtime;
+    }
 
-	public void setRuntime(float runtime) {
-		_runtime = runtime;
-	}
+    public void setRuntime(float runtime) {
+        _runtime = runtime;
+    }
 }

@@ -17,10 +17,10 @@
  */
 package org.drftpd.master.slaveselection.filter;
 
+import org.drftpd.common.vfs.InodeHandleInterface;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.master.usermanager.User;
-import org.drftpd.common.vfs.InodeHandleInterface;
 
 import java.net.InetAddress;
 import java.util.Properties;
@@ -28,61 +28,61 @@ import java.util.Properties;
 /**
  * if upload, the inetaddress would be the source. if download, the inetaddress
  * would be the dest.
- * 
+ *
  * @author mog
  * @version $Id$
  */
 public abstract class Filter {
-	public Filter(int i, Properties p) {
-		
-	}
-	
-	public abstract void process(ScoreChart scorechart, User user,
-			InetAddress peer, char direction, InodeHandleInterface inode,
-			RemoteSlave sourceSlave) throws NoAvailableSlaveException;
-	
-	public static float parseMultiplier(String string) {
-		if (string.equalsIgnoreCase("remove")) {
-			return 0;
-		}
+    public Filter(int i, Properties p) {
 
-		boolean isMultiplier;
-		float multiplier = 1;
+    }
 
-		while (string.length() != 0) {
-			char c = string.charAt(0);
+    public static float parseMultiplier(String string) {
+        if (string.equalsIgnoreCase("remove")) {
+            return 0;
+        }
 
-			if (c == '*') {
-				isMultiplier = true;
-				string = string.substring(1);
-			} else if (c == '/') {
-				isMultiplier = false;
-				string = string.substring(1);
-			} else {
-				isMultiplier = true;
-			}
+        boolean isMultiplier;
+        float multiplier = 1;
 
-			int pos = string.indexOf('*');
+        while (string.length() != 0) {
+            char c = string.charAt(0);
 
-			if (pos == -1) {
-				pos = string.length();
-			}
+            if (c == '*') {
+                isMultiplier = true;
+                string = string.substring(1);
+            } else if (c == '/') {
+                isMultiplier = false;
+                string = string.substring(1);
+            } else {
+                isMultiplier = true;
+            }
 
-			int tmp = string.indexOf('/');
+            int pos = string.indexOf('*');
 
-			if ((tmp != -1) && (tmp < pos)) {
-				pos = tmp;
-			}
+            if (pos == -1) {
+                pos = string.length();
+            }
 
-			if (isMultiplier) {
-				multiplier *= Float.parseFloat(string.substring(0, pos));
-			} else {
-				multiplier /= Float.parseFloat(string.substring(0, pos));
-			}
+            int tmp = string.indexOf('/');
 
-			string = string.substring(pos);
-		}
+            if ((tmp != -1) && (tmp < pos)) {
+                pos = tmp;
+            }
 
-		return multiplier;
-	}
+            if (isMultiplier) {
+                multiplier *= Float.parseFloat(string.substring(0, pos));
+            } else {
+                multiplier /= Float.parseFloat(string.substring(0, pos));
+            }
+
+            string = string.substring(pos);
+        }
+
+        return multiplier;
+    }
+
+    public abstract void process(ScoreChart scorechart, User user,
+                                 InetAddress peer, char direction, InodeHandleInterface inode,
+                                 RemoteSlave sourceSlave) throws NoAvailableSlaveException;
 }

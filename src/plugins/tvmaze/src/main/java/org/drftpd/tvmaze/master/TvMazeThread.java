@@ -17,9 +17,8 @@
  */
 package org.drftpd.tvmaze.master;
 
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
+import org.apache.logging.log4j.Logger;
 import org.drftpd.master.vfs.DirectoryHandle;
 
 /**
@@ -27,30 +26,30 @@ import org.drftpd.master.vfs.DirectoryHandle;
  */
 public class TvMazeThread extends Thread {
 
-	private static final Logger logger = LogManager.getLogger(TvMaze.class);
+    private static final Logger logger = LogManager.getLogger(TvMaze.class);
 
-	public TvMazeThread() {
-		setPriority(Thread.MIN_PRIORITY);
-	}
+    public TvMazeThread() {
+        setPriority(Thread.MIN_PRIORITY);
+    }
 
-	@Override
-	public void run() {
-		while (true) {
-			try {
-				if (Thread.interrupted()) {
-					throw new InterruptedException();
-				}
-				// Process one item in queue
-				DirectoryHandle dir = TvMazeConfig.getInstance().getDirToProcess();
-				if (dir != null) {
+    @Override
+    public void run() {
+        while (true) {
+            try {
+                if (Thread.interrupted()) {
+                    throw new InterruptedException();
+                }
+                // Process one item in queue
+                DirectoryHandle dir = TvMazeConfig.getInstance().getDirToProcess();
+                if (dir != null) {
                     logger.debug("Fetching TvMaze data for {}", dir.getPath());
-					TvMazeUtils.getTvMazeInfo(dir);
-				}
-				Thread.sleep(TvMazeUtils.randomNumber());
-			} catch (InterruptedException ie) {
-				logger.info("TvMazeThread interrupted, thread closing");
-				break;
-			}
-		}
-	}
+                    TvMazeUtils.getTvMazeInfo(dir);
+                }
+                Thread.sleep(TvMazeUtils.randomNumber());
+            } catch (InterruptedException ie) {
+                logger.info("TvMazeThread interrupted, thread closing");
+                break;
+            }
+        }
+    }
 }

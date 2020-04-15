@@ -16,14 +16,14 @@
  */
 package org.drftpd.links.master.types.zipincomplete;
 
+import org.drftpd.links.master.LinkType;
+import org.drftpd.master.exceptions.NoAvailableSlaveException;
+import org.drftpd.master.vfs.DirectoryHandle;
+import org.drftpd.zipscript.master.zip.vfs.ZipscriptVFSDataZip;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Properties;
-
-import org.drftpd.zipscript.master.zip.vfs.ZipscriptVFSDataZip;
-import org.drftpd.master.exceptions.NoAvailableSlaveException;
-import org.drftpd.master.vfs.DirectoryHandle;
-import org.drftpd.links.master.LinkType;
 
 /**
  * @author CyBeR
@@ -32,49 +32,49 @@ import org.drftpd.links.master.LinkType;
 
 public class ZipIncomplete extends LinkType {
 
-	public ZipIncomplete(Properties p, int confnum, String type) {
-		super(p, confnum, type);
+    public ZipIncomplete(Properties p, int confnum, String type) {
+        super(p, confnum, type);
 
-	}
+    }
 
-	/*
-	 * This just passes the target dir through to creating the Link
-	 * No special setup is needed for this type.
-	 */
-	@Override
-	public void doCreateLink(DirectoryHandle targetDir) {
-		createLink(targetDir,targetDir.getPath(),targetDir.getName());
-	}
+    /*
+     * This just passes the target dir through to creating the Link
+     * No special setup is needed for this type.
+     */
+    @Override
+    public void doCreateLink(DirectoryHandle targetDir) {
+        createLink(targetDir, targetDir.getPath(), targetDir.getName());
+    }
 
-	/*
-	 * This just passes the target dir through to creating the Link
-	 * No special setup is needed for this type.
-	 */
-	@Override
-	public void doDeleteLink(DirectoryHandle targetDir) {
-		deleteLink(targetDir,targetDir.getPath(),targetDir.getName());
-		
-	}
-	
-	/*
-	 * Check to see if .zip is complete and remove link
-	 * or create if incomplete.
-	 */
-	@Override
-	public void doFixLink(DirectoryHandle targetDir) {
-		ZipscriptVFSDataZip zipData = new ZipscriptVFSDataZip(targetDir);
-		try {
-			if (zipData.getDizStatus().isFinished()) {
-				doDeleteLink(targetDir);
-			} else {
-				doCreateLink(targetDir);
-			}
-		} catch (FileNotFoundException e) {
-			// no .zip found - ignore
-		} catch (IOException e) {
-			// can't read .zip - ignore
-		} catch (NoAvailableSlaveException e) {
-			// no slaves available for .zip - ignore
-		}
-	}
+    /*
+     * This just passes the target dir through to creating the Link
+     * No special setup is needed for this type.
+     */
+    @Override
+    public void doDeleteLink(DirectoryHandle targetDir) {
+        deleteLink(targetDir, targetDir.getPath(), targetDir.getName());
+
+    }
+
+    /*
+     * Check to see if .zip is complete and remove link
+     * or create if incomplete.
+     */
+    @Override
+    public void doFixLink(DirectoryHandle targetDir) {
+        ZipscriptVFSDataZip zipData = new ZipscriptVFSDataZip(targetDir);
+        try {
+            if (zipData.getDizStatus().isFinished()) {
+                doDeleteLink(targetDir);
+            } else {
+                doCreateLink(targetDir);
+            }
+        } catch (FileNotFoundException e) {
+            // no .zip found - ignore
+        } catch (IOException e) {
+            // can't read .zip - ignore
+        } catch (NoAvailableSlaveException e) {
+            // no slaves available for .zip - ignore
+        }
+    }
 }

@@ -17,13 +17,13 @@
  */
 package org.drftpd.master.slaveselection.filter;
 
-import org.drftpd.master.GlobalContext;
-import org.drftpd.common.util.PropertyHelper;
 import org.drftpd.common.util.GlobPattern;
+import org.drftpd.common.util.PropertyHelper;
+import org.drftpd.common.vfs.InodeHandleInterface;
+import org.drftpd.master.GlobalContext;
 import org.drftpd.master.exceptions.FatalException;
 import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.master.usermanager.User;
-import org.drftpd.common.vfs.InodeHandleInterface;
 
 import java.net.InetAddress;
 import java.util.ArrayList;
@@ -31,7 +31,7 @@ import java.util.Properties;
 
 /**
  * Example slaveselection entry:
- * 
+ *
  * <pre>
  *  &lt;n&gt;.filter=matchdir
  *  &lt;n&gt;.assign=&lt;slavename&gt;+100000
@@ -39,56 +39,56 @@ import java.util.Properties;
  *  &lt;n&gt;.assume.remove=&lt;true&gt;
  *  &lt;n&gt;.negate.expression=&lt;true&gt;
  * </pre>
- * 
+ *
  * @author mog
  * @version $Id$
  */
 public class MatchdirFilter extends Filter {
-	private ArrayList<AssignParser> _assigns;
+    private final ArrayList<AssignParser> _assigns;
 
-	private java.util.regex.Pattern _p;
+    private final java.util.regex.Pattern _p;
 
-	private boolean _negateExpr;
-	
-	public MatchdirFilter(int i, Properties p) {
-		super(i, p);
-		try {
-			_assigns = AssignSlave.parseAssign(PropertyHelper.getProperty(p, i + ".assign"));
+    private final boolean _negateExpr;
 
-			boolean assumeRemove = PropertyHelper.getProperty(p, i + ".assume.remove", "false").
-					equalsIgnoreCase("true");
-			// If assume.remove=true, add all slaves not assigned a score to be removed
-			if (assumeRemove) {
-				for (RemoteSlave slave : GlobalContext.getGlobalContext().getSlaveManager().getSlaves()) {
-					boolean assigned = false;
-					for (AssignParser ap : _assigns) {
-						if (slave.equals(ap.getRSlave())) {
-							// Score added to slave already, skip
-							assigned = true;
-							break;
-						}
-					}
-					if (!assigned) {
-						// Add slave to be remove
-						_assigns.add(new AssignParser(slave.getName()+"+remove"));
-					}
-				}
-			}
+    public MatchdirFilter(int i, Properties p) {
+        super(i, p);
+        try {
+            _assigns = AssignSlave.parseAssign(PropertyHelper.getProperty(p, i + ".assign"));
 
-			_p = GlobPattern.compile(PropertyHelper.getProperty(p, i	+ ".match"));
+            boolean assumeRemove = PropertyHelper.getProperty(p, i + ".assume.remove", "false").
+                    equalsIgnoreCase("true");
+            // If assume.remove=true, add all slaves not assigned a score to be removed
+            if (assumeRemove) {
+                for (RemoteSlave slave : GlobalContext.getGlobalContext().getSlaveManager().getSlaves()) {
+                    boolean assigned = false;
+                    for (AssignParser ap : _assigns) {
+                        if (slave.equals(ap.getRSlave())) {
+                            // Score added to slave already, skip
+                            assigned = true;
+                            break;
+                        }
+                    }
+                    if (!assigned) {
+                        // Add slave to be remove
+                        _assigns.add(new AssignParser(slave.getName() + "+remove"));
+                    }
+                }
+            }
 
-			_negateExpr = PropertyHelper.getProperty(p, i + ".negate.expression", "false").
-					equalsIgnoreCase("true");
-		} catch (Exception e) {
-			throw new FatalException(e);
-		}
-	}
+            _p = GlobPattern.compile(PropertyHelper.getProperty(p, i + ".match"));
 
-	public void process(ScoreChart scorechart, User user, InetAddress source,
-						char direction, InodeHandleInterface file, RemoteSlave sourceSlave) {
-		boolean validPath = _negateExpr != _p.matcher(file.getPath()).matches();
-		if (validPath) {
-			AssignSlave.addScoresToChart(_assigns, scorechart);
-		}
-	}
+            _negateExpr = PropertyHelper.getProperty(p, i + ".negate.expression", "false").
+                    equalsIgnoreCase("true");
+        } catch (Exception e) {
+            throw new FatalException(e);
+        }
+    }
+
+    public void process(ScoreChart scorechart, User user, InetAddress source,
+                        char direction, InodeHandleInterface file, RemoteSlave sourceSlave) {
+        boolean validPath = _negateExpr != _p.matcher(file.getPath()).matches();
+        if (validPath) {
+            AssignSlave.addScoresToChart(_assigns, scorechart);
+        }
+    }
 }

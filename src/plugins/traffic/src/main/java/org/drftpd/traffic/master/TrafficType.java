@@ -16,8 +16,8 @@
  */
 package org.drftpd.traffic.master;
 
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.network.BaseFtpConnection;
 import org.drftpd.master.permissions.Permission;
@@ -37,15 +37,15 @@ import java.util.regex.PatternSyntaxException;
 public abstract class TrafficType {
     protected static final Logger logger = LogManager.getLogger(TrafficType.class);
 
-    private String _type;
-    private String _name;
-    private long _maxspeed;
-    private long _minspeed;
+    private final String _type;
+    private final String _name;
+    private final long _maxspeed;
+    private final long _minspeed;
     private String _include;
-    private String _exclude;
-    private Permission _perms;
-    private boolean _up;
-    private boolean _dn;
+    private final String _exclude;
+    private final Permission _perms;
+    private final boolean _up;
+    private final boolean _dn;
 
     /*
      * Loads all the .conf information for the specific type

@@ -21,30 +21,30 @@ import org.drftpd.master.usermanager.User;
 
 /**
  * Dispatched for LOGIN, LOGOUT and RELOAD.
- * 
+ * <p>
  * Subclassed for events that are paired with a user object.
- * 
+ *
  * @author mog
  * @version $Id$
  */
 public class ConnectionEvent extends Event {
-	private transient User _user;
+    private final transient User _user;
 
-	public ConnectionEvent(User user, String command) {
-		this(user, command, System.currentTimeMillis());
-	}
+    public ConnectionEvent(User user, String command) {
+        this(user, command, System.currentTimeMillis());
+    }
 
-	public ConnectionEvent(User user, String command, long time) {
-		super(command, time);
-		_user = user;
-	}
+    public ConnectionEvent(User user, String command, long time) {
+        super(command, time);
+        _user = user;
+    }
 
-	public User getUser() {
-		return _user;
-	}
+    public User getUser() {
+        return _user;
+    }
 
-	public String toString() {
-		return getClass().getName() + "[user=" + getUser() + ",cmd="
-				+ getCommand() + "]";
-	}
+    public String toString() {
+        return getClass().getName() + "[user=" + getUser() + ",cmd="
+                + getCommand() + "]";
+    }
 }

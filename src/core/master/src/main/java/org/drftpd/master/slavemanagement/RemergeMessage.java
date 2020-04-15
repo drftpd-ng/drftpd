@@ -27,37 +27,37 @@ import java.util.List;
  * @version $Id$
  */
 public class RemergeMessage {
-	private RemoteSlave _rslave;
+    private final RemoteSlave _rslave;
 
-	private AsyncResponseRemerge _response;
+    private final AsyncResponseRemerge _response;
 
-	public RemergeMessage(AsyncResponseRemerge response, RemoteSlave slave) {
-		_rslave = slave;
-		_response = response;
-	}
+    public RemergeMessage(AsyncResponseRemerge response, RemoteSlave slave) {
+        _rslave = slave;
+        _response = response;
+    }
 
-	public RemergeMessage(RemoteSlave slave) {
-		_rslave = slave;
-		_response = null;
-	}
+    public RemergeMessage(RemoteSlave slave) {
+        _rslave = slave;
+        _response = null;
+    }
 
-	public boolean isCompleted() {
-		return _response == null;
-	}
+    public boolean isCompleted() {
+        return _response == null;
+    }
 
-	public String getDirectory() {
-		return _response.getPath();
-	}
+    public String getDirectory() {
+        return _response.getPath();
+    }
 
-	public RemoteSlave getRslave() {
-		return _rslave;
-	}
+    public RemoteSlave getRslave() {
+        return _rslave;
+    }
 
-	public List<LightRemoteInode> getFiles() {
-		return _response.getFiles();
-	}
+    public List<LightRemoteInode> getFiles() {
+        return _response.getFiles();
+    }
 
-	public long getLastModified() {
-		return _response.getLastModified();
-	}
+    public long getLastModified() {
+        return _response.getLastModified();
+    }
 }

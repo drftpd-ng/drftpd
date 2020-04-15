@@ -11,10 +11,10 @@ public class DummyRemoteSlave extends RemoteSlave {
         super(name);
     }
 
-	public int getPort() {
-		return 10;
-	}
-	
+    public int getPort() {
+        return 10;
+    }
+
     public void fakeConnect() {
         _errors = 0;
         _lastNetworkError = System.currentTimeMillis();

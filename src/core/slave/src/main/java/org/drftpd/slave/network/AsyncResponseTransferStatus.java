@@ -26,24 +26,24 @@ import org.drftpd.common.slave.TransferStatus;
  */
 @SuppressWarnings("serial")
 public class AsyncResponseTransferStatus extends AsyncResponse {
-	private TransferStatus _ts;
+    private final TransferStatus _ts;
 
-	public AsyncResponseTransferStatus(TransferStatus ts) {
-		super("TransferStatus");
+    public AsyncResponseTransferStatus(TransferStatus ts) {
+        super("TransferStatus");
 
-		if (ts == null) {
-			throw new IllegalArgumentException("transferstatus cannot be null");
-		}
+        if (ts == null) {
+            throw new IllegalArgumentException("transferstatus cannot be null");
+        }
 
-		_ts = ts;
-	}
+        _ts = ts;
+    }
 
-	public TransferStatus getTransferStatus() {
-		return _ts;
-	}
+    public TransferStatus getTransferStatus() {
+        return _ts;
+    }
 
-	public String toString() {
-		return super.toString() + "[transferStatus=" + getTransferStatus()
-				+ "]";
-	}
+    public String toString() {
+        return super.toString() + "[transferStatus=" + getTransferStatus()
+                + "]";
+    }
 }

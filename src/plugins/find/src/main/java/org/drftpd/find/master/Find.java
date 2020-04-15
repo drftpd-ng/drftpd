@@ -19,21 +19,20 @@ package org.drftpd.find.master;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
-
+import org.drftpd.common.misc.CaseInsensitiveHashMap;
+import org.drftpd.common.util.Bytes;
 import org.drftpd.find.master.action.ActionInterface;
 import org.drftpd.find.master.option.OptionInterface;
 import org.drftpd.master.GlobalContext;
-import org.drftpd.common.util.Bytes;
-import org.drftpd.common.misc.CaseInsensitiveHashMap;
-import org.drftpd.master.network.Session;
 import org.drftpd.master.commands.*;
+import org.drftpd.master.indexation.AdvancedSearchParams;
+import org.drftpd.master.indexation.IndexEngineInterface;
+import org.drftpd.master.indexation.IndexException;
+import org.drftpd.master.network.Session;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.master.vfs.InodeHandle;
-import org.drftpd.master.indexation.AdvancedSearchParams;
-import org.drftpd.master.indexation.IndexEngineInterface;
-import org.drftpd.master.indexation.IndexException;
 import org.reflections.Reflections;
 
 import java.io.FileNotFoundException;
@@ -53,8 +52,8 @@ public class Find extends CommandInterface {
     private ResourceBundle _bundle;
 
 
-    private CaseInsensitiveHashMap<String, OptionInterface> _optionsMap = new CaseInsensitiveHashMap<>();
-    private CaseInsensitiveHashMap<String, ActionInterface> _actionsMap = new CaseInsensitiveHashMap<>();
+    private final CaseInsensitiveHashMap<String, OptionInterface> _optionsMap = new CaseInsensitiveHashMap<>();
+    private final CaseInsensitiveHashMap<String, ActionInterface> _actionsMap = new CaseInsensitiveHashMap<>();
 
     public void initialize(String method, String pluginName, StandardCommandManager cManager) {
         super.initialize(method, pluginName, cManager);
@@ -196,7 +195,7 @@ public class Find extends CommandInterface {
         CommandResponse response = new CommandResponse(200, "Find complete!");
 
         if (inodes.isEmpty()) {
-            response.addComment(session.jprintf(_bundle,  "find.empty", env, user.getName()));
+            response.addComment(session.jprintf(_bundle, "find.empty", env, user.getName()));
             return response;
         }
 
@@ -236,13 +235,13 @@ public class Find extends CommandInterface {
         }
 
         if (results == 0) {
-            response.addComment(session.jprintf(_bundle,  "find.empty", env, user.getName()));
+            response.addComment(session.jprintf(_bundle, "find.empty", env, user.getName()));
             return response;
         }
 
         env.put("limit", limit);
         env.put("results", results);
-        response.addComment(session.jprintf(_bundle,  "find.header", env, user.getName()));
+        response.addComment(session.jprintf(_bundle, "find.header", env, user.getName()));
 
         for (String line : responses) {
             response.addComment(line);

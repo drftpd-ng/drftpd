@@ -24,23 +24,23 @@ import org.drftpd.common.network.AsyncResponse;
  * @version $Id$
  */
 public class AsyncResponseException extends AsyncResponse {
-	private static final long serialVersionUID = -6024340147843529987L;
+    private static final long serialVersionUID = -6024340147843529987L;
 
-	private Throwable _t;
+    private final Throwable _t;
 
-	public AsyncResponseException(String index, Throwable t) {
-		super(index);
-		_t = t;
-	}
+    public AsyncResponseException(String index, Throwable t) {
+        super(index);
+        _t = t;
+    }
 
-	/**
-	 * 
-	 */
-	public String toString() {
-		return "AsyncResponseException exception is - " + _t.getMessage();
-	}
+    /**
+     *
+     */
+    public String toString() {
+        return "AsyncResponseException exception is - " + _t.getMessage();
+    }
 
-	public Throwable getThrowable() {
-		return _t;
-	}
+    public Throwable getThrowable() {
+        return _t;
+    }
 }

@@ -27,28 +27,29 @@ import java.util.regex.PatternSyntaxException;
 
 /**
  * Default handler. Uses Glob patterns.
+ *
  * @author fr0w
  * @version $Id$
  */
 public class VFSDefaultPermission extends VFSPermHandler {
-	public void handle(String directive, StringTokenizer st) throws PatternSyntaxException {
-		addPermission(directive, new GlobPathPermission(st.nextToken(), Permission.makeUsers(st)));
-	}
+    public void handle(String directive, StringTokenizer st) throws PatternSyntaxException {
+        addPermission(directive, new GlobPathPermission(st.nextToken(), Permission.makeUsers(st)));
+    }
 
-	@Override
-	public Map<String, String> getDirectives() {
-		return Map.of("upload", "upload",
-				"makedir", "makedir",
-				"delete","delete",
-				"deleteown", "deleteown",
-				"rename", "rename",
-				"renameown", "renameown",
-				"privpath", "privpath",
-				"download", "download");
-	}
+    @Override
+    public Map<String, String> getDirectives() {
+        return Map.of("upload", "upload",
+                "makedir", "makedir",
+                "delete", "delete",
+                "deleteown", "deleteown",
+                "rename", "rename",
+                "renameown", "renameown",
+                "privpath", "privpath",
+                "download", "download");
+    }
 
-	@Override
-	public int getPriority() {
-		return 100;
-	}
+    @Override
+    public int getPriority() {
+        return 100;
+    }
 }

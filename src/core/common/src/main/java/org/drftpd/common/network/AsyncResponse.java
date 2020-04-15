@@ -24,19 +24,19 @@ import java.io.Serializable;
  * @version $Id$
  */
 public class AsyncResponse implements Serializable {
-	private static final long serialVersionUID = -6915699035949526136L;
+    private static final long serialVersionUID = -6915699035949526136L;
 
-	private String _index;
+    private final String _index;
 
-	public AsyncResponse(String index) {
-		_index = index;
-	}
+    public AsyncResponse(String index) {
+        _index = index;
+    }
 
-	public String getIndex() {
-		return _index;
-	}
+    public String getIndex() {
+        return _index;
+    }
 
-	public String toString() {
-		return getClass().getName() + "[index=" + getIndex() + "]";
-	}
+    public String toString() {
+        return getClass().getName() + "[index=" + getIndex() + "]";
+    }
 }

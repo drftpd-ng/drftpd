@@ -17,21 +17,20 @@
  */
 package org.drftpd.master.commands.slavemanagement;
 
-import org.drftpd.master.slavemanagement.RemergeMessage;
-import org.drftpd.master.slavemanagement.RemoteSlave;
-import org.drftpd.master.slavemanagement.SlaveManager;
-import org.drftpd.master.slavemanagement.SlaveStatus;
-
-import org.drftpd.common.exceptions.RemoteIOException;
-import org.drftpd.master.*;
-import org.drftpd.common.util.Bytes;
 import org.drftpd.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.common.exceptions.DuplicateElementException;
+import org.drftpd.common.exceptions.RemoteIOException;
+import org.drftpd.common.util.Bytes;
+import org.drftpd.master.GlobalContext;
 import org.drftpd.master.commands.*;
 import org.drftpd.master.event.SlaveEvent;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.exceptions.SlaveUnavailableException;
 import org.drftpd.master.network.Session;
+import org.drftpd.master.slavemanagement.RemergeMessage;
+import org.drftpd.master.slavemanagement.RemoteSlave;
+import org.drftpd.master.slavemanagement.SlaveManager;
+import org.drftpd.master.slavemanagement.SlaveStatus;
 import org.drftpd.master.slaveselection.filter.Filter;
 import org.drftpd.master.slaveselection.filter.ScoreChart;
 import org.drftpd.master.slaveselection.filter.SlaveSelectionManager;
@@ -53,6 +52,34 @@ public class SlaveManagement extends CommandInterface {
 
     private ResourceBundle _bundle;
 
+    public static void fillEnvWithSlaveStatus(Map<String, Object> env, SlaveStatus status) {
+        env.put("disktotal", Bytes.formatBytes(status.getDiskSpaceCapacity()));
+        env.put("diskfree", Bytes.formatBytes(status.getDiskSpaceAvailable()));
+        env.put("diskused", Bytes.formatBytes(status.getDiskSpaceUsed()));
+        try {
+            env.put("slavesonline", "" + GlobalContext.getGlobalContext().getSlaveManager().getAvailableSlaves().size());
+        } catch (NoAvailableSlaveException e) {
+            env.put("slavesonline", "0");
+        }
+        env.put("slavestotal", "" + GlobalContext.getGlobalContext().getSlaveManager().getSlaves().size());
+
+        if (status.getDiskSpaceCapacity() == 0) {
+            env.put("diskfreepercent", "n/a");
+            env.put("diskusedpercent", "n/a");
+        } else {
+            env.put("diskfreepercent", ((status.getDiskSpaceAvailable() * 100) / status.getDiskSpaceCapacity()) + "%");
+            env.put("diskusedpercent", ((status.getDiskSpaceUsed() * 100) / status.getDiskSpaceCapacity()) + "%");
+        }
+
+        env.put("xfers", "" + status.getTransfers());
+        env.put("xfersdn", "" + status.getTransfersSending());
+        env.put("xfersup", "" + status.getTransfersReceiving());
+        env.put("xfersdown", "" + status.getTransfersSending());
+
+        env.put("throughput", Bytes.formatBytes(status.getThroughput()) + "/s");
+        env.put("throughputup", Bytes.formatBytes(status.getThroughputReceiving()) + "/s");
+        env.put("throughputdown", Bytes.formatBytes(status.getThroughputSending()) + "/s");
+    }
 
     public void initialize(String method, String pluginName, StandardCommandManager cManager) {
         super.initialize(method, pluginName, cManager);
@@ -530,40 +557,11 @@ public class SlaveManagement extends CommandInterface {
         return response;
     }
 
-    public static void fillEnvWithSlaveStatus(Map<String, Object> env, SlaveStatus status) {
-        env.put("disktotal", Bytes.formatBytes(status.getDiskSpaceCapacity()));
-        env.put("diskfree", Bytes.formatBytes(status.getDiskSpaceAvailable()));
-        env.put("diskused", Bytes.formatBytes(status.getDiskSpaceUsed()));
-        try {
-            env.put("slavesonline", "" + GlobalContext.getGlobalContext().getSlaveManager().getAvailableSlaves().size());
-        } catch (NoAvailableSlaveException e) {
-            env.put("slavesonline", "0");
-        }
-        env.put("slavestotal", "" + GlobalContext.getGlobalContext().getSlaveManager().getSlaves().size());
-
-        if (status.getDiskSpaceCapacity() == 0) {
-            env.put("diskfreepercent", "n/a");
-            env.put("diskusedpercent", "n/a");
-        } else {
-            env.put("diskfreepercent", ((status.getDiskSpaceAvailable() * 100) / status.getDiskSpaceCapacity()) + "%");
-            env.put("diskusedpercent", ((status.getDiskSpaceUsed() * 100) / status.getDiskSpaceCapacity()) + "%");
-        }
-
-        env.put("xfers", "" + status.getTransfers());
-        env.put("xfersdn", "" + status.getTransfersSending());
-        env.put("xfersup", "" + status.getTransfersReceiving());
-        env.put("xfersdown", "" + status.getTransfersSending());
-
-        env.put("throughput", Bytes.formatBytes(status.getThroughput()) + "/s");
-        env.put("throughputup", Bytes.formatBytes(status.getThroughputReceiving()) + "/s");
-        env.put("throughputdown", Bytes.formatBytes(status.getThroughputSending()) + "/s");
-    }
-
     public CommandResponse doDiskfree(CommandRequest request) throws ImproperUsageException {
         if (request.hasArgument()) {
             throw new ImproperUsageException();
         }
-		Map<String, Object> env = new HashMap<>();
+        Map<String, Object> env = new HashMap<>();
         SlaveStatus status = GlobalContext.getGlobalContext().getSlaveManager().getAllStatus();
         fillEnvWithSlaveStatus(env, status);
         CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");

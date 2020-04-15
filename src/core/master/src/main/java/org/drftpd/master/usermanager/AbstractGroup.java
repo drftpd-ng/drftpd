@@ -16,13 +16,12 @@
  */
 package org.drftpd.master.usermanager;
 
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
-import org.drftpd.master.commands.usermanagement.GroupManagement;
+import org.apache.logging.log4j.Logger;
 import org.drftpd.common.dynamicdata.Key;
 import org.drftpd.common.dynamicdata.KeyedMap;
 import org.drftpd.common.exceptions.DuplicateElementException;
+import org.drftpd.master.commands.usermanagement.GroupManagement;
 import org.drftpd.master.vfs.Commitable;
 
 import java.io.IOException;
@@ -37,117 +36,114 @@ import java.util.List;
  * @version $Id$
  */
 public abstract class AbstractGroup extends Group implements Commitable {
-	private static final Logger logger = LogManager.getLogger(AbstractUser.class);
+    private static final Logger logger = LogManager.getLogger(AbstractUser.class);
+    protected KeyedMap<Key<?>, Object> _data = new KeyedMap<>();
+    private ArrayList<String> _admins = new ArrayList<>();
+    private String _groupname;
 
-	public static void checkValidGroupName(String group) {
-		if ((group.indexOf(' ') != -1) || (group.indexOf(';') != -1)) {
-			throw new IllegalArgumentException("Groups cannot contain space or other illegal characters");
-		}
-	}
+    public AbstractGroup(String groupname) {
+        checkValidGroupName(groupname);
+        _groupname = groupname;
+        _data.setObject(GroupManagement.CREATED, new Date(System.currentTimeMillis()));
+    }
 
-	protected KeyedMap<Key<?>, Object> _data = new KeyedMap<>();
+    public static void checkValidGroupName(String group) {
+        if ((group.indexOf(' ') != -1) || (group.indexOf(';') != -1)) {
+            throw new IllegalArgumentException("Groups cannot contain space or other illegal characters");
+        }
+    }
 
-	private ArrayList<String> _admins = new ArrayList<>();
+    public boolean equals(Object obj) {
+        if (!(obj instanceof Group))
+            return false;
 
-	private String _groupname;
+        return ((Group) obj).getName().equals(getName());
+    }
 
-	public AbstractGroup(String groupname) {
-		checkValidGroupName(groupname);
-		_groupname = groupname;
-		_data.setObject(GroupManagement.CREATED, new Date(System.currentTimeMillis()));
-	}
+    /**
+     * To avoid casting to AbstractUserManager
+     */
+    public abstract AbstractUserManager getAbstractUserManager();
 
-	public boolean equals(Object obj) {
-		if (!(obj instanceof Group))
-			return false;
+    public List<User> getAdmins() {
+        List<User> admins = new ArrayList<>(_admins.size());
+        for (String user : _admins) {
+            try {
+                admins.add(getUserManager().getUserByName(user));
+            } catch (NoSuchUserException | UserFileException e) {
+                logger.error("Unable to get user entity for user name " + user);
+            }
+        }
+        return admins;
+    }
 
-		return ((Group) obj).getName().equals(getName());
-	}
+    public void setAdmins(List<User> admins) {
+        _admins = new ArrayList<>(admins.size());
+        for (User u : admins) {
+            _admins.add(u.getName());
+        }
+    }
 
-	/**
-	 * To avoid casting to AbstractUserManager
-	 */
-	public abstract AbstractUserManager getAbstractUserManager();
+    public void addAdmin(User u) throws DuplicateElementException {
+        if (_admins.contains(u.getName())) {
+            throw new DuplicateElementException("User is already an admin for that group");
+        }
+        _admins.add(u.getName());
+    }
 
-	public List<User> getAdmins() {
-		List<User> admins = new ArrayList<>(_admins.size());
-		for (String user : _admins) {
-			try {
-				admins.add(getUserManager().getUserByName(user));
-			} catch (NoSuchUserException | UserFileException e) {
-				logger.error("Unable to get user entity for user name " + user);
-			}
-		}
-		return admins;
-	}
+    public void removeAdmin(User u) throws NoSuchFieldException {
+        if (!_admins.remove(u.getName())) {
+            throw new NoSuchFieldException("User is not an admin for that group");
+        }
+    }
 
-	public void setAdmins(List<User> admins) {
-		_admins = new ArrayList<>(admins.size());
-		for (User u : admins) {
-			_admins.add(u.getName());
-		}
-	}
+    public boolean isAdmin(User u) {
+        return _admins.contains(u.getName());
+    }
 
-	public void addAdmin(User u) throws DuplicateElementException {
-		if (_admins.contains(u.getName())) {
-			throw new DuplicateElementException("User is already an admin for that group");
-		}
-		_admins.add(u.getName());
-	}
+    public KeyedMap<Key<?>, Object> getKeyedMap() {
+        return _data;
+    }
 
-	public void removeAdmin(User u) throws NoSuchFieldException {
-		if (!_admins.remove(u.getName())) {
-			throw new NoSuchFieldException("User is not an admin for that group");
-		}
-	}
+    public void setKeyedMap(KeyedMap<Key<?>, Object> data) {
+        _data = data;
+    }
 
-	public boolean isAdmin(User u) {
-		return _admins.contains(u.getName());
-	}
+    public String getName() {
+        return _groupname;
+    }
 
-	public KeyedMap<Key<?>, Object> getKeyedMap() {
-		return _data;
-	}
+    public int hashCode() {
+        return getName().hashCode();
+    }
 
-	public void setKeyedMap(KeyedMap<Key<?>, Object> data) {
-		_data = data;
-	}
+    public void rename(String groupname) throws GroupExistsException, GroupFileException {
+        getAbstractUserManager().renameGroup(this, groupname); // throws ObjectExistsException
+        getAbstractUserManager().deleteGroup(this.getName());
+        _groupname = groupname;
+        commit(); // throws IOException
+    }
 
-	public String getName() {
-		return _groupname;
-	}
+    public String toString() {
+        return _groupname;
+    }
 
-	public int hashCode() {
-		return getName().hashCode();
-	}
+    public abstract void writeToDisk() throws IOException;
 
-	public void rename(String groupname) throws GroupExistsException, GroupFileException {
-		getAbstractUserManager().renameGroup(this, groupname); // throws ObjectExistsException
-		getAbstractUserManager().deleteGroup(this.getName());
-		_groupname = groupname;
-		commit(); // throws IOException
-	}
+    public float getMinRatio() {
+        return getKeyedMap().getObject(GroupManagement.MINRATIO, 3F);
+    }
 
-	public String toString() {
-		return _groupname;
-	}
+    public void setMinRatio(float minRatio) {
+        getKeyedMap().setObject(GroupManagement.MINRATIO, minRatio);
+    }
 
-	public abstract void writeToDisk() throws IOException;
+    public float getMaxRatio() {
+        return getKeyedMap().getObject(GroupManagement.MAXRATIO, 3F);
+    }
 
-	public float getMinRatio() {
-		return getKeyedMap().getObject(GroupManagement.MINRATIO, 3F);
-	}
-
-	public void setMinRatio(float minRatio) {
-		getKeyedMap().setObject(GroupManagement.MINRATIO, minRatio);
-	}
-
-	public float getMaxRatio() {
-		return getKeyedMap().getObject(GroupManagement.MAXRATIO, 3F);
-	}
-
-	public void setMaxRatio(float maxRatio) {
-		getKeyedMap().setObject(GroupManagement.MAXRATIO, maxRatio);
-	}
+    public void setMaxRatio(float maxRatio) {
+        getKeyedMap().setObject(GroupManagement.MAXRATIO, maxRatio);
+    }
 
 }

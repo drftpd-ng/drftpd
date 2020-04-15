@@ -26,19 +26,19 @@ import org.drftpd.common.network.AsyncResponse;
 @SuppressWarnings("serial")
 public class AsyncResponseDizInfo extends AsyncResponse {
 
-	private DizInfo _dizInfo;
+    private final DizInfo _dizInfo;
 
-	public AsyncResponseDizInfo(String index, DizInfo dizInfo) {
-		super(index);
+    public AsyncResponseDizInfo(String index, DizInfo dizInfo) {
+        super(index);
 
-		_dizInfo = dizInfo;
-	}
+        _dizInfo = dizInfo;
+    }
 
-	public DizInfo getDizInfo() {
-		return _dizInfo;
-	}
+    public DizInfo getDizInfo() {
+        return _dizInfo;
+    }
 
-	public String toString() {
-		return getClass().getName();
-	}
+    public String toString() {
+        return getClass().getName();
+    }
 }

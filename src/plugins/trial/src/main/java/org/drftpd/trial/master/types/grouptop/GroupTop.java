@@ -16,12 +16,12 @@
  */
 package org.drftpd.trial.master.types.grouptop;
 
-import org.drftpd.master.GlobalContext;
 import org.drftpd.common.util.Bytes;
-import org.drftpd.master.usermanager.*;
-import org.drftpd.master.util.GroupPosition;
+import org.drftpd.master.GlobalContext;
 import org.drftpd.master.commands.CommandRequest;
 import org.drftpd.master.commands.CommandResponse;
+import org.drftpd.master.usermanager.*;
+import org.drftpd.master.util.GroupPosition;
 import org.drftpd.trial.master.TrialType;
 
 import java.util.*;
@@ -34,9 +34,9 @@ import java.util.*;
 public class GroupTop extends TrialType {
     private int _list;
     private int _keep;
-    private long _min;
+    private final long _min;
 
-    private int _minPercent;
+    private final int _minPercent;
 
     public GroupTop(Properties p, int confnum, String type) {
         super(p, confnum, type);

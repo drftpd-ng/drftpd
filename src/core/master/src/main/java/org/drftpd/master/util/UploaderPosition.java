@@ -22,87 +22,87 @@ package org.drftpd.master.util;
  * @version $Id$
  */
 public class UploaderPosition implements Comparable<UploaderPosition> {
-	long _bytes;
+    long _bytes;
 
-	int _files;
+    int _files;
 
-	String _username;
+    String _username;
 
-	long _xfertime;
+    long _xfertime;
 
-	public UploaderPosition(String username, long bytes, int files,
-			long xfertime) {
-		_username = username;
-		_bytes = bytes;
-		_files = files;
-		_xfertime = xfertime;
-	}
+    public UploaderPosition(String username, long bytes, int files,
+                            long xfertime) {
+        _username = username;
+        _bytes = bytes;
+        _files = files;
+        _xfertime = xfertime;
+    }
 
-	/**
-	 * Sorts in reverse order so that the biggest shows up first.
-	 * 
-	 * @see java.lang.Comparable#compareTo(java.lang.Object)
-	 */
-	public int compareTo(UploaderPosition o) {
-		long thisVal = getBytes();
-		long anotherVal = o.getBytes();
+    /**
+     * Sorts in reverse order so that the biggest shows up first.
+     *
+     * @see java.lang.Comparable#compareTo(java.lang.Object)
+     */
+    public int compareTo(UploaderPosition o) {
+        long thisVal = getBytes();
+        long anotherVal = o.getBytes();
 
-		return (Long.compare(anotherVal, thisVal));
-	}
+        return (Long.compare(anotherVal, thisVal));
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
-	public boolean equals(Object obj) {
-		// if(obj instanceof String && obj.equals(getUsername())) return true;
-		if (!(obj instanceof UploaderPosition)) {
-			return false;
-		}
+    /*
+     * (non-Javadoc)
+     *
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
+    public boolean equals(Object obj) {
+        // if(obj instanceof String && obj.equals(getUsername())) return true;
+        if (!(obj instanceof UploaderPosition)) {
+            return false;
+        }
 
-		UploaderPosition other = (UploaderPosition) obj;
+        UploaderPosition other = (UploaderPosition) obj;
 
-		return getUsername().equals(other.getUsername());
-	}
+        return getUsername().equals(other.getUsername());
+    }
 
-	public long getBytes() {
-		return _bytes;
-	}
+    public long getBytes() {
+        return _bytes;
+    }
 
-	public int getFiles() {
-		return _files;
-	}
+    public int getFiles() {
+        return _files;
+    }
 
-	public String getUsername() {
-		return _username;
-	}
+    public String getUsername() {
+        return _username;
+    }
 
-	public long getXferspeed() {
-		if (getXfertime() == 0) {
-			return 0;
-		}
+    public long getXferspeed() {
+        if (getXfertime() == 0) {
+            return 0;
+        }
 
-		return (long) (getBytes() / (getXfertime() / 1000.0));
-	}
+        return (long) (getBytes() / (getXfertime() / 1000.0));
+    }
 
-	public long getXfertime() {
-		return _xfertime;
-	}
+    public long getXfertime() {
+        return _xfertime;
+    }
 
-	public int hashCode() {
-		return getUsername().hashCode();
-	}
+    public int hashCode() {
+        return getUsername().hashCode();
+    }
 
-	public void updateBytes(long bytes) {
-		_bytes += bytes;
-	}
+    public void updateBytes(long bytes) {
+        _bytes += bytes;
+    }
 
-	public void updateFiles(int files) {
-		_files += files;
-	}
+    public void updateFiles(int files) {
+        _files += files;
+    }
 
-	public void updateXfertime(long xfertime) {
-		_xfertime += xfertime;
-	}
+    public void updateXfertime(long xfertime) {
+        _xfertime += xfertime;
+    }
 }

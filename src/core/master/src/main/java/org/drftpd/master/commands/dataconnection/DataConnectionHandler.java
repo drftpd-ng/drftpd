@@ -16,36 +16,37 @@
  */
 package org.drftpd.master.commands.dataconnection;
 
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
-import org.drftpd.master.commands.dataconnection.event.SlowTransferEvent;
-import org.drftpd.common.util.Bytes;
-import org.drftpd.common.network.PassiveConnection;
+import org.apache.logging.log4j.Logger;
 import org.drftpd.common.dynamicdata.Key;
 import org.drftpd.common.exceptions.*;
 import org.drftpd.common.io.PermissionDeniedException;
+import org.drftpd.common.network.PassiveConnection;
 import org.drftpd.common.slave.ConnectInfo;
 import org.drftpd.common.slave.TransferStatus;
-import org.drftpd.master.commands.StandardCommandManager;
-import org.drftpd.master.exceptions.*;
-import org.drftpd.master.*;
+import org.drftpd.common.util.Bytes;
+import org.drftpd.master.GlobalContext;
+import org.drftpd.master.Master;
 import org.drftpd.master.commands.CommandInterface;
 import org.drftpd.master.commands.CommandRequest;
 import org.drftpd.master.commands.CommandResponse;
+import org.drftpd.master.commands.StandardCommandManager;
+import org.drftpd.master.commands.dataconnection.event.SlowTransferEvent;
+import org.drftpd.master.exceptions.NoAvailableSlaveException;
+import org.drftpd.master.exceptions.SlaveUnavailableException;
 import org.drftpd.master.network.BaseFtpConnection;
 import org.drftpd.master.network.Checksum;
 import org.drftpd.master.network.FtpReply;
 import org.drftpd.master.network.TransferState;
+import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.master.slavemanagement.SlaveManager;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.util.FtpRequest;
-import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.master.vfs.ListUtils;
 import org.drftpd.master.vfs.ObjectNotValidException;
-import org.drftpd.slave.network.Transfer;
 import org.drftpd.slave.exceptions.FileExistsException;
+import org.drftpd.slave.network.Transfer;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocket;
@@ -68,27 +69,17 @@ import java.util.StringTokenizer;
  * @version $Id$
  */
 public class DataConnectionHandler extends CommandInterface {
-    private static final Logger logger = LogManager.getLogger(DataConnectionHandler.class);
-
     public static final Key<Long> CHECKSUM = new Key<>(DataConnectionHandler.class, "checksum");
-
     public static final Key<FileHandle> TRANSFER_FILE = new Key<>(DataConnectionHandler.class, "transfer_file");
-
     public static final Key<RemoteSlave> TRANSFER_SLAVE = new Key<>(DataConnectionHandler.class, "transfer_slave");
-
     public static final Key<InetAddress> TRANSFER_SLAVE_INET_ADDRESS =
             new Key<>(DataConnectionHandler.class, "transfer_slave_inetAddress");
-
     public static final Key<Character> TRANSFER_TYPE = new Key<>(DataConnectionHandler.class, "transfer_type");
-
     public static final Key<String> INET_ADDRESS = new Key<>(DataConnectionHandler.class, "inetAddress");
-
     public static final Key<TransferStatus> XFER_STATUS = new Key<>(DataConnectionHandler.class, "transferStatus");
-
     public static final Key<Long> MIN_XFER_SPEED = new Key<>(DataConnectionHandler.class, "minTransferSpeed");
-
     public static final Key<Long> MAX_XFER_SPEED = new Key<>(DataConnectionHandler.class, "maxTransferSpeed");
-
+    private static final Logger logger = LogManager.getLogger(DataConnectionHandler.class);
     private ResourceBundle _bundle;
 
     public void initialize(String method, String pluginName, StandardCommandManager cManager) {
@@ -248,7 +239,7 @@ public class DataConnectionHandler extends CommandInterface {
                 while (slave == null) {
                     try {
                         slave = conn.getGlobalContext().getSlaveSelectionManager().getASlave(
-                                        conn, Transfer.TRANSFER_RECEIVING_UPLOAD, ts.getTransferFile());
+                                conn, Transfer.TRANSFER_RECEIVING_UPLOAD, ts.getTransferFile());
                         logger.debug("PASV Upload slave selected " + slave.getName());
                         String index = SlaveManager.getBasicIssuer().issueListenToSlave(slave,
                                 ts.getSendFilesEncrypted(), ts.getSSLHandshakeClientMode());

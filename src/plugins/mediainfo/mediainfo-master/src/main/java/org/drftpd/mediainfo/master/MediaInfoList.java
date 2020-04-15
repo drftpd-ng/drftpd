@@ -41,8 +41,8 @@ import java.util.*;
 public class MediaInfoList implements AddListElementsInterface {
     private static final Logger logger = LogManager.getLogger(MediaInfoList.class);
 
-    private ArrayList<String> _exclSections = new ArrayList<>();
-    private ArrayList<String> _extensions = new ArrayList<>();
+    private final ArrayList<String> _exclSections = new ArrayList<>();
+    private final ArrayList<String> _extensions = new ArrayList<>();
     private boolean _mediaBarEnabled;
     private boolean _mediaBarIsDir;
 

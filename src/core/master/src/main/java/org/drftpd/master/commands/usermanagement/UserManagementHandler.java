@@ -46,20 +46,10 @@ import java.util.*;
  * @version $Id$
  */
 public class UserManagementHandler extends CommandInterface {
-    private static final Logger logger = LogManager.getLogger(UserManagement.class);
-
-    private ResourceBundle _bundle;
-
-    private static final UserCaseInsensitiveComparator USER_CASE_INSENSITIVE_COMPARATOR = new UserCaseInsensitiveComparator();
-
-    static class UserCaseInsensitiveComparator implements Comparator<User> {
-        @Override
-        public int compare(User user0, User user1) {
-            return String.CASE_INSENSITIVE_ORDER.compare(user0.getName(), user1.getName());
-        }
-    }
-
     public static final Key<List<BaseFtpConnection>> CONNECTIONS = new Key<>(UserManagement.class, "connections");
+    private static final Logger logger = LogManager.getLogger(UserManagement.class);
+    private static final UserCaseInsensitiveComparator USER_CASE_INSENSITIVE_COMPARATOR = new UserCaseInsensitiveComparator();
+    private ResourceBundle _bundle;
 
     public void initialize(String method, String pluginName, StandardCommandManager cManager) {
         super.initialize(method, pluginName, cManager);
@@ -1622,7 +1612,7 @@ public class UserManagementHandler extends CommandInterface {
             response.addComment(request.getSession().jprintf(_bundle, "download.empty", request.getUser()));
         }
 
-        if (response.getComment().toString().contains(request.getArgument().toString())) {
+        if (response.getComment().toString().contains(request.getArgument())) {
             return response;
         } else if (request.getArgument() != null) {
             //We got arguments, but no matches
@@ -1645,7 +1635,7 @@ public class UserManagementHandler extends CommandInterface {
             response.addComment(request.getSession().jprintf(_bundle, "upload.empty", request.getUser()));
         }
 
-        if (response.getComment().toString().contains(request.getArgument().toString())) {
+        if (response.getComment().toString().contains(request.getArgument())) {
             return response;
         } else if (request.getArgument() != null) {
             //We got arguments, but no matches
@@ -1919,5 +1909,12 @@ public class UserManagementHandler extends CommandInterface {
         env.put("usercount", Integer.toString(users.size()));
         env.put("totalcredits", Bytes.formatBytes(totalcredits));
         response.addComment(request.getSession().jprintf(_bundle, "credits.total", env, request.getUser()));
+    }
+
+    static class UserCaseInsensitiveComparator implements Comparator<User> {
+        @Override
+        public int compare(User user0, User user1) {
+            return String.CASE_INSENSITIVE_ORDER.compare(user0.getName(), user1.getName());
+        }
     }
 }

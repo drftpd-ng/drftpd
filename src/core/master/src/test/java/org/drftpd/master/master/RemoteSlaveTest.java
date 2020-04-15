@@ -19,13 +19,13 @@ package org.drftpd.master.master;
 
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-import org.drftpd.master.slavemanagement.DummyRemoteSlave;
-import org.drftpd.master.GlobalContext;
 import org.drftpd.common.network.AsyncResponse;
-import org.drftpd.master.slavemanagement.RemoteSlave;
-import org.drftpd.master.slavemanagement.SlaveManager;
+import org.drftpd.master.GlobalContext;
 import org.drftpd.master.event.Event;
 import org.drftpd.master.exceptions.SlaveUnavailableException;
+import org.drftpd.master.slavemanagement.DummyRemoteSlave;
+import org.drftpd.master.slavemanagement.RemoteSlave;
+import org.drftpd.master.slavemanagement.SlaveManager;
 import org.drftpd.master.tests.DummySlaveManager;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.junit.Assert;
@@ -50,7 +50,7 @@ public class RemoteSlaveTest extends TestCase {
     public void testEquals() {
         DummySlaveManager sm = new DummySlaveManager();
         GlobalContext gc = new GC();
-        
+
         //sm.setGlobalContext(gc); -zubov
         ((GC) gc).setSlaveManager(sm);
 
@@ -63,7 +63,7 @@ public class RemoteSlaveTest extends TestCase {
     }
 
     public void testAddNetworkError()
-        throws InterruptedException {
+            throws InterruptedException {
         DummySlaveManager sm = new DummySlaveManager();
         GC gc = new GC();
         //sm.setGlobalContext(gc); -zubov
@@ -83,19 +83,19 @@ public class RemoteSlaveTest extends TestCase {
     }
 
     public static class GC extends GlobalContext {
-        public SlaveManager getSlaveManager() {
-            return super.getSlaveManager();
-        }
-
         public GC() {
             _gctx = this;
         }
 
-        public void dispatchFtpEvent(Event event) { }
+        public SlaveManager getSlaveManager() {
+            return super.getSlaveManager();
+        }
 
         public void setSlaveManager(SlaveManager sm) {
             _slaveManager = sm;
         }
+
+        public void dispatchFtpEvent(Event event) { }
 
         public DirectoryHandle getRoot() {
             System.out.println("new lrf");
@@ -125,9 +125,9 @@ public class RemoteSlaveTest extends TestCase {
         }
 
         public String issueRenameToSlave(String from, String toDirPath,
-            String toName) {
+                                         String toName) {
             _filelist.remove(from);
-            _filelist.add(new String(toDirPath + "/" + toName));
+            _filelist.add(toDirPath + "/" + toName);
 
             return null;
         }
@@ -141,7 +141,7 @@ public class RemoteSlaveTest extends TestCase {
         }
 
         public AsyncResponse fetchResponse(String index)
-            throws SlaveUnavailableException {
+                throws SlaveUnavailableException {
             return null;
         }
     }

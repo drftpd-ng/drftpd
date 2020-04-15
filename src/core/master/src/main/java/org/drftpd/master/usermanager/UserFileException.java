@@ -23,19 +23,19 @@ package org.drftpd.master.usermanager;
  */
 @SuppressWarnings("serial")
 public class UserFileException extends Exception {
-	public UserFileException() {
-		super();
-	}
+    public UserFileException() {
+        super();
+    }
 
-	public UserFileException(String message) {
-		super(message);
-	}
+    public UserFileException(String message) {
+        super(message);
+    }
 
-	public UserFileException(String message, Throwable cause) {
-		super(message, cause);
-	}
+    public UserFileException(String message, Throwable cause) {
+        super(message, cause);
+    }
 
-	public UserFileException(Throwable cause) {
-		super(cause);
-	}
+    public UserFileException(Throwable cause) {
+        super(cause);
+    }
 }

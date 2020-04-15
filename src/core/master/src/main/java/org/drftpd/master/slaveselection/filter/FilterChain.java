@@ -38,7 +38,7 @@ import java.util.Properties;
  * @version $Id$
  */
 public class FilterChain {
-    private static Class<?>[] SIG = new Class<?>[]{int.class, Properties.class};
+    private static final Class<?>[] SIG = new Class<?>[]{int.class, Properties.class};
 
     private String _cfgfileName;
 
@@ -49,14 +49,18 @@ public class FilterChain {
     protected FilterChain() {
     }
 
-    public Collection<Filter> getFilters() {
-        return new ArrayList<>(_filters);
-    }
-
     public FilterChain(String cfgFileName, CaseInsensitiveHashMap<String, Class<? extends Filter>> filtersMap) throws IOException {
         _cfgfileName = cfgFileName;
         _filtersMap = filtersMap;
         reload();
+    }
+
+    public static GlobalContext getGlobalContext() {
+        return GlobalContext.getGlobalContext();
+    }
+
+    public Collection<Filter> getFilters() {
+        return new ArrayList<>(_filters);
     }
 
     public void filter(ScoreChart sc, BaseFtpConnection conn,
@@ -116,9 +120,5 @@ public class FilterChain {
 
         filters.trimToSize();
         _filters = filters;
-    }
-
-    public static GlobalContext getGlobalContext() {
-        return GlobalContext.getGlobalContext();
     }
 }

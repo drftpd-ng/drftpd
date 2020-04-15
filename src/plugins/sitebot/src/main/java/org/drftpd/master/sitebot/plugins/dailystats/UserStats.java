@@ -22,25 +22,25 @@ package org.drftpd.master.sitebot.plugins.dailystats;
  */
 public class UserStats {
 
-	private String _name;
-	private String _files;
-	private String _bytes;
+    private final String _name;
+    private final String _files;
+    private final String _bytes;
 
-	public UserStats(String name, String files, String bytes) {
-		_name = name;
-		_files = files;
-		_bytes = bytes;
-	}
+    public UserStats(String name, String files, String bytes) {
+        _name = name;
+        _files = files;
+        _bytes = bytes;
+    }
 
-	public String getName() {
-		return _name;
-	}
+    public String getName() {
+        return _name;
+    }
 
-	public String getFiles() {
-		return _files;
-	}
+    public String getFiles() {
+        return _files;
+    }
 
-	public String getBytes() {
-		return _bytes;
-	}
+    public String getBytes() {
+        return _bytes;
+    }
 }

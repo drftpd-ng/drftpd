@@ -16,13 +16,13 @@
  */
 package org.drftpd.traffic.master;
 
-import org.drftpd.master.commands.dataconnection.DataConnectionHandler;
 import org.drftpd.common.extensibility.CommandHook;
 import org.drftpd.common.extensibility.HookType;
+import org.drftpd.master.commands.CommandRequest;
 import org.drftpd.master.commands.CommandRequestInterface;
+import org.drftpd.master.commands.dataconnection.DataConnectionHandler;
 import org.drftpd.master.usermanager.NoSuchUserException;
 import org.drftpd.master.usermanager.UserFileException;
-import org.drftpd.master.commands.CommandRequest;
 
 /**
  * @author CyBeR
@@ -31,7 +31,7 @@ import org.drftpd.master.commands.CommandRequest;
 
 public class TrafficManagerHooks {
 
-	@CommandHook(commands = "doSTOR", type = HookType.PRE)
+    @CommandHook(commands = "doSTOR", type = HookType.PRE)
     public CommandRequestInterface doTrafficManagerSTOR(CommandRequest request) {
         try {
             for (TrafficType trafficType : TrafficManager.getTrafficManager().getTrafficTypes()) {
@@ -54,7 +54,7 @@ public class TrafficManagerHooks {
         return request;
     }
 
-	@CommandHook(commands = "doRETR", type = HookType.PRE)
+    @CommandHook(commands = "doRETR", type = HookType.PRE)
     public CommandRequestInterface doTrafficManagerRETR(CommandRequest request) {
         try {
             for (TrafficType trafficType : TrafficManager.getTrafficManager().getTrafficTypes()) {

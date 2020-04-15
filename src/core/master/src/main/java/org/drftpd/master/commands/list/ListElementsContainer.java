@@ -17,9 +17,9 @@
 package org.drftpd.master.commands.list;
 
 
-import org.drftpd.master.network.Session;
-import org.drftpd.master.commands.StandardCommandManager;
 import org.drftpd.common.vfs.InodeHandleInterface;
+import org.drftpd.master.commands.StandardCommandManager;
+import org.drftpd.master.network.Session;
 
 import java.util.ArrayList;
 
@@ -29,66 +29,66 @@ import java.util.ArrayList;
  */
 public class ListElementsContainer {
 
-	private ArrayList<String> _fileTypes = new ArrayList<>();
+    private final ArrayList<String> _fileTypes = new ArrayList<>();
 
-	private ArrayList<InodeHandleInterface> _elements =
+    private final ArrayList<InodeHandleInterface> _elements =
             new ArrayList<>();
 
-	private int _numOnline;
+    private int _numOnline;
 
-	private int _numTotal;
+    private int _numTotal;
 
-	private Session _session;
+    private final Session _session;
 
-	private String _user;
+    private final String _user;
 
-	private StandardCommandManager _cManager;
+    private final StandardCommandManager _cManager;
 
-	public ListElementsContainer(Session session, String user, StandardCommandManager cManager) {
-		_numOnline = 0;
-		_numTotal = 0;
-		_session = session;
-		_user = user;
-		_cManager = cManager;
-	}
+    public ListElementsContainer(Session session, String user, StandardCommandManager cManager) {
+        _numOnline = 0;
+        _numTotal = 0;
+        _session = session;
+        _user = user;
+        _cManager = cManager;
+    }
 
-	public void addFileType(String type) {
-		_fileTypes.add(type);
-	}
+    public void addFileType(String type) {
+        _fileTypes.add(type);
+    }
 
-	public ArrayList<InodeHandleInterface> getElements() {
-		return _elements;
-	}
+    public ArrayList<InodeHandleInterface> getElements() {
+        return _elements;
+    }
 
-	public ArrayList<String> getFileTypes() {
-		return _fileTypes;
-	}
+    public ArrayList<String> getFileTypes() {
+        return _fileTypes;
+    }
 
-	public int getNumOnline() {
-		return _numOnline;
-	}
+    public int getNumOnline() {
+        return _numOnline;
+    }
 
-	public int getNumTotal() {
-		return _numTotal;
-	}
+    public void setNumOnline(int numOnline) {
+        _numOnline = numOnline;
+    }
 
-	public Session getSession() {
-		return _session;
-	}
+    public int getNumTotal() {
+        return _numTotal;
+    }
 
-	public String getUser() {
-		return _user;
-	}
+    public void setNumTotal(int numTotal) {
+        _numTotal = numTotal;
+    }
 
-	public StandardCommandManager getCommandManager() {
-		return _cManager;
-	}
+    public Session getSession() {
+        return _session;
+    }
 
-	public void setNumOnline(int numOnline) {
-		_numOnline = numOnline;
-	}
+    public String getUser() {
+        return _user;
+    }
 
-	public void setNumTotal(int numTotal) {
-		_numTotal = numTotal;
-	}
+    public StandardCommandManager getCommandManager() {
+        return _cManager;
+    }
 }

@@ -18,6 +18,7 @@ package org.drftpd.common.protocol;
 
 /**
  * All Issuers *MUST* extend this class so that they can be properly loaded and used.
+ *
  * @author fr0w
  * @version $Id$
  */

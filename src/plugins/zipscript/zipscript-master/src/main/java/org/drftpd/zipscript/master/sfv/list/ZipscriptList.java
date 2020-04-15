@@ -47,7 +47,7 @@ public class ZipscriptList extends SFVTools implements AddListElementsInterface 
 
     private static final Logger logger = LogManager.getLogger(ZipscriptList.class);
 
-    private ArrayList<ZipscriptListStatusBarInterface> _statusBarProviders = new ArrayList<>();
+    private final ArrayList<ZipscriptListStatusBarInterface> _statusBarProviders = new ArrayList<>();
 
     public void initialize() {
         // Subscribe to events

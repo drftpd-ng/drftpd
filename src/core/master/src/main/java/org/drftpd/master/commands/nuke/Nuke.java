@@ -19,14 +19,13 @@ package org.drftpd.master.commands.nuke;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import org.drftpd.master.commands.nuke.metadata.NukeData;
-import org.drftpd.master.GlobalContext;
 import org.drftpd.common.util.Bytes;
+import org.drftpd.master.GlobalContext;
+import org.drftpd.master.commands.*;
+import org.drftpd.master.commands.nuke.metadata.NukeData;
+import org.drftpd.master.commands.usermanagement.UserManagement;
 import org.drftpd.master.network.BaseFtpConnection;
 import org.drftpd.master.network.Session;
-import org.drftpd.master.commands.*;
-import org.drftpd.master.commands.usermanagement.UserManagement;
 import org.drftpd.master.sections.SectionInterface;
 import org.drftpd.master.usermanager.NoSuchUserException;
 import org.drftpd.master.usermanager.User;
@@ -48,10 +47,8 @@ import java.util.*;
  */
 public class Nuke extends CommandInterface {
 
-    private ResourceBundle _bundle;
-
-
     private static final Logger logger = LogManager.getLogger(Nuke.class);
+    private ResourceBundle _bundle;
 
     public void initialize(String method, String pluginName, StandardCommandManager cManager) {
         super.initialize(method, pluginName, cManager);
@@ -198,7 +195,7 @@ public class Nuke extends CommandInterface {
 
         GlobalContext.getEventService().publishAsync(new NukeEvent(requestUser, "NUKE", nd));
 
-		Map<String, Object> env = new HashMap<>();
+        Map<String, Object> env = new HashMap<>();
 
         SectionInterface section = GlobalContext.getGlobalContext().getSectionManager().lookup(nukeDir);
         env.put("section", section.getName());
@@ -214,7 +211,7 @@ public class Nuke extends CommandInterface {
         if (session instanceof BaseFtpConnection) {
             response.addComment(session.jprintf(_bundle, "nuke", env, requestUser));
             for (NukedUser nukeeObj : NukeBeans.getNukeeList(nd)) {
-				Map<String, Object> nukeeenv = new HashMap<>();
+                Map<String, Object> nukeeenv = new HashMap<>();
                 User nukee;
                 try {
                     nukee = GlobalContext.getGlobalContext().getUserManager().getUserByName(nukeeObj.getUsername());
@@ -239,7 +236,7 @@ public class Nuke extends CommandInterface {
     public CommandResponse doSITE_NUKES(CommandRequest request) {
         CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 
-		Map<String, Object> env = new HashMap<>();
+        Map<String, Object> env = new HashMap<>();
 
         SectionInterface section = GlobalContext.getGlobalContext().getSectionManager().getSection(request.getArgument());
 
@@ -327,7 +324,7 @@ public class Nuke extends CommandInterface {
                         return new CommandResponse(550, e.getMessage());
                     }
 
-					Map<String, Object> env = new HashMap<>();
+                    Map<String, Object> env = new HashMap<>();
 
                     if (dirsToUnNuke.isEmpty()) {
                         env.put("searchstr", nukeName);
@@ -409,7 +406,7 @@ public class Nuke extends CommandInterface {
         NukeEvent nukeEvent = new NukeEvent(session.getUserNull(request.getUser()), "UNNUKE", nd);
         GlobalContext.getEventService().publishAsync(nukeEvent);
 
-		Map<String, Object> env = new HashMap<>();
+        Map<String, Object> env = new HashMap<>();
 
         SectionInterface section = GlobalContext.getGlobalContext().getSectionManager().lookup(nukeDir);
         env.put("section", section.getName());
@@ -425,7 +422,7 @@ public class Nuke extends CommandInterface {
         if (session instanceof BaseFtpConnection) {
             response.addComment(session.jprintf(_bundle, "unnuke", env, user));
             for (NukedUser nukeeObj : NukeBeans.getNukeeList(nd)) {
-				Map<String, Object> nukeeenv = new HashMap<>();
+                Map<String, Object> nukeeenv = new HashMap<>();
                 User nukee;
                 try {
                     nukee = GlobalContext.getGlobalContext().getUserManager().getUserByName(nukeeObj.getUsername());

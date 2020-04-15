@@ -19,34 +19,33 @@ package org.drftpd.master.usermanager;
 
 /**
  * @author mog
- * 
  * @version $Id$
  */
 @SuppressWarnings("serial")
 public class NoSuchUserException extends Exception {
-	/**
-	 * 
-	 */
-	public NoSuchUserException() {
-		super();
-	}
+    /**
+     *
+     */
+    public NoSuchUserException() {
+        super();
+    }
 
-	/**
-	 * @param message
-	 * @param cause
-	 */
-	public NoSuchUserException(String message, Throwable cause) {
-		super(message, cause);
-	}
+    /**
+     * @param message
+     * @param cause
+     */
+    public NoSuchUserException(String message, Throwable cause) {
+        super(message, cause);
+    }
 
-	/**
-	 * @param cause
-	 */
-	public NoSuchUserException(Throwable cause) {
-		super(cause);
-	}
+    /**
+     * @param cause
+     */
+    public NoSuchUserException(Throwable cause) {
+        super(cause);
+    }
 
-	public NoSuchUserException(String message) {
-		super(message);
-	}
+    public NoSuchUserException(String message) {
+        super(message);
+    }
 }

@@ -18,19 +18,20 @@ package org.drftpd.zipscript.slave.mp3.decoder;
 
 /**
  * Exception error codes for components of the JavaLayer API.
+ *
  * @author Originally taken from JLayer - http://www.javazoom.net/javalayer/javalayer.html
  * @version $Id$
  */
 public interface JavaLayerErrors {
-	/**
-	 * The first bitstream error code. See the {@link DecoderErrors DecoderErrors}
-	 * interface for other bitstream error codes.
-	 */
+    /**
+     * The first bitstream error code. See the {@link DecoderErrors DecoderErrors}
+     * interface for other bitstream error codes.
+     */
     int BITSTREAM_ERROR = 0x100;
 
-	/**
-	 * The first decoder error code. See the {@link DecoderErrors DecoderErrors}
-	 * interface for other decoder error codes.
-	 */
+    /**
+     * The first decoder error code. See the {@link DecoderErrors DecoderErrors}
+     * interface for other decoder error codes.
+     */
     int DECODER_ERROR = 0x200;
 }

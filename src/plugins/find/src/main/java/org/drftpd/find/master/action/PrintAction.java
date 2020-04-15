@@ -17,9 +17,9 @@
  */
 package org.drftpd.find.master.action;
 
-import org.drftpd.master.vfs.InodeHandle;
 import org.drftpd.master.commands.CommandRequest;
 import org.drftpd.master.commands.ImproperUsageException;
+import org.drftpd.master.vfs.InodeHandle;
 
 /**
  * @author scitz0
@@ -27,32 +27,32 @@ import org.drftpd.master.commands.ImproperUsageException;
  */
 public class PrintAction implements ActionInterface {
 
-	@Override
-	public String name() {
-		return "Print";
-	}
+    @Override
+    public String name() {
+        return "Print";
+    }
 
-	@Override
-	public void initialize(String action, String[] args) throws ImproperUsageException {
-	}
+    @Override
+    public void initialize(String action, String[] args) throws ImproperUsageException {
+    }
 
-	@Override
-	public String exec(CommandRequest request, InodeHandle inode) {
-		return inode.getPath();
-	}
+    @Override
+    public String exec(CommandRequest request, InodeHandle inode) {
+        return inode.getPath();
+    }
 
-	@Override
-	public boolean execInDirs() {
-		return true;
-	}
+    @Override
+    public boolean execInDirs() {
+        return true;
+    }
 
-	@Override
-	public boolean execInFiles() {
-		return true;
-	}
+    @Override
+    public boolean execInFiles() {
+        return true;
+    }
 
-	@Override
-	public boolean failed() {
-		return false;
-	}
+    @Override
+    public boolean failed() {
+        return false;
+    }
 }

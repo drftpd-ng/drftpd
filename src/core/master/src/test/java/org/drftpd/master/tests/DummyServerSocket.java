@@ -40,7 +40,7 @@ public class DummyServerSocket extends ServerSocket {
     }
 
     public DummyServerSocket(int port, int backlog, InetAddress bindAddr)
-        throws IOException {
+            throws IOException {
         this();
     }
 }

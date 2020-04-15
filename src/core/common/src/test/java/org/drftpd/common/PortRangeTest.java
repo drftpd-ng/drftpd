@@ -50,7 +50,7 @@ public class PortRangeTest extends TestCase {
         Assert.assertEquals(10, ports.size());
 
         for (int x = 0; x < 10; x++) {
-            ServerSocket socket = pr.getPort(ServerSocketFactory.getDefault(),null);
+            ServerSocket socket = pr.getPort(ServerSocketFactory.getDefault(), null);
             sockets.add(socket);
             ports.remove(Integer.valueOf(socket.getLocalPort()));
             Assert.assertEquals(9 - x, ports.size());
@@ -59,15 +59,15 @@ public class PortRangeTest extends TestCase {
         Assert.assertEquals(0, ports.size());
 
         try {
-            pr.getPort(ServerSocketFactory.getDefault(),null);
+            pr.getPort(ServerSocketFactory.getDefault(), null);
             throw new RuntimeException("PortRange should be exhausted!");
         } catch (RuntimeException e) {
             Assert.assertTrue(e.getMessage().equals("PortRange exhausted"));
         }
 
         ss.close();
-        ss = pr.getPort(ServerSocketFactory.getDefault(),null);
-        
+        ss = pr.getPort(ServerSocketFactory.getDefault(), null);
+
         // clean up
         ss.close();
         for (ServerSocket socket : sockets) {

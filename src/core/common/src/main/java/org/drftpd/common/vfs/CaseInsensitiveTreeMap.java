@@ -22,7 +22,7 @@ import java.util.TreeMap;
 @SuppressWarnings("serial")
 public class CaseInsensitiveTreeMap<K, V> extends TreeMap<String, V> {
 
-	public CaseInsensitiveTreeMap() {
-		super(String.CASE_INSENSITIVE_ORDER);
-	}
+    public CaseInsensitiveTreeMap() {
+        super(String.CASE_INSENSITIVE_ORDER);
+    }
 }

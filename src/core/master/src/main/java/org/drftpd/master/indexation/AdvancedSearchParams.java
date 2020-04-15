@@ -29,175 +29,174 @@ import java.util.Set;
  * @version $Id$
  */
 public class AdvancedSearchParams {
-	
-	public enum InodeType {
-		DIRECTORY, FILE, ANY
-	}
 
-	private String _name;
-	private String _exact;
-	private String _regex;
-	private String _endsWith;
-	private InodeType _inodeType = InodeType.ANY;
-	private Set<String> _slaves = Collections.emptySet();
-	private String _user;
-	private String _group;
-	private Long _minAge;
-	private Long _maxAge;
-	private Long _minSize;
-	private Long _maxSize;
-	private Integer _minSlaves;
-	private Integer _maxSlaves;
-	private String _sortField;
-	private Boolean _sortOrder = false;
-	private Integer _limit;
-	private KeyedMap<Key<?>, Object> _extensionMap;
+    private String _name;
+    private String _exact;
+    private String _regex;
+    private String _endsWith;
+    private InodeType _inodeType = InodeType.ANY;
+    private Set<String> _slaves = Collections.emptySet();
+    private String _user;
+    private String _group;
+    private Long _minAge;
+    private Long _maxAge;
+    private Long _minSize;
+    private Long _maxSize;
+    private Integer _minSlaves;
+    private Integer _maxSlaves;
+    private String _sortField;
+    private Boolean _sortOrder = false;
+    private Integer _limit;
+    private final KeyedMap<Key<?>, Object> _extensionMap;
+    public AdvancedSearchParams() {
+        _extensionMap = new KeyedMap<>();
+    }
 
-	public AdvancedSearchParams() {
-		_extensionMap = new KeyedMap<>();
-	}
+    public <T> void addExtensionData(Key<T> key, T data) {
+        _extensionMap.put(key, data);
+    }
 
-	public void setName(String name) {
-		_name = name;
-	}
+    public String getName() {
+        return _name;
+    }
 
-	public void setExact(String exact) {
-		_exact = exact;
-	}
+    public void setName(String name) {
+        _name = name;
+    }
 
-	public void setRegex(String regex) {
-		_regex = regex;
-	}
+    public String getExact() {
+        return _exact;
+    }
 
-	public void setEndsWith(String endsWith) {
-		_endsWith = endsWith;
-	}
+    public void setExact(String exact) {
+        _exact = exact;
+    }
 
-	public void setInodeType(InodeType type) {
-		_inodeType = type;
-	}
-	
-	public void setSlaves(Set<String> slaves) {
-		_slaves = slaves;
-	}
-	
-	public void setOwner(String user) {
-		_user = user;
-	}
-	
-	public void setGroup(String group) {
-		_group = group;
-	}
+    public String getRegex() {
+        return _regex;
+    }
 
-	public void setMinAge(long minAge) {
-		_minAge = minAge;
-	}
+    public void setRegex(String regex) {
+        _regex = regex;
+    }
 
-	public void setMaxAge(long maxAge) {
-		_maxAge = maxAge;
-	}
+    public String getEndsWith() {
+        return _endsWith;
+    }
 
-	public void setMinSize(long minSize) {
-		_minSize = minSize;
-	}
+    public void setEndsWith(String endsWith) {
+        _endsWith = endsWith;
+    }
 
-	public void setMaxSize(long maxSize) {
-		_maxSize = maxSize;
-	}
+    public InodeType getInodeType() {
+        return _inodeType;
+    }
 
-	public void setMinSlaves(int minSlaves) {
-		_minSlaves = minSlaves;
-	}
+    public void setInodeType(InodeType type) {
+        _inodeType = type;
+    }
 
-	public void setMaxSlaves(int maxSlaves) {
-		_maxSlaves = maxSlaves;
-	}
+    public Set<String> getSlaves() {
+        return _slaves;
+    }
 
-	public void setSortField(String sortField) {
-		_sortField = sortField;
-	}
+    public void setSlaves(Set<String> slaves) {
+        _slaves = slaves;
+    }
 
-	public void setSortOrder(Boolean sortOrder) {
-		_sortOrder = sortOrder;
-	}
+    public String getOwner() {
+        return _user;
+    }
 
-	public void setLimit(int limit) {
-		_limit = limit;
-	}
-	
-	public <T> void addExtensionData(Key<T> key, T data) {
-		_extensionMap.put(key, data);
-	}
+    public void setOwner(String user) {
+        _user = user;
+    }
 
-	public String getName() {
-		return _name;
-	}
+    public String getGroup() {
+        return _group;
+    }
 
-	public String getExact() {
-		return _exact;
-	}
+    public void setGroup(String group) {
+        _group = group;
+    }
 
-	public String getRegex() {
-		return _regex;
-	}
+    public Long getMinAge() {
+        return _minAge;
+    }
 
-	public String getEndsWith() {
-		return _endsWith;
-	}
-	
-	public InodeType getInodeType() {
-		return _inodeType;
-	}
-	
-	public Set<String> getSlaves() {
-		return _slaves;
-	}
-	
-	public String getOwner() {
-		return _user;
-	}
-	
-	public String getGroup() {
-		return _group;
-	}
+    public void setMinAge(long minAge) {
+        _minAge = minAge;
+    }
 
-	public Long getMinAge() {
-		return _minAge;
-	}
+    public Long getMaxAge() {
+        return _maxAge;
+    }
 
-	public Long getMaxAge() {
-		return _maxAge;
-	}
+    public void setMaxAge(long maxAge) {
+        _maxAge = maxAge;
+    }
 
-	public Long getMinSize() {
-		return _minSize;
-	}
+    public Long getMinSize() {
+        return _minSize;
+    }
 
-	public Long getMaxSize() {
-		return _maxSize;
-	}
+    public void setMinSize(long minSize) {
+        _minSize = minSize;
+    }
 
-	public Integer getMinSlaves() {
-		return _minSlaves;
-	}
+    public Long getMaxSize() {
+        return _maxSize;
+    }
 
-	public Integer getMaxSlaves() {
-		return _maxSlaves;
-	}
+    public void setMaxSize(long maxSize) {
+        _maxSize = maxSize;
+    }
 
-	public String getSortField() {
-		return _sortField;
-	}
+    public Integer getMinSlaves() {
+        return _minSlaves;
+    }
 
-	public Boolean getSortOrder() {
-		return _sortOrder;
-	}
+    public void setMinSlaves(int minSlaves) {
+        _minSlaves = minSlaves;
+    }
 
-	public Integer getLimit() {
-		return _limit;
-	}
-	
-	public <T> T getExtensionData(Key<T> key) throws KeyNotFoundException {
-		return _extensionMap.getObject(key);
-	}
+    public Integer getMaxSlaves() {
+        return _maxSlaves;
+    }
+
+    public void setMaxSlaves(int maxSlaves) {
+        _maxSlaves = maxSlaves;
+    }
+
+    public String getSortField() {
+        return _sortField;
+    }
+
+    public void setSortField(String sortField) {
+        _sortField = sortField;
+    }
+
+    public Boolean getSortOrder() {
+        return _sortOrder;
+    }
+
+    public void setSortOrder(Boolean sortOrder) {
+        _sortOrder = sortOrder;
+    }
+
+    public Integer getLimit() {
+        return _limit;
+    }
+
+    public void setLimit(int limit) {
+        _limit = limit;
+    }
+
+    public <T> T getExtensionData(Key<T> key) throws KeyNotFoundException {
+        return _extensionMap.getObject(key);
+    }
+
+    public enum InodeType {
+        DIRECTORY, FILE, ANY
+    }
 }

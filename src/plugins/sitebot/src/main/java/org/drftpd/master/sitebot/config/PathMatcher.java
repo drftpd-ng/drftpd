@@ -31,65 +31,65 @@ import java.util.regex.PatternSyntaxException;
  */
 public class PathMatcher {
 
-	private Pattern _globPat;
-	private Pattern _regexPat;
+    private Pattern _globPat;
+    private Pattern _regexPat;
 
-	private boolean _regex;
+    private final boolean _regex;
 
-	private String _pathPattern;
+    private final String _pathPattern;
 
-	public PathMatcher(String pathPattern, boolean regex) throws PatternSyntaxException {
-		if (regex) {
-			_regexPat = Pattern.compile(pathPattern, Pattern.CASE_INSENSITIVE);
-		} else {
-			_globPat = GlobPattern.compile(pathPattern);
-		}
-		_regex = regex;
-		_pathPattern = pathPattern;
-	}
+    public PathMatcher(String pathPattern, boolean regex) throws PatternSyntaxException {
+        if (regex) {
+            _regexPat = Pattern.compile(pathPattern, Pattern.CASE_INSENSITIVE);
+        } else {
+            _globPat = GlobPattern.compile(pathPattern);
+        }
+        _regex = regex;
+        _pathPattern = pathPattern;
+    }
 
-	public boolean checkPath(InodeHandle inode) {
-		String path = inode.isDirectory() ? inode.getPath().concat("/") : inode.getPath();
+    public boolean checkPath(InodeHandle inode) {
+        String path = inode.isDirectory() ? inode.getPath().concat("/") : inode.getPath();
 
-		if (_regex) {
-			Matcher m = _regexPat.matcher(path);
-			return m.matches();
-		} else {
-			Matcher m = _globPat.matcher(path);
-			return m.matches();
-		}
-	}
+        if (_regex) {
+            Matcher m = _regexPat.matcher(path);
+            return m.matches();
+        } else {
+            Matcher m = _globPat.matcher(path);
+            return m.matches();
+        }
+    }
 
-	public String getPathSuffix() {
-		int index = _pathPattern.lastIndexOf('/');
-		return _pathPattern.substring(0,index);
-	}
+    public String getPathSuffix() {
+        int index = _pathPattern.lastIndexOf('/');
+        return _pathPattern.substring(0, index);
+    }
 
-	public String getRelativePath(InodeHandle inode) {
-		if (_regex) {
-			String path = inode.getPath().concat("/");
-			Matcher m = _regexPat.matcher(path);
-			if (m.matches()) {
-				try {
-					String announce = m.group("announce");
-					if (announce != null) {
-						return announce;
-					}
-				} catch (IllegalArgumentException e) {
-					// No "announce" group specified in regex, this is fine
-				}
-				try {
-					String truncate = m.group("truncate");
-					if (truncate != null) {
-						return inode.getPath().substring(truncate.length());
-					}
-				} catch (IllegalArgumentException e) {
-					// No "truncate" group specified in regex, this is fine
-				}
-			}
-			return path;
-		} else {
-			return inode.getPath().substring(getPathSuffix().length()+1);
-		}
-	}
+    public String getRelativePath(InodeHandle inode) {
+        if (_regex) {
+            String path = inode.getPath().concat("/");
+            Matcher m = _regexPat.matcher(path);
+            if (m.matches()) {
+                try {
+                    String announce = m.group("announce");
+                    if (announce != null) {
+                        return announce;
+                    }
+                } catch (IllegalArgumentException e) {
+                    // No "announce" group specified in regex, this is fine
+                }
+                try {
+                    String truncate = m.group("truncate");
+                    if (truncate != null) {
+                        return inode.getPath().substring(truncate.length());
+                    }
+                } catch (IllegalArgumentException e) {
+                    // No "truncate" group specified in regex, this is fine
+                }
+            }
+            return path;
+        } else {
+            return inode.getPath().substring(getPathSuffix().length() + 1);
+        }
+    }
 }

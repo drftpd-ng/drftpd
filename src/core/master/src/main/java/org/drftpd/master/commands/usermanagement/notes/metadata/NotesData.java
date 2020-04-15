@@ -28,41 +28,41 @@ import java.util.ArrayList;
 @SuppressWarnings("serial")
 public class NotesData implements Serializable {
 
-	public static final Key<NotesData> NOTES = new Key<>(NotesData.class, "notes");
+    public static final Key<NotesData> NOTES = new Key<>(NotesData.class, "notes");
 
-	private ArrayList<String> _notes;
-	
-	public ArrayList<String> getNotes() {
-		return _notes;
-	}
+    private ArrayList<String> _notes;
 
-	public void setNotes(ArrayList<String> notes) {
-		_notes = notes;
-	}
-	
-	public void addNote(String note) {
-		if (_notes == null) {
-			_notes = new ArrayList<>();
-		}
-		_notes.add(note);
-	}
-	
-	public void delNote(int note) throws IndexOutOfBoundsException {
-		if (_notes != null) {
-			_notes.remove(note);
-		}
-	}	
-	
-	public String toString() {
-		if (_notes == null) {
-			return "";
-		}
-		
-		String output = "";
-		int cnt = 1;
-		for (String note : _notes) {
-			output = output + "Note #" + cnt++ + " - " + note + "\n";
-		}
-		return output;
-	}
+    public ArrayList<String> getNotes() {
+        return _notes;
+    }
+
+    public void setNotes(ArrayList<String> notes) {
+        _notes = notes;
+    }
+
+    public void addNote(String note) {
+        if (_notes == null) {
+            _notes = new ArrayList<>();
+        }
+        _notes.add(note);
+    }
+
+    public void delNote(int note) throws IndexOutOfBoundsException {
+        if (_notes != null) {
+            _notes.remove(note);
+        }
+    }
+
+    public String toString() {
+        if (_notes == null) {
+            return "";
+        }
+
+        String output = "";
+        int cnt = 1;
+        for (String note : _notes) {
+            output = output + "Note #" + cnt++ + " - " + note + "\n";
+        }
+        return output;
+    }
 } 

@@ -17,11 +17,11 @@
  */
 package org.drftpd.find.master.mp3;
 
+import org.drftpd.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.find.master.FindUtils;
 import org.drftpd.find.master.option.OptionInterface;
-import org.drftpd.common.dynamicdata.KeyNotFoundException;
-import org.drftpd.master.indexation.AdvancedSearchParams;
 import org.drftpd.master.commands.ImproperUsageException;
+import org.drftpd.master.indexation.AdvancedSearchParams;
 import org.drftpd.zipscript.master.mp3.indexation.MP3QueryParams;
 
 /**
@@ -30,48 +30,48 @@ import org.drftpd.zipscript.master.mp3.indexation.MP3QueryParams;
  */
 public class MP3Option implements OptionInterface {
 
-	@Override
-	public void exec(String option, String[] args,
-			AdvancedSearchParams params) throws ImproperUsageException {
-		if (args == null) {
-			throw new ImproperUsageException("Missing argument for "+option+" option");
-		}
-		MP3QueryParams queryParams;
-		try {
-			queryParams = params.getExtensionData(MP3QueryParams.MP3QUERYPARAMS);
-		} catch (KeyNotFoundException e) {
-			queryParams = new MP3QueryParams();
-			params.addExtensionData(MP3QueryParams.MP3QUERYPARAMS, queryParams);
-		}
-		if (option.equalsIgnoreCase("-mp3genre")) {
-			queryParams.setGenre(args[0]);
-		} else if (option.equalsIgnoreCase("-mp3title")) {
-			queryParams.setTitle(args[0]);
-		} else if (option.equalsIgnoreCase("-mp3artist")) {
-			queryParams.setArtist(args[0]);
-		} else if (option.equalsIgnoreCase("-mp3album")) {
-			queryParams.setAlbum(args[0]);
-		} else if (option.equalsIgnoreCase("-mp3year")) {
-			try {
-				String[] range = FindUtils.getRange(args[0], ":");
-				if (range[0] != null && range[1] != null) {
-					Integer fromYear = Integer.valueOf(range[0]);
-					Integer toYear = Integer.valueOf(range[1]);
-					if (fromYear > toYear) {
-						throw new ImproperUsageException("Year range invalid, min value higher than max");
-					}
-					queryParams.setMinYear(fromYear);
-					queryParams.setMaxYear(toYear);
-				} else if (range[0] != null) {
-					queryParams.setMinYear(Integer.valueOf(range[0]));
-				} else if (range[1] != null) {
-					queryParams.setMinYear(1); // We dont want to search for years <= zero
-					queryParams.setMaxYear(Integer.valueOf(range[1]));
-				}
-			} catch (NumberFormatException e) {
-				throw new ImproperUsageException(e);
-			}
-		}
-	}
+    @Override
+    public void exec(String option, String[] args,
+                     AdvancedSearchParams params) throws ImproperUsageException {
+        if (args == null) {
+            throw new ImproperUsageException("Missing argument for " + option + " option");
+        }
+        MP3QueryParams queryParams;
+        try {
+            queryParams = params.getExtensionData(MP3QueryParams.MP3QUERYPARAMS);
+        } catch (KeyNotFoundException e) {
+            queryParams = new MP3QueryParams();
+            params.addExtensionData(MP3QueryParams.MP3QUERYPARAMS, queryParams);
+        }
+        if (option.equalsIgnoreCase("-mp3genre")) {
+            queryParams.setGenre(args[0]);
+        } else if (option.equalsIgnoreCase("-mp3title")) {
+            queryParams.setTitle(args[0]);
+        } else if (option.equalsIgnoreCase("-mp3artist")) {
+            queryParams.setArtist(args[0]);
+        } else if (option.equalsIgnoreCase("-mp3album")) {
+            queryParams.setAlbum(args[0]);
+        } else if (option.equalsIgnoreCase("-mp3year")) {
+            try {
+                String[] range = FindUtils.getRange(args[0], ":");
+                if (range[0] != null && range[1] != null) {
+                    Integer fromYear = Integer.valueOf(range[0]);
+                    Integer toYear = Integer.valueOf(range[1]);
+                    if (fromYear > toYear) {
+                        throw new ImproperUsageException("Year range invalid, min value higher than max");
+                    }
+                    queryParams.setMinYear(fromYear);
+                    queryParams.setMaxYear(toYear);
+                } else if (range[0] != null) {
+                    queryParams.setMinYear(Integer.valueOf(range[0]));
+                } else if (range[1] != null) {
+                    queryParams.setMinYear(1); // We dont want to search for years <= zero
+                    queryParams.setMaxYear(Integer.valueOf(range[1]));
+                }
+            } catch (NumberFormatException e) {
+                throw new ImproperUsageException(e);
+            }
+        }
+    }
 
 }

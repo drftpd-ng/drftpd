@@ -27,23 +27,23 @@ import java.util.Vector;
  */
 public interface CommandResponseInterface {
 
-	void addComment(Object comment);
+    void addComment(Object comment);
 
-	void setCode(int code);
+    int getCode();
 
-	void setCurrentDirectory(DirectoryHandle currentDirectory);
+    void setCode(int code);
 
-	void setMessage(String message);
+    Vector<String> getComment();
 
-	void setUser(String currentUser);
+    DirectoryHandle getCurrentDirectory();
 
-	int getCode();
+    void setCurrentDirectory(DirectoryHandle currentDirectory);
 
-	Vector<String> getComment();
+    String getMessage();
 
-	DirectoryHandle getCurrentDirectory();
+    void setMessage(String message);
 
-	String getMessage();
+    String getUser();
 
-	String getUser();
+    void setUser(String currentUser);
 }

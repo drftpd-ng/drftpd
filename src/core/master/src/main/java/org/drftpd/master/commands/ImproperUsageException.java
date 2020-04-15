@@ -25,19 +25,19 @@ package org.drftpd.master.commands;
 @SuppressWarnings("serial")
 public class ImproperUsageException extends Exception {
 
-	public ImproperUsageException() {
-		super();
-	}
+    public ImproperUsageException() {
+        super();
+    }
 
-	public ImproperUsageException(String arg0) {
-		super(arg0);
-	}
+    public ImproperUsageException(String arg0) {
+        super(arg0);
+    }
 
-	public ImproperUsageException(String arg0, Throwable arg1) {
-		super(arg0, arg1);
-	}
+    public ImproperUsageException(String arg0, Throwable arg1) {
+        super(arg0, arg1);
+    }
 
-	public ImproperUsageException(Throwable arg0) {
-		super(arg0);
-	}
+    public ImproperUsageException(Throwable arg0) {
+        super(arg0);
+    }
 }

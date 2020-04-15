@@ -18,14 +18,13 @@
 package org.drftpd.master.slaveselection.filter;
 
 import org.drftpd.common.util.PropertyHelper;
+import org.drftpd.common.vfs.InodeHandleInterface;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.exceptions.SlaveUnavailableException;
 import org.drftpd.master.slavemanagement.RemoteSlave;
-import org.drftpd.master.usermanager.User;
 import org.drftpd.master.slavemanagement.SlaveStatus;
+import org.drftpd.master.usermanager.User;
 import org.drftpd.slave.network.Transfer;
-import org.drftpd.common.vfs.InodeHandleInterface;
-
 
 import java.net.InetAddress;
 import java.util.Iterator;
@@ -35,42 +34,42 @@ import java.util.Properties;
  * @author zubov
  */
 public class MaxtransfersFilter extends Filter {
-	private long _maxTransfers;
+    private final long _maxTransfers;
 
-	public MaxtransfersFilter(int i, Properties p) {
-		super(i, p);
-		_maxTransfers = Long.parseLong(PropertyHelper.getProperty(p, i+ ".maxtransfers"));
-	}
+    public MaxtransfersFilter(int i, Properties p) {
+        super(i, p);
+        _maxTransfers = Long.parseLong(PropertyHelper.getProperty(p, i + ".maxtransfers"));
+    }
 
-	public void process(ScoreChart scorechart, User user, InetAddress peer,
-						char direction, InodeHandleInterface dir, RemoteSlave sourceSlave)
-			throws NoAvailableSlaveException {
-		for (Iterator<ScoreChart.SlaveScore> iter = scorechart.getSlaveScores().iterator(); iter
-				.hasNext();) {
-			ScoreChart.SlaveScore score = iter.next();
-			SlaveStatus status;
+    public void process(ScoreChart scorechart, User user, InetAddress peer,
+                        char direction, InodeHandleInterface dir, RemoteSlave sourceSlave)
+            throws NoAvailableSlaveException {
+        for (Iterator<ScoreChart.SlaveScore> iter = scorechart.getSlaveScores().iterator(); iter
+                .hasNext(); ) {
+            ScoreChart.SlaveScore score = iter.next();
+            SlaveStatus status;
 
-			try {
-				status = score.getRSlave().getSlaveStatusAvailable();
-			} catch (SlaveUnavailableException e) {
-				// how come the slave is offline? it was just online.
-				iter.remove();
-				continue;
-			}
+            try {
+                status = score.getRSlave().getSlaveStatusAvailable();
+            } catch (SlaveUnavailableException e) {
+                // how come the slave is offline? it was just online.
+                iter.remove();
+                continue;
+            }
 
-			int transfers = 0;
+            int transfers = 0;
 
-			if (direction == Transfer.TRANSFER_RECEIVING_UPLOAD) {
-				transfers = status.getTransfersReceiving();
-			} else if (direction == Transfer.TRANSFER_SENDING_DOWNLOAD) {
-				transfers = status.getTransfersSending();
-			} else {
-				throw new IllegalArgumentException("Direction was not one of download or upload");
-			}
+            if (direction == Transfer.TRANSFER_RECEIVING_UPLOAD) {
+                transfers = status.getTransfersReceiving();
+            } else if (direction == Transfer.TRANSFER_SENDING_DOWNLOAD) {
+                transfers = status.getTransfersSending();
+            } else {
+                throw new IllegalArgumentException("Direction was not one of download or upload");
+            }
 
-			if (transfers > _maxTransfers) {
-				iter.remove();
-			}
-		}
-	}
+            if (transfers > _maxTransfers) {
+                iter.remove();
+            }
+        }
+    }
 }

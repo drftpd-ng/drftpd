@@ -25,34 +25,34 @@ import java.io.Serializable;
  */
 @SuppressWarnings("serial")
 public final class TransferIndex implements Serializable {
-	private static Object mutex = new Object();
-	private static Integer transfers = 0;
+    private static final Object mutex = new Object();
+    private static Integer transfers = 0;
 
-	private int _index;
+    private final int _index;
 
-	public TransferIndex(int index) {
-		_index = index;
-	}
+    public TransferIndex(int index) {
+        _index = index;
+    }
 
-	public TransferIndex() {
-		synchronized (mutex) {
-			_index = transfers++;
-		}
-	}
+    public TransferIndex() {
+        synchronized (mutex) {
+            _index = transfers++;
+        }
+    }
 
-	public boolean equals(Object obj) {
-		if (!(obj instanceof TransferIndex)){
-			return false;
-		}
-		
-		return _index == ((TransferIndex) obj)._index;
-	}
+    public boolean equals(Object obj) {
+        if (!(obj instanceof TransferIndex)) {
+            return false;
+        }
 
-	public int hashCode() {
-		return _index;
-	}
+        return _index == ((TransferIndex) obj)._index;
+    }
 
-	public String toString() {
-		return Integer.toString(_index);
-	}
+    public int hashCode() {
+        return _index;
+    }
+
+    public String toString() {
+        return Integer.toString(_index);
+    }
 }

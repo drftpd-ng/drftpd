@@ -17,12 +17,11 @@
  */
 package org.drftpd.master.indexation;
 
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
+import org.apache.logging.log4j.Logger;
 import org.apache.lucene.store.FSDirectory;
-import org.drftpd.master.GlobalContext;
 import org.drftpd.common.io.PhysicalFile;
+import org.drftpd.master.GlobalContext;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,34 +31,33 @@ import java.util.Date;
 
 /**
  * Thread that performs backup operations on the index.
+ *
  * @author fr0w
  * @version $Id$
  */
-public class LuceneBackupThread  extends Thread {
-	private static final Logger logger = LogManager.getLogger(LuceneBackupThread.class);
-	
-	private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd-HHmmss");
-	private static final String BACKUP_DIRNAME = "index.bkp";
-	private static final File BACKUP_HOME = new File(BACKUP_DIRNAME);
+public class LuceneBackupThread extends Thread {
+    private static final Logger logger = LogManager.getLogger(LuceneBackupThread.class);
 
-	private boolean _stop;
-	private boolean _isRunning;
-	
-	protected int _maxNumberBackup;
-	private boolean _doBackups;
-	private int _backupInterval;
-	private long _lastBackup;
-	
-	private LuceneEngine _engine;
+    private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd-HHmmss");
+    private static final String BACKUP_DIRNAME = "index.bkp";
+    private static final File BACKUP_HOME = new File(BACKUP_DIRNAME);
+    protected int _maxNumberBackup;
+    private boolean _stop;
+    private boolean _isRunning;
+    private boolean _doBackups;
+    private int _backupInterval;
+    private long _lastBackup;
 
-	protected LuceneBackupThread() {
-		setName("LuceneBackupThread");
-		_engine = (LuceneEngine) GlobalContext.getGlobalContext().getIndexEngine();
-	}
+    private final LuceneEngine _engine;
 
-	public void run() {
-		String[] backups;
-		int x;
+    protected LuceneBackupThread() {
+        setName("LuceneBackupThread");
+        _engine = (LuceneEngine) GlobalContext.getGlobalContext().getIndexEngine();
+    }
+
+    public void run() {
+        String[] backups;
+        int x;
 
         while (!_stop) {
 
@@ -114,66 +112,70 @@ public class LuceneBackupThread  extends Thread {
             } catch (InterruptedException e) {
             }
         }
-	}
-	
-	/**
-	 * Will force the backup thread to stop.<br>
-	 * If there's an operation already running, it will be finished before the thread is stopped.
-	 */
-	protected void stopBackup() {
-		_stop = true;
-	}
-	
-	/**
-	 * Set if the thread is currently performing a backup or not.
-	 * @param isRunning
-	 */
-	protected void setRunning(boolean isRunning) {
-		_isRunning = isRunning;
-	}
-	
-	/**
-	 * @return true if a backup is being performed or false if not.
-	 */
-	protected boolean isRunning() {
-		return _isRunning;
-	}
-	
-	/**
-	 * The last backup will be set to System.currentTimeMillis()
-	 */
-	protected void updateLastBackupTime() {
-		_lastBackup = System.currentTimeMillis();
-	}
-	
-	/**
-	 * @return the timestamp from the last backup.
-	 */
-	protected long getLastBackup() {
-		return _lastBackup;
-	}
-	
-	/**
-	 * Set whether backup should run
-	 * @param status
-	 */
-	protected void setDoBackups(boolean status) {
-		_doBackups = status;
-	}
-	
-	/**
-	 * Set the backup interval.
-	 * @param interval
-	 */
-	protected void setBackupInterval(int interval) {
-		_backupInterval = interval;
-	}
-	
-	/**
-	 * Set the max number of backup that are going to be kept.
-	 * @param max
-	 */
-	protected void setMaximumNumberBackup(int max) {
-		_maxNumberBackup = max;
-	}
+    }
+
+    /**
+     * Will force the backup thread to stop.<br>
+     * If there's an operation already running, it will be finished before the thread is stopped.
+     */
+    protected void stopBackup() {
+        _stop = true;
+    }
+
+    /**
+     * @return true if a backup is being performed or false if not.
+     */
+    protected boolean isRunning() {
+        return _isRunning;
+    }
+
+    /**
+     * Set if the thread is currently performing a backup or not.
+     *
+     * @param isRunning
+     */
+    protected void setRunning(boolean isRunning) {
+        _isRunning = isRunning;
+    }
+
+    /**
+     * The last backup will be set to System.currentTimeMillis()
+     */
+    protected void updateLastBackupTime() {
+        _lastBackup = System.currentTimeMillis();
+    }
+
+    /**
+     * @return the timestamp from the last backup.
+     */
+    protected long getLastBackup() {
+        return _lastBackup;
+    }
+
+    /**
+     * Set whether backup should run
+     *
+     * @param status
+     */
+    protected void setDoBackups(boolean status) {
+        _doBackups = status;
+    }
+
+    /**
+     * Set the backup interval.
+     *
+     * @param interval
+     */
+    protected void setBackupInterval(int interval) {
+        _backupInterval = interval;
+    }
+
+    /**
+     * Set the max number of backup that are going to be kept.
+     *
+     * @param max
+     */
+    protected void setMaximumNumberBackup(int max) {
+        _maxNumberBackup = max;
+    }
 }

@@ -23,19 +23,19 @@ package org.drftpd.common.exceptions;
  */
 @SuppressWarnings("serial")
 public class TransferDeniedException extends Exception {
-	public TransferDeniedException() {
-		super();
-	}
+    public TransferDeniedException() {
+        super();
+    }
 
-	public TransferDeniedException(String message) {
-		super(message);
-	}
+    public TransferDeniedException(String message) {
+        super(message);
+    }
 
-	public TransferDeniedException(String message, Throwable cause) {
-		super(message, cause);
-	}
+    public TransferDeniedException(String message, Throwable cause) {
+        super(message, cause);
+    }
 
-	public TransferDeniedException(Throwable cause) {
-		super(cause);
-	}
+    public TransferDeniedException(Throwable cause) {
+        super(cause);
+    }
 }

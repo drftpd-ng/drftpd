@@ -17,18 +17,17 @@
  */
 package org.drftpd.archive.master.archivetypes;
 
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
+import org.apache.logging.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
-import org.drftpd.master.GlobalContext;
-import org.drftpd.master.slavemanagement.RemoteSlave;
-import org.drftpd.master.sections.SectionInterface;
 import org.drftpd.archive.master.DuplicateArchiveException;
 import org.drftpd.archive.master.event.ArchiveFailedEvent;
 import org.drftpd.archive.master.event.ArchiveFinishEvent;
 import org.drftpd.archive.master.event.ArchiveStartEvent;
 import org.drftpd.jobs.master.Job;
+import org.drftpd.master.GlobalContext;
+import org.drftpd.master.sections.SectionInterface;
+import org.drftpd.master.slavemanagement.RemoteSlave;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -41,7 +40,7 @@ import java.util.Set;
 public class ArchiveHandler extends Thread {
     protected static final Logger logger = LogManager.getLogger(ArchiveHandler.class);
 
-    private ArchiveType _archiveType;
+    private final ArchiveType _archiveType;
 
     private ArrayList<Job> _jobs = null;
 

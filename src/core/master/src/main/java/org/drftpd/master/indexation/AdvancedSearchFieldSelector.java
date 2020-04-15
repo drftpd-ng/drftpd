@@ -25,16 +25,17 @@ import org.apache.lucene.document.FieldSelectorResult;
  * This field selector helps advanced searches to be faster,
  * loading only the path and inode type from the Index,
  * making the other options to be loaded lazily.
+ *
  * @author scitz0
  * @version $Id$
  */
 @SuppressWarnings("serial")
 public class AdvancedSearchFieldSelector implements FieldSelector {
-	public FieldSelectorResult accept(String fieldName) {
-		if (fieldName.equals("type") || fieldName.equals("fullPath")) {
-			return FieldSelectorResult.LOAD;
-		}
-		
-		return FieldSelectorResult.LAZY_LOAD;
-	}
+    public FieldSelectorResult accept(String fieldName) {
+        if (fieldName.equals("type") || fieldName.equals("fullPath")) {
+            return FieldSelectorResult.LOAD;
+        }
+
+        return FieldSelectorResult.LAZY_LOAD;
+    }
 }

@@ -24,27 +24,27 @@ import java.util.Properties;
 
 /**
  * This filter works this way (may look foolish)
- * 
+ *
  * <pre>
  *  x.filter=priority
  *  x.assign=1+10 2+5
  * </pre>
- * 
+ * <p>
  * This means that slave.root.1 will have more chances to receive a file then
  * slave.root.2
- * 
+ *
  * @author fr0w
  * @version $Id$
  */
 
 public class PriorityFilter extends DiskFilter {
 
-	public PriorityFilter(DiskSelectionFilter diskSelection, Properties p, Integer i) {
-		super(diskSelection, p, i);
-		_assignList = AssignRoot.parseAssign(this, PropertyHelper.getProperty(p, i+ ".assign"));
-	}
+    public PriorityFilter(DiskSelectionFilter diskSelection, Properties p, Integer i) {
+        super(diskSelection, p, i);
+        _assignList = AssignRoot.parseAssign(this, PropertyHelper.getProperty(p, i + ".assign"));
+    }
 
-	public void process(ScoreChart sc, String path) {
-		AssignRoot.addScoresToChart(this, _assignList, sc);
-	}
+    public void process(ScoreChart sc, String path) {
+        AssignRoot.addScoresToChart(this, _assignList, sc);
+    }
 }

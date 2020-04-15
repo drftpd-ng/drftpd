@@ -252,29 +252,29 @@ public class NukeFilterSettings {
          */
         for (int i = 1; ; i++) {
             String sectionName = PropertyHelper.getProperty(props,
-                    String.valueOf(i) + ".section", null);
+                    i + ".section", null);
             String sectionNukeDelay = PropertyHelper.getProperty(props,
-                    String.valueOf(i) + ".nuke.delay", "").trim();
+                    i + ".nuke.delay", "").trim();
             String sectionFilterString = PropertyHelper.getProperty(props,
-                    String.valueOf(i) + ".filter.string", "").trim();
+                    i + ".filter.string", "").trim();
             String sectionEnforceString = PropertyHelper.getProperty(props,
-                    String.valueOf(i) + ".enforce.string", "").trim();
+                    i + ".enforce.string", "").trim();
             String sectionFilterRegex = PropertyHelper.getProperty(props,
-                    String.valueOf(i) + ".filter.regex", "").trim();
+                    i + ".filter.regex", "").trim();
             String sectionEnforceRegex = PropertyHelper.getProperty(props,
-                    String.valueOf(i) + ".enforce.regex", "").trim();
+                    i + ".enforce.regex", "").trim();
             String sectionFilterYear = PropertyHelper.getProperty(props,
-                    String.valueOf(i) + ".filter.year", "").trim();
+                    i + ".filter.year", "").trim();
             String sectionEnforceYear = PropertyHelper.getProperty(props,
-                    String.valueOf(i) + ".enforce.year", "").trim();
+                    i + ".enforce.year", "").trim();
             String sectionEnforceYearNukex = PropertyHelper.getProperty(props,
-                    String.valueOf(i) + ".enforce.year.nukex", "");
+                    i + ".enforce.year.nukex", "");
             String sectionFilterGroup = PropertyHelper.getProperty(props,
-                    String.valueOf(i) + ".filter.group", "").trim();
+                    i + ".filter.group", "").trim();
             String sectionEnforceGroup = PropertyHelper.getProperty(props,
-                    String.valueOf(i) + ".enforce.group", "").trim();
+                    i + ".enforce.group", "").trim();
             String sectionEnforceGroupNukex = PropertyHelper.getProperty(props,
-                    String.valueOf(i) + ".enforce.group.nukex", "");
+                    i + ".enforce.group.nukex", "");
             if (sectionName == null) break;
             NukeFilterSectionConfig nfsc = new NukeFilterSectionConfig();
             try {

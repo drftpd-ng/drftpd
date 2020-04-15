@@ -28,6 +28,6 @@ import java.io.Serializable;
 @SuppressWarnings("serial")
 public class DupeCheckFileData implements Serializable {
 
-	public static final Key<Boolean> DUPE = new Key<>(DupeCheckFileData.class, "dupe");
+    public static final Key<Boolean> DUPE = new Key<>(DupeCheckFileData.class, "dupe");
 
 }

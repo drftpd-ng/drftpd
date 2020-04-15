@@ -26,28 +26,28 @@ import java.io.Serializable;
  * @version $Id$
  */
 public class DiskStatus implements Serializable {
-	private static final long serialVersionUID = 3573098662042584609L;
+    private static final long serialVersionUID = 3573098662042584609L;
 
-	private long _free;
+    private final long _free;
 
-	private long _total;
+    private final long _total;
 
-	public DiskStatus(long free, long total) {
-		_free = free;
-		_total = total;
-	}
+    public DiskStatus(long free, long total) {
+        _free = free;
+        _total = total;
+    }
 
-	public long getBytesAvailable() {
-		return _free;
-	}
+    public long getBytesAvailable() {
+        return _free;
+    }
 
-	public long getBytesCapacity() {
-		return _total;
-	}
+    public long getBytesCapacity() {
+        return _total;
+    }
 
-	public String toString() {
-		return getClass().getName() + "[free="
-				+ Bytes.formatBytes(getBytesAvailable()) + ",total="
-				+ Bytes.formatBytes(getBytesCapacity()) + "]";
-	}
+    public String toString() {
+        return getClass().getName() + "[free="
+                + Bytes.formatBytes(getBytesAvailable()) + ",total="
+                + Bytes.formatBytes(getBytesCapacity()) + "]";
+    }
 }

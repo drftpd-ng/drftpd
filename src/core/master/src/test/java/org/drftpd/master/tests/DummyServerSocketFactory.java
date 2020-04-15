@@ -29,7 +29,7 @@ import java.net.Socket;
  * @version $Id$
  */
 public class DummyServerSocketFactory extends ServerSocketFactory {
-    private DummySocketFactory _dssf;
+    private final DummySocketFactory _dssf;
 
     public DummyServerSocketFactory(DummySocketFactory dssf) {
         _dssf = dssf;
@@ -38,10 +38,10 @@ public class DummyServerSocketFactory extends ServerSocketFactory {
     public ServerSocket createServerSocket() {
         try {
             return new DummyServerSocket() {
-                    public Socket accept() {
-                        return getDummySocket();
-                    }
-                };
+                public Socket accept() {
+                    return getDummySocket();
+                }
+            };
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -52,12 +52,12 @@ public class DummyServerSocketFactory extends ServerSocketFactory {
     }
 
     public ServerSocket createServerSocket(int arg0, int arg1)
-        throws IOException {
+            throws IOException {
         return createServerSocket();
     }
 
     public ServerSocket createServerSocket(int arg0, int arg1, InetAddress arg2)
-        throws IOException {
+            throws IOException {
         return createServerSocket();
     }
 

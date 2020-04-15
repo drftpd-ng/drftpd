@@ -18,105 +18,105 @@
 
 package org.drftpd.archive.master.slaveselection;
 
-import java.io.FileNotFoundException;
-import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Properties;
-
-import org.drftpd.common.vfs.InodeHandleInterface;
-import org.drftpd.master.GlobalContext;
+import org.drftpd.archive.master.Archive;
+import org.drftpd.archive.master.archivetypes.ArchiveHandler;
 import org.drftpd.common.extensibility.PluginInterface;
 import org.drftpd.common.util.PropertyHelper;
+import org.drftpd.common.vfs.InodeHandleInterface;
+import org.drftpd.master.GlobalContext;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.exceptions.SlaveUnavailableException;
-import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.master.sections.SectionInterface;
+import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.master.slaveselection.filter.Filter;
 import org.drftpd.master.slaveselection.filter.ScoreChart;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.master.vfs.InodeHandle;
-import org.drftpd.archive.master.Archive;
-import org.drftpd.archive.master.archivetypes.ArchiveHandler;
+
+import java.io.FileNotFoundException;
+import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Properties;
 
 
 /**
  * @author zubov
- * @description Takes points from slaves if they don't have enough space to hold
- *              the contents of the Archive Directory
  * @version $Id$
+ * @description Takes points from slaves if they don't have enough space to hold
+ * the contents of the Archive Directory
  */
 public class DirectoryspaceFilter extends Filter {
 
-	private long _assign;
+    private final long _assign;
 
-	public DirectoryspaceFilter(int i, Properties p) {
-		super(i, p);
-		_assign = Long.parseLong(PropertyHelper.getProperty(p, i + ".assign"));
-	}
+    public DirectoryspaceFilter(int i, Properties p) {
+        super(i, p);
+        _assign = Long.parseLong(PropertyHelper.getProperty(p, i + ".assign"));
+    }
 
-	@Override
-	public void process(ScoreChart scorechart, User user, InetAddress peer,
-						char direction, InodeHandleInterface inode, RemoteSlave sourceSlave)
-			throws NoAvailableSlaveException {
-		SectionInterface section = GlobalContext.getGlobalContext()
-				.getSectionManager().lookup(((InodeHandle) inode).getParent());
-		Archive archive = null;
-		for (PluginInterface plugin : GlobalContext.getGlobalContext()
-				.getPlugins()) {
-			if (plugin instanceof Archive) {
-				archive = (Archive) plugin;
-				break;
-			}
-		}
-		if (archive == null) {
-			// Archive is not loaded
-			return;
-		}
-		DirectoryHandle directory = null;
-		for (ArchiveHandler handler : archive.getArchiveHandlers()) {
-			if (handler.getArchiveType().getSection().equals(section)) {
-				directory = handler.getArchiveType().getDirectory();
-			}
-		}
-		if (directory == null) {
-			// not being transferred by Archive
-			return;
-		}
-		try {
-			long freeSpaceNeeded = directory.getSize();
-			ArrayList<FileHandle> files = directory
-					.getAllFilesRecursiveUnchecked();
-			for (Iterator<ScoreChart.SlaveScore> iter = scorechart
-					.getSlaveScores().iterator(); iter.hasNext();) {
-				ScoreChart.SlaveScore slaveScore = iter.next();
-				RemoteSlave rslave = slaveScore.getRSlave();
-				long rslaveHasFilesSize = 0L;
-				for (FileHandle file : files) {
-					try {
-						if (file.getSlaveNames().contains(rslave.getName())) {
-							rslaveHasFilesSize += file.getSize();
-						}
-					} catch (FileNotFoundException e) {
-						// couldn't find that file, do nothing
-						// continue on
-					}
-				}
-				try {
-					if (rslave.getSlaveStatus().getDiskSpaceAvailable()
-							+ rslaveHasFilesSize < freeSpaceNeeded) {
-						slaveScore.addScore(-_assign);
-					}
-				} catch (SlaveUnavailableException e) {
-					// we can remove the slave
-					iter.remove();
-				}
-			}
-		} catch (FileNotFoundException e) {
-			// can't do anything, couldn't find the directory
+    @Override
+    public void process(ScoreChart scorechart, User user, InetAddress peer,
+                        char direction, InodeHandleInterface inode, RemoteSlave sourceSlave)
+            throws NoAvailableSlaveException {
+        SectionInterface section = GlobalContext.getGlobalContext()
+                .getSectionManager().lookup(((InodeHandle) inode).getParent());
+        Archive archive = null;
+        for (PluginInterface plugin : GlobalContext.getGlobalContext()
+                .getPlugins()) {
+            if (plugin instanceof Archive) {
+                archive = (Archive) plugin;
+                break;
+            }
         }
-	}
+        if (archive == null) {
+            // Archive is not loaded
+            return;
+        }
+        DirectoryHandle directory = null;
+        for (ArchiveHandler handler : archive.getArchiveHandlers()) {
+            if (handler.getArchiveType().getSection().equals(section)) {
+                directory = handler.getArchiveType().getDirectory();
+            }
+        }
+        if (directory == null) {
+            // not being transferred by Archive
+            return;
+        }
+        try {
+            long freeSpaceNeeded = directory.getSize();
+            ArrayList<FileHandle> files = directory
+                    .getAllFilesRecursiveUnchecked();
+            for (Iterator<ScoreChart.SlaveScore> iter = scorechart
+                    .getSlaveScores().iterator(); iter.hasNext(); ) {
+                ScoreChart.SlaveScore slaveScore = iter.next();
+                RemoteSlave rslave = slaveScore.getRSlave();
+                long rslaveHasFilesSize = 0L;
+                for (FileHandle file : files) {
+                    try {
+                        if (file.getSlaveNames().contains(rslave.getName())) {
+                            rslaveHasFilesSize += file.getSize();
+                        }
+                    } catch (FileNotFoundException e) {
+                        // couldn't find that file, do nothing
+                        // continue on
+                    }
+                }
+                try {
+                    if (rslave.getSlaveStatus().getDiskSpaceAvailable()
+                            + rslaveHasFilesSize < freeSpaceNeeded) {
+                        slaveScore.addScore(-_assign);
+                    }
+                } catch (SlaveUnavailableException e) {
+                    // we can remove the slave
+                    iter.remove();
+                }
+            }
+        } catch (FileNotFoundException e) {
+            // can't do anything, couldn't find the directory
+        }
+    }
 
 }

@@ -20,17 +20,16 @@ package org.drftpd.common.exceptions;
 import org.drftpd.common.slave.TransferStatus;
 
 /**
- * 
  * @author CyBeR
  * @version $Id: TransferSlowException.java 1945 2009-07-25 18:32:01Z djb61 $
  */
 @SuppressWarnings("serial")
 public class TransferSlowException extends TransferFailedException {
-	public TransferSlowException(Exception e, TransferStatus status) {
-		super(e.getMessage(),status);
-	}
+    public TransferSlowException(Exception e, TransferStatus status) {
+        super(e.getMessage(), status);
+    }
 
-	public TransferSlowException(String message, TransferStatus status) {
-		super(message,status);
-	}
+    public TransferSlowException(String message, TransferStatus status) {
+        super(message, status);
+    }
 }

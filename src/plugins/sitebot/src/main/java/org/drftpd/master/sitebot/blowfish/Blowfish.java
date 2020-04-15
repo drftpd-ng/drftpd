@@ -1,22 +1,22 @@
 /*
-* Important information :
-* To Use Key > 16 char, you must update two jar files in your jre or jdk.
-* 		Java Cryptography Extension (JCE)
-* 		Unlimited Strength Jurisdiction Policy Files 1.4.2
-* 		http://java.sun.com/j2se/1.4.2/download.html#docs
-* Update the two files in jre\lib\security
-* 		-> local_policy.jar
-* 		-> US_export_policy.jar
-*
-* This program is free software; you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
-* (at your option) any later version.
-*/
+ * Important information :
+ * To Use Key > 16 char, you must update two jar files in your jre or jdk.
+ * 		Java Cryptography Extension (JCE)
+ * 		Unlimited Strength Jurisdiction Policy Files 1.4.2
+ * 		http://java.sun.com/j2se/1.4.2/download.html#docs
+ * Update the two files in jre\lib\security
+ * 		-> local_policy.jar
+ * 		-> US_export_policy.jar
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ */
 package org.drftpd.master.sitebot.blowfish;
 
-import javax.crypto.*;
-import javax.crypto.spec.*;
+import javax.crypto.Cipher;
+import javax.crypto.spec.SecretKeySpec;
 
 /**
  * Blowfish abstract class

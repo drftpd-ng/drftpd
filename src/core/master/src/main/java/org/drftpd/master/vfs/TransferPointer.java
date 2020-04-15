@@ -16,9 +16,8 @@
  */
 package org.drftpd.master.vfs;
 
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
+import org.apache.logging.log4j.Logger;
 import org.drftpd.master.network.RemoteTransfer;
 import org.drftpd.slave.network.Transfer;
 
@@ -27,38 +26,38 @@ import java.io.FileNotFoundException;
 /**
  * This class's only purpose is to create a hard Reference to the VirtualFileSystemFile object that is being transferred
  * Each RemoteTransfer class should reference a TransferPointer to their appropriate file
+ *
  * @author zubov
  * @version $Id$
  */
 public class TransferPointer {
-	private VirtualFileSystemFile _vfsObject = null;
-	
-	protected static final Logger logger = LogManager.getLogger(InodeHandle.class);
+    protected static final Logger logger = LogManager.getLogger(InodeHandle.class);
+    private VirtualFileSystemFile _vfsObject = null;
 
-	public TransferPointer(String path, RemoteTransfer transfer) throws FileNotFoundException {
-		VirtualFileSystemInode vfsInode = VirtualFileSystem.getVirtualFileSystem().getInodeByPath(path);
-		if (vfsInode.isFile()) {
-			_vfsObject = (VirtualFileSystemFile) vfsInode;
-			if (transfer.getTransferDirection() == Transfer.TRANSFER_RECEIVING_UPLOAD) {
-				_vfsObject.addUpload(transfer);
-			} else if (transfer.getTransferDirection() == Transfer.TRANSFER_SENDING_DOWNLOAD) {
-				_vfsObject.addDownload(transfer);
-			} else {
-				throw new IllegalArgumentException("Transfer has to have a direction");
-			}
-		} else {
-			logger.error("This is a bug, report me! -- inconsistent file system", new ObjectNotValidException(path));
-		}
-	}
-	
-	public void unlinkPointer(RemoteTransfer transfer) {
-		if (transfer.getTransferDirection() == Transfer.TRANSFER_RECEIVING_UPLOAD) {
-			_vfsObject.removeUpload(transfer);
-		} else if (transfer.getTransferDirection() == Transfer.TRANSFER_SENDING_DOWNLOAD) {
-			_vfsObject.removeDownload(transfer);
-		} else {
-			throw new IllegalArgumentException("Transfer has to have a direction");
-		}
-		_vfsObject = null;
-	}
+    public TransferPointer(String path, RemoteTransfer transfer) throws FileNotFoundException {
+        VirtualFileSystemInode vfsInode = VirtualFileSystem.getVirtualFileSystem().getInodeByPath(path);
+        if (vfsInode.isFile()) {
+            _vfsObject = (VirtualFileSystemFile) vfsInode;
+            if (transfer.getTransferDirection() == Transfer.TRANSFER_RECEIVING_UPLOAD) {
+                _vfsObject.addUpload(transfer);
+            } else if (transfer.getTransferDirection() == Transfer.TRANSFER_SENDING_DOWNLOAD) {
+                _vfsObject.addDownload(transfer);
+            } else {
+                throw new IllegalArgumentException("Transfer has to have a direction");
+            }
+        } else {
+            logger.error("This is a bug, report me! -- inconsistent file system", new ObjectNotValidException(path));
+        }
+    }
+
+    public void unlinkPointer(RemoteTransfer transfer) {
+        if (transfer.getTransferDirection() == Transfer.TRANSFER_RECEIVING_UPLOAD) {
+            _vfsObject.removeUpload(transfer);
+        } else if (transfer.getTransferDirection() == Transfer.TRANSFER_SENDING_DOWNLOAD) {
+            _vfsObject.removeDownload(transfer);
+        } else {
+            throw new IllegalArgumentException("Transfer has to have a direction");
+        }
+        _vfsObject = null;
+    }
 }

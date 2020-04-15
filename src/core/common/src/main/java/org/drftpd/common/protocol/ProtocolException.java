@@ -18,24 +18,25 @@ package org.drftpd.common.protocol;
 
 /**
  * This exception is thrown when there's a handshake problem.
+ *
  * @author fr0w
  * @version $Id$
  */
 @SuppressWarnings("serial")
 public class ProtocolException extends Exception {
-	public ProtocolException() {
-		super();
-	}
+    public ProtocolException() {
+        super();
+    }
 
-	public ProtocolException(String message) {
-		super(message);
-	}
+    public ProtocolException(String message) {
+        super(message);
+    }
 
-	public ProtocolException(String message, Throwable cause) {
-		super(message, cause);
-	}
+    public ProtocolException(String message, Throwable cause) {
+        super(message, cause);
+    }
 
-	public ProtocolException(Throwable cause) {
-		super(cause);
-	}
+    public ProtocolException(Throwable cause) {
+        super(cause);
+    }
 }

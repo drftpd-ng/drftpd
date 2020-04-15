@@ -16,15 +16,15 @@
  */
 package org.drftpd.links.master.types.sfvincomplete;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.Properties;
-
+import org.drftpd.links.master.LinkType;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.exceptions.SlaveUnavailableException;
 import org.drftpd.master.vfs.DirectoryHandle;
-import org.drftpd.links.master.LinkType;
 import org.drftpd.zipscript.master.sfv.ZipscriptVFSDataSFV;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.Properties;
 
 /**
  * @author CyBeR
@@ -33,51 +33,51 @@ import org.drftpd.zipscript.master.sfv.ZipscriptVFSDataSFV;
 
 public class SFVIncomplete extends LinkType {
 
-	public SFVIncomplete(Properties p, int confnum, String type) {
-		super(p, confnum, type);
-	}
+    public SFVIncomplete(Properties p, int confnum, String type) {
+        super(p, confnum, type);
+    }
 
-	/*
-	 * This just passes the target dir through to creating the Link
-	 * No special setup is needed for this type.
-	 */
-	@Override
-	public void doCreateLink(DirectoryHandle targetDir) {
-		createLink(targetDir,targetDir.getPath(),targetDir.getName());
-	}
+    /*
+     * This just passes the target dir through to creating the Link
+     * No special setup is needed for this type.
+     */
+    @Override
+    public void doCreateLink(DirectoryHandle targetDir) {
+        createLink(targetDir, targetDir.getPath(), targetDir.getName());
+    }
 
-	/*
-	 * This just passes the target dir through to creating the Link
-	 * No special setup is needed for this type.
-	 */
-	@Override
-	public void doDeleteLink(DirectoryHandle targetDir) {
-		deleteLink(targetDir,targetDir.getPath(),targetDir.getName());
-		
-	}
-	
-	/*
-	 * Checks to see if the release is finished.
-	 * If it is, it removes the link, and if it isn't
-	 * it creates the link.
-	 */
-	@Override
-	public void doFixLink(DirectoryHandle targetDir) {
+    /*
+     * This just passes the target dir through to creating the Link
+     * No special setup is needed for this type.
+     */
+    @Override
+    public void doDeleteLink(DirectoryHandle targetDir) {
+        deleteLink(targetDir, targetDir.getPath(), targetDir.getName());
+
+    }
+
+    /*
+     * Checks to see if the release is finished.
+     * If it is, it removes the link, and if it isn't
+     * it creates the link.
+     */
+    @Override
+    public void doFixLink(DirectoryHandle targetDir) {
         ZipscriptVFSDataSFV sfvData = new ZipscriptVFSDataSFV(targetDir);
-		try {
-			if (sfvData.getSFVStatus().isFinished()) {
-				doDeleteLink(targetDir);
-				return;
-			}
-			doCreateLink(targetDir);
-		} catch (FileNotFoundException e) {
-			// no .sfv found - ignore
-		} catch (IOException e) {
-			// can't read .sfv - ignore
-		} catch (NoAvailableSlaveException e) {
-			// no slaves available for .sfv - ignore
-		} catch (SlaveUnavailableException e) {
-			// no slaves available for .sfv - ignore
-		}
-	}
+        try {
+            if (sfvData.getSFVStatus().isFinished()) {
+                doDeleteLink(targetDir);
+                return;
+            }
+            doCreateLink(targetDir);
+        } catch (FileNotFoundException e) {
+            // no .sfv found - ignore
+        } catch (IOException e) {
+            // can't read .sfv - ignore
+        } catch (NoAvailableSlaveException e) {
+            // no slaves available for .sfv - ignore
+        } catch (SlaveUnavailableException e) {
+            // no slaves available for .sfv - ignore
+        }
+    }
 }

@@ -17,26 +17,26 @@
  */
 package org.drftpd.mediainfo.master;
 
+import org.drftpd.common.network.AsyncCommandArgument;
 import org.drftpd.common.protocol.AbstractIssuer;
 import org.drftpd.master.exceptions.SlaveUnavailableException;
 import org.drftpd.master.slavemanagement.RemoteSlave;
-import org.drftpd.common.network.AsyncCommandArgument;
 
 /**
  * @author scitz0
  */
 public class MediaInfoIssuer extends AbstractIssuer {
 
-	@Override
-	public String getProtocolName() {
-		return "MediaInfoProtocol";
-	}
+    @Override
+    public String getProtocolName() {
+        return "MediaInfoProtocol";
+    }
 
-	public String issueMediaFileToSlave(RemoteSlave rslave, String path) throws SlaveUnavailableException {
-		String index = rslave.fetchIndex();
-		AsyncCommandArgument ac = new AsyncCommandArgument(index, "mediaInfo", path);
-		rslave.sendCommand(ac);
+    public String issueMediaFileToSlave(RemoteSlave rslave, String path) throws SlaveUnavailableException {
+        String index = rslave.fetchIndex();
+        AsyncCommandArgument ac = new AsyncCommandArgument(index, "mediaInfo", path);
+        rslave.sendCommand(ac);
 
-		return index;
-	}
+        return index;
+    }
 }

@@ -17,13 +17,13 @@
  */
 package org.drftpd.master.commands.dataconnection.hooks;
 
-import org.drftpd.master.commands.dataconnection.DataConnectionHandler;
+import org.drftpd.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.common.extensibility.CommandHook;
 import org.drftpd.common.extensibility.HookType;
 import org.drftpd.master.GlobalContext;
-import org.drftpd.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.master.commands.CommandRequest;
 import org.drftpd.master.commands.CommandResponse;
+import org.drftpd.master.commands.dataconnection.DataConnectionHandler;
 import org.drftpd.master.event.TransferEvent;
 import org.drftpd.master.network.BaseFtpConnection;
 import org.drftpd.master.slavemanagement.RemoteSlave;
@@ -37,33 +37,33 @@ import java.net.InetAddress;
  */
 public class DataConnectionPostHooks {
 
-	@CommandHook(commands = "doSTOR", priority = 9999999, type = HookType.POST)
-	public void doTransferEvent(CommandRequest request, CommandResponse response) {
-		if (response.getCode() != 226) {
-			// Transfer failed, skip event
-			return;
-		}
-		try {
-			FileHandle transferFile = response.getObject(DataConnectionHandler.TRANSFER_FILE);
-			String eventType = request.getCommand().equalsIgnoreCase("RETR") ? "RETR" : "STOR";
-			if (transferFile.exists() || eventType.equals("RETR")) {
-				try {
-					BaseFtpConnection conn = (BaseFtpConnection)request.getSession();
-					RemoteSlave transferSlave = response.getObject(DataConnectionHandler.TRANSFER_SLAVE);
-					InetAddress transferSlaveInetAddr =
-						response.getObject(DataConnectionHandler.TRANSFER_SLAVE_INET_ADDRESS);
-					char transferType = response.getObject(DataConnectionHandler.TRANSFER_TYPE);
-					GlobalContext.getEventService().publishAsync(
-							new TransferEvent(conn, eventType, transferFile,
-									conn.getClientAddress(), transferSlave,
-									transferSlaveInetAddr, transferType));
-				} catch (KeyNotFoundException e1) {
-					// one or more bits of information didn't get populated correctly, have to skip the event
-				}
-				
-			}
-		} catch (KeyNotFoundException e) {
-			// shouldn't have got a 226 response and still ended up here
-		}
-	}
+    @CommandHook(commands = "doSTOR", priority = 9999999, type = HookType.POST)
+    public void doTransferEvent(CommandRequest request, CommandResponse response) {
+        if (response.getCode() != 226) {
+            // Transfer failed, skip event
+            return;
+        }
+        try {
+            FileHandle transferFile = response.getObject(DataConnectionHandler.TRANSFER_FILE);
+            String eventType = request.getCommand().equalsIgnoreCase("RETR") ? "RETR" : "STOR";
+            if (transferFile.exists() || eventType.equals("RETR")) {
+                try {
+                    BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
+                    RemoteSlave transferSlave = response.getObject(DataConnectionHandler.TRANSFER_SLAVE);
+                    InetAddress transferSlaveInetAddr =
+                            response.getObject(DataConnectionHandler.TRANSFER_SLAVE_INET_ADDRESS);
+                    char transferType = response.getObject(DataConnectionHandler.TRANSFER_TYPE);
+                    GlobalContext.getEventService().publishAsync(
+                            new TransferEvent(conn, eventType, transferFile,
+                                    conn.getClientAddress(), transferSlave,
+                                    transferSlaveInetAddr, transferType));
+                } catch (KeyNotFoundException e1) {
+                    // one or more bits of information didn't get populated correctly, have to skip the event
+                }
+
+            }
+        } catch (KeyNotFoundException e) {
+            // shouldn't have got a 226 response and still ended up here
+        }
+    }
 }

@@ -27,29 +27,30 @@ import java.util.regex.Pattern;
 
 /**
  * Handles Regex Permissions.
+ *
  * @author fr0w
  * @version $Id$
  */
-public class VFSRegexPermission extends VFSPermHandler {	
-	public void handle(String directive, StringTokenizer st) {
-		Pattern p = Pattern.compile(st.nextToken(), Pattern.CASE_INSENSITIVE);
-		addPermission(directive, new RegexPathPermission(p, Permission.makeUsers(st)));
-	}
+public class VFSRegexPermission extends VFSPermHandler {
+    public void handle(String directive, StringTokenizer st) {
+        Pattern p = Pattern.compile(st.nextToken(), Pattern.CASE_INSENSITIVE);
+        addPermission(directive, new RegexPathPermission(p, Permission.makeUsers(st)));
+    }
 
-	@Override
-	public Map<String, String> getDirectives() {
-		return Map.of("upload", "uploadex",
-				"makedir", "makedirex",
-				"delete","deleteex",
-				"deleteown", "deleteownex",
-				"rename", "renameex",
-				"renameown", "renameownex",
-				"privpath", "privpathex",
-				"download", "downloadex");
-	}
+    @Override
+    public Map<String, String> getDirectives() {
+        return Map.of("upload", "uploadex",
+                "makedir", "makedirex",
+                "delete", "deleteex",
+                "deleteown", "deleteownex",
+                "rename", "renameex",
+                "renameown", "renameownex",
+                "privpath", "privpathex",
+                "download", "downloadex");
+    }
 
-	@Override
-	public int getPriority() {
-		return 1;
-	}
+    @Override
+    public int getPriority() {
+        return 1;
+    }
 }

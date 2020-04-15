@@ -22,19 +22,19 @@ package org.drftpd.jobs.master;
  */
 @SuppressWarnings("serial")
 public class DestinationSlaveException extends SlaveException {
-	public DestinationSlaveException() {
-		super();
-	}
+    public DestinationSlaveException() {
+        super();
+    }
 
-	public DestinationSlaveException(Exception e) {
-		super(e);
-	}
+    public DestinationSlaveException(Exception e) {
+        super(e);
+    }
 
-	public DestinationSlaveException(String s) {
-		super(s);
-	}
+    public DestinationSlaveException(String s) {
+        super(s);
+    }
 
-	public DestinationSlaveException(Throwable throwable) {
-		super(throwable);
-	}
+    public DestinationSlaveException(Throwable throwable) {
+        super(throwable);
+    }
 }

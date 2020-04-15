@@ -26,6 +26,6 @@ import java.io.FileNotFoundException;
  * @version $Id$
  */
 public interface LinkHandleInterface extends InodeHandleInterface {
-	DirectoryHandle getTargetDirectoryUnchecked() throws FileNotFoundException,
-			ObjectNotValidException;
+    DirectoryHandle getTargetDirectoryUnchecked() throws FileNotFoundException,
+            ObjectNotValidException;
 }

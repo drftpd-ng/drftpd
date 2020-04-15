@@ -43,9 +43,9 @@ public class AnnounceConfig {
     private HashMap<String, ArrayList<AnnounceWriter>> _pathWriters = new HashMap<>();
     private HashMap<String, ArrayList<AnnounceWriter>> _sectionWriters = new HashMap<>();
     private HashMap<String, AnnounceWriter> _simpleWriters = new HashMap<>();
-    private ArrayList<String> _eventTypes;
-    private SiteBot _bot;
-    private String _confDir;
+    private final ArrayList<String> _eventTypes;
+    private final SiteBot _bot;
+    private final String _confDir;
 
     public AnnounceConfig(String confDir, ArrayList<String> eventTypes, SiteBot bot) {
         _confDir = confDir;

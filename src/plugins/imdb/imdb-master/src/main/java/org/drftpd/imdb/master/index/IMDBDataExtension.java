@@ -20,10 +20,10 @@ package org.drftpd.imdb.master.index;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.NumericField;
-import org.drftpd.imdb.common.IMDBInfo;
 import org.drftpd.common.dynamicdata.KeyNotFoundException;
-import org.drftpd.master.vfs.event.ImmutableInodeHandle;
+import org.drftpd.imdb.common.IMDBInfo;
 import org.drftpd.master.indexation.IndexDataExtensionInterface;
+import org.drftpd.master.vfs.event.ImmutableInodeHandle;
 
 /**
  * @author scitz0
@@ -31,50 +31,50 @@ import org.drftpd.master.indexation.IndexDataExtensionInterface;
  */
 public class IMDBDataExtension implements IndexDataExtensionInterface {
 
-	private static final Field FIELD_TITLE = new Field("imdbtitle", "", Field.Store.YES, Field.Index.ANALYZED);
-	private static final Field FIELD_DIRECTOR = new Field("imdbdirector", "", Field.Store.YES, Field.Index.ANALYZED);
-	private static final Field FIELD_GENRES = new Field("imdbgenres", "", Field.Store.YES, Field.Index.ANALYZED);
-	private static final NumericField FIELD_VOTES = new NumericField("imdbvotes", Field.Store.YES, Boolean.TRUE);
-	private static final NumericField FIELD_RATING = new NumericField("imdbrating", Field.Store.YES, Boolean.TRUE);
-	private static final NumericField FIELD_YEAR = new NumericField("imdbyear", Field.Store.YES, Boolean.TRUE);
-	private static final NumericField FIELD_RUNTIME = new NumericField("imdbruntime", Field.Store.YES, Boolean.TRUE);
-	
-	@Override
-	public void initializeFields(Document doc) {
-		doc.add(FIELD_TITLE);
-		doc.add(FIELD_DIRECTOR);
-		doc.add(FIELD_GENRES);
-		doc.add(FIELD_VOTES);
-		doc.add(FIELD_RATING);
-		doc.add(FIELD_YEAR);
-		doc.add(FIELD_RUNTIME);
-	}
+    private static final Field FIELD_TITLE = new Field("imdbtitle", "", Field.Store.YES, Field.Index.ANALYZED);
+    private static final Field FIELD_DIRECTOR = new Field("imdbdirector", "", Field.Store.YES, Field.Index.ANALYZED);
+    private static final Field FIELD_GENRES = new Field("imdbgenres", "", Field.Store.YES, Field.Index.ANALYZED);
+    private static final NumericField FIELD_VOTES = new NumericField("imdbvotes", Field.Store.YES, Boolean.TRUE);
+    private static final NumericField FIELD_RATING = new NumericField("imdbrating", Field.Store.YES, Boolean.TRUE);
+    private static final NumericField FIELD_YEAR = new NumericField("imdbyear", Field.Store.YES, Boolean.TRUE);
+    private static final NumericField FIELD_RUNTIME = new NumericField("imdbruntime", Field.Store.YES, Boolean.TRUE);
 
-	@Override
-	public void addData(Document doc, ImmutableInodeHandle inode) {
-		IMDBInfo imdbInfo = null;
-		try {
-			imdbInfo = inode.getPluginMetaData(IMDBInfo.IMDBINFO);
-		} catch (KeyNotFoundException e) {
-			// Fields will be cleared below
-		}
-		if (imdbInfo == null || !imdbInfo.getMovieFound()) {
-			FIELD_TITLE.setValue("");
-			FIELD_DIRECTOR.setValue("");
-			FIELD_GENRES.setValue("");
-			FIELD_VOTES.setIntValue(-1);
-			FIELD_RATING.setIntValue(-1);
-			FIELD_YEAR.setIntValue(-1);
-			FIELD_RUNTIME.setIntValue(-1);
-		} else {
-			FIELD_TITLE.setValue(imdbInfo.getTitle());
-			FIELD_DIRECTOR.setValue(imdbInfo.getDirector());
-			FIELD_GENRES.setValue(imdbInfo.getGenres());
-			FIELD_VOTES.setIntValue(imdbInfo.getVotes() != null ? imdbInfo.getVotes() : -1);
-			FIELD_RATING.setIntValue(imdbInfo.getRating() != null ? imdbInfo.getRating() : -1);
-			FIELD_YEAR.setIntValue(imdbInfo.getYear() != null ? imdbInfo.getYear() : -1);
-			FIELD_RUNTIME.setIntValue(imdbInfo.getRuntime() != null ? imdbInfo.getRuntime() : -1);
-		}
-	}
+    @Override
+    public void initializeFields(Document doc) {
+        doc.add(FIELD_TITLE);
+        doc.add(FIELD_DIRECTOR);
+        doc.add(FIELD_GENRES);
+        doc.add(FIELD_VOTES);
+        doc.add(FIELD_RATING);
+        doc.add(FIELD_YEAR);
+        doc.add(FIELD_RUNTIME);
+    }
+
+    @Override
+    public void addData(Document doc, ImmutableInodeHandle inode) {
+        IMDBInfo imdbInfo = null;
+        try {
+            imdbInfo = inode.getPluginMetaData(IMDBInfo.IMDBINFO);
+        } catch (KeyNotFoundException e) {
+            // Fields will be cleared below
+        }
+        if (imdbInfo == null || !imdbInfo.getMovieFound()) {
+            FIELD_TITLE.setValue("");
+            FIELD_DIRECTOR.setValue("");
+            FIELD_GENRES.setValue("");
+            FIELD_VOTES.setIntValue(-1);
+            FIELD_RATING.setIntValue(-1);
+            FIELD_YEAR.setIntValue(-1);
+            FIELD_RUNTIME.setIntValue(-1);
+        } else {
+            FIELD_TITLE.setValue(imdbInfo.getTitle());
+            FIELD_DIRECTOR.setValue(imdbInfo.getDirector());
+            FIELD_GENRES.setValue(imdbInfo.getGenres());
+            FIELD_VOTES.setIntValue(imdbInfo.getVotes() != null ? imdbInfo.getVotes() : -1);
+            FIELD_RATING.setIntValue(imdbInfo.getRating() != null ? imdbInfo.getRating() : -1);
+            FIELD_YEAR.setIntValue(imdbInfo.getYear() != null ? imdbInfo.getYear() : -1);
+            FIELD_RUNTIME.setIntValue(imdbInfo.getRuntime() != null ? imdbInfo.getRuntime() : -1);
+        }
+    }
 
 }

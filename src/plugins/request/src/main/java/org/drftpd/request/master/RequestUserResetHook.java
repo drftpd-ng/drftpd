@@ -17,10 +17,10 @@
  */
 package org.drftpd.request.master;
 
-import org.drftpd.request.master.metadata.RequestUserData;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.usermanager.UserResetHookInterface;
+import org.drftpd.request.master.metadata.RequestUserData;
 
 import java.util.Date;
 
@@ -29,33 +29,33 @@ import java.util.Date;
  * @version $Id$
  */
 public class RequestUserResetHook implements UserResetHookInterface {
-	
-	public void init() {
-	}
 
-	public void resetHour(Date d) {
-		// No need for this interval
-	}
+    public void init() {
+    }
 
-	public void resetDay(Date d) {
-		// No need for this interval
-	}
+    public void resetHour(Date d) {
+        // No need for this interval
+    }
 
-	public void resetWeek(Date d) {
-		// Reset users weekly allotment to zero
-		for (User user : GlobalContext.getGlobalContext().getUserManager().getAllUsers()) {
-			user.getKeyedMap().setObject(RequestUserData.WEEKREQS, 0);
-			user.commit();
-		}
-	}
+    public void resetDay(Date d) {
+        // No need for this interval
+    }
 
-	public void resetMonth(Date d) {
-		// call resetWeek() instead
-		resetWeek(d);
-	}
+    public void resetWeek(Date d) {
+        // Reset users weekly allotment to zero
+        for (User user : GlobalContext.getGlobalContext().getUserManager().getAllUsers()) {
+            user.getKeyedMap().setObject(RequestUserData.WEEKREQS, 0);
+            user.commit();
+        }
+    }
 
-	public void resetYear(Date d) {
-		// call resetWeek() instead
-		resetWeek(d);
-	}
+    public void resetMonth(Date d) {
+        // call resetWeek() instead
+        resetWeek(d);
+    }
+
+    public void resetYear(Date d) {
+        // call resetWeek() instead
+        resetWeek(d);
+    }
 }

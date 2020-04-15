@@ -19,13 +19,13 @@ package org.drftpd.master.slaveselection.filter;
 
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+import org.drftpd.common.slave.DiskStatus;
 import org.drftpd.common.util.Bytes;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
-import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.master.slavemanagement.DummyRemoteSlave;
-import org.drftpd.slave.exceptions.ObjectNotFoundException;
-import org.drftpd.common.slave.DiskStatus;
+import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.master.slavemanagement.SlaveStatus;
+import org.drftpd.slave.exceptions.ObjectNotFoundException;
 import org.drftpd.slave.network.Transfer;
 import org.junit.Assert;
 
@@ -49,7 +49,7 @@ public class MinfreespaceFilterTest extends TestCase {
     }
 
     public void testSimple()
-        throws ObjectNotFoundException, NoAvailableSlaveException {
+            throws ObjectNotFoundException, NoAvailableSlaveException {
         Properties p = new Properties();
         p.put("1.multiplier", "1");
         p.put("1.minfreespace", "100MB");
@@ -58,21 +58,21 @@ public class MinfreespaceFilterTest extends TestCase {
                 Bytes.parseBytes("100GB")), 0, 0, 0, 0, 0, 0);
         RemoteSlave[] rslaves = {
                 new RemoteSlaveTesting("slave1", Collections.emptyList(), s)
-            };
+        };
         ScoreChart sc = new ScoreChart(Arrays.asList(rslaves));
 
         Filter f = new MinfreespaceFilter(1, p);
         f.process(sc, null, null, Transfer.TRANSFER_SENDING_DOWNLOAD, null, null);
 
         Assert.assertEquals(Bytes.parseBytes("-50MB"),
-            sc.getScoreForSlave(rslaves[0]).getScore());
+                sc.getScoreForSlave(rslaves[0]).getScore());
     }
 
     public static class RemoteSlaveTesting extends DummyRemoteSlave {
-        private SlaveStatus _status;
+        private final SlaveStatus _status;
 
         public RemoteSlaveTesting(String name, Collection<Object> masks,
-            SlaveStatus status) {
+                                  SlaveStatus status) {
             super(name);
             _status = status;
         }

@@ -63,13 +63,10 @@ import java.util.*;
  * @version $Id$
  */
 public class LuceneEngine implements IndexEngineInterface {
-    private static final Logger logger = LogManager.getLogger(LuceneEngine.class);
-
-    private static final String EXCEPTION_OCCURED_WHILE_SEARCHING = "An exception occured while indexing, check stack trace";
-
     protected static final Analyzer ANALYZER = new AlphanumericalAnalyzer();
     protected static final String INDEX_DIR = "userdata/index";
-
+    private static final Logger logger = LogManager.getLogger(LuceneEngine.class);
+    private static final String EXCEPTION_OCCURED_WHILE_SEARCHING = "An exception occured while indexing, check stack trace";
     private static final Document INDEX_DOCUMENT = new Document();
 
     private static final Field FIELD_NAME = new Field("name", "", Field.Store.YES, Field.Index.ANALYZED);
@@ -91,6 +88,18 @@ public class LuceneEngine implements IndexEngineInterface {
     private static final NumericField[] NUMERICFIELDS = new NumericField[]{
             FIELD_SLAVES_NBR, FIELD_LASTMODIFIED, FIELD_SIZE
     };
+    private static final TermQuery QUERY_DIRECTORY = new TermQuery(new Term("type", "d"));
+    private static final TermQuery QUERY_FILE = new TermQuery(new Term("type", "f"));
+    private static final Term TERM_NAME = new Term("name", "");
+    private static final Term TERM_FULL_NAME = new Term("fullName", "");
+    private static final Term TERM_FULL_NAME_REVERSE = new Term("fullNameReverse", "");
+    private static final Term TERM_PARENT = new Term("parentPath", "");
+    private static final Term TERM_FULL = new Term("fullPath", "");
+    private static final Term TERM_OWNER = new Term("owner", "");
+    private static final Term TERM_GROUP = new Term("group", "");
+    private static final Term TERM_SLAVES = new Term("slaves", "");
+    private static final SimpleSearchFieldSelector SIMPLE_FIELD_SELECTOR = new SimpleSearchFieldSelector();
+    private static final AdvancedSearchFieldSelector ADVANCED_FIELD_SELECTOR = new AdvancedSearchFieldSelector();
 
     static {
         for (Field field : FIELDS) {
@@ -103,23 +112,7 @@ public class LuceneEngine implements IndexEngineInterface {
 
     private Directory _storage;
     private IndexWriter _iWriter;
-
-    private static final TermQuery QUERY_DIRECTORY = new TermQuery(new Term("type", "d"));
-    private static final TermQuery QUERY_FILE = new TermQuery(new Term("type", "f"));
-
-    private static final Term TERM_NAME = new Term("name", "");
-    private static final Term TERM_FULL_NAME = new Term("fullName", "");
-    private static final Term TERM_FULL_NAME_REVERSE = new Term("fullNameReverse", "");
-    private static final Term TERM_PARENT = new Term("parentPath", "");
-    private static final Term TERM_FULL = new Term("fullPath", "");
-
-    private static final Term TERM_OWNER = new Term("owner", "");
-    private static final Term TERM_GROUP = new Term("group", "");
-    private static final Term TERM_SLAVES = new Term("slaves", "");
-    private static final SimpleSearchFieldSelector SIMPLE_FIELD_SELECTOR = new SimpleSearchFieldSelector();
-    private static final AdvancedSearchFieldSelector ADVANCED_FIELD_SELECTOR = new AdvancedSearchFieldSelector();
-
-    private Sort SORT = new Sort();
+    private final Sort SORT = new Sort();
 
     private int _maxHitsNumber;
     private int _maxDocsBuffer;
@@ -133,8 +126,8 @@ public class LuceneEngine implements IndexEngineInterface {
     private IndexingVirtualFileSystemListener _listener;
     private boolean _rebuilding;
 
-    private List<IndexDataExtensionInterface> _dataExtensions = new ArrayList<>();
-    private List<QueryTermExtensionInterface> _queryExtensions = new ArrayList<>();
+    private final List<IndexDataExtensionInterface> _dataExtensions = new ArrayList<>();
+    private final List<QueryTermExtensionInterface> _queryExtensions = new ArrayList<>();
 
     /**
      * Creates all the needed resources for the Index to work.
@@ -964,37 +957,6 @@ public class LuceneEngine implements IndexEngineInterface {
 	 */
 
     /**
-     * Hook ran by the JVM before shutting down itself completely. This hook
-     * saves the index state to keep it usable the next time you start DrFTPd.
-     */
-    private final class IndexShutdownHookRunnable implements Runnable {
-        public void run() {
-            _backupThread.stopBackup();
-            _maintenanceThread.stopMaintenance();
-
-            // obtaining the objects' lock.
-            // doing that we ensure that no operations are running while closing the streams.
-            synchronized (_maintenanceThread) {
-                _maintenanceThread.notify();
-            }
-            synchronized (_backupThread) {
-                _backupThread.notify();
-            }
-
-            while (_maintenanceThread.isAlive() || _backupThread.isAlive()) {
-                try {
-                    logger.debug("Waiting for the index maintenance threads to die...");
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                }
-            }
-
-            logger.debug("Saving index...");
-            closeAll();
-        }
-    }
-
-    /**
      * Custom FieldComparator to get a random result from index
      */
     public static class RandomOrderFieldComparator extends FieldComparator<Integer> {
@@ -1028,5 +990,36 @@ public class LuceneEngine implements IndexEngineInterface {
             return random.nextInt();
         }
 
+    }
+
+    /**
+     * Hook ran by the JVM before shutting down itself completely. This hook
+     * saves the index state to keep it usable the next time you start DrFTPd.
+     */
+    private final class IndexShutdownHookRunnable implements Runnable {
+        public void run() {
+            _backupThread.stopBackup();
+            _maintenanceThread.stopMaintenance();
+
+            // obtaining the objects' lock.
+            // doing that we ensure that no operations are running while closing the streams.
+            synchronized (_maintenanceThread) {
+                _maintenanceThread.notify();
+            }
+            synchronized (_backupThread) {
+                _backupThread.notify();
+            }
+
+            while (_maintenanceThread.isAlive() || _backupThread.isAlive()) {
+                try {
+                    logger.debug("Waiting for the index maintenance threads to die...");
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                }
+            }
+
+            logger.debug("Saving index...");
+            closeAll();
+        }
     }
 }

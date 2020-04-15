@@ -22,30 +22,31 @@ import java.io.IOException;
 
 /**
  * Helps create a lazy write delay for serializing objects
- * 
+ *
  * @author zubov
  * @version $Id$
  */
 public interface Commitable {
-	
-	
-	/**
-	 * Adds itself to the CommitManager by calling CommitManager.add()
-	 *
-	 */
+
+
+    /**
+     * Adds itself to the CommitManager by calling CommitManager.add()
+     */
     void commit();
-	
-	
-	/**
-	 * This is the actual serialization method to write this Commitable to disk
-	 * @throws IOException
-	 */
+
+
+    /**
+     * This is the actual serialization method to write this Commitable to disk
+     *
+     * @throws IOException
+     */
     void writeToDisk() throws IOException;
-	
-	/**
-	 * Returns a textual descriptive name for `this` object that a drftpd user can recognize
-	 * Used in error reporting
-	 * @return
-	 */
+
+    /**
+     * Returns a textual descriptive name for `this` object that a drftpd user can recognize
+     * Used in error reporting
+     *
+     * @return
+     */
     String descriptiveName();
 }

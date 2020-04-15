@@ -23,35 +23,35 @@ import java.util.Collection;
 import java.util.regex.PatternSyntaxException;
 
 public class CreditLimitPathPermission extends GlobPathPermission {
-	private int _direction;
-	private String _period;
-	private long _bytes;
+    private final int _direction;
+    private final String _period;
+    private final long _bytes;
 
-	/**
-	 * @param pattern
-	 * @param direction
-	 * @param period
-	 * @param bytes
-	 * @param users
-	 * @throws PatternSyntaxException
-	 */
-	public CreditLimitPathPermission(String pattern, int direction, String period, long bytes, Collection<String> users)
-			throws PatternSyntaxException {
-		super(pattern, users);
-		_direction = direction;
-		_period = period;
-		_bytes = bytes;
-	}
+    /**
+     * @param pattern
+     * @param direction
+     * @param period
+     * @param bytes
+     * @param users
+     * @throws PatternSyntaxException
+     */
+    public CreditLimitPathPermission(String pattern, int direction, String period, long bytes, Collection<String> users)
+            throws PatternSyntaxException {
+        super(pattern, users);
+        _direction = direction;
+        _period = period;
+        _bytes = bytes;
+    }
 
-	public int getDirection() {
-		return _direction;
-	}
+    public int getDirection() {
+        return _direction;
+    }
 
-	public String getPeriod() {
-		return _period;
-	}
+    public String getPeriod() {
+        return _period;
+    }
 
-	public long getBytes() {
-		return _bytes;
-	}
+    public long getBytes() {
+        return _bytes;
+    }
 }

@@ -17,8 +17,8 @@
  */
 package org.drftpd.autonuke.master;
 
-import org.drftpd.master.commands.approve.metadata.Approve;
 import org.drftpd.common.dynamicdata.KeyNotFoundException;
+import org.drftpd.master.commands.approve.metadata.Approve;
 import org.drftpd.master.vfs.DirectoryHandle;
 
 import java.io.FileNotFoundException;
@@ -28,37 +28,38 @@ import java.util.TimerTask;
 /**
  * Task that runs every minute checking scan queue for items old enough to scan
  * for either incomplete, missing or empty according to nuke configuration
+ *
  * @author scitz0
  */
 public class ScanTask extends TimerTask {
 
-	public ScanTask() {
-	}
+    public ScanTask() {
+    }
 
-	public void run() {
-		for (Iterator<DirectoryHandle> iter = DirsToCheck.getDirsToCheck().get().iterator(); iter.hasNext();) {
-			DirectoryHandle dir = iter.next();
+    public void run() {
+        for (Iterator<DirectoryHandle> iter = DirsToCheck.getDirsToCheck().get().iterator(); iter.hasNext(); ) {
+            DirectoryHandle dir = iter.next();
 
-			boolean isApproved = false;
-			try {
-				isApproved = dir.getPluginMetaData(Approve.APPROVE);
-			} catch (KeyNotFoundException e) {
-				// This is ok
-			} catch (FileNotFoundException e) {
-				// Dir no longer exist, remove it from queue and continue.
-				iter.remove();
-				continue;
-			}
+            boolean isApproved = false;
+            try {
+                isApproved = dir.getPluginMetaData(Approve.APPROVE);
+            } catch (KeyNotFoundException e) {
+                // This is ok
+            } catch (FileNotFoundException e) {
+                // Dir no longer exist, remove it from queue and continue.
+                iter.remove();
+                continue;
+            }
 
-			if (isApproved) {
-				iter.remove();
-				continue;
-			}
+            if (isApproved) {
+                iter.remove();
+                continue;
+            }
 
-			if (AutoNukeManager.getANC().checkConfigs(dir)) {
-				iter.remove();
-			}
-		}
-	}
+            if (AutoNukeManager.getANC().checkConfigs(dir)) {
+                iter.remove();
+            }
+        }
+    }
 
 }

@@ -25,37 +25,37 @@ import org.drftpd.master.vfs.DirectoryHandle;
  */
 public class NewRaceLeaderEvent {
 
-	private String _user;
-	private String _prevuser;
-	private DirectoryHandle _dir;
-	private UploaderPosition _uploaderposition;
-	private int _files;
+    private final String _user;
+    private final String _prevuser;
+    private final DirectoryHandle _dir;
+    private final UploaderPosition _uploaderposition;
+    private final int _files;
 
-	public NewRaceLeaderEvent(String user, String prevuser, DirectoryHandle dir, UploaderPosition uploaderposition, int files) {
-		_user = user;
-		_prevuser = prevuser;
-		_dir = dir;
-		_files = files;
-		_uploaderposition = uploaderposition;
-	}
+    public NewRaceLeaderEvent(String user, String prevuser, DirectoryHandle dir, UploaderPosition uploaderposition, int files) {
+        _user = user;
+        _prevuser = prevuser;
+        _dir = dir;
+        _files = files;
+        _uploaderposition = uploaderposition;
+    }
 
-	public String getUser() {
-		return _user;
-	}
+    public String getUser() {
+        return _user;
+    }
 
-	public String getPrevUser() {
-		return _prevuser;
-	}
+    public String getPrevUser() {
+        return _prevuser;
+    }
 
-	public DirectoryHandle getDirectory() {
-		return _dir;
-	}
+    public DirectoryHandle getDirectory() {
+        return _dir;
+    }
 
-	public UploaderPosition getUploaderPosition() {
-		return _uploaderposition;
-	}
+    public UploaderPosition getUploaderPosition() {
+        return _uploaderposition;
+    }
 
-	public int getFiles() {
-		return _files;
-	}
+    public int getFiles() {
+        return _files;
+    }
 }

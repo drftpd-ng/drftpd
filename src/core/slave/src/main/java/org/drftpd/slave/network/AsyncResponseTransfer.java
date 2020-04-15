@@ -26,14 +26,14 @@ import org.drftpd.common.slave.ConnectInfo;
  */
 @SuppressWarnings("serial")
 public class AsyncResponseTransfer extends AsyncResponse {
-	private ConnectInfo _ci;
+    private final ConnectInfo _ci;
 
-	public AsyncResponseTransfer(String index, ConnectInfo ci) {
-		super(index);
-		_ci = ci;
-	}
+    public AsyncResponseTransfer(String index, ConnectInfo ci) {
+        super(index);
+        _ci = ci;
+    }
 
-	public ConnectInfo getConnectInfo() {
-		return _ci;
-	}
+    public ConnectInfo getConnectInfo() {
+        return _ci;
+    }
 }

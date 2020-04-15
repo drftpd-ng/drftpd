@@ -30,10 +30,10 @@ import java.io.Serializable;
 public class IMDBInfo implements Serializable {
 
     public static final Key<IMDBInfo> IMDBINFO = new Key<>(IMDBInfo.class, "imdb");
-	
-	private String _nfoFileName = null;
-	private String _nfoURL = null;
-	private long _checksum = 0L;
+
+    private String _nfoFileName = null;
+    private String _nfoURL = null;
+    private long _checksum = 0L;
 
     // IMDB DATA
     private String _title = "N|A";
@@ -48,58 +48,58 @@ public class IMDBInfo implements Serializable {
     private Integer _runtime;
     private boolean _foundMovie = false;
 
-	/**
-	 * Constructor for IMDBInfo
-	 */
-	public IMDBInfo() {	}
-	
-	public String getNFOFileName() {
-		return _nfoFileName;
-	}
-	
-	public void setNFOFileName(String name) {
-		_nfoFileName = name;
-	}
-	
-	public String getURL() {
-		return _nfoURL;
-	}
+    /**
+     * Constructor for IMDBInfo
+     */
+    public IMDBInfo() { }
 
-	public void setURL(String url) {
-		_nfoURL = url;
-	}
-	
-	public static IMDBInfo importNFOInfoFromFile(BufferedReader in) throws IOException {
-		String line;
-		String url = null;
-		try {
-			while ((line = in.readLine()) != null) {
-				if (line.length() == 0) {
-					continue;
-				}
-			    line = line.toLowerCase();
-				if (line.contains("/title/tt")) {
-					url = "http://akas.imdb.com/title/" + line.replaceAll(".*/title/(tt\\d+).*", "$1");
-					break;
-				}
-			}
-		} finally {
-			if (in != null) {
-				in.close();
-			}
-		}
-		IMDBInfo tmp = new IMDBInfo();
-		tmp.setURL(url);
-		return tmp;
-	}
-	
-	public void setChecksum(long value) {
-		_checksum = value;
-	}
-	
-	public long getChecksum() {
-		return _checksum;
-	}
+    public static IMDBInfo importNFOInfoFromFile(BufferedReader in) throws IOException {
+        String line;
+        String url = null;
+        try {
+            while ((line = in.readLine()) != null) {
+                if (line.length() == 0) {
+                    continue;
+                }
+                line = line.toLowerCase();
+                if (line.contains("/title/tt")) {
+                    url = "http://akas.imdb.com/title/" + line.replaceAll(".*/title/(tt\\d+).*", "$1");
+                    break;
+                }
+            }
+        } finally {
+            if (in != null) {
+                in.close();
+            }
+        }
+        IMDBInfo tmp = new IMDBInfo();
+        tmp.setURL(url);
+        return tmp;
+    }
+
+    public String getNFOFileName() {
+        return _nfoFileName;
+    }
+
+    public void setNFOFileName(String name) {
+        _nfoFileName = name;
+    }
+
+    public String getURL() {
+        return _nfoURL;
+    }
+
+    public void setURL(String url) {
+        _nfoURL = url;
+    }
+
+    public long getChecksum() {
+        return _checksum;
+    }
+
+    public void setChecksum(long value) {
+        _checksum = value;
+    }
 
     public String getTitle() {
         return _title;
@@ -117,22 +117,22 @@ public class IMDBInfo implements Serializable {
         _year = year;
     }
 
-	public String getLanguage() {
+    public String getLanguage() {
         return _language;
     }
 
-	public void setLanguage(String language) {
+    public void setLanguage(String language) {
         _language = language;
     }
 
-	public String getCountry() {
+    public String getCountry() {
         return _country;
     }
 
     public void setCountry(String country) {
         _country = country;
     }
-	
+
     public String getDirector() {
         return _director;
     }
@@ -164,7 +164,7 @@ public class IMDBInfo implements Serializable {
     public void setPlot(String plot) {
         _plot = plot;
     }
-	
+
     public Integer getVotes() {
         return _votes;
     }
@@ -178,7 +178,7 @@ public class IMDBInfo implements Serializable {
     }
 
     public void setRuntime(Integer runtime) {
-		_runtime = runtime;
+        _runtime = runtime;
     }
 
     public boolean getMovieFound() {

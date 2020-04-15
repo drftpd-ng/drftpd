@@ -47,7 +47,6 @@ public class Request extends CommandInterface {
 
     private ResourceBundle _bundle;
 
-
     private String _requestPath;
     private boolean _createRequestPath;
 
@@ -322,6 +321,11 @@ public class Request extends CommandInterface {
         return response;
     }
 
+    @EventSubscriber
+    public void onReloadEvent(ReloadEvent event) {
+        readConfig();
+    }
+
     /**
      * Class to centralize how requests are parsed.
      * <p>
@@ -330,7 +334,7 @@ public class Request extends CommandInterface {
      */
     private class RequestParser {
         private String _user;
-        private String _requestName;
+        private final String _requestName;
 
         public RequestParser(String dirname) {
             _user = dirname.substring(_requestPrefix.length());
@@ -345,11 +349,6 @@ public class Request extends CommandInterface {
         public String getRequestName() {
             return _requestName;
         }
-    }
-
-    @EventSubscriber
-    public void onReloadEvent(ReloadEvent event) {
-        readConfig();
     }
 
 }

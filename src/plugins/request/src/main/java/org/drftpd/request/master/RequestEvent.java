@@ -23,62 +23,65 @@ import org.drftpd.master.vfs.DirectoryHandle;
 
 /**
  * Event that represents a REQUEST/REQFILLED/REQDELETE event.
+ *
  * @author fr0w
  * @version $Id$
  */
 public class RequestEvent extends Event {
 
-	protected static final String REQUEST = "request";
-	protected static final String REQFILLED = "reqfilled";
-	protected static final String REQDELETE = "reqdelete";
-	
-	private User _issuer;
-	private User _requestOwner;
-	private DirectoryHandle _requestRoot;
-	private String _requestName;
-	
-	/**
-	 * This constructor is useful for REQUEST events since the <code>request owner</code> is equals to <code>command issuer</code>
-	 * @param command the type of the command that generated this event <code>request/reqfilled/reqdelete</code>
-	 * @param requestRoot the request root (ex: /requests/)
-	 * @param requestOwner the user who requested
-	 * @param requestName what the user requested
-	 */
-	public RequestEvent(String command, DirectoryHandle requestRoot, User requestOwner, String requestName) {
-		this(command, requestOwner, requestRoot, requestOwner, requestName);
-	}
-	
-	/**
-	 * This constructor is useful for REQFILLED/REQDELETE events since the <code>request owner</code> is <b>not</b> equals to <code>command issuer</code>
-	 * @param command the type of the command that generated this event <code>request/reqfilled/reqdelete</code>
-	 * @param requestRoot the request root (ex: /requests/)
-	 * @param requestOwner the user who requested
-	 * @param commandIssuer the user who issued the command that fired this event.
-	 * @param requestName what the user requested
-	 */
-	public RequestEvent(String command, User commandIssuer, DirectoryHandle requestRoot, User requestOwner, String requestName) {
-		super(command);
-		
-		_issuer = commandIssuer;
-		_requestRoot = requestRoot;
-		_requestOwner = requestOwner;
-		_requestName = requestName;
-	}
-	
-	public User getCommandIssuer() {
-		return _issuer;
-	}
-	
-	public User getRequestOwner() {
-		return _requestOwner;
-	}
-	
-	public DirectoryHandle getRequestRoot() {
-		return _requestRoot;
-	}
-	
-	public String getRequestName() {
-		return _requestName;
-	}
+    protected static final String REQUEST = "request";
+    protected static final String REQFILLED = "reqfilled";
+    protected static final String REQDELETE = "reqdelete";
+
+    private final User _issuer;
+    private final User _requestOwner;
+    private final DirectoryHandle _requestRoot;
+    private final String _requestName;
+
+    /**
+     * This constructor is useful for REQUEST events since the <code>request owner</code> is equals to <code>command issuer</code>
+     *
+     * @param command      the type of the command that generated this event <code>request/reqfilled/reqdelete</code>
+     * @param requestRoot  the request root (ex: /requests/)
+     * @param requestOwner the user who requested
+     * @param requestName  what the user requested
+     */
+    public RequestEvent(String command, DirectoryHandle requestRoot, User requestOwner, String requestName) {
+        this(command, requestOwner, requestRoot, requestOwner, requestName);
+    }
+
+    /**
+     * This constructor is useful for REQFILLED/REQDELETE events since the <code>request owner</code> is <b>not</b> equals to <code>command issuer</code>
+     *
+     * @param command       the type of the command that generated this event <code>request/reqfilled/reqdelete</code>
+     * @param requestRoot   the request root (ex: /requests/)
+     * @param requestOwner  the user who requested
+     * @param commandIssuer the user who issued the command that fired this event.
+     * @param requestName   what the user requested
+     */
+    public RequestEvent(String command, User commandIssuer, DirectoryHandle requestRoot, User requestOwner, String requestName) {
+        super(command);
+
+        _issuer = commandIssuer;
+        _requestRoot = requestRoot;
+        _requestOwner = requestOwner;
+        _requestName = requestName;
+    }
+
+    public User getCommandIssuer() {
+        return _issuer;
+    }
+
+    public User getRequestOwner() {
+        return _requestOwner;
+    }
+
+    public DirectoryHandle getRequestRoot() {
+        return _requestRoot;
+    }
+
+    public String getRequestName() {
+        return _requestName;
+    }
 
 }

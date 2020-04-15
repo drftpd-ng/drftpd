@@ -17,25 +17,25 @@
  */
 package org.drftpd.speedtestnet.master.protocol;
 
+import org.drftpd.common.network.AsyncCommandArgument;
 import org.drftpd.common.protocol.AbstractIssuer;
 import org.drftpd.master.exceptions.SlaveUnavailableException;
 import org.drftpd.master.slavemanagement.RemoteSlave;
-import org.drftpd.common.network.AsyncCommandArgument;
 
 /**
  * @author Scitz0
  */
 public class SpeedTestIssuer extends AbstractIssuer {
 
-	@Override
-	public String getProtocolName() {
-		return "SpeedTestProtocol";
-	}
+    @Override
+    public String getProtocolName() {
+        return "SpeedTestProtocol";
+    }
 
-	public String issueSpeedTestToSlave(RemoteSlave rslave, String urls) throws SlaveUnavailableException {
-		String index = rslave.fetchIndex();
-		AsyncCommandArgument ac = new AsyncCommandArgument(index, "speedTest", urls);
-		rslave.sendCommand(ac);
-		return index;
-	}
+    public String issueSpeedTestToSlave(RemoteSlave rslave, String urls) throws SlaveUnavailableException {
+        String index = rslave.fetchIndex();
+        AsyncCommandArgument ac = new AsyncCommandArgument(index, "speedTest", urls);
+        rslave.sendCommand(ac);
+        return index;
+    }
 }

@@ -17,15 +17,15 @@
  */
 package org.drftpd.zipscript.master.zip.event;
 
-import java.net.InetAddress;
-
-import org.drftpd.zipscript.common.zip.DizInfo;
-import org.drftpd.zipscript.common.zip.DizStatus;
-import org.drftpd.zipscript.master.zip.vfs.ZipscriptVFSDataZip;
 import org.drftpd.master.event.TransferEvent;
 import org.drftpd.master.network.BaseFtpConnection;
 import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.master.vfs.FileHandle;
+import org.drftpd.zipscript.common.zip.DizInfo;
+import org.drftpd.zipscript.common.zip.DizStatus;
+import org.drftpd.zipscript.master.zip.vfs.ZipscriptVFSDataZip;
+
+import java.net.InetAddress;
 
 /**
  * @author djb61
@@ -33,31 +33,31 @@ import org.drftpd.master.vfs.FileHandle;
  */
 public class ZipTransferEvent extends TransferEvent {
 
-	private ZipscriptVFSDataZip _zipData;
-	
-	private DizInfo _dizInfo;
-	
-	private DizStatus _dizStatus;
-	
-	public ZipTransferEvent(BaseFtpConnection conn, String command,
-							FileHandle file, InetAddress clientHost,
-							RemoteSlave rslave, InetAddress peer, char type,
-							ZipscriptVFSDataZip zipData, DizInfo dizInfo, DizStatus dizStatus) {
-		super(conn, command, file, clientHost, rslave, peer, type);
-		_zipData = zipData;
-		_dizInfo = dizInfo;
-		_dizStatus = dizStatus;
-	}
-	
-	public ZipscriptVFSDataZip getZipData() {
-		return _zipData;
-	}
-	
-	public DizInfo getDizInfo() {
-		return _dizInfo;
-	}
-	
-	public DizStatus getDizStatus() {
-		return _dizStatus;
-	}
+    private final ZipscriptVFSDataZip _zipData;
+
+    private final DizInfo _dizInfo;
+
+    private final DizStatus _dizStatus;
+
+    public ZipTransferEvent(BaseFtpConnection conn, String command,
+                            FileHandle file, InetAddress clientHost,
+                            RemoteSlave rslave, InetAddress peer, char type,
+                            ZipscriptVFSDataZip zipData, DizInfo dizInfo, DizStatus dizStatus) {
+        super(conn, command, file, clientHost, rslave, peer, type);
+        _zipData = zipData;
+        _dizInfo = dizInfo;
+        _dizStatus = dizStatus;
+    }
+
+    public ZipscriptVFSDataZip getZipData() {
+        return _zipData;
+    }
+
+    public DizInfo getDizInfo() {
+        return _dizInfo;
+    }
+
+    public DizStatus getDizStatus() {
+        return _dizStatus;
+    }
 }

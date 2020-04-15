@@ -21,9 +21,9 @@ package org.drftpd.prebw.master;
  * @author lh
  */
 public class TimeSetting {
-    private String _times;
-    private String _interval;
-    private String _countAvg;
+    private final String _times;
+    private final String _interval;
+    private final String _countAvg;
 
     public TimeSetting(String times, String interval, String countAvg) {
         _times = times;
@@ -39,7 +39,7 @@ public class TimeSetting {
         String[] interval = _interval.split(":");
         try {
             return interval[0];
-        } catch(Exception ex) {
+        } catch (Exception ex) {
             return "*";
         }
     }
@@ -48,11 +48,11 @@ public class TimeSetting {
         String[] interval = _interval.split(":");
         try {
             return interval[1];
-        } catch(Exception ex) {
+        } catch (Exception ex) {
             return "*";
         }
     }
-    
+
     public String getCountAvg() {
         return _countAvg;
     }

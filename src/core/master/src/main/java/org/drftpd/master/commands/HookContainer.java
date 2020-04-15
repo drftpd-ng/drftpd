@@ -23,19 +23,19 @@ import java.lang.reflect.Method;
  * @version $Id$
  */
 public class HookContainer {
-	private Method _method;
-	private Object _interfaceInstance;
-	
-	public HookContainer(Method m, Object interfaceInstance) {
-		_method = m;
-		_interfaceInstance = interfaceInstance;
-	}
-	
-	public Method getMethod() {
-		return _method;
-	}
-	
-	public Object getHookInterfaceInstance() {
-		return _interfaceInstance;
-	}
+    private final Method _method;
+    private final Object _interfaceInstance;
+
+    public HookContainer(Method m, Object interfaceInstance) {
+        _method = m;
+        _interfaceInstance = interfaceInstance;
+    }
+
+    public Method getMethod() {
+        return _method;
+    }
+
+    public Object getHookInterfaceInstance() {
+        return _interfaceInstance;
+    }
 }

@@ -21,33 +21,34 @@ import java.util.ArrayList;
 
 /**
  * Some medianfo misc methods.
+ *
  * @author scitz0
  */
 public class MediaInfoUtils {
 
-	public static String getValidFileExtension(String fileName, ArrayList<String> extensions) {
-		String extension = getFileExtension(fileName);
-		if (extension == null || !extensions.contains(extension)) {
-			// Not a valid extension
-			return null;
-		}
-		return extension;
-	}
+    public static String getValidFileExtension(String fileName, ArrayList<String> extensions) {
+        String extension = getFileExtension(fileName);
+        if (extension == null || !extensions.contains(extension)) {
+            // Not a valid extension
+            return null;
+        }
+        return extension;
+    }
 
-	public static String getFileExtension(String fileName) {
-		if (fileName.indexOf('.') == -1) {
-			// No extension on file
-			return null;
-		} else {
-			return fileName.substring(fileName.lastIndexOf('.')+1).toLowerCase();
-		}
-	}
+    public static String getFileExtension(String fileName) {
+        if (fileName.indexOf('.') == -1) {
+            // No extension on file
+            return null;
+        } else {
+            return fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
+        }
+    }
 
-	public static String fixOutput(String value) {
-		value = value.replaceAll("pixels", "");
-		value = value.replaceAll("channels", "ch");
-		value = value.replaceAll(" ", "");
-		return value;
-	}
+    public static String fixOutput(String value) {
+        value = value.replaceAll("pixels", "");
+        value = value.replaceAll("channels", "ch");
+        value = value.replaceAll(" ", "");
+        return value;
+    }
 
 }

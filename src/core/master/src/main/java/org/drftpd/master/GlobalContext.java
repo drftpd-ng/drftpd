@@ -73,43 +73,23 @@ import static org.drftpd.common.util.ConfigLoader.configPath;
 
 public class GlobalContext {
 
-    private static final Logger logger = LogManager.getLogger(GlobalContext.class);
-
-    protected static GlobalContext _gctx;
-
-    private ConfigInterface _config;
-
-    private List<PluginInterface> _plugins = new ArrayList<>();
-
-    protected SectionManagerInterface _sectionManager;
-
-    private String _shutdownMessage = null;
-
-    protected SlaveManager _slaveManager;
-
-    protected AbstractUserManager _usermanager;
-
-    private Timer _timer = new Timer("GlobalContextTimer");
-
-    protected SlaveSelectionManagerInterface _slaveSelectionManager;
-
-    private SSLContext _sslContext;
-
-    private TimeManager _timeManager;
-
-    private IndexEngineInterface _indexEngine;
-
-    private static DirectoryHandle root = new DirectoryHandle(VirtualFileSystem.separator);
-
-    private static AsyncThreadSafeEventService eventService = new AsyncThreadSafeEventService();
-
-    private static Set<Method> hooksMethods;
-
     public static final String VERSION = "DrFTPD v4";
-
-    public void reloadFtpConfig() {
-        _config.reload();
-    }
+    private static final Logger logger = LogManager.getLogger(GlobalContext.class);
+    protected static GlobalContext _gctx;
+    private static final DirectoryHandle root = new DirectoryHandle(VirtualFileSystem.separator);
+    private static final AsyncThreadSafeEventService eventService = new AsyncThreadSafeEventService();
+    private static Set<Method> hooksMethods;
+    protected SectionManagerInterface _sectionManager;
+    protected SlaveManager _slaveManager;
+    protected AbstractUserManager _usermanager;
+    protected SlaveSelectionManagerInterface _slaveSelectionManager;
+    private ConfigInterface _config;
+    private final List<PluginInterface> _plugins = new ArrayList<>();
+    private String _shutdownMessage = null;
+    private final Timer _timer = new Timer("GlobalContextTimer");
+    private SSLContext _sslContext;
+    private TimeManager _timeManager;
+    private IndexEngineInterface _indexEngine;
 
     /**
      * If you're creating a GlobalContext object and it's not part of a TestCase
@@ -128,6 +108,122 @@ public class GlobalContext {
         return hooksMethods;
     }
 
+    public static Master getConnectionManager() {
+        return Master.getConnectionManager();
+    }
+
+    public static ConfigInterface getConfig() {
+        return getGlobalContext()._config;
+    }
+
+    public static GlobalContext getGlobalContext() {
+        if (_gctx == null) {
+            _gctx = new GlobalContext();
+            try {
+                EventServiceLocator.setEventService(EventServiceLocator.SERVICE_NAME_EVENT_BUS, eventService);
+            } catch (EventServiceExistsException e) {
+                logger.error("Error setting event service, likely something using the event bus before GlobalContext is instantiated", e);
+            }
+        }
+        return _gctx;
+    }
+
+    public static HashMap<String, Properties> loadCommandConfig(String confDirectory) {
+        String configurationPath = configPath(confDirectory);
+        HashMap<String, Properties> commandsConfig = new HashMap<>();
+        LineNumberReader reader = null;
+        try {
+            Path targetPath = new File(configurationPath).toPath();
+            Stream<Path> pathStream = Files.walk(targetPath);
+            List<Path> confFiles = pathStream.filter(f -> f.getFileName().toString().endsWith(".conf")).collect(Collectors.toList());
+            for (Path confFile : confFiles) {
+                reader = new LineNumberReader(new FileReader(confFile.toFile()));
+                String curLine;
+
+                while (reader.ready()) {
+                    curLine = reader.readLine();
+                    if (curLine != null) {
+                        curLine = curLine.trim();
+                        if (curLine.startsWith("#") || curLine.equals("") || curLine.startsWith("skip")) {
+                            // comment or blank line, ignore
+                            continue;
+                        }
+                        if (curLine.endsWith("{")) {
+                            // internal loop
+                            String cmdName = curLine.substring(0, curLine.lastIndexOf("{") - 1).toLowerCase();
+                            if (commandsConfig.containsKey(cmdName)) {
+                                throw new FatalException(cmdName + " is already mapped on line " + reader.getLineNumber());
+                            }
+                            Properties p = getPropertiesUntilClosed(reader);
+                            logger.trace("Adding command {}", cmdName);
+
+                            commandsConfig.put(cmdName, p);
+                        } else {
+                            throw new FatalException("Expected line to end with \"{\" at line " + reader.getLineNumber());
+                        }
+                    }
+                }
+            }
+            // done reading for new commands, must be finished
+        } catch (IOException e) {
+            throw new FatalException("Error loading " + confDirectory, e);
+        } catch (Exception e) {
+            if (reader != null) {
+                logger.error("Error reading line {} in {}", reader.getLineNumber(), confDirectory);
+            }
+            throw new FatalException(e);
+        } finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (IOException ignored) {
+                }
+            }
+        }
+        return commandsConfig;
+    }
+
+    private static Properties getPropertiesUntilClosed(LineNumberReader reader) throws IOException {
+        Properties p = new Properties();
+        String curLine;
+        while (reader.ready()) {
+            curLine = reader.readLine();
+            if (curLine != null) {
+                curLine = curLine.trim();
+                if (curLine.startsWith("#") || curLine.equals("")) {
+                    // comment or blank line, ignore
+                    continue;
+                }
+                if (curLine.equals("}")) {
+                    // end of this block
+                    return p;
+                }
+                // internal loop
+                int spaceIndex = curLine.indexOf(" ");
+                if (spaceIndex == -1) {
+                    throw new FatalException("Line " + reader.getLineNumber() + " is not formatted properly");
+                }
+                String propName = curLine.substring(0, spaceIndex);
+                String value = curLine.substring(spaceIndex).trim();
+                String concatenate = p.getProperty(propName);
+                if (concatenate == null) {
+                    p.put(propName, value);
+                } else {
+                    p.put(propName, concatenate + "\n" + value);
+                }
+            }
+        }
+        throw new FatalException("Premature end of file, not enough \"}\" characters exist.");
+    }
+
+    public static AsyncThreadSafeEventService getEventService() {
+        return eventService;
+    }
+
+    public void reloadFtpConfig() {
+        _config.reload();
+    }
+
     private void loadSlaveSelectionManager(Properties cfg) {
         String desiredSL = PropertyHelper.getProperty(cfg, "slaveselection");
         try {
@@ -137,14 +233,6 @@ public class GlobalContext {
         } catch (Exception e) {
             throw new FatalException("Unable to load the slaveselection plugin, check config.", e);
         }
-    }
-
-    public static Master getConnectionManager() {
-        return Master.getConnectionManager();
-    }
-
-    public static ConfigInterface getConfig() {
-        return getGlobalContext()._config;
     }
 
     public List<PluginInterface> getPlugins() {
@@ -289,36 +377,6 @@ public class GlobalContext {
         new Thread(new Shutdown()).start();
     }
 
-    static class Shutdown implements Runnable {
-
-        public void run() {
-            Thread.currentThread().setName("Shutdown Thread");
-            while (GlobalContext.getConnectionManager().getConnections().size() > 0) {
-                logger.info("Waiting for connections to be shutdown...");
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException ignored) {
-                }
-            }
-            while (GlobalContext.getEventService().getQueueSize() > 0) {
-                logger.info("Waiting for queued events to be processed - {} remaining", GlobalContext.getEventService().getQueueSize());
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException ignored) {
-                }
-            }
-            while (CommitManager.getCommitManager().getQueueSize() > 0) {
-                logger.info("Waiting for queued commits to be drained - {} remaining", CommitManager.getCommitManager().getQueueSize());
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException ignored) {
-                }
-            }
-            logger.info("Shutdown complete, exiting");
-            System.exit(0);
-        }
-    }
-
     public Timer getTimer() {
         return _timer;
     }
@@ -337,18 +395,6 @@ public class GlobalContext {
 
     public PortRange getPortRange() {
         return getConfig().getPortRange();
-    }
-
-    public static GlobalContext getGlobalContext() {
-        if (_gctx == null) {
-            _gctx = new GlobalContext();
-            try {
-                EventServiceLocator.setEventService(EventServiceLocator.SERVICE_NAME_EVENT_BUS, eventService);
-            } catch (EventServiceExistsException e) {
-                logger.error("Error setting event service, likely something using the event bus before GlobalContext is instantiated", e);
-            }
-        }
-        return _gctx;
     }
 
     public DirectoryHandle getRoot() {
@@ -391,95 +437,33 @@ public class GlobalContext {
         return _sslContext;
     }
 
-    public static HashMap<String, Properties> loadCommandConfig(String confDirectory) {
-        String configurationPath = configPath(confDirectory);
-        HashMap<String, Properties> commandsConfig = new HashMap<>();
-        LineNumberReader reader = null;
-        try {
-            Path targetPath = new File(configurationPath).toPath();
-            Stream<Path> pathStream = Files.walk(targetPath);
-            List<Path> confFiles = pathStream.filter(f -> f.getFileName().toString().endsWith(".conf")).collect(Collectors.toList());
-            for (Path confFile : confFiles) {
-                reader = new LineNumberReader(new FileReader(confFile.toFile()));
-                String curLine;
+    static class Shutdown implements Runnable {
 
-                while (reader.ready()) {
-                    curLine = reader.readLine();
-                    if (curLine != null) {
-                        curLine = curLine.trim();
-                        if (curLine.startsWith("#") || curLine.equals("") || curLine.startsWith("skip")) {
-                            // comment or blank line, ignore
-                            continue;
-                        }
-                        if (curLine.endsWith("{")) {
-                            // internal loop
-                            String cmdName = curLine.substring(0, curLine.lastIndexOf("{") - 1).toLowerCase();
-                            if (commandsConfig.containsKey(cmdName)) {
-                                throw new FatalException(cmdName + " is already mapped on line " + reader.getLineNumber());
-                            }
-                            Properties p = getPropertiesUntilClosed(reader);
-                            logger.trace("Adding command {}", cmdName);
-
-                            commandsConfig.put(cmdName, p);
-                        } else {
-                            throw new FatalException("Expected line to end with \"{\" at line " + reader.getLineNumber());
-                        }
-                    }
-                }
-            }
-            // done reading for new commands, must be finished
-        } catch (IOException e) {
-            throw new FatalException("Error loading " + confDirectory, e);
-        } catch (Exception e) {
-            if (reader != null) {
-                logger.error("Error reading line {} in {}", reader.getLineNumber(), confDirectory);
-            }
-            throw new FatalException(e);
-        } finally {
-            if (reader != null) {
+        public void run() {
+            Thread.currentThread().setName("Shutdown Thread");
+            while (GlobalContext.getConnectionManager().getConnections().size() > 0) {
+                logger.info("Waiting for connections to be shutdown...");
                 try {
-                    reader.close();
-                } catch (IOException ignored) {
+                    Thread.sleep(1000);
+                } catch (InterruptedException ignored) {
                 }
             }
-        }
-        return commandsConfig;
-    }
-
-    private static Properties getPropertiesUntilClosed(LineNumberReader reader) throws IOException {
-        Properties p = new Properties();
-        String curLine;
-        while (reader.ready()) {
-            curLine = reader.readLine();
-            if (curLine != null) {
-                curLine = curLine.trim();
-                if (curLine.startsWith("#") || curLine.equals("")) {
-                    // comment or blank line, ignore
-                    continue;
-                }
-                if (curLine.equals("}")) {
-                    // end of this block
-                    return p;
-                }
-                // internal loop
-                int spaceIndex = curLine.indexOf(" ");
-                if (spaceIndex == -1) {
-                    throw new FatalException("Line " + reader.getLineNumber() + " is not formatted properly");
-                }
-                String propName = curLine.substring(0, spaceIndex);
-                String value = curLine.substring(spaceIndex).trim();
-                String concatenate = p.getProperty(propName);
-                if (concatenate == null) {
-                    p.put(propName, value);
-                } else {
-                    p.put(propName, concatenate + "\n" + value);
+            while (GlobalContext.getEventService().getQueueSize() > 0) {
+                logger.info("Waiting for queued events to be processed - {} remaining", GlobalContext.getEventService().getQueueSize());
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException ignored) {
                 }
             }
+            while (CommitManager.getCommitManager().getQueueSize() > 0) {
+                logger.info("Waiting for queued commits to be drained - {} remaining", CommitManager.getCommitManager().getQueueSize());
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException ignored) {
+                }
+            }
+            logger.info("Shutdown complete, exiting");
+            System.exit(0);
         }
-        throw new FatalException("Premature end of file, not enough \"}\" characters exist.");
-    }
-
-    public static AsyncThreadSafeEventService getEventService() {
-        return eventService;
     }
 }

@@ -17,6 +17,8 @@
  */
 package org.drftpd.find.master.action;
 
+import org.drftpd.master.commands.CommandRequest;
+import org.drftpd.master.commands.ImproperUsageException;
 import org.drftpd.master.commands.nuke.NukeBeans;
 import org.drftpd.master.commands.nuke.NukeException;
 import org.drftpd.master.commands.nuke.NukeUtils;
@@ -25,70 +27,68 @@ import org.drftpd.master.usermanager.User;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.InodeHandle;
 import org.drftpd.master.vfs.VirtualFileSystem;
-import org.drftpd.master.commands.CommandRequest;
-import org.drftpd.master.commands.ImproperUsageException;
 
 /**
  * @author scitz0
  * @version $Id$
  */
 public class NukeAction implements ActionInterface {
-	private boolean _failed;
-	private int _multiplier;
-	private String _reason = "";
+    private boolean _failed;
+    private int _multiplier;
+    private String _reason = "";
 
-	@Override
-	public String name() {
-		return "Nuke";
-	}
+    @Override
+    public String name() {
+        return "Nuke";
+    }
 
-	@Override
-	public void initialize(String action, String[] args) throws ImproperUsageException {
-		if (args == null) {
-			throw new ImproperUsageException("Missing argument for "+action+" action");
-		}
-		// -nuke <multiplier> [reason]
-		_multiplier = Integer.parseInt(args[0]);
-		if (args.length == 2) {
-			_reason = args[1];
-		}
-	}
+    @Override
+    public void initialize(String action, String[] args) throws ImproperUsageException {
+        if (args == null) {
+            throw new ImproperUsageException("Missing argument for " + action + " action");
+        }
+        // -nuke <multiplier> [reason]
+        _multiplier = Integer.parseInt(args[0]);
+        if (args.length == 2) {
+            _reason = args[1];
+        }
+    }
 
-	@Override
-	public String exec(CommandRequest request, InodeHandle inode) {
-		DirectoryHandle dir = (DirectoryHandle)inode;
+    @Override
+    public String exec(CommandRequest request, InodeHandle inode) {
+        DirectoryHandle dir = (DirectoryHandle) inode;
 
-		// Check if dir is nuked already, remove nuke prefix if necessary
-		String dirName = VirtualFileSystem.getLast(
-				NukeUtils.getPathWithoutNukePrefix(dir.getPath()));
-		NukeData nd = NukeBeans.getNukeBeans().findName(dirName);
-		if (nd != null) {
-			_failed = true;
-			return "Access denied - " + nd.getPath() + " already nuked for '"+ nd.getReason() + "'";
-		}
+        // Check if dir is nuked already, remove nuke prefix if necessary
+        String dirName = VirtualFileSystem.getLast(
+                NukeUtils.getPathWithoutNukePrefix(dir.getPath()));
+        NukeData nd = NukeBeans.getNukeBeans().findName(dirName);
+        if (nd != null) {
+            _failed = true;
+            return "Access denied - " + nd.getPath() + " already nuked for '" + nd.getReason() + "'";
+        }
 
-		User user = request.getSession().getUserNull(request.getUser());
-		try {
-			nd = NukeUtils.nuke(dir, _multiplier, _reason, user);
-		} catch (NukeException e) {
-			_failed = true;
-			return "Nuke failed for " + inode.getPath() + ": " + e.getMessage();
-		}
-		return "Successfully nuked " + nd.getPath();
-	}
+        User user = request.getSession().getUserNull(request.getUser());
+        try {
+            nd = NukeUtils.nuke(dir, _multiplier, _reason, user);
+        } catch (NukeException e) {
+            _failed = true;
+            return "Nuke failed for " + inode.getPath() + ": " + e.getMessage();
+        }
+        return "Successfully nuked " + nd.getPath();
+    }
 
-	@Override
-	public boolean execInDirs() {
-		return true;
-	}
+    @Override
+    public boolean execInDirs() {
+        return true;
+    }
 
-	@Override
-	public boolean execInFiles() {
-		return false;
-	}
+    @Override
+    public boolean execInFiles() {
+        return false;
+    }
 
-	@Override
-	public boolean failed() {
-		return _failed;
-	}
+    @Override
+    public boolean failed() {
+        return _failed;
+    }
 }

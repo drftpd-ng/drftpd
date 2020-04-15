@@ -17,16 +17,15 @@
  */
 package org.drftpd.master.tests;
 
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
+import org.apache.logging.log4j.Logger;
 import org.drftpd.master.commands.CommandManagerInterface;
-import org.drftpd.slave.exceptions.FileExistsException;
 import org.drftpd.master.network.BaseFtpConnection;
 import org.drftpd.master.usermanager.NoSuchUserException;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.util.FtpRequest;
 import org.drftpd.master.vfs.DirectoryHandle;
+import org.drftpd.slave.exceptions.FileExistsException;
 
 import javax.net.ServerSocketFactory;
 import javax.net.SocketFactory;
@@ -43,11 +42,11 @@ import java.net.Socket;
  */
 @SuppressWarnings("serial")
 public class DummyBaseFtpConnection extends BaseFtpConnection {
+    private static final Logger logger = LogManager.getLogger(DummyBaseFtpConnection.class);
     private InetAddress _clientAddress;
-    private StringWriter _out2;
-    private DummyServerSocketFactory _serverSocketFactory;
-    private DummySocketFactory _socketFactory;
-	private static final Logger logger = LogManager.getLogger(DummyBaseFtpConnection.class);
+    private final StringWriter _out2;
+    private final DummyServerSocketFactory _serverSocketFactory;
+    private final DummySocketFactory _socketFactory;
 
     public DummyBaseFtpConnection() {
         _socketFactory = new DummySocketFactory();
@@ -55,12 +54,12 @@ public class DummyBaseFtpConnection extends BaseFtpConnection {
 
         _currentDirectory = new DirectoryHandle(null);
         try {
-			_currentDirectory.createFileUnchecked("testfile", "drftpd", "drftpd", null);
-		} catch (FileExistsException e) {
-			logger.error(e);
-		} catch (FileNotFoundException e) {
-			logger.error(e);
-		}
+            _currentDirectory.createFileUnchecked("testfile", "drftpd", "drftpd", null);
+        } catch (FileExistsException e) {
+            logger.error(e);
+        } catch (FileNotFoundException e) {
+            logger.error(e);
+        }
         _out2 = new StringWriter();
         _out = new PrintWriter(_out2);
     }
@@ -73,12 +72,23 @@ public class DummyBaseFtpConnection extends BaseFtpConnection {
         return _clientAddress;
     }
 
+    public void setClientAddress(InetAddress clientAddress) {
+        _clientAddress = clientAddress;
+    }
+
     public CommandManagerInterface getCommandManager() {
         throw new UnsupportedOperationException();
     }
 
     public Socket getControlSocket() {
         return new DummySocket();
+    }
+
+    /* (non-Javadoc)
+     * @see net.sf.drftpd.master.BaseFtpConnection#setControlSocket(java.net.Socket)
+     */
+    public void setControlSocket(Socket socket) {
+        throw new UnsupportedOperationException();
     }
 
     public char getDirection() {
@@ -111,6 +121,10 @@ public class DummyBaseFtpConnection extends BaseFtpConnection {
 
     public User getUser() throws NoSuchUserException {
         throw new UnsupportedOperationException();
+    }
+
+    public void setUser(String user) {
+        super.setUser(user);
     }
 
     /* (non-Javadoc)
@@ -160,23 +174,8 @@ public class DummyBaseFtpConnection extends BaseFtpConnection {
         throw new UnsupportedOperationException();
     }
 
-    public void setClientAddress(InetAddress clientAddress) {
-        _clientAddress = clientAddress;
-    }
-
-    /* (non-Javadoc)
-     * @see net.sf.drftpd.master.BaseFtpConnection#setControlSocket(java.net.Socket)
-     */
-    public void setControlSocket(Socket socket) {
-        throw new UnsupportedOperationException();
-    }
-
     public void setRequest(FtpRequest request) {
         _request = request;
-    }
-
-    public void setUser(String user) {
-        super.setUser(user);
     }
 
     /* (non-Javadoc)

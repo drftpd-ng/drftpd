@@ -28,65 +28,65 @@ import java.util.Collection;
  */
 public class UserTransferStats {
 
-	public static int getStatsPlace(String command, User user,
-			UserManager userman) {
-		// AL MONTH WK DAY
-		int place = 1;
-		long bytes = getStats(command, user);
-		Collection<User> users = userman.getAllUsers();
+    public static int getStatsPlace(String command, User user,
+                                    UserManager userman) {
+        // AL MONTH WK DAY
+        int place = 1;
+        long bytes = getStats(command, user);
+        Collection<User> users = userman.getAllUsers();
 
-		for (User tempUser : users) {
-			long tempBytes = getStats(command, tempUser);
+        for (User tempUser : users) {
+            long tempBytes = getStats(command, tempUser);
 
-			if (tempBytes > bytes) {
-				place++;
-			}
-		}
+            if (tempBytes > bytes) {
+                place++;
+            }
+        }
 
-		return place;
-	}
+        return place;
+    }
 
-	public static long getStats(String command, User user) {
-		// AL MONTH WK DAY
-		String period = command.substring(0, command.length() - 2).toUpperCase();
+    public static long getStats(String command, User user) {
+        // AL MONTH WK DAY
+        String period = command.substring(0, command.length() - 2).toUpperCase();
 
-		// UP DN
-		String updn = command.substring(command.length() - 2).toUpperCase();
+        // UP DN
+        String updn = command.substring(command.length() - 2).toUpperCase();
 
-		if (updn.equals("UP")) {
-			if (period.equals("AL")) {
-				return user.getUploadedBytes();
-			}
+        if (updn.equals("UP")) {
+            if (period.equals("AL")) {
+                return user.getUploadedBytes();
+            }
 
-			if (period.equals("DAY")) {
-				return user.getUploadedBytesDay();
-			}
+            if (period.equals("DAY")) {
+                return user.getUploadedBytesDay();
+            }
 
-			if (period.equals("WK")) {
-				return user.getUploadedBytesWeek();
-			}
+            if (period.equals("WK")) {
+                return user.getUploadedBytesWeek();
+            }
 
-			if (period.equals("MONTH")) {
-				return user.getUploadedBytesMonth();
-			}
-		} else if (updn.equals("DN")) {
-			if (period.equals("AL")) {
-				return user.getDownloadedBytes();
-			}
+            if (period.equals("MONTH")) {
+                return user.getUploadedBytesMonth();
+            }
+        } else if (updn.equals("DN")) {
+            if (period.equals("AL")) {
+                return user.getDownloadedBytes();
+            }
 
-			if (period.equals("DAY")) {
-				return user.getDownloadedBytesDay();
-			}
+            if (period.equals("DAY")) {
+                return user.getDownloadedBytesDay();
+            }
 
-			if (period.equals("WK")) {
-				return user.getDownloadedBytesWeek();
-			}
+            if (period.equals("WK")) {
+                return user.getDownloadedBytesWeek();
+            }
 
-			if (period.equals("MONTH")) {
-				return user.getDownloadedBytesMonth();
-			}
-		}
+            if (period.equals("MONTH")) {
+                return user.getDownloadedBytesMonth();
+            }
+        }
 
-		throw new IllegalArgumentException("unhandled command = " + command);
-	}
+        throw new IllegalArgumentException("unhandled command = " + command);
+    }
 }

@@ -20,11 +20,10 @@ package org.drftpd.master.slaveselection.filter;
 import junit.framework.TestCase;
 import org.drftpd.common.slave.DiskStatus;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
-import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.master.slavemanagement.DummyRemoteSlave;
-import org.drftpd.slave.exceptions.ObjectNotFoundException;
-
+import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.master.slavemanagement.SlaveStatus;
+import org.drftpd.slave.exceptions.ObjectNotFoundException;
 import org.drftpd.slave.network.Transfer;
 import org.junit.Assert;
 
@@ -37,31 +36,31 @@ import java.util.Properties;
  * @version $Id$
  */
 public class BandwidthFilterTest extends TestCase {
-	public void testBandwidth() throws NoAvailableSlaveException, ObjectNotFoundException {
-		Properties p = new Properties();
-		p.put("1.multiplier", "3");
-		
-		Filter f = new BandwidthFilter(1, p);
-		
-		SlaveStatus status = new SlaveStatus(new DiskStatus(0, 0), 0, 0, 100, 0, 100, 0);
-		RemoteSlave[] list = { new RS("slave1", status) };
-		ScoreChart sc = new ScoreChart(Arrays.asList(list));
-		
-		f.process(sc, null, null, Transfer.TRANSFER_SENDING_DOWNLOAD, null, null);
-		
-		Assert.assertEquals(-300, sc.getScoreForSlave(list[0]).getScore());
-	}
-	
-	static class RS extends DummyRemoteSlave {
-		private SlaveStatus _status;
+    public void testBandwidth() throws NoAvailableSlaveException, ObjectNotFoundException {
+        Properties p = new Properties();
+        p.put("1.multiplier", "3");
 
-		public RS(String name, SlaveStatus status) {
-			super(name);
-			_status = status;
-		}
-		
+        Filter f = new BandwidthFilter(1, p);
+
+        SlaveStatus status = new SlaveStatus(new DiskStatus(0, 0), 0, 0, 100, 0, 100, 0);
+        RemoteSlave[] list = {new RS("slave1", status)};
+        ScoreChart sc = new ScoreChart(Arrays.asList(list));
+
+        f.process(sc, null, null, Transfer.TRANSFER_SENDING_DOWNLOAD, null, null);
+
+        Assert.assertEquals(-300, sc.getScoreForSlave(list[0]).getScore());
+    }
+
+    static class RS extends DummyRemoteSlave {
+        private final SlaveStatus _status;
+
+        public RS(String name, SlaveStatus status) {
+            super(name);
+            _status = status;
+        }
+
         public SlaveStatus getSlaveStatusAvailable() {
             return _status;
         }
-	}
+    }
 }

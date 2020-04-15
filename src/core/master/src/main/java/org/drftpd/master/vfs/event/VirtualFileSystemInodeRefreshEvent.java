@@ -21,12 +21,13 @@ import org.drftpd.master.vfs.VirtualFileSystemInode;
 
 /**
  * This event is fired whenever an inode's data should be refreshed by listeners.
+ *
  * @author djb61
  * @version $Id$
  */
 public class VirtualFileSystemInodeRefreshEvent extends VirtualFileSystemEvent {
 
-	public VirtualFileSystemInodeRefreshEvent(VirtualFileSystemInode inode, String path) {
-		super(inode, path);
-	}
+    public VirtualFileSystemInodeRefreshEvent(VirtualFileSystemInode inode, String path) {
+        super(inode, path);
+    }
 }

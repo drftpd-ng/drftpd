@@ -46,7 +46,7 @@ import java.util.Properties;
 public class SpeedTestPostHook {
     private static final Logger logger = LogManager.getLogger(SpeedTestPostHook.class);
 
-    private ArrayList<String> _speedTestPaths = new ArrayList<>();
+    private final ArrayList<String> _speedTestPaths = new ArrayList<>();
 
     public SpeedTestPostHook() {
         loadConf();

@@ -7,42 +7,42 @@ import org.drftpd.common.dynamicdata.KeyedMap;
 import org.drftpd.master.event.SlaveEvent;
 
 public class StatusSubscriber {
-	private static StatusSubscriber _subscriber = null;
-	
-	/**
-	 * Checks if this subscriber is already listening to events, otherwise, initialize it.
-	 */
-	public static void checkSubscription() {
-		if (_subscriber == null) {
-			_subscriber = new StatusSubscriber();
-		}
-	}
-	
-	/**
-	 * Remove the reference to the current subscriber so that it can be GC'ed.
-	 */
-	private static void nullify() {
-		_subscriber = null;
-	}
-	
-	private StatusSubscriber() {
-		// Subscribe to events
-		AnnotationProcessor.process(this);
-	}
+    private static StatusSubscriber _subscriber = null;
 
-	@EventSubscriber
-	public void onSlaveEvent(SlaveEvent event) {
-		KeyedMap<Key<?>, Object> keyedMap = event.getRSlave().getTransientKeyedMap();
-		if (event.getCommand().equals("ADDSLAVE")) {
-			keyedMap.setObject(ServerStatus.CONNECTTIME, System.currentTimeMillis());
-		} else if (event.getCommand().equals("DELSLAVE")) {
-			keyedMap.remove(ServerStatus.CONNECTTIME);
-		}
-	}
+    private StatusSubscriber() {
+        // Subscribe to events
+        AnnotationProcessor.process(this);
+    }
 
-	@EventSubscriber
-	public void onUnloadPluginEvent(Object event) {
-		// TODO @k2r onUnloadPluginEvent
+    /**
+     * Checks if this subscriber is already listening to events, otherwise, initialize it.
+     */
+    public static void checkSubscription() {
+        if (_subscriber == null) {
+            _subscriber = new StatusSubscriber();
+        }
+    }
+
+    /**
+     * Remove the reference to the current subscriber so that it can be GC'ed.
+     */
+    private static void nullify() {
+        _subscriber = null;
+    }
+
+    @EventSubscriber
+    public void onSlaveEvent(SlaveEvent event) {
+        KeyedMap<Key<?>, Object> keyedMap = event.getRSlave().getTransientKeyedMap();
+        if (event.getCommand().equals("ADDSLAVE")) {
+            keyedMap.setObject(ServerStatus.CONNECTTIME, System.currentTimeMillis());
+        } else if (event.getCommand().equals("DELSLAVE")) {
+            keyedMap.remove(ServerStatus.CONNECTTIME);
+        }
+    }
+
+    @EventSubscriber
+    public void onUnloadPluginEvent(Object event) {
+        // TODO @k2r onUnloadPluginEvent
 		/*
 		String currentPlugin = CommonPluginUtils.getPluginIdForObject(this);
 		for (String pluginExtension : event.getParentPlugins()) {
@@ -55,5 +55,5 @@ public class StatusSubscriber {
 			}
 		}
 		*/
-	}
+    }
 }

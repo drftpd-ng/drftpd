@@ -17,9 +17,8 @@
  */
 package org.drftpd.master.sections.def;
 
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
+import org.apache.logging.log4j.Logger;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.Master;
 import org.drftpd.master.sections.SectionInterface;
@@ -98,8 +97,23 @@ public class SectionManager implements SectionManagerInterface {
 
     }
 
+    @SuppressWarnings("unchecked")
+    public Map<String, SectionInterface> getSectionsMap() {
+        HashMap<String, SectionInterface> sections = new HashMap<>();
+
+        try {
+            for (DirectoryHandle dir : getGlobalContext().getRoot().getDirectoriesUnchecked()) {
+                sections.put(dir.getName(), new Section(dir));
+            }
+        } catch (FileNotFoundException e) {
+            return Collections.emptyMap();
+        }
+
+        return sections;
+    }
+
     static class Section implements SectionInterface {
-        private DirectoryHandle _dir;
+        private final DirectoryHandle _dir;
 
         public Section(DirectoryHandle lrf) {
             _dir = lrf;
@@ -146,20 +160,5 @@ public class SectionManager implements SectionManagerInterface {
             Section compareSection = (Section) arg0;
             return getBaseDirectory().equals(compareSection.getBaseDirectory());
         }
-    }
-
-    @SuppressWarnings("unchecked")
-    public Map<String, SectionInterface> getSectionsMap() {
-        HashMap<String, SectionInterface> sections = new HashMap<>();
-
-        try {
-            for (DirectoryHandle dir : getGlobalContext().getRoot().getDirectoriesUnchecked()) {
-                sections.put(dir.getName(), new Section(dir));
-            }
-        } catch (FileNotFoundException e) {
-            return Collections.emptyMap();
-        }
-
-        return sections;
     }
 }

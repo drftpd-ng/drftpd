@@ -24,11 +24,12 @@ import java.io.FileNotFoundException;
 /**
  * Lowest level of FileHandles.<br>
  * This class provides more flexibility and organization to the VFS.
+ *
  * @author zubov
  * @version $Id$
  */
 public interface FileHandleInterface extends InodeHandleInterface {
 
-	boolean isAvailable() throws FileNotFoundException;
+    boolean isAvailable() throws FileNotFoundException;
 
 }

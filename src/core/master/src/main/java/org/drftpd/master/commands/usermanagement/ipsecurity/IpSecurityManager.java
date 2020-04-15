@@ -57,6 +57,18 @@ public class IpSecurityManager implements PluginInterface {
     private ArrayList<Integer> _hostm;
     private ArrayList<String> _perms;
 
+    /*
+     * Get the ipSecurity Plugin
+     */
+    public static IpSecurityManager getIpSecurity() {
+        for (PluginInterface plugin : GlobalContext.getGlobalContext().getPlugins()) {
+            if (plugin instanceof IpSecurityManager) {
+                return (IpSecurityManager) plugin;
+            }
+        }
+        throw new RuntimeException("IpSecurity plugin is not loaded.");
+    }
+
     @Override
     public void startPlugin() {
         AnnotationProcessor.process(this);
@@ -72,19 +84,6 @@ public class IpSecurityManager implements PluginInterface {
     public void onReloadEvent(ReloadEvent event) {
         loadConf();
     }
-
-    /*
-     * Get the ipSecurity Plugin
-     */
-    public static IpSecurityManager getIpSecurity() {
-        for (PluginInterface plugin : GlobalContext.getGlobalContext().getPlugins()) {
-            if (plugin instanceof IpSecurityManager) {
-                return (IpSecurityManager) plugin;
-            }
-        }
-        throw new RuntimeException("IpSecurity plugin is not loaded.");
-    }
-
 
     /*
      * Loads configs by reading file line by line.

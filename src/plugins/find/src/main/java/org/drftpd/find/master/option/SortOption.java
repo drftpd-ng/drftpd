@@ -17,8 +17,8 @@
  */
 package org.drftpd.find.master.option;
 
-import org.drftpd.master.indexation.AdvancedSearchParams;
 import org.drftpd.master.commands.ImproperUsageException;
+import org.drftpd.master.indexation.AdvancedSearchParams;
 
 /**
  * @author scitz0
@@ -26,20 +26,20 @@ import org.drftpd.master.commands.ImproperUsageException;
  */
 public class SortOption implements OptionInterface {
 
-	@Override
-	public void exec(String option, String[] args, AdvancedSearchParams params) throws ImproperUsageException {
+    @Override
+    public void exec(String option, String[] args, AdvancedSearchParams params) throws ImproperUsageException {
 
-		if (option.equalsIgnoreCase("-sort")) {
-			if (args == null) {
-				throw new ImproperUsageException("Missing argument for "+option+" option");
-			}
-			params.setSortField(args[0]);
-			if (args.length == 2) {
-				// Sort order also specified
-				params.setSortOrder(args[1].equalsIgnoreCase("desc"));
-			}
-		} else if (option.equalsIgnoreCase("-random")) {
-			params.setSortOrder(null);
-		}
-	}
+        if (option.equalsIgnoreCase("-sort")) {
+            if (args == null) {
+                throw new ImproperUsageException("Missing argument for " + option + " option");
+            }
+            params.setSortField(args[0]);
+            if (args.length == 2) {
+                // Sort order also specified
+                params.setSortOrder(args[1].equalsIgnoreCase("desc"));
+            }
+        } else if (option.equalsIgnoreCase("-random")) {
+            params.setSortOrder(null);
+        }
+    }
 }

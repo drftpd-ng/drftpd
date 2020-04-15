@@ -21,24 +21,25 @@ import org.drftpd.master.vfs.VirtualFileSystemInode;
 
 /**
  * This event is fired whenever a rename happens in the Virtual File System.
+ *
  * @author flavio
  * @version $Id$
  */
 public class VirtualFileSystemRenameEvent extends VirtualFileSystemEvent {
 
-	private ImmutableInodeHandle _source;
-	
-	public VirtualFileSystemRenameEvent(String sourcePath, VirtualFileSystemInode destination, String destinationPath) {
-		super(destination, destinationPath);
-		
-		_source = new ImmutableInodeHandle(destination, sourcePath);
-	}
-	
-	/**
-	 * @return where the file is being renamed to.
-	 */
-	public ImmutableInodeHandle getSource() {
-		return _source;
-	}
+    private final ImmutableInodeHandle _source;
+
+    public VirtualFileSystemRenameEvent(String sourcePath, VirtualFileSystemInode destination, String destinationPath) {
+        super(destination, destinationPath);
+
+        _source = new ImmutableInodeHandle(destination, sourcePath);
+    }
+
+    /**
+     * @return where the file is being renamed to.
+     */
+    public ImmutableInodeHandle getSource() {
+        return _source;
+    }
 
 }

@@ -17,17 +17,17 @@
  */
 package org.drftpd.master.commands.usermanagement.expireduser;
 
-import org.drftpd.master.commands.usermanagement.expireduser.metadata.ExpiredUserData;
+import org.drftpd.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.common.extensibility.CommandHook;
 import org.drftpd.common.extensibility.HookType;
 import org.drftpd.master.GlobalContext;
-import org.drftpd.common.dynamicdata.KeyNotFoundException;
+import org.drftpd.master.commands.CommandRequest;
+import org.drftpd.master.commands.CommandResponse;
 import org.drftpd.master.commands.StandardCommandManager;
+import org.drftpd.master.commands.usermanagement.expireduser.metadata.ExpiredUserData;
 import org.drftpd.master.usermanager.NoSuchUserException;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.usermanager.UserFileException;
-import org.drftpd.master.commands.CommandRequest;
-import org.drftpd.master.commands.CommandResponse;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -39,30 +39,30 @@ import java.util.ResourceBundle;
  */
 public class ExpiredUserPostHook {
 
-	private ResourceBundle _bundle;
+    private ResourceBundle _bundle;
 
-	public void initialize(StandardCommandManager manager) {
-		_bundle = manager.getResourceBundle();
+    public void initialize(StandardCommandManager manager) {
+        _bundle = manager.getResourceBundle();
 
-	}
+    }
 
-	@CommandHook(commands = "doSITE_USER", priority = 1000, type = HookType.POST)
-	public void doExpiredUserPostHook(CommandRequest request, CommandResponse response) {
-		User myUser;
-		try {
-			myUser = GlobalContext.getGlobalContext().getUserManager()
-					.getUserByNameUnchecked(request.getArgument());
-		} catch (NoSuchUserException | UserFileException ex) {
-			return;
-		}
-		try {
-			// Test if metadata exist for user and if so add to response
-			Date expiredate = myUser.getKeyedMap().getObject(ExpiredUserData.EXPIRES);
-			Map<String, Object> env = new HashMap<>();
-			env.put("expiredate", expiredate);
-			response.addComment(request.getSession().jprintf(_bundle, "expireduser", env, myUser.getName()));
-		} catch (KeyNotFoundException e) {
-			// ignore
-		}
-	}
+    @CommandHook(commands = "doSITE_USER", priority = 1000, type = HookType.POST)
+    public void doExpiredUserPostHook(CommandRequest request, CommandResponse response) {
+        User myUser;
+        try {
+            myUser = GlobalContext.getGlobalContext().getUserManager()
+                    .getUserByNameUnchecked(request.getArgument());
+        } catch (NoSuchUserException | UserFileException ex) {
+            return;
+        }
+        try {
+            // Test if metadata exist for user and if so add to response
+            Date expiredate = myUser.getKeyedMap().getObject(ExpiredUserData.EXPIRES);
+            Map<String, Object> env = new HashMap<>();
+            env.put("expiredate", expiredate);
+            response.addComment(request.getSession().jprintf(_bundle, "expireduser", env, myUser.getName()));
+        } catch (KeyNotFoundException e) {
+            // ignore
+        }
+    }
 }

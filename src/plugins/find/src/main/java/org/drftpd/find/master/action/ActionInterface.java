@@ -16,9 +16,9 @@
  */
 package org.drftpd.find.master.action;
 
-import org.drftpd.master.vfs.InodeHandle;
 import org.drftpd.master.commands.CommandRequest;
 import org.drftpd.master.commands.ImproperUsageException;
+import org.drftpd.master.vfs.InodeHandle;
 
 /**
  * @author scitz0
@@ -26,15 +26,15 @@ import org.drftpd.master.commands.ImproperUsageException;
  */
 public interface ActionInterface {
 
-	String name();
+    String name();
 
-	void initialize(String action, String[] args) throws ImproperUsageException;
+    void initialize(String action, String[] args) throws ImproperUsageException;
 
-	String exec(CommandRequest request, InodeHandle inode);
+    String exec(CommandRequest request, InodeHandle inode);
 
-	boolean execInDirs();
+    boolean execInDirs();
 
-	boolean execInFiles();
-	
-	boolean failed();
+    boolean execInFiles();
+
+    boolean failed();
 }

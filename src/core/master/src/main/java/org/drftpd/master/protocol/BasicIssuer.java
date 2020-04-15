@@ -18,162 +18,161 @@ package org.drftpd.master.protocol;
 
 
 import org.drftpd.common.exceptions.SSLUnavailableException;
-import org.drftpd.common.slave.TransferIndex;
-import org.drftpd.master.exceptions.SlaveUnavailableException;
-
-import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.common.network.AsyncCommand;
 import org.drftpd.common.network.AsyncCommandArgument;
+import org.drftpd.common.slave.TransferIndex;
+import org.drftpd.master.exceptions.SlaveUnavailableException;
+import org.drftpd.master.slavemanagement.RemoteSlave;
 
 
 /**
  * @author fr0w
- * @see AbstractBasicIssuer
  * @version $Id$
+ * @see AbstractBasicIssuer
  */
 public class BasicIssuer extends AbstractBasicIssuer {
 
-	@Override
-	public String getProtocolName() {
-		return "BasicProtocol";
-	}
+    @Override
+    public String getProtocolName() {
+        return "BasicProtocol";
+    }
 
-	public String issueChecksumToSlave(RemoteSlave rslave, String path)	throws SlaveUnavailableException {
-		String index = rslave.fetchIndex();
-		rslave.sendCommand(new AsyncCommandArgument(index, "checksum", path));
+    public String issueChecksumToSlave(RemoteSlave rslave, String path) throws SlaveUnavailableException {
+        String index = rslave.fetchIndex();
+        rslave.sendCommand(new AsyncCommandArgument(index, "checksum", path));
 
-		return index;
-	}
+        return index;
+    }
 
-	public String issueConnectToSlave(RemoteSlave rslave, String ip, int port,
-									  boolean encryptedDataChannel, boolean useSSLClientHandshake) throws SlaveUnavailableException, SSLUnavailableException {
-		
-		boolean sslReady = rslave.getTransientKeyedMap().getObjectBoolean(RemoteSlave.SSL);
-		if (!sslReady && encryptedDataChannel) {
-			// althought ssl was requested the slave does not support ssl.
-			throw new SSLUnavailableException("Encryption was requested but '"+rslave.getName()+"' doesn't support it");
-		}
-		
-		String index = rslave.fetchIndex();
-		rslave.sendCommand(new AsyncCommandArgument(index, "connect", 
-				new String[]{ip + ":" + port, String.valueOf(encryptedDataChannel), String.valueOf(useSSLClientHandshake)}));
+    public String issueConnectToSlave(RemoteSlave rslave, String ip, int port,
+                                      boolean encryptedDataChannel, boolean useSSLClientHandshake) throws SlaveUnavailableException, SSLUnavailableException {
 
-		return index;
-	}
+        boolean sslReady = rslave.getTransientKeyedMap().getObjectBoolean(RemoteSlave.SSL);
+        if (!sslReady && encryptedDataChannel) {
+            // althought ssl was requested the slave does not support ssl.
+            throw new SSLUnavailableException("Encryption was requested but '" + rslave.getName() + "' doesn't support it");
+        }
 
-	/**
-	 * @return String index, needs to be used to fetch the response
-	 */
-	public String issueDeleteToSlave(RemoteSlave rslave, String sourceFile) throws SlaveUnavailableException {
-		String index = rslave.fetchIndex();
-		rslave.sendCommand(new AsyncCommandArgument(index, "delete", sourceFile));
+        String index = rslave.fetchIndex();
+        rslave.sendCommand(new AsyncCommandArgument(index, "connect",
+                new String[]{ip + ":" + port, String.valueOf(encryptedDataChannel), String.valueOf(useSSLClientHandshake)}));
 
-		return index;
-	}
+        return index;
+    }
 
-	public String issueListenToSlave(RemoteSlave rslave, boolean isSecureTransfer,
-			boolean useSSLClientMode) throws SlaveUnavailableException, SSLUnavailableException {
-		
-		boolean sslReady = rslave.getTransientKeyedMap().getObjectBoolean(RemoteSlave.SSL);
-		if (!sslReady && isSecureTransfer) {
-			// althought ssl was requested the slave does not support ssl.
-			throw new SSLUnavailableException("The transfer needed SSL but '"+rslave.getName()+"' doesn't support it");
-		}
-		
-		String index = rslave.fetchIndex();
-		rslave.sendCommand(new AsyncCommandArgument(index, "listen", ""
-				+ isSecureTransfer + ":" + useSSLClientMode));
+    /**
+     * @return String index, needs to be used to fetch the response
+     */
+    public String issueDeleteToSlave(RemoteSlave rslave, String sourceFile) throws SlaveUnavailableException {
+        String index = rslave.fetchIndex();
+        rslave.sendCommand(new AsyncCommandArgument(index, "delete", sourceFile));
 
-		return index;
-	}
+        return index;
+    }
 
-	public String issueMaxPathToSlave(RemoteSlave rslave) throws SlaveUnavailableException {
-		String index = rslave.fetchIndex();
-		rslave.sendCommand(new AsyncCommand(index, "maxpath"));
+    public String issueListenToSlave(RemoteSlave rslave, boolean isSecureTransfer,
+                                     boolean useSSLClientMode) throws SlaveUnavailableException, SSLUnavailableException {
 
-		return index;
-	}
+        boolean sslReady = rslave.getTransientKeyedMap().getObjectBoolean(RemoteSlave.SSL);
+        if (!sslReady && isSecureTransfer) {
+            // althought ssl was requested the slave does not support ssl.
+            throw new SSLUnavailableException("The transfer needed SSL but '" + rslave.getName() + "' doesn't support it");
+        }
 
-	public String issuePingToSlave(RemoteSlave rslave) throws SlaveUnavailableException {
-		String index = rslave.fetchIndex();
-		rslave.sendCommand(new AsyncCommand(index, "ping"));
+        String index = rslave.fetchIndex();
+        rslave.sendCommand(new AsyncCommandArgument(index, "listen", ""
+                + isSecureTransfer + ":" + useSSLClientMode));
 
-		return index;
-	}
+        return index;
+    }
 
-	public String issueReceiveToSlave(RemoteSlave rslave, String name, char c, long position,
-									  String inetAddress, TransferIndex tindex, long minSpeed, long maxSpeed) throws SlaveUnavailableException {
-		String index = rslave.fetchIndex();
-		rslave.sendCommand(new AsyncCommandArgument(index, "receive", 
-				new String[]{String.valueOf(c), String.valueOf(position),
-				tindex.toString(), inetAddress, name, String.valueOf(minSpeed), String.valueOf(maxSpeed)}));
+    public String issueMaxPathToSlave(RemoteSlave rslave) throws SlaveUnavailableException {
+        String index = rslave.fetchIndex();
+        rslave.sendCommand(new AsyncCommand(index, "maxpath"));
 
-		return index;
-	}
+        return index;
+    }
 
-	public String issueRenameToSlave(RemoteSlave rslave, String from, String toDirPath,
-			String toName) throws SlaveUnavailableException {
-		if (toDirPath.length() == 0) { // needed for files in root
-			toDirPath = "/";
-		}
-		String index = rslave.fetchIndex();
-		rslave.sendCommand(new AsyncCommandArgument(index, "rename", 
-				new String[]{from, toDirPath, toName}));
+    public String issuePingToSlave(RemoteSlave rslave) throws SlaveUnavailableException {
+        String index = rslave.fetchIndex();
+        rslave.sendCommand(new AsyncCommand(index, "ping"));
 
-		return index;
-	}
+        return index;
+    }
 
-	public String issueStatusToSlave(RemoteSlave rslave) throws SlaveUnavailableException {
-		String index = rslave.fetchIndex();
-		rslave.sendCommand(new AsyncCommand(index, "status"));
+    public String issueReceiveToSlave(RemoteSlave rslave, String name, char c, long position,
+                                      String inetAddress, TransferIndex tindex, long minSpeed, long maxSpeed) throws SlaveUnavailableException {
+        String index = rslave.fetchIndex();
+        rslave.sendCommand(new AsyncCommandArgument(index, "receive",
+                new String[]{String.valueOf(c), String.valueOf(position),
+                        tindex.toString(), inetAddress, name, String.valueOf(minSpeed), String.valueOf(maxSpeed)}));
 
-		return index;
-	}
+        return index;
+    }
 
+    public String issueRenameToSlave(RemoteSlave rslave, String from, String toDirPath,
+                                     String toName) throws SlaveUnavailableException {
+        if (toDirPath.length() == 0) { // needed for files in root
+            toDirPath = "/";
+        }
+        String index = rslave.fetchIndex();
+        rslave.sendCommand(new AsyncCommandArgument(index, "rename",
+                new String[]{from, toDirPath, toName}));
 
-	public void issueAbortToSlave(RemoteSlave rslave, TransferIndex transferIndex, String reason)
-		throws SlaveUnavailableException {
-		if (reason == null) {
-			reason = "null";
-		}
-		rslave.sendCommand(new AsyncCommandArgument("abort", "abort", 
-				new String[]{transferIndex.toString(), reason}));
-	}
+        return index;
+    }
+
+    public String issueStatusToSlave(RemoteSlave rslave) throws SlaveUnavailableException {
+        String index = rslave.fetchIndex();
+        rslave.sendCommand(new AsyncCommand(index, "status"));
+
+        return index;
+    }
 
 
-	public String issueSendToSlave(RemoteSlave rslave, String name, char c, long position,
-			String inetAddress, TransferIndex tindex, long minSpeed, long maxSpeed) throws SlaveUnavailableException {
-		String index = rslave.fetchIndex();
-		rslave.sendCommand(new AsyncCommandArgument(index, "send",
-				new String[]{String.valueOf(c), String.valueOf(position), tindex.toString(),
-				inetAddress, name, String.valueOf(minSpeed), String.valueOf(maxSpeed)}));
+    public void issueAbortToSlave(RemoteSlave rslave, TransferIndex transferIndex, String reason)
+            throws SlaveUnavailableException {
+        if (reason == null) {
+            reason = "null";
+        }
+        rslave.sendCommand(new AsyncCommandArgument("abort", "abort",
+                new String[]{transferIndex.toString(), reason}));
+    }
 
-		return index;
-	}
 
-	public String issueRemergeToSlave(RemoteSlave rslave, String path, boolean partialRemerge, long skipAgeCutoff, long masterTime, boolean instantOnline)
-		throws SlaveUnavailableException {
-		String index = rslave.fetchIndex();
-		rslave.sendCommand(new AsyncCommandArgument(index, "remerge", new String[]{path, 
-				Boolean.toString(partialRemerge), Long.toString(skipAgeCutoff), Long.toString(masterTime), Boolean.toString(instantOnline)}));
-		return index;
-	}
+    public String issueSendToSlave(RemoteSlave rslave, String name, char c, long position,
+                                   String inetAddress, TransferIndex tindex, long minSpeed, long maxSpeed) throws SlaveUnavailableException {
+        String index = rslave.fetchIndex();
+        rslave.sendCommand(new AsyncCommandArgument(index, "send",
+                new String[]{String.valueOf(c), String.valueOf(position), tindex.toString(),
+                        inetAddress, name, String.valueOf(minSpeed), String.valueOf(maxSpeed)}));
 
-	public void issueRemergePauseToSlave(RemoteSlave rslave) throws SlaveUnavailableException {
-		rslave.sendCommand(new AsyncCommand("remergePause", "remergePause"));
+        return index;
+    }
+
+    public String issueRemergeToSlave(RemoteSlave rslave, String path, boolean partialRemerge, long skipAgeCutoff, long masterTime, boolean instantOnline)
+            throws SlaveUnavailableException {
+        String index = rslave.fetchIndex();
+        rslave.sendCommand(new AsyncCommandArgument(index, "remerge", new String[]{path,
+                Boolean.toString(partialRemerge), Long.toString(skipAgeCutoff), Long.toString(masterTime), Boolean.toString(instantOnline)}));
+        return index;
+    }
+
+    public void issueRemergePauseToSlave(RemoteSlave rslave) throws SlaveUnavailableException {
+        rslave.sendCommand(new AsyncCommand("remergePause", "remergePause"));
 
     }
 
-	public void issueRemergeResumeToSlave(RemoteSlave rslave) throws SlaveUnavailableException {
-		rslave.sendCommand(new AsyncCommand("remergeResume", "remergeResume"));
+    public void issueRemergeResumeToSlave(RemoteSlave rslave) throws SlaveUnavailableException {
+        rslave.sendCommand(new AsyncCommand("remergeResume", "remergeResume"));
 
     }
 
-	@Override
-	public String issueCheckSSL(RemoteSlave rslave) throws SlaveUnavailableException {
-		String index = rslave.fetchIndex();
-		rslave.sendCommand(new AsyncCommand(index, "checkSSL"));
-		
-		return index;
-	}
+    @Override
+    public String issueCheckSSL(RemoteSlave rslave) throws SlaveUnavailableException {
+        String index = rslave.fetchIndex();
+        rslave.sendCommand(new AsyncCommand(index, "checkSSL"));
+
+        return index;
+    }
 }

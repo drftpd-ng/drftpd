@@ -17,41 +17,41 @@
  */
 package org.drftpd.tvmaze.master;
 
-import org.drftpd.tvmaze.master.metadata.TvMazeInfo;
-import org.drftpd.tvmaze.master.vfs.TvMazeVFSData;
 import org.drftpd.master.sections.SectionInterface;
 import org.drftpd.master.vfs.DirectoryHandle;
+import org.drftpd.tvmaze.master.metadata.TvMazeInfo;
+import org.drftpd.tvmaze.master.vfs.TvMazeVFSData;
 
 /**
  * @author scitz0
  */
 public class TvMazePrintThread extends Thread {
-	private DirectoryHandle _dir;
-	private SectionInterface _section;
+    private final DirectoryHandle _dir;
+    private final SectionInterface _section;
 
-	public TvMazePrintThread(DirectoryHandle dir, SectionInterface section) {
-		setPriority(Thread.MIN_PRIORITY);
-		_dir = dir;
-		_section = section;
-	}
+    public TvMazePrintThread(DirectoryHandle dir, SectionInterface section) {
+        setPriority(Thread.MIN_PRIORITY);
+        _dir = dir;
+        _section = section;
+    }
 
-	@Override
-	public void run() {
-		TvMazeVFSData tvmazeData = new TvMazeVFSData(_dir);
-		TvMazeInfo tvmazeInfo = tvmazeData.getTvMazeInfoFromCache();
-		int sleep = 0; // Time to wait for TvMaze data
-		while (sleep < 10 && tvmazeInfo == null) {
-			sleep++;
-			try {
-				sleep(1000);
-			} catch (InterruptedException ie) {
-				// Thread interrupted
-				break;
-			}
-			tvmazeInfo = tvmazeData.getTvMazeInfoFromCache();
-		}
-		if (tvmazeInfo != null) {
-			TvMazeUtils.publishEvent(tvmazeInfo, _dir, _section);
-		}
-	}
+    @Override
+    public void run() {
+        TvMazeVFSData tvmazeData = new TvMazeVFSData(_dir);
+        TvMazeInfo tvmazeInfo = tvmazeData.getTvMazeInfoFromCache();
+        int sleep = 0; // Time to wait for TvMaze data
+        while (sleep < 10 && tvmazeInfo == null) {
+            sleep++;
+            try {
+                sleep(1000);
+            } catch (InterruptedException ie) {
+                // Thread interrupted
+                break;
+            }
+            tvmazeInfo = tvmazeData.getTvMazeInfoFromCache();
+        }
+        if (tvmazeInfo != null) {
+            TvMazeUtils.publishEvent(tvmazeInfo, _dir, _section);
+        }
+    }
 }

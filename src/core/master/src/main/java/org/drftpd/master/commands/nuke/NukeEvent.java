@@ -26,51 +26,50 @@ import java.util.Map;
 
 /**
  * @author mog
- * 
  * @version $Id$
  */
 public class NukeEvent extends UserEvent {
 
-	private NukeData _nukeData;
+    private final NukeData _nukeData;
 
-	public NukeEvent(User user, String command, long time, NukeData nd) {
-		super(user, command, time);
-		_nukeData = nd;
-	}
+    public NukeEvent(User user, String command, long time, NukeData nd) {
+        super(user, command, time);
+        _nukeData = nd;
+    }
 
-	public NukeEvent(User user, String command, NukeData nd) {
-		this(user, command, System.currentTimeMillis(), nd);
-	}
+    public NukeEvent(User user, String command, NukeData nd) {
+        this(user, command, System.currentTimeMillis(), nd);
+    }
 
-	public NukeData getNukeData() {
-		return _nukeData;
-	}
+    public NukeData getNukeData() {
+        return _nukeData;
+    }
 
-	public int getMultiplier() {
-		return getNukeData().getMultiplier();
-	}
+    public int getMultiplier() {
+        return getNukeData().getMultiplier();
+    }
 
-	public long getNukedAmount() {
-		return getNukeData().getAmount();
-	}
+    public long getNukedAmount() {
+        return getNukeData().getAmount();
+    }
 
-	public Map<String, Long> getNukees() {
-		return getNukeData().getNukees();
-	}
+    public Map<String, Long> getNukees() {
+        return getNukeData().getNukees();
+    }
 
-	public String getPath() {
-		return getNukeData().getPath();
-	}
+    public String getPath() {
+        return getNukeData().getPath();
+    }
 
-	public String getReason() {
-		return getNukeData().getReason();
-	}
+    public String getReason() {
+        return getNukeData().getReason();
+    }
 
-	public long getSize() {
-		return getNukeData().getSize();
-	}
+    public long getSize() {
+        return getNukeData().getSize();
+    }
 
-	public String toString() {
-		return "[NUKE:" + getPath() + ",multiplier=" + getMultiplier() + "]";
-	}
+    public String toString() {
+        return "[NUKE:" + getPath() + ",multiplier=" + getMultiplier() + "]";
+    }
 }

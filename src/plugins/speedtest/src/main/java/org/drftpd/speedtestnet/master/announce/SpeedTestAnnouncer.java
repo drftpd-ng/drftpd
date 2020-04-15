@@ -18,15 +18,15 @@ package org.drftpd.speedtestnet.master.announce;
 
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
+import org.drftpd.common.slave.TransferStatus;
+import org.drftpd.common.util.Bytes;
 import org.drftpd.master.sitebot.AbstractAnnouncer;
 import org.drftpd.master.sitebot.AnnounceWriter;
 import org.drftpd.master.sitebot.SiteBot;
 import org.drftpd.master.sitebot.config.AnnounceConfig;
-import org.drftpd.master.util.Time;
-import org.drftpd.common.util.Bytes;
 import org.drftpd.master.util.ReplacerUtils;
+import org.drftpd.master.util.Time;
 import org.drftpd.master.vfs.VirtualFileSystem;
-import org.drftpd.common.slave.TransferStatus;
 import org.drftpd.speedtestnet.master.event.SpeedTestEvent;
 
 import java.util.HashMap;
@@ -38,47 +38,47 @@ import java.util.ResourceBundle;
  */
 public class SpeedTestAnnouncer extends AbstractAnnouncer {
 
-	private AnnounceConfig _config;
+    private AnnounceConfig _config;
 
-	private ResourceBundle _bundle;
-	
-	public void initialise(AnnounceConfig config, ResourceBundle bundle) {
-		_config = config;
-		_bundle = bundle;
+    private ResourceBundle _bundle;
 
-		// Subscribe to events
-		AnnotationProcessor.process(this);
-	}
+    public void initialise(AnnounceConfig config, ResourceBundle bundle) {
+        _config = config;
+        _bundle = bundle;
 
-	public void stop() {
-		// The plugin is unloading so stop asking for events
-		AnnotationProcessor.unprocess(this);
-	}
+        // Subscribe to events
+        AnnotationProcessor.process(this);
+    }
 
-	public String[] getEventTypes() {
-		return new String[] { "speedTest" };
-	}
+    public void stop() {
+        // The plugin is unloading so stop asking for events
+        AnnotationProcessor.unprocess(this);
+    }
 
-	public void setResourceBundle(ResourceBundle bundle) {
-		_bundle = bundle;
-	}
+    public String[] getEventTypes() {
+        return new String[]{"speedTest"};
+    }
+
+    public void setResourceBundle(ResourceBundle bundle) {
+        _bundle = bundle;
+    }
 
     @EventSubscriber
-	public void onSpeedTestEvent(SpeedTestEvent event) {
-		AnnounceWriter writer = _config.getSimpleWriter("speedTest");
-		// Check we got a writer back, if it is null do nothing and ignore the event
-		if (writer != null) {
-			Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
-			env.put("path", event.getFilePath());
-			env.put("transferfile", VirtualFileSystem.getLast(event.getFilePath()));
-			env.put("user", event.getUser().getName());
-			env.put("group", event.getUser().getGroup());
-			env.put("slave", event.getSlaveName());
-			TransferStatus status = event.getStatus();
-			env.put("size", Bytes.formatBytes(status.getTransfered()));
-			env.put("time", Time.formatTime(status.getElapsed()));
-			env.put("speed", Bytes.formatBytes(status.getXferSpeed())+"/s");
-			sayOutput(ReplacerUtils.jprintf("speedtest", env, _bundle), writer);
-		}
-	}
+    public void onSpeedTestEvent(SpeedTestEvent event) {
+        AnnounceWriter writer = _config.getSimpleWriter("speedTest");
+        // Check we got a writer back, if it is null do nothing and ignore the event
+        if (writer != null) {
+            Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
+            env.put("path", event.getFilePath());
+            env.put("transferfile", VirtualFileSystem.getLast(event.getFilePath()));
+            env.put("user", event.getUser().getName());
+            env.put("group", event.getUser().getGroup());
+            env.put("slave", event.getSlaveName());
+            TransferStatus status = event.getStatus();
+            env.put("size", Bytes.formatBytes(status.getTransfered()));
+            env.put("time", Time.formatTime(status.getElapsed()));
+            env.put("speed", Bytes.formatBytes(status.getXferSpeed()) + "/s");
+            sayOutput(ReplacerUtils.jprintf("speedtest", env, _bundle), writer);
+        }
+    }
 }

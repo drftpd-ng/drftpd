@@ -25,102 +25,102 @@
 
 package org.drftpd.master.commands.usermanagement.securepass.hooks;
 
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-import org.drftpd.master.commands.usermanagement.securepass.SecurePassManager;
+import org.apache.logging.log4j.Logger;
 import org.drftpd.common.extensibility.CommandHook;
 import org.drftpd.common.extensibility.HookType;
 import org.drftpd.master.GlobalContext;
-import org.drftpd.master.commands.CommandRequestInterface;
 import org.drftpd.master.commands.CommandRequest;
+import org.drftpd.master.commands.CommandRequestInterface;
 import org.drftpd.master.commands.CommandResponse;
 import org.drftpd.master.commands.StandardCommandManager;
+import org.drftpd.master.commands.usermanagement.securepass.SecurePassManager;
 import org.drftpd.master.usermanager.NoSuchUserException;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.usermanager.UserFileException;
 
 /**
  * @author : CyBeR
- * @version : v1.0 
+ * @version : v1.0
  */
 
 public class SecurePassHooks {
 
-	private static final Logger logger = LogManager.getLogger(SecurePassHooks.class);
-	
-	/*
-	 * Checks the IP from arguments (Used for ADDUSER/GADDUSER/ADDIP)
-	 */
-	private CommandRequest checkPASS(CommandRequest request, int usernum, int passnum, boolean newuser) {
-		if (!request.hasArgument()) {
-			return request;
-		}
+    private static final Logger logger = LogManager.getLogger(SecurePassHooks.class);
 
-		String[] args = request.getArgument().split(" ");
-		if (args.length < passnum) {
-			return request;
-		}
-		
-		try {
-			String password = args[passnum-1];
-			User user = null;
-			if (!newuser) {
-				if (usernum == 0) {
-					user = GlobalContext.getGlobalContext().getUserManager().getUserByName(request.getUser());
-				} else {
-					user = GlobalContext.getGlobalContext().getUserManager().getUserByName(args[usernum-1]);
-				}
-			}
+    /*
+     * Checks the IP from arguments (Used for ADDUSER/GADDUSER/ADDIP)
+     */
+    private CommandRequest checkPASS(CommandRequest request, int usernum, int passnum, boolean newuser) {
+        if (!request.hasArgument()) {
+            return request;
+        }
 
-			if (!SecurePassManager.getSecurePass().checkPASS(password,user)) {
-				request.setAllowed(false);
-				CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-				response.addComment(SecurePassManager.getSecurePass().outputConfs(user));
-				request.setDeniedResponse(response);
-				return request;
-			}
-		} catch (NoSuchUserException ex) {
-			request.setAllowed(false);
-			request.setDeniedResponse(new CommandResponse(452, "No such user: " + args[0]));
-			logger.debug("No Such User Exception - SecurePassHooks");
-			return request;
-		} catch (UserFileException ex) {
-			request.setAllowed(false);
-			request.setDeniedResponse(new CommandResponse(452,"User File Exception: " + args[0]));
-			return request;
-		}
-		return request;
-	}
-	
-	/*
-	 * Prehook method for CHPASS
-	 */
-	@CommandHook(commands = "doSITE_CHPASS", type = HookType.PRE)
-	public CommandRequestInterface doSecurePassCHPASSPreCheck(CommandRequest request) {
-		return checkPASS(request,1,2,false);
-	}
+        String[] args = request.getArgument().split(" ");
+        if (args.length < passnum) {
+            return request;
+        }
 
-	/*
-	 * Prehook method for PASSWD
-	 */
-	@CommandHook(commands = "doSITE_PASSWD", type = HookType.PRE)
-	public CommandRequestInterface doSecurePassPASSWDPreCheck(CommandRequest request) {
-		return checkPASS(request,0,1,false);
-	}	
-	
-	/*
-	 * Prehook method for ADDUSER
-	 */
-	@CommandHook(commands = "doSITE_ADDUSER", type = HookType.PRE)
-	public CommandRequestInterface doSecurePassADDUSERPreCheck(CommandRequest request) {
-		return checkPASS(request,1,2,true);
-	}
-	
-	/*
-	 * Prehook method for GADDUSER
-	 */
-	@CommandHook(commands = "doSITE_GADDUSER", type = HookType.PRE)
-	public CommandRequestInterface doSecurePassGADDUSERPreCheck(CommandRequest request) {
-		return checkPASS(request,2,3,true);
-	}
+        try {
+            String password = args[passnum - 1];
+            User user = null;
+            if (!newuser) {
+                if (usernum == 0) {
+                    user = GlobalContext.getGlobalContext().getUserManager().getUserByName(request.getUser());
+                } else {
+                    user = GlobalContext.getGlobalContext().getUserManager().getUserByName(args[usernum - 1]);
+                }
+            }
+
+            if (!SecurePassManager.getSecurePass().checkPASS(password, user)) {
+                request.setAllowed(false);
+                CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
+                response.addComment(SecurePassManager.getSecurePass().outputConfs(user));
+                request.setDeniedResponse(response);
+                return request;
+            }
+        } catch (NoSuchUserException ex) {
+            request.setAllowed(false);
+            request.setDeniedResponse(new CommandResponse(452, "No such user: " + args[0]));
+            logger.debug("No Such User Exception - SecurePassHooks");
+            return request;
+        } catch (UserFileException ex) {
+            request.setAllowed(false);
+            request.setDeniedResponse(new CommandResponse(452, "User File Exception: " + args[0]));
+            return request;
+        }
+        return request;
+    }
+
+    /*
+     * Prehook method for CHPASS
+     */
+    @CommandHook(commands = "doSITE_CHPASS", type = HookType.PRE)
+    public CommandRequestInterface doSecurePassCHPASSPreCheck(CommandRequest request) {
+        return checkPASS(request, 1, 2, false);
+    }
+
+    /*
+     * Prehook method for PASSWD
+     */
+    @CommandHook(commands = "doSITE_PASSWD", type = HookType.PRE)
+    public CommandRequestInterface doSecurePassPASSWDPreCheck(CommandRequest request) {
+        return checkPASS(request, 0, 1, false);
+    }
+
+    /*
+     * Prehook method for ADDUSER
+     */
+    @CommandHook(commands = "doSITE_ADDUSER", type = HookType.PRE)
+    public CommandRequestInterface doSecurePassADDUSERPreCheck(CommandRequest request) {
+        return checkPASS(request, 1, 2, true);
+    }
+
+    /*
+     * Prehook method for GADDUSER
+     */
+    @CommandHook(commands = "doSITE_GADDUSER", type = HookType.PRE)
+    public CommandRequestInterface doSecurePassGADDUSERPreCheck(CommandRequest request) {
+        return checkPASS(request, 2, 3, true);
+    }
 }

@@ -35,7 +35,7 @@ import java.util.Properties;
 public class ConfigChain {
     private static final Logger logger = LogManager.getLogger(ConfigChain.class);
 
-    private static Class<?>[] SIG = new Class<?>[]{int.class, Properties.class};
+    private static final Class<?>[] SIG = new Class<?>[]{int.class, Properties.class};
 
     private ArrayList<Config> _configs;
 
@@ -44,13 +44,13 @@ public class ConfigChain {
     protected ConfigChain() {
     }
 
-    public Collection<Config> getConfigs() {
-        return new ArrayList<>(_configs);
-    }
-
     public ConfigChain(CaseInsensitiveHashMap<String, Class<Config>> configsMap) {
         _configsMap = configsMap;
         reload();
+    }
+
+    public Collection<Config> getConfigs() {
+        return new ArrayList<>(_configs);
     }
 
     public boolean checkConfig(DirectoryHandle dir) {

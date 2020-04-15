@@ -205,8 +205,7 @@ public class ZipAnnouncer extends AbstractAnnouncer {
                         raceenv.put("size", Bytes.formatBytes(stat.getBytes()));
                         raceenv.put("position", String.valueOf(position));
                         raceenv.put("percent",
-                                Integer.toString(
-                                        (stat.getFiles() * 100) / zipEvent.getDizInfo().getTotal()) + "%");
+                                (stat.getFiles() * 100) / zipEvent.getDizInfo().getTotal() + "%");
                         raceenv.put("alup",
                                 UserTransferStats.getStatsPlace("ALUP",
                                         raceuser, GlobalContext.getGlobalContext().getUserManager()));
@@ -251,8 +250,7 @@ public class ZipAnnouncer extends AbstractAnnouncer {
                         raceenv.put("size", Bytes.formatBytes(stat.getBytes()));
                         raceenv.put("files", Integer.toString(stat.getFiles()));
                         raceenv.put("percent",
-                                Integer.toString(
-                                        (stat.getFiles() * 100) / zipEvent.getDizInfo().getTotal()) + "%");
+                                (stat.getFiles() * 100) / zipEvent.getDizInfo().getTotal() + "%");
                         raceenv.put("speed",
                                 Bytes.formatBytes(stat.getXferspeed()) + "/s");
 
@@ -279,7 +277,7 @@ public class ZipAnnouncer extends AbstractAnnouncer {
                     env.put("leadfiles", Integer.toString(stat.getFiles()));
                     env.put("leadsize", Bytes.formatBytes(stat.getBytes()));
                     env.put("leadpercent",
-                            Integer.toString((stat.getFiles() * 100) / zipEvent.getDizInfo().getTotal()) +
+                            (stat.getFiles() * 100) / zipEvent.getDizInfo().getTotal() +
                                     "%");
                     env.put("filesleft", Integer.toString(zipEvent.getDizStatus().getMissing()));
 

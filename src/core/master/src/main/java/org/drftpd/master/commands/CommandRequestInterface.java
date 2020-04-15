@@ -28,33 +28,33 @@ import java.util.Properties;
  */
 public interface CommandRequestInterface {
 
-	void setArgument(String argument);
+    String getArgument();
 
-	void setCommand(String command);
+    void setArgument(String argument);
 
-	void setCurrentDirectory(DirectoryHandle currentDirectory);
+    String getCommand();
 
-	void setSession(Session session);
+    void setCommand(String command);
 
-	void setUser(String currentUser);
+    DirectoryHandle getCurrentDirectory();
 
-	String getArgument();
+    void setCurrentDirectory(DirectoryHandle currentDirectory);
 
-	String getCommand();
+    Session getSession();
 
-	DirectoryHandle getCurrentDirectory();
+    void setSession(Session session);
 
-	Session getSession();
+    String getUser();
 
-	String getUser();
+    void setUser(String currentUser);
 
-	boolean isAllowed();
+    boolean isAllowed();
 
-	void setAllowed(boolean b);
+    void setAllowed(boolean b);
 
-	CommandResponseInterface getDeniedResponse();
+    CommandResponseInterface getDeniedResponse();
 
-	Properties getProperties();
+    Properties getProperties();
 
-	void setProperties(Properties properties);
+    void setProperties(Properties properties);
 }

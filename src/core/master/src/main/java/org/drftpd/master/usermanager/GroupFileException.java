@@ -23,19 +23,19 @@ package org.drftpd.master.usermanager;
  */
 @SuppressWarnings("serial")
 public class GroupFileException extends Exception {
-	public GroupFileException() {
-		super();
-	}
+    public GroupFileException() {
+        super();
+    }
 
-	public GroupFileException(String message) {
-		super(message);
-	}
+    public GroupFileException(String message) {
+        super(message);
+    }
 
-	public GroupFileException(String message, Throwable cause) {
-		super(message, cause);
-	}
+    public GroupFileException(String message, Throwable cause) {
+        super(message, cause);
+    }
 
-	public GroupFileException(Throwable cause) {
-		super(cause);
-	}
+    public GroupFileException(Throwable cause) {
+        super(cause);
+    }
 }

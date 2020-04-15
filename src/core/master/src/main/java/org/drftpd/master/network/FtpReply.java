@@ -17,9 +17,8 @@
  */
 package org.drftpd.master.network;
 
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
+import org.apache.logging.log4j.Logger;
 import org.drftpd.master.commands.CommandResponseInterface;
 
 import java.util.Iterator;
@@ -31,99 +30,99 @@ import java.util.Vector;
  * @version $Id$
  */
 public class FtpReply {
-	private static final Logger logger = LogManager.getLogger(FtpReply.class.getName());
+    private static final Logger logger = LogManager.getLogger(FtpReply.class.getName());
 
-	protected int _code;
-	
-	protected Vector<String> _lines = new Vector<>();
-	
-	protected String _message;
-	
-	public FtpReply() {
-	}
+    protected int _code;
 
-	public FtpReply(CommandResponseInterface response) {
-		setCode(response.getCode());
-		setMessage(response.getMessage());
-		_lines = response.getComment();
-	}
-	
-	public FtpReply(int code) {
-		setCode(code);
-	}
-	
-	public FtpReply(int code, String response) {
-		setCode(code);
-		setMessage(response);
-	}
+    protected Vector<String> _lines = new Vector<>();
 
-	public FtpReply addComment(Object response) {
-		String resp = String.valueOf(response);
+    protected String _message;
 
-		if (resp.indexOf('\n') != -1) {
-			String[] lines = resp.split("\n");
+    public FtpReply() {
+    }
+
+    public FtpReply(CommandResponseInterface response) {
+        setCode(response.getCode());
+        setMessage(response.getMessage());
+        _lines = response.getComment();
+    }
+
+    public FtpReply(int code) {
+        setCode(code);
+    }
+
+    public FtpReply(int code, String response) {
+        setCode(code);
+        setMessage(response);
+    }
+
+    public FtpReply addComment(Object response) {
+        String resp = String.valueOf(response);
+
+        if (resp.indexOf('\n') != -1) {
+            String[] lines = resp.split("\n");
 
             for (String line : lines) {
                 _lines.add(line);
             }
-		} else {
-			_lines.add(resp);
-		}
-		return this;
-	}
+        } else {
+            _lines.add(resp);
+        }
+        return this;
+    }
 
-	public int getCode() {
-		return _code;
-	}
+    public int getCode() {
+        return _code;
+    }
 
-	public void setCode(int code) {
-		_code = code;
-	}
+    public void setCode(int code) {
+        _code = code;
+    }
 
-	public void setMessage(String response) {
-		if (response == null)
-			response = "No text";
-		int pos = response.indexOf('\n');
+    public int size() {
+        return _lines.size();
+    }
 
-		if (pos != -1) {
-			addComment(response.substring(pos + 1));
-			response = response.substring(0, pos);
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+
+        // sb.append(code + "-");
+        if ((_lines.size() == 0) && (_message == null)) {
+            setMessage("No text specified");
+        }
+
+        for (Iterator<String> iter = _lines.iterator(); iter.hasNext(); ) {
+            String comment = iter.next();
+
+            if (!iter.hasNext() && (_message == null)) {
+                sb.append(_code + "  " + comment + "\r\n");
+            } else {
+                sb.append(_code + "- " + comment + "\r\n");
+            }
+        }
+
+        if (_message != null) {
+            sb.append(_code + " " + _message + "\r\n");
+        }
+
+        return sb.toString();
+    }
+
+    public String getMessage() {
+        return _message;
+    }
+
+    public void setMessage(String response) {
+        if (response == null)
+            response = "No text";
+        int pos = response.indexOf('\n');
+
+        if (pos != -1) {
+            addComment(response.substring(pos + 1));
+            response = response.substring(0, pos);
             logger.debug("Truncated response message with multiple lines: {}", response);
-		}
+        }
 
-		_message = response;
-	}
-
-	public int size() {
-		return _lines.size();
-	}
-
-	public String toString() {
-		StringBuilder sb = new StringBuilder();
-
-		// sb.append(code + "-");
-		if ((_lines.size() == 0) && (_message == null)) {
-			setMessage("No text specified");
-		}
-
-		for (Iterator<String> iter = _lines.iterator(); iter.hasNext();) {
-			String comment = iter.next();
-
-			if (!iter.hasNext() && (_message == null)) {
-				sb.append(_code + "  " + comment + "\r\n");
-			} else {
-				sb.append(_code + "- " + comment + "\r\n");
-			}
-		}
-
-		if (_message != null) {
-			sb.append(_code + " " + _message + "\r\n");
-		}
-
-		return sb.toString();
-	}
-
-	public String getMessage() {
-		return _message;
-	}
+        _message = response;
+    }
 }

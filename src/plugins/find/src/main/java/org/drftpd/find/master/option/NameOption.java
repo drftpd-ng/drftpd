@@ -17,8 +17,8 @@
  */
 package org.drftpd.find.master.option;
 
-import org.drftpd.master.commands.ImproperUsageException;
 import org.drftpd.find.master.FindUtils;
+import org.drftpd.master.commands.ImproperUsageException;
 import org.drftpd.master.indexation.AdvancedSearchParams;
 
 /**
@@ -27,19 +27,19 @@ import org.drftpd.master.indexation.AdvancedSearchParams;
  */
 public class NameOption implements OptionInterface {
 
-	@Override
-	public void exec(String option, String[] args, AdvancedSearchParams params) throws ImproperUsageException {
-		if (args == null) {
-			throw new ImproperUsageException("Missing argument for "+option+" option");
-		}
-		if (option.equalsIgnoreCase("-name")) {
-			params.setName(FindUtils.getStringFromArray(args, " "));
-		} else if (option.equalsIgnoreCase("-regex")) {
-			params.setRegex(FindUtils.getStringFromArray(args, " "));
-		} else if (option.equalsIgnoreCase("-exact")) {
-			params.setExact(FindUtils.getStringFromArray(args, " "));
-		} else if (option.equalsIgnoreCase("-endswith")) {
-			params.setEndsWith(FindUtils.getStringFromArray(args, " "));
-		}
-	}
+    @Override
+    public void exec(String option, String[] args, AdvancedSearchParams params) throws ImproperUsageException {
+        if (args == null) {
+            throw new ImproperUsageException("Missing argument for " + option + " option");
+        }
+        if (option.equalsIgnoreCase("-name")) {
+            params.setName(FindUtils.getStringFromArray(args, " "));
+        } else if (option.equalsIgnoreCase("-regex")) {
+            params.setRegex(FindUtils.getStringFromArray(args, " "));
+        } else if (option.equalsIgnoreCase("-exact")) {
+            params.setExact(FindUtils.getStringFromArray(args, " "));
+        } else if (option.equalsIgnoreCase("-endswith")) {
+            params.setEndsWith(FindUtils.getStringFromArray(args, " "));
+        }
+    }
 }

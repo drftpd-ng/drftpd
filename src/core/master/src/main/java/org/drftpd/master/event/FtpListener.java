@@ -24,15 +24,15 @@ import org.drftpd.master.GlobalContext;
  * @version $Id$
  */
 public abstract class FtpListener {
-	public abstract void actionPerformed(Event event);
+    public static GlobalContext getGlobalContext() {
+        return GlobalContext.getGlobalContext();
+    }
 
-	public void unload() {
-	}
+    public abstract void actionPerformed(Event event);
 
-	public void init() {
-	}
+    public void unload() {
+    }
 
-	public static GlobalContext getGlobalContext() {
-		return GlobalContext.getGlobalContext();
-	}
+    public void init() {
+    }
 }

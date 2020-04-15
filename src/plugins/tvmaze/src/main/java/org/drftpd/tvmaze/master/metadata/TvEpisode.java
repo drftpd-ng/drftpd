@@ -23,63 +23,77 @@ import java.io.Serializable;
  * @author _LH_
  */
 @SuppressWarnings("serial")
-public class TvEpisode  implements Serializable {
-	int _id;
-	String _url = "";
-	String _name = "";
-	int _season;
-	int _number;
-	String _airdate;
-	int _runtime;
-	String _summary = "";
+public class TvEpisode implements Serializable {
+    int _id;
+    String _url = "";
+    String _name = "";
+    int _season;
+    int _number;
+    String _airdate;
+    int _runtime;
+    String _summary = "";
 
-	public TvEpisode() {
-	}
+    public TvEpisode() {
+    }
 
-	public int getID () {
-		return _id;
-	}
-	public String getURL () {
-		return _url;
-	}
-	public String getName () {
-		return _name;
-	}
-	public int getSeason () {
-		return _season;
-	}
-	public int getNumber () { return _number; }
-	public String getAirDate () {
-		return _airdate;
-	}
-	public int getRuntime () {
-		return _runtime;
-	}
-	public String getSummary () {
-		return _summary;
-	}
+    public int getID() {
+        return _id;
+    }
 
-	public void setID (int id) {
-		_id = id;
-	}
-	public void setURL (String url) {
-		_url = url;
-	}
-	public void setName (String name) {
-		_name = name;
-	}
-	public void setSeason (int season) {
-		_season = season;
-	}
-	public void setNumber (int number) {
-		_number = number;
-	}
-	public void setAirDate (String airdate) { _airdate = airdate; }
-	public void setRuntime (int runtime) {
-		_runtime = runtime;
-	}
-	public void setSummary (String summary) {
-		_summary = summary;
-	}
+    public void setID(int id) {
+        _id = id;
+    }
+
+    public String getURL() {
+        return _url;
+    }
+
+    public void setURL(String url) {
+        _url = url;
+    }
+
+    public String getName() {
+        return _name;
+    }
+
+    public void setName(String name) {
+        _name = name;
+    }
+
+    public int getSeason() {
+        return _season;
+    }
+
+    public void setSeason(int season) {
+        _season = season;
+    }
+
+    public int getNumber() { return _number; }
+
+    public void setNumber(int number) {
+        _number = number;
+    }
+
+    public String getAirDate() {
+        return _airdate;
+    }
+
+    public void setAirDate(String airdate) { _airdate = airdate; }
+
+    public int getRuntime() {
+        return _runtime;
+    }
+
+    public void setRuntime(int runtime) {
+        _runtime = runtime;
+    }
+
+    public String getSummary() {
+        return _summary;
+    }
+
+    public void setSummary(String summary) {
+        _summary = summary;
+    }
 
 }

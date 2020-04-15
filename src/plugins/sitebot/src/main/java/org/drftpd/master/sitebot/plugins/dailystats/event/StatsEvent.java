@@ -26,19 +26,19 @@ import java.util.Collection;
  */
 public class StatsEvent {
 
-	private String _type;
-	private Collection<UserStats> _outputStats;
+    private final String _type;
+    private final Collection<UserStats> _outputStats;
 
-	public StatsEvent(String type, Collection<UserStats> outputStats) {
-		_type = type;
-		_outputStats = outputStats;
-	}
+    public StatsEvent(String type, Collection<UserStats> outputStats) {
+        _type = type;
+        _outputStats = outputStats;
+    }
 
-	public String getType() {
-		return _type;
-	}
+    public String getType() {
+        return _type;
+    }
 
-	public Collection<UserStats> getOutputStats() {
-		return _outputStats;
-	}
+    public Collection<UserStats> getOutputStats() {
+        return _outputStats;
+    }
 }

@@ -23,11 +23,11 @@ import java.util.ArrayList;
  * @author lh
  */
 public class UserInfo {
-    private String _userName;
-    private String _group;
+    private final String _userName;
+    private final String _group;
     private int _files;
     private long _bytes;
-    private ArrayList<Long> _speeds = new ArrayList<>();
+    private final ArrayList<Long> _speeds = new ArrayList<>();
 
     public UserInfo(String userName, String group, int files, long bytes, long speed) {
         _userName = userName;
@@ -56,7 +56,7 @@ public class UserInfo {
     public long getBytes() {
         return _bytes;
     }
-    
+
     public void addBytes(long bytes) {
         _bytes += bytes;
     }
@@ -72,7 +72,7 @@ public class UserInfo {
         for (long speed : _speeds) {
             total += speed;
         }
-        return total/_speeds.size();
+        return total / _speeds.size();
     }
 
     public long getTopSpeed() {
@@ -81,6 +81,6 @@ public class UserInfo {
             if (speed > top)
                 top = speed;
         }
-        return top; 
+        return top;
     }
 }

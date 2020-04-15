@@ -24,22 +24,23 @@ package org.drftpd.master.vfs;
  */
 public class VFSUtils {
 
-	
-	/**
-	 * Utility method to convert a Real VFS Inode into a simple {@link InodeHandle}
-	 * @param realInode
-	 */
-	public static InodeHandle getInodeHandleFor(VirtualFileSystemInode realInode) {
-		String path = realInode.getPath();
-		
-		if (realInode.isDirectory()) {
-			return new DirectoryHandle(path);
-		} else if (realInode.isFile()) {
-			return new FileHandle(path);
-		} else if (realInode.isLink()) {
-			return new LinkHandle(path);
-		} else {
-			throw new UnsupportedOperationException("This listener is not capable of handling symbolic links");
-		}
-	}
+
+    /**
+     * Utility method to convert a Real VFS Inode into a simple {@link InodeHandle}
+     *
+     * @param realInode
+     */
+    public static InodeHandle getInodeHandleFor(VirtualFileSystemInode realInode) {
+        String path = realInode.getPath();
+
+        if (realInode.isDirectory()) {
+            return new DirectoryHandle(path);
+        } else if (realInode.isFile()) {
+            return new FileHandle(path);
+        } else if (realInode.isLink()) {
+            return new LinkHandle(path);
+        } else {
+            throw new UnsupportedOperationException("This listener is not capable of handling symbolic links");
+        }
+    }
 }

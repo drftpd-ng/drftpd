@@ -17,40 +17,41 @@
  */
 package org.drftpd.master.vfs.perms;
 
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
+import org.apache.logging.log4j.Logger;
 
 import java.lang.reflect.Method;
 import java.util.StringTokenizer;
 
 /**
  * Wraps the PermissionHandler instance and its "handling" method.
+ *
  * @author fr0w
  * @version $Id$
  */
 public class PermissionWrapper {
 
-	private static final Logger logger = LogManager.getLogger(PermissionWrapper.class);
-	
-	private VFSPermHandler _permHandler;
-	private Method _method;
-	
-	public PermissionWrapper(VFSPermHandler permHandler, Method method) {
-		_permHandler = permHandler;
-		_method = method;
-	}
-	
-	/**
-	 * Invoke, passing the right parameters, the PermissionHandler for given line.
-	 * @param directive
-	 * @param st
-	 */
-	public void handle(String directive, StringTokenizer st) {
-		try {
-			_method.invoke(_permHandler, directive, st);
-		} catch (Exception e) {
+    private static final Logger logger = LogManager.getLogger(PermissionWrapper.class);
+
+    private final VFSPermHandler _permHandler;
+    private final Method _method;
+
+    public PermissionWrapper(VFSPermHandler permHandler, Method method) {
+        _permHandler = permHandler;
+        _method = method;
+    }
+
+    /**
+     * Invoke, passing the right parameters, the PermissionHandler for given line.
+     *
+     * @param directive
+     * @param st
+     */
+    public void handle(String directive, StringTokenizer st) {
+        try {
+            _method.invoke(_permHandler, directive, st);
+        } catch (Exception e) {
             logger.error("Unable to handle '{}'", directive, e);
-		}
-	}
+        }
+    }
 }

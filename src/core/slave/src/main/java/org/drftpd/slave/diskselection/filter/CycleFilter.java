@@ -22,39 +22,39 @@ import java.util.Properties;
 
 /**
  * If there's a tie in the ScoreChart, the CycleFilter removes it.
- * 
+ *
  * @author fr0w
  * @author zubov
  * @version $Id$
  */
 public class CycleFilter extends DiskFilter {
 
-	public CycleFilter(DiskSelectionFilter diskSelection, Properties p, Integer i) {
-		super(diskSelection, p, i);
-	}
+    public CycleFilter(DiskSelectionFilter diskSelection, Properties p, Integer i) {
+        super(diskSelection, p, i);
+    }
 
-	public void process(ScoreChart sc, String path) {
-		ScoreChart.RootScore bestRoot = null;
+    public void process(ScoreChart sc, String path) {
+        ScoreChart.RootScore bestRoot = null;
 
-		// retrieves the higher score
-		for (ScoreChart.RootScore rootScore : sc.getScoreList()) {
-			if (bestRoot == null) {
-				bestRoot = rootScore;
-			} else {
-				if (rootScore.getScore() > bestRoot.getScore()) {
-					bestRoot = rootScore;
-				} else {
-					if (rootScore.getScore() == bestRoot.getScore()
-							&& bestRoot.getRoot().lastModified() > rootScore
-									.getRoot().lastModified()) {
-						bestRoot = rootScore;
-					}
-				}
-			}
-		}
-		if (bestRoot != null) {
-			// No root's have been found
-			bestRoot.addScore(1);
-		}
-	}
+        // retrieves the higher score
+        for (ScoreChart.RootScore rootScore : sc.getScoreList()) {
+            if (bestRoot == null) {
+                bestRoot = rootScore;
+            } else {
+                if (rootScore.getScore() > bestRoot.getScore()) {
+                    bestRoot = rootScore;
+                } else {
+                    if (rootScore.getScore() == bestRoot.getScore()
+                            && bestRoot.getRoot().lastModified() > rootScore
+                            .getRoot().lastModified()) {
+                        bestRoot = rootScore;
+                    }
+                }
+            }
+        }
+        if (bestRoot != null) {
+            // No root's have been found
+            bestRoot.addScore(1);
+        }
+    }
 }

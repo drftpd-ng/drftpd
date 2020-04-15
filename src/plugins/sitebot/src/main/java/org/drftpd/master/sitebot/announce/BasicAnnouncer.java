@@ -17,30 +17,29 @@
  */
 package org.drftpd.master.sitebot.announce;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.ResourceBundle;
-
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
+import org.apache.logging.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
-import org.drftpd.master.commands.slavemanagement.SlaveManagement;
 import org.drftpd.master.GlobalContext;
+import org.drftpd.master.commands.slavemanagement.SlaveManagement;
 import org.drftpd.master.event.DirectoryFtpEvent;
+import org.drftpd.master.event.MasterEvent;
 import org.drftpd.master.event.SlaveEvent;
 import org.drftpd.master.exceptions.SlaveUnavailableException;
-import org.drftpd.master.event.MasterEvent;
+import org.drftpd.master.sitebot.AbstractAnnouncer;
+import org.drftpd.master.sitebot.AnnounceWriter;
 import org.drftpd.master.sitebot.SiteBot;
 import org.drftpd.master.sitebot.config.AnnounceConfig;
 import org.drftpd.master.sitebot.config.ChannelConfig;
 import org.drftpd.master.sitebot.event.InviteEvent;
+import org.drftpd.master.slavemanagement.SlaveStatus;
 import org.drftpd.master.util.ReplacerUtils;
 import org.drftpd.master.vfs.DirectoryHandle;
-import org.drftpd.master.sitebot.AbstractAnnouncer;
-import org.drftpd.master.sitebot.AnnounceWriter;
-import org.drftpd.master.slavemanagement.SlaveStatus;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.ResourceBundle;
 
 /**
  * @author djb61

@@ -25,25 +25,25 @@ import org.drftpd.zipscript.common.mp3.MP3Info;
  */
 public class MP3Event {
 
-	private MP3Info _mp3info;
-	private DirectoryHandle _dir;
-	private boolean _isFirst;
+    private final MP3Info _mp3info;
+    private final DirectoryHandle _dir;
+    private final boolean _isFirst;
 
-	public MP3Event(MP3Info mp3info, DirectoryHandle dir, boolean isFirst) {
-		_mp3info = mp3info;
-		_dir = dir;
-		_isFirst = isFirst;
-	}
+    public MP3Event(MP3Info mp3info, DirectoryHandle dir, boolean isFirst) {
+        _mp3info = mp3info;
+        _dir = dir;
+        _isFirst = isFirst;
+    }
 
-	public DirectoryHandle getDir() {
-		return _dir;
-	}
+    public DirectoryHandle getDir() {
+        return _dir;
+    }
 
-	public MP3Info getMP3Info() {
-		return _mp3info;
-	}
+    public MP3Info getMP3Info() {
+        return _mp3info;
+    }
 
-	public boolean isFirst() {
-		return _isFirst;
-	}
+    public boolean isFirst() {
+        return _isFirst;
+    }
 }

@@ -27,5 +27,5 @@ import java.util.ArrayList;
  */
 public interface ZipscriptListStatusBarInterface {
 
-	ArrayList<String> getStatusBarEntry(DirectoryHandle dir, ListElementsContainer container) throws NoEntryAvailableException;
+    ArrayList<String> getStatusBarEntry(DirectoryHandle dir, ListElementsContainer container) throws NoEntryAvailableException;
 }

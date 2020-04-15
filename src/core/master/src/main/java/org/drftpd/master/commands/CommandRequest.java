@@ -18,11 +18,10 @@
 package org.drftpd.master.commands;
 
 
-import org.drftpd.master.GlobalContext;
 import org.drftpd.common.dynamicdata.Key;
 import org.drftpd.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.common.dynamicdata.KeyedMap;
-
+import org.drftpd.master.GlobalContext;
 import org.drftpd.master.network.Session;
 import org.drftpd.master.permissions.Permission;
 import org.drftpd.master.usermanager.NoSuchUserException;
@@ -41,144 +40,143 @@ import java.util.StringTokenizer;
 @SuppressWarnings("serial")
 public class CommandRequest extends KeyedMap<Key<?>, Object> implements CommandRequestInterface {
 
-	public static final Key<Boolean> ALLOWED = new Key<>(CommandRequest.class, "allowed");
+    public static final Key<Boolean> ALLOWED = new Key<>(CommandRequest.class, "allowed");
 
-	public static final Key<CommandResponse> DENIED_RESPONSE = new Key<>(CommandRequest.class, "denied_response");
+    public static final Key<CommandResponse> DENIED_RESPONSE = new Key<>(CommandRequest.class, "denied_response");
 
-	public static final Key<String> ARGUMENT = new Key<>(CommandRequest.class, "argument");
+    public static final Key<String> ARGUMENT = new Key<>(CommandRequest.class, "argument");
 
-	public static final Key<String> COMMAND = new Key<>(CommandRequest.class, "command");
+    public static final Key<String> COMMAND = new Key<>(CommandRequest.class, "command");
 
-	public static final Key<DirectoryHandle> CURRENT_DIRECTORY = new Key<>(CommandRequest.class, "current_directory");
+    public static final Key<DirectoryHandle> CURRENT_DIRECTORY = new Key<>(CommandRequest.class, "current_directory");
 
-	public static final Key<Session> SESSION = new Key<>(CommandRequest.class, "session");
+    public static final Key<Session> SESSION = new Key<>(CommandRequest.class, "session");
 
-	public static final Key<String> USER = new Key<>(CommandRequest.class, "user");
+    public static final Key<String> USER = new Key<>(CommandRequest.class, "user");
 
-	private static final Key<Properties> PROPERTIES = new Key<>(CommandRequest.class, "properties");
+    private static final Key<Properties> PROPERTIES = new Key<>(CommandRequest.class, "properties");
 
-	public CommandRequest(String argument, String command, DirectoryHandle directory, String user) {
-		setArgument(argument);
-		setCommand(command);
-		setCurrentDirectory(directory);
-		setUser(user);
-	}
+    public CommandRequest(String argument, String command, DirectoryHandle directory, String user) {
+        setArgument(argument);
+        setCommand(command);
+        setCurrentDirectory(directory);
+        setUser(user);
+    }
 
-	public CommandRequest(String command, String argument, DirectoryHandle directory, String user, Session session, Properties p) {
-		setArgument(argument);
-		setCommand(command);
-		setCurrentDirectory(directory);
-		setSession(session);
-		setUser(user);
-		setProperties(p);
-	}
+    public CommandRequest(String command, String argument, DirectoryHandle directory, String user, Session session, Properties p) {
+        setArgument(argument);
+        setCommand(command);
+        setCurrentDirectory(directory);
+        setSession(session);
+        setUser(user);
+        setProperties(p);
+    }
 
-	public void setAllowed(Boolean allowed) {
-		setObject(CommandRequest.ALLOWED, allowed);
-	}
+    public boolean isAllowed() {
+        return getObjectBoolean(CommandRequest.ALLOWED);
+    }
 
-	public void setAllowed(boolean b) {
-		setAllowed(Boolean.valueOf(b));
-	}
+    public void setAllowed(Boolean allowed) {
+        setObject(CommandRequest.ALLOWED, allowed);
+    }
 
-	public void setArgument(String argument) {
-		if (argument != null) {
-			setObject(CommandRequest.ARGUMENT, argument);
-		}
-	}
+    public void setAllowed(boolean b) {
+        setAllowed(Boolean.valueOf(b));
+    }
 
-	public void setCurrentDirectory(DirectoryHandle currentDirectory) {
-		setObject(CommandRequest.CURRENT_DIRECTORY, currentDirectory);
-	}
+    public String getArgument() {
+        return getObjectString(CommandRequest.ARGUMENT);
+    }
 
-	public void setDeniedResponse(CommandResponse response) {
-		setObject(CommandRequest.DENIED_RESPONSE, response);
-	}
+    public void setArgument(String argument) {
+        if (argument != null) {
+            setObject(CommandRequest.ARGUMENT, argument);
+        }
+    }
 
-	public void setCommand(String command) {
-		setObject(CommandRequest.COMMAND, command.toLowerCase());
-	}
+    public Permission getPermission() {
+        Properties p = getProperties();
+        if (p == null) {
+            return new Permission(Collections.singletonList("=siteop"));
+        }
+        String perms = p.getProperty("perms");
+        if (perms == null) {
+            return new Permission(Collections.singletonList("=siteop"));
+        }
+        StringTokenizer st = new StringTokenizer(perms);
+        if (!st.hasMoreTokens()) {
+            return new Permission(Collections.singletonList("=siteop"));
+        }
+        return new Permission(Permission.makeUsers(st));
+    }
 
-	public void setSession(Session session) {
-		setObject(CommandRequest.SESSION, session);
-	}
+    public CommandResponse getDeniedResponse() {
+        return getObject(CommandRequest.DENIED_RESPONSE, null);
+    }
 
-	public void setUser(String currentUser) {
-		if (currentUser != null) {
-			setObject(CommandRequest.USER, currentUser);
-		}
-	}
+    public void setDeniedResponse(CommandResponse response) {
+        setObject(CommandRequest.DENIED_RESPONSE, response);
+    }
 
-	public boolean isAllowed() {
-		return getObjectBoolean(CommandRequest.ALLOWED);
-	}
+    public DirectoryHandle getCurrentDirectory() {
+        return getObject(CommandRequest.CURRENT_DIRECTORY, new DirectoryHandle("/"));
+    }
 
-	public String getArgument() {
-		return getObjectString(CommandRequest.ARGUMENT);
-	}
-	
-	public Permission getPermission() {
-		Properties p = getProperties();
-		if (p == null) {
-			return new Permission(Collections.singletonList("=siteop"));
-		}
-		String perms = p.getProperty("perms");
-		if (perms == null) {
-			return new Permission(Collections.singletonList("=siteop"));
-		}
-		StringTokenizer st = new StringTokenizer(perms);
-		if (!st.hasMoreTokens()) {
-			return new Permission(Collections.singletonList("=siteop"));
-		}
-		return new Permission(Permission.makeUsers(st));
-	}
+    public void setCurrentDirectory(DirectoryHandle currentDirectory) {
+        setObject(CommandRequest.CURRENT_DIRECTORY, currentDirectory);
+    }
 
-	public CommandResponse getDeniedResponse() {
-		return getObject(CommandRequest.DENIED_RESPONSE, null);
-	}
+    public String getCommand() {
+        return getObject(CommandRequest.COMMAND, null);
+    }
 
-	public DirectoryHandle getCurrentDirectory() {
-		return getObject(CommandRequest.CURRENT_DIRECTORY, new DirectoryHandle("/"));
-	}
+    public void setCommand(String command) {
+        setObject(CommandRequest.COMMAND, command.toLowerCase());
+    }
 
-	public String getCommand() {
-		return getObject(CommandRequest.COMMAND, null);
-	}
+    public Session getSession() {
+        return getObject(CommandRequest.SESSION, null);
+    }
 
-	public Session getSession() {
-		return getObject(CommandRequest.SESSION, null);
-	}
+    public void setSession(Session session) {
+        setObject(CommandRequest.SESSION, session);
+    }
 
-	public String getUser() {
-		return getObject(CommandRequest.USER, null);
-	}
+    public String getUser() {
+        return getObject(CommandRequest.USER, null);
+    }
 
-	public boolean hasArgument() {
-		try {
-			getObject(CommandRequest.ARGUMENT);
-			return true;
-		}
-		catch (KeyNotFoundException e) {
-			return false;
-		}
-	}
-	
-	public void setProperties(Properties properties) {
-		if (properties == null) {
-			return;
-		}
-		setObject(CommandRequest.PROPERTIES, properties);
-	}
-	
-	public Properties getProperties() {
-		return getObject(CommandRequest.PROPERTIES, new Properties());
-	}
+    public void setUser(String currentUser) {
+        if (currentUser != null) {
+            setObject(CommandRequest.USER, currentUser);
+        }
+    }
 
-	public User getUserObject() throws NoSuchUserException, UserFileException {
-		if (getUser() == null) {
-			throw new NoSuchUserException("User not set, authentication may not have completed yet");
-		}
-		return GlobalContext.getGlobalContext().getUserManager().getUserByName(getUser());
-	}
+    public boolean hasArgument() {
+        try {
+            getObject(CommandRequest.ARGUMENT);
+            return true;
+        } catch (KeyNotFoundException e) {
+            return false;
+        }
+    }
+
+    public Properties getProperties() {
+        return getObject(CommandRequest.PROPERTIES, new Properties());
+    }
+
+    public void setProperties(Properties properties) {
+        if (properties == null) {
+            return;
+        }
+        setObject(CommandRequest.PROPERTIES, properties);
+    }
+
+    public User getUserObject() throws NoSuchUserException, UserFileException {
+        if (getUser() == null) {
+            throw new NoSuchUserException("User not set, authentication may not have completed yet");
+        }
+        return GlobalContext.getGlobalContext().getUserManager().getUserByName(getUser());
+    }
 
 }

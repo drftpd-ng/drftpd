@@ -2,12 +2,12 @@ package org.drftpd.master.sitebot.plugins.sysop.announce;
 
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
-import org.drftpd.master.sitebot.plugins.sysop.event.SysopEvent;
-import org.drftpd.master.util.ReplacerUtils;
 import org.drftpd.master.sitebot.AbstractAnnouncer;
 import org.drftpd.master.sitebot.AnnounceWriter;
 import org.drftpd.master.sitebot.SiteBot;
 import org.drftpd.master.sitebot.config.AnnounceConfig;
+import org.drftpd.master.sitebot.plugins.sysop.event.SysopEvent;
+import org.drftpd.master.util.ReplacerUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -15,52 +15,52 @@ import java.util.ResourceBundle;
 
 public class SysopAnnouncer extends AbstractAnnouncer {
 
-	private AnnounceConfig _config;
-	private ResourceBundle _bundle;
-	
-	public String[] getEventTypes() {
-		return new String[] { "sysop" };
-	}
+    private AnnounceConfig _config;
+    private ResourceBundle _bundle;
 
-	public void setResourceBundle(ResourceBundle bundle) {
-		_bundle = bundle;
-	}
+    public String[] getEventTypes() {
+        return new String[]{"sysop"};
+    }
 
-	public void initialise(AnnounceConfig config, ResourceBundle bundle) {
-		_config = config;
-		_bundle = bundle;
+    public void setResourceBundle(ResourceBundle bundle) {
+        _bundle = bundle;
+    }
 
-		// Subscribe to events
-		AnnotationProcessor.process(this);
-	}
+    public void initialise(AnnounceConfig config, ResourceBundle bundle) {
+        _config = config;
+        _bundle = bundle;
 
-	public void stop() {
-		AnnotationProcessor.unprocess(this);
-	}
+        // Subscribe to events
+        AnnotationProcessor.process(this);
+    }
 
-	@EventSubscriber
-	public void onSysopEvent(SysopEvent event) {
-		AnnounceWriter writer = _config.getSimpleWriter("sysop");
-		// Check we got a writer back, if it is null do nothing and ignore the
-		// event
-		if (writer != null) {
-			Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
-			env.put("user", event.getUsername());
-			env.put("message", event.getMessage());
-			env.put("response", event.getResponse());
-			if (event.isLogin()) {
-				if (event.isSuccessful()) {
-					sayOutput(ReplacerUtils.jprintf( "sysop.login.success", env, _bundle), writer);
-				} else {
-					sayOutput(ReplacerUtils.jprintf( "sysop.login.failed", env, _bundle), writer);
-				}
-			} else {
-				if (event.isSuccessful()) {
-					sayOutput(ReplacerUtils.jprintf( "sysop.success", env, _bundle), writer);
-				} else {
-					sayOutput(ReplacerUtils.jprintf( "sysop.failed", env, _bundle), writer);
-				}
-			}
-		}
-	}
+    public void stop() {
+        AnnotationProcessor.unprocess(this);
+    }
+
+    @EventSubscriber
+    public void onSysopEvent(SysopEvent event) {
+        AnnounceWriter writer = _config.getSimpleWriter("sysop");
+        // Check we got a writer back, if it is null do nothing and ignore the
+        // event
+        if (writer != null) {
+            Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
+            env.put("user", event.getUsername());
+            env.put("message", event.getMessage());
+            env.put("response", event.getResponse());
+            if (event.isLogin()) {
+                if (event.isSuccessful()) {
+                    sayOutput(ReplacerUtils.jprintf("sysop.login.success", env, _bundle), writer);
+                } else {
+                    sayOutput(ReplacerUtils.jprintf("sysop.login.failed", env, _bundle), writer);
+                }
+            } else {
+                if (event.isSuccessful()) {
+                    sayOutput(ReplacerUtils.jprintf("sysop.success", env, _bundle), writer);
+                } else {
+                    sayOutput(ReplacerUtils.jprintf("sysop.failed", env, _bundle), writer);
+                }
+            }
+        }
+    }
 }

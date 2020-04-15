@@ -27,23 +27,23 @@ import java.util.ArrayList;
  */
 public class ArchiveStartEvent {
 
-	private ArrayList<Job> _jobs = new ArrayList<>();
-	private ArchiveType _archivetype;
+    private ArrayList<Job> _jobs = new ArrayList<>();
+    private final ArchiveType _archivetype;
 
-	public ArchiveStartEvent(ArchiveType archivetype, ArrayList<Job> jobs) {
-		_archivetype = archivetype;
+    public ArchiveStartEvent(ArchiveType archivetype, ArrayList<Job> jobs) {
+        _archivetype = archivetype;
 
-		if (jobs != null) {
-			_jobs = jobs;	
-		}
-	}
+        if (jobs != null) {
+            _jobs = jobs;
+        }
+    }
 
-	public ArchiveType getArchiveType() {
-		return _archivetype;
-	}
-	
-	public ArrayList<Job> getJobs() {
-		return _jobs;
-	}
-	
+    public ArchiveType getArchiveType() {
+        return _archivetype;
+    }
+
+    public ArrayList<Job> getJobs() {
+        return _jobs;
+    }
+
 }

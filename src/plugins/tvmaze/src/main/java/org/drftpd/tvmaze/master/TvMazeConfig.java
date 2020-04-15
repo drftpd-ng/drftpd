@@ -37,34 +37,32 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * @author scitz0
  */
 public class TvMazeConfig {
-    private static TvMazeConfig ourInstance;
-
     private static final Logger logger = LogManager.getLogger(TvMaze.class);
-
-    private ArrayList<SectionInterface> _rSections = new ArrayList<>();
-    private ArrayList<SectionInterface> _sHDSections = new ArrayList<>();
-    private ArrayList<SectionInterface> _sSDSections = new ArrayList<>();
-    private ArrayList<String> _filters = new ArrayList<>();
+    private static TvMazeConfig ourInstance;
+    private final ArrayList<SectionInterface> _rSections = new ArrayList<>();
+    private final ArrayList<SectionInterface> _sHDSections = new ArrayList<>();
+    private final ArrayList<SectionInterface> _sSDSections = new ArrayList<>();
+    private final ArrayList<String> _filters = new ArrayList<>();
     private String _date, _time, _exclude;
     private DateTimeZone _dtz;
     private int _startDelay, _endDelay;
     private boolean _bar_enabled, _bar_directory, _sRelease;
 
-    private TvMazeThread _tvmazeThread = new TvMazeThread();
-    private ConcurrentLinkedQueue<DirectoryHandle> _parseQueue = new ConcurrentLinkedQueue<>();
-
-    public static TvMazeConfig getInstance() {
-        if (ourInstance == null)
-            // it's ok, we can call this constructor
-            ourInstance = new TvMazeConfig();
-        return ourInstance;
-    }
+    private final TvMazeThread _tvmazeThread = new TvMazeThread();
+    private final ConcurrentLinkedQueue<DirectoryHandle> _parseQueue = new ConcurrentLinkedQueue<>();
 
     private TvMazeConfig() {
         // Subscribe to events
         AnnotationProcessor.process(this);
         loadConfig();
         _tvmazeThread.start();
+    }
+
+    public static TvMazeConfig getInstance() {
+        if (ourInstance == null)
+            // it's ok, we can call this constructor
+            ourInstance = new TvMazeConfig();
+        return ourInstance;
     }
 
     private void loadConfig() {

@@ -26,7 +26,7 @@ import org.drftpd.traffic.master.TrafficTypeEvent;
  */
 public class TrafficTypeBanEvent extends TrafficTypeEvent {
 
-    private long _bantime;
+    private final long _bantime;
 
     public TrafficTypeBanEvent(String type, User user, FileHandle file, boolean isStor, long minspeed, long speed, long transfered, String slavename, long bantime) {
         super(type, user, file, isStor, minspeed, speed, transfered, slavename);

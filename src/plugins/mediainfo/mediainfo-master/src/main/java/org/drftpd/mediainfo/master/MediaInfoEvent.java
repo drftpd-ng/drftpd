@@ -24,20 +24,20 @@ import org.drftpd.mediainfo.common.MediaInfo;
  */
 public class MediaInfoEvent {
 
-	private MediaInfo _mediaInfo;
-	private DirectoryHandle _dir;
+    private final MediaInfo _mediaInfo;
+    private final DirectoryHandle _dir;
 
-	public MediaInfoEvent(MediaInfo mediaInfo, DirectoryHandle dir) {
-		_mediaInfo = mediaInfo;
-		_dir = dir;
-	}
+    public MediaInfoEvent(MediaInfo mediaInfo, DirectoryHandle dir) {
+        _mediaInfo = mediaInfo;
+        _dir = dir;
+    }
 
-	public MediaInfo getMediaInfo() {
-		return _mediaInfo;
-	}
+    public MediaInfo getMediaInfo() {
+        return _mediaInfo;
+    }
 
-	public DirectoryHandle getDir() {
-		return _dir;
-	}
+    public DirectoryHandle getDir() {
+        return _dir;
+    }
 
 }

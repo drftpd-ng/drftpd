@@ -22,29 +22,29 @@ package org.drftpd.speedtestnet.master;
  */
 public class SlaveLocation {
 
-	double latitude = 0;
-	double longitude = 0;
+    double latitude = 0;
+    double longitude = 0;
 
-	public SlaveLocation() {}
+    public SlaveLocation() {}
 
-	public SlaveLocation(double latitude, double longitude) {
-		this.latitude = latitude;
-		this.longitude = longitude;
-	}
+    public SlaveLocation(double latitude, double longitude) {
+        this.latitude = latitude;
+        this.longitude = longitude;
+    }
 
-	public double getLatitude() {
-		return latitude;
-	}
+    public double getLatitude() {
+        return latitude;
+    }
 
-	public void setLatitude(double latitude) {
-		this.latitude = latitude;
-	}
+    public void setLatitude(double latitude) {
+        this.latitude = latitude;
+    }
 
-	public double getLongitude() {
-		return longitude;
-	}
+    public double getLongitude() {
+        return longitude;
+    }
 
-	public void setLongitude(double longitude) {
-		this.longitude = longitude;
-	}
+    public void setLongitude(double longitude) {
+        this.longitude = longitude;
+    }
 }

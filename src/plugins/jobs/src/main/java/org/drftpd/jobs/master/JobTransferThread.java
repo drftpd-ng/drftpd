@@ -17,8 +17,8 @@
  */
 package org.drftpd.jobs.master;
 
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 
 /**
@@ -26,25 +26,23 @@ import org.apache.logging.log4j.LogManager;
  * @version $Id$
  */
 public class JobTransferThread extends Thread {
-	private static final Logger logger = LogManager.getLogger(JobTransferThread.class);
+    private static final Logger logger = LogManager.getLogger(JobTransferThread.class);
+    private static int count = 1;
+    private final JobManager _jm;
 
-	private JobManager _jm;
+    /**
+     * This class sends a JobTransfer if it is available
+     */
+    public JobTransferThread(JobManager jm) {
+        super("JobTransferThread - " + count++);
+        _jm = jm;
+    }
 
-	private static int count = 1;
-
-	/**
-	 * This class sends a JobTransfer if it is available
-	 */
-	public JobTransferThread(JobManager jm) {
-		super("JobTransferThread - " + count++);
-		_jm = jm;
-	}
-
-	public void run() {
-		try {
-			_jm.processJob();
-		} catch (Exception e) {
-			logger.debug("", e);
-		}
-	}
+    public void run() {
+        try {
+            _jm.processJob();
+        } catch (Exception e) {
+            logger.debug("", e);
+        }
+    }
 }

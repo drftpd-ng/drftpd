@@ -21,32 +21,33 @@ import org.drftpd.master.vfs.VirtualFileSystemInode;
 
 /**
  * This event is fired whenever the ownership of an inode changes
+ *
  * @author fr0w
  * @version $Id$
  */
 public class VirtualFileSystemOwnershipEvent extends VirtualFileSystemEvent {
 
-	private String _owner;
-	private String _group;
-	
-	public VirtualFileSystemOwnershipEvent(VirtualFileSystemInode inode, String path, String owner, String group) {
-		super(inode, path);
-		
-		_owner = owner;
-		_group = group;
-	}
+    private final String _owner;
+    private final String _group;
 
-	/**
-	 * @return the new owner of the inode
-	 */
-	public String getOwner() {
-		return _owner;
-	}
+    public VirtualFileSystemOwnershipEvent(VirtualFileSystemInode inode, String path, String owner, String group) {
+        super(inode, path);
 
-	/**
-	 * @return the new group of the inode
-	 */
-	public String getGroup() {
-		return _group;
-	}
+        _owner = owner;
+        _group = group;
+    }
+
+    /**
+     * @return the new owner of the inode
+     */
+    public String getOwner() {
+        return _owner;
+    }
+
+    /**
+     * @return the new group of the inode
+     */
+    public String getGroup() {
+        return _group;
+    }
 }

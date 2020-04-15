@@ -30,58 +30,60 @@ import java.util.*;
  * @version $Id$
  */
 public class DummySectionManager implements SectionManagerInterface {
-	private DummySection _section;
+    private final DummySection _section;
 
-	public DummySectionManager() {
-		_section = new DummySection();
-	}
-	public SectionInterface getSection(String string) {
-		return _section;
-	}
+    public DummySectionManager() {
+        _section = new DummySection();
+    }
 
-	public Collection<SectionInterface> getSections() {
-		ArrayList<SectionInterface> list = new ArrayList<>(1);
-		list.add(_section);
-		return list;
-	}
+    public SectionInterface getSection(String string) {
+        return _section;
+    }
 
-	public Map<String, SectionInterface> getSectionsMap() {
-		HashMap<String, SectionInterface> map = new HashMap<>(1);
-		map.put(_section.getName(), _section);
-		return map;
-	}
+    public Collection<SectionInterface> getSections() {
+        ArrayList<SectionInterface> list = new ArrayList<>(1);
+        list.add(_section);
+        return list;
+    }
 
-	public SectionInterface lookup(DirectoryHandle dir) {
-		return _section;
-	}
+    public Map<String, SectionInterface> getSectionsMap() {
+        HashMap<String, SectionInterface> map = new HashMap<>(1);
+        map.put(_section.getName(), _section);
+        return map;
+    }
 
-	public void reload() {	}
-	
+    public SectionInterface lookup(DirectoryHandle dir) {
+        return _section;
+    }
+
+    public void reload() { }
+
 }
 
 class DummySection implements SectionInterface {
 
-	public DirectoryHandle getBaseDirectory() {
-		return new DirectoryHandle("/");
-	}
+    public DirectoryHandle getBaseDirectory() {
+        return new DirectoryHandle("/");
+    }
 
-	public DirectoryHandle getCurrentDirectory() {
-		return new DirectoryHandle("/");
-	}
+    public DirectoryHandle getCurrentDirectory() {
+        return new DirectoryHandle("/");
+    }
 
-	public Set<DirectoryHandle> getDirectories() {
-		try {
-			return new DirectoryHandle("/").getDirectoriesUnchecked();
-		} catch (FileNotFoundException e) {
-			throw new FatalException(e);
-		}
-	}
+    public Set<DirectoryHandle> getDirectories() {
+        try {
+            return new DirectoryHandle("/").getDirectoriesUnchecked();
+        } catch (FileNotFoundException e) {
+            throw new FatalException(e);
+        }
+    }
 
-	public String getColor() {
-		return "DummyColor.";
-	}
-	public String getName() {
-		return "DummySection.";
-	}
-	
+    public String getColor() {
+        return "DummyColor.";
+    }
+
+    public String getName() {
+        return "DummySection.";
+    }
+
 }

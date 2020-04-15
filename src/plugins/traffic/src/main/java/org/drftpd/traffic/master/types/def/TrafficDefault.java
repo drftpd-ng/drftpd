@@ -16,8 +16,6 @@
  */
 package org.drftpd.traffic.master.types.def;
 
-import java.util.Properties;
-
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.network.BaseFtpConnection;
 import org.drftpd.master.usermanager.User;
@@ -25,23 +23,25 @@ import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.traffic.master.TrafficType;
 import org.drftpd.traffic.master.TrafficTypeEvent;
 
+import java.util.Properties;
+
 /**
  * @author CyBeR
  * @version $Id: TrafficDefault.java 1925 2009-06-15 21:46:05Z CyBeR $
  */
 
 public class TrafficDefault extends TrafficType {
-	
-	public TrafficDefault (Properties p, int confnum, String type) {
-		super(p, confnum, type);
-	}
 
-	@Override
-	public void doAction(User user, FileHandle file, boolean isStor, long minspeed, long speed, long transfered, BaseFtpConnection conn, String slavename) {
-		/*
-		 * Don't do anything, just publish Event for announce.
-		 */
-		GlobalContext.getEventService().publishAsync(new TrafficTypeEvent(getType(),user,file,isStor,minspeed,speed,transfered,slavename));
-	}
+    public TrafficDefault(Properties p, int confnum, String type) {
+        super(p, confnum, type);
+    }
+
+    @Override
+    public void doAction(User user, FileHandle file, boolean isStor, long minspeed, long speed, long transfered, BaseFtpConnection conn, String slavename) {
+        /*
+         * Don't do anything, just publish Event for announce.
+         */
+        GlobalContext.getEventService().publishAsync(new TrafficTypeEvent(getType(), user, file, isStor, minspeed, speed, transfered, slavename));
+    }
 
 }

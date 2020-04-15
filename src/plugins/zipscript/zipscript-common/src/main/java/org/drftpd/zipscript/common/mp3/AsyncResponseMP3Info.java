@@ -26,19 +26,19 @@ import org.drftpd.common.network.AsyncResponse;
 @SuppressWarnings("serial")
 public class AsyncResponseMP3Info extends AsyncResponse {
 
-	private MP3Info _mp3info;
+    private final MP3Info _mp3info;
 
-	public AsyncResponseMP3Info(String index, MP3Info mp3info) {
-		super(index);
+    public AsyncResponseMP3Info(String index, MP3Info mp3info) {
+        super(index);
 
-		_mp3info = mp3info;
-	}
+        _mp3info = mp3info;
+    }
 
-	public MP3Info getMP3Info() {
-		return _mp3info;
-	}
+    public MP3Info getMP3Info() {
+        return _mp3info;
+    }
 
-	public String toString() {
-		return getClass().getName();
-	}
+    public String toString() {
+        return getClass().getName();
+    }
 }

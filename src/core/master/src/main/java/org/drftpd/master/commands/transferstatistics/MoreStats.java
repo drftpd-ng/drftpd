@@ -17,11 +17,10 @@
  */
 package org.drftpd.master.commands.transferstatistics;
 
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
-import org.drftpd.master.GlobalContext;
+import org.apache.logging.log4j.Logger;
 import org.drftpd.common.util.Bytes;
+import org.drftpd.master.GlobalContext;
 import org.drftpd.master.commands.CommandInterface;
 import org.drftpd.master.commands.CommandRequest;
 import org.drftpd.master.commands.CommandResponse;
@@ -41,22 +40,14 @@ import java.util.*;
  * @version $Id$
  */
 public class MoreStats extends CommandInterface {
-	public static final short PERIOD_ALL = 0;
+    public static final short PERIOD_ALL = 0;
     public static final short PERIOD_MONTHLY = 1;
     public static final short PERIOD_WEEKLY = 2;
     public static final short PERIOD_DAILY = 3;
-	
+
     private static final Logger logger = LogManager.getLogger(MoreStats.class);
-    
-	private ResourceBundle _bundle;
 
-
-    
-    public void initialize(String method, String pluginName, StandardCommandManager cManager) {
-    	super.initialize(method, pluginName, cManager);
-    	_bundle = cManager.getResourceBundle();
-
-    }
+    private ResourceBundle _bundle;
 
     public static int getPeriod(String strperiod) {
         int period = PERIOD_ALL;
@@ -130,11 +121,41 @@ public class MoreStats extends CommandInterface {
         throw new IllegalArgumentException("Unable to parse string");
     }
 
+    public static String getUpRate(User user, int period) {
+        double s = user.getUploadedTimeForPeriod(period) / 1000.0;
+
+        if (s <= 0) {
+            return "- k/s";
+        }
+
+        double rate = user.getUploadedBytesForPeriod(period) / s;
+
+        return Bytes.formatBytes((long) rate) + "/s";
+    }
+
+    public static String getDownRate(User user, int period) {
+        double s = user.getDownloadedTimeForPeriod(period) / 1000.0;
+
+        if (s <= 0) {
+            return "- k/s";
+        }
+
+        double rate = user.getDownloadedBytesForPeriod(period) / s;
+
+        return Bytes.formatBytes((long) rate) + "/s";
+    }
+
+    public void initialize(String method, String pluginName, StandardCommandManager cManager) {
+        super.initialize(method, pluginName, cManager);
+        _bundle = cManager.getResourceBundle();
+
+    }
+
     public CommandResponse doGroupStats(CommandRequest request, String type) {
         CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-        
+
         type = type.substring("G".length());
-        
+
         int count = 10;
         if (request.hasArgument()) {
             try {
@@ -143,7 +164,7 @@ public class MoreStats extends CommandInterface {
                 //ignore input and use 10 as default
             }
         }
-        
+
         ArrayList<MyGroupPosition> grpList = new ArrayList<>();
         Collection<User> users = GlobalContext.getGlobalContext().getUserManager().getAllUsers();
 
@@ -154,10 +175,10 @@ public class MoreStats extends CommandInterface {
             g = user.getGroup();
 
             for (MyGroupPosition stat2 : grpList) {
-            	if (stat2.getGroupname().equals(g.getName())) {
-            		stat = stat2;
-            		break;
-            	}
+                if (stat2.getGroupname().equals(g.getName())) {
+                    stat = stat2;
+                    break;
+                }
             }
 
             if (stat == null) {
@@ -179,7 +200,7 @@ public class MoreStats extends CommandInterface {
 
         //morestats.grpstats=| ${grp,-15} |${grpname,7} |${files,8} | ${megs,9} | ${members,9} |
         try {
-        	addTextToResponse(response, "userdata/text/g" + type.toLowerCase() + "_header.txt");
+            addTextToResponse(response, "userdata/text/g" + type.toLowerCase() + "_header.txt");
         } catch (IOException ioe) {
             logger.warn("Error reading userdata/text/g{}_header.txt", type.toLowerCase());
         }
@@ -213,36 +234,12 @@ public class MoreStats extends CommandInterface {
         }
 
         try {
-            addTextToResponse(response,"userdata/text/g" + type.toLowerCase() + "_footer.txt");
+            addTextToResponse(response, "userdata/text/g" + type.toLowerCase() + "_footer.txt");
         } catch (IOException ioe) {
             logger.warn("Error reading userdata/text/{}_footer.txt", type.toLowerCase());
         }
 
         return response;
-    }
-
-    public static String getUpRate(User user, int period) {
-        double s = user.getUploadedTimeForPeriod(period) / 1000.0;
-
-        if (s <= 0) {
-            return "- k/s";
-        }
-
-        double rate = user.getUploadedBytesForPeriod(period) / s;
-
-        return Bytes.formatBytes((long) rate) + "/s";
-    }
-
-    public static String getDownRate(User user, int period) {
-        double s = user.getDownloadedTimeForPeriod(period) / 1000.0;
-
-        if (s <= 0) {
-            return "- k/s";
-        }
-
-        double rate = user.getDownloadedBytesForPeriod(period) / s;
-
-        return Bytes.formatBytes((long) rate) + "/s";
     }
 
     private void addTrafficComment(String type, double avrage, long megs, int files, CommandResponse response) {
@@ -263,10 +260,10 @@ public class MoreStats extends CommandInterface {
     }
 
     public CommandResponse doSITE_TRAFFIC(CommandRequest request) {
-    	CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
+        CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 
         Collection<User> users = GlobalContext.getGlobalContext().getUserManager().getAllUsers();
-        
+
         double MonthUpAvrage = 0;
         double WeekUpAvrage = 0;
         double DayUpAvrage = 0;
@@ -353,6 +350,38 @@ public class MoreStats extends CommandInterface {
         return response;
     }
 
+    public CommandResponse doSITE_GALUP(CommandRequest request) {
+        return doGroupStats(request, "galup");
+    }
+
+    public CommandResponse doSITE_GALDN(CommandRequest request) {
+        return doGroupStats(request, "galdn");
+    }
+
+    public CommandResponse doSITE_GMONTHUP(CommandRequest request) {
+        return doGroupStats(request, "gmonthup");
+    }
+
+    public CommandResponse doSITE_GMONTHDN(CommandRequest request) {
+        return doGroupStats(request, "gmonthdn");
+    }
+
+    public CommandResponse doSITE_GWKUP(CommandRequest request) {
+        return doGroupStats(request, "gwkup");
+    }
+
+    public CommandResponse doSITE_GWKDN(CommandRequest request) {
+        return doGroupStats(request, "gwkdn");
+    }
+
+    public CommandResponse doSITE_GDAYUP(CommandRequest request) {
+        return doGroupStats(request, "gdayup");
+    }
+
+    public CommandResponse doSITE_GDAYDN(CommandRequest request) {
+        return doGroupStats(request, "gdaydn");
+    }
+
     static class MyGroupPosition extends GroupPosition {
         int members;
 
@@ -368,37 +397,5 @@ public class MoreStats extends CommandInterface {
         public void updateMembers(int updatemembers) {
             members += updatemembers;
         }
-    }
-    
-    public CommandResponse doSITE_GALUP(CommandRequest request) {
-    	return doGroupStats(request, "galup");
-    }
-
-    public CommandResponse doSITE_GALDN(CommandRequest request) {
-    	return doGroupStats(request, "galdn");
-    }
-
-    public CommandResponse doSITE_GMONTHUP(CommandRequest request) {
-    	return doGroupStats(request, "gmonthup");
-    }
-
-    public CommandResponse doSITE_GMONTHDN(CommandRequest request) {
-    	return doGroupStats(request, "gmonthdn");
-    }
-
-    public CommandResponse doSITE_GWKUP(CommandRequest request) {
-    	return doGroupStats(request, "gwkup");
-    }
-
-    public CommandResponse doSITE_GWKDN(CommandRequest request) {
-    	return doGroupStats(request, "gwkdn");
-    }
-
-    public CommandResponse doSITE_GDAYUP(CommandRequest request) {
-    	return doGroupStats(request, "gdayup");
-    }
-
-    public CommandResponse doSITE_GDAYDN(CommandRequest request) {
-    	return doGroupStats(request, "gdaydn");
     }
 }

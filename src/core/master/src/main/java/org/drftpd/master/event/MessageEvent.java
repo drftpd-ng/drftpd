@@ -19,22 +19,21 @@ package org.drftpd.master.event;
 
 /**
  * @author mog
- * 
  * @version $Id$
  */
 public class MessageEvent extends Event {
-	private String message;
+    private final String message;
 
-	public MessageEvent(String command, String message) {
-		this(command, message, System.currentTimeMillis());
-	}
+    public MessageEvent(String command, String message) {
+        this(command, message, System.currentTimeMillis());
+    }
 
-	public MessageEvent(String command, String message, long time) {
-		super(command, time);
-		this.message = message;
-	}
+    public MessageEvent(String command, String message, long time) {
+        super(command, time);
+        this.message = message;
+    }
 
-	public String getMessage() {
-		return this.message;
-	}
+    public String getMessage() {
+        return this.message;
+    }
 }

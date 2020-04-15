@@ -65,11 +65,6 @@ public class SpeedTestHandler extends AbstractHandler {
     private int _downThreads = 3;
     private int _sleep = 100;
 
-    @Override
-    public String getProtocolName() {
-        return "SpeedTestProtocol";
-    }
-
     public SpeedTestHandler(SlaveProtocolCentral central) {
         super(central);
         try {
@@ -77,6 +72,11 @@ public class SpeedTestHandler extends AbstractHandler {
         } catch (Exception e) {
             logger.error("Error loading conf/plugins/speedtest.net.slave.conf :: {}", e.getMessage());
         }
+    }
+
+    @Override
+    public String getProtocolName() {
+        return "SpeedTestProtocol";
     }
 
     /**

@@ -17,8 +17,8 @@ import java.util.stream.Stream;
 import static org.drftpd.common.util.ConfigLoader.configPath;
 
 class ThemeBundle {
-    private Path path;
-    private ExtendedPropertyResourceBundle bundle;
+    private final Path path;
+    private final ExtendedPropertyResourceBundle bundle;
 
     public ThemeBundle(Path path, ExtendedPropertyResourceBundle bundle) {
         this.path = path;
@@ -36,8 +36,13 @@ class ThemeBundle {
 
 public class ThemeResourceBundle extends ResourceBundle {
     private static final Logger logger = LogManager.getLogger(ThemeResourceBundle.class);
-    private String _confDirectory;
-    private Map<String, ThemeBundle> combined = new HashMap<>();
+    private final String _confDirectory;
+    private final Map<String, ThemeBundle> combined = new HashMap<>();
+
+    public ThemeResourceBundle(String confDirectory) {
+        _confDirectory = confDirectory;
+        loadProperties();
+    }
 
     private void loadProperties() {
         try {
@@ -78,11 +83,6 @@ public class ThemeResourceBundle extends ResourceBundle {
             }
             combined.put(key, new ThemeBundle(themeFile, bundle));
         }
-    }
-
-    public ThemeResourceBundle(String confDirectory) {
-        _confDirectory = confDirectory;
-        loadProperties();
     }
 
     @Override

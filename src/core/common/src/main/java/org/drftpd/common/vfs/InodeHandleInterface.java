@@ -23,25 +23,26 @@ import java.io.FileNotFoundException;
 /**
  * Lowest level of InodeHandles.<br>
  * This class provides more flexibility and organization to the VFS.
+ *
  * @author zubov
  * @version $Id$
  */
 public interface InodeHandleInterface {
-	String getGroup() throws FileNotFoundException;
+    String getGroup() throws FileNotFoundException;
 
-	String getName();
+    String getName();
 
-	long getSize() throws FileNotFoundException;
+    long getSize() throws FileNotFoundException;
 
-	String getUsername() throws FileNotFoundException;
+    String getUsername() throws FileNotFoundException;
 
-	long lastModified() throws FileNotFoundException;
+    long lastModified() throws FileNotFoundException;
 
-	boolean isDirectory() throws FileNotFoundException;
-	
-	boolean isFile() throws FileNotFoundException;
-	
-	boolean isLink() throws FileNotFoundException;
-	
-	String getPath();
+    boolean isDirectory() throws FileNotFoundException;
+
+    boolean isFile() throws FileNotFoundException;
+
+    boolean isLink() throws FileNotFoundException;
+
+    String getPath();
 }

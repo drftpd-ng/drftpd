@@ -28,41 +28,41 @@ import java.util.StringTokenizer;
  */
 public class ChannelConfig {
 
-	private String _name;
+    private final String _name;
 
-	private String _blowKey;
+    private final String _blowKey;
 
-	private String _blowMode;
+    private final String _blowMode;
 
-	private String _chanKey;
+    private final String _chanKey;
 
-	private Permission _perms;
+    private final Permission _perms;
 
-	public ChannelConfig(String name, String blowKey, String blowMode, String chanKey, String perms) {
-		_name = name;
-		_blowKey = blowKey;
-		_blowMode = blowMode;
-		_chanKey = chanKey;
-		_perms = new Permission(Permission.makeUsers(new StringTokenizer(perms)));
-	}
+    public ChannelConfig(String name, String blowKey, String blowMode, String chanKey, String perms) {
+        _name = name;
+        _blowKey = blowKey;
+        _blowMode = blowMode;
+        _chanKey = chanKey;
+        _perms = new Permission(Permission.makeUsers(new StringTokenizer(perms)));
+    }
 
-	public String getName() {
-		return _name;
-	}
+    public String getName() {
+        return _name;
+    }
 
-	public String getBlowKey() {
-		return _blowKey;
-	}
+    public String getBlowKey() {
+        return _blowKey;
+    }
 
-	public String getBlowMode() {
-		return _blowMode;
-	}
+    public String getBlowMode() {
+        return _blowMode;
+    }
 
-	public String getChanKey() {
-		return _chanKey;
-	}
+    public String getChanKey() {
+        return _chanKey;
+    }
 
-	public boolean isPermitted(User user) {
-		return _perms.check(user);
-	}
+    public boolean isPermitted(User user) {
+        return _perms.check(user);
+    }
 }

@@ -30,7 +30,7 @@ import java.nio.channels.SocketChannel;
  * @version $Id$
  */
 public class DummySocket extends Socket {
-    private ByteArrayOutputStream _out = new ByteArrayOutputStream();
+    private final ByteArrayOutputStream _out = new ByteArrayOutputStream();
 
     public DummySocket() {
     }
@@ -48,12 +48,12 @@ public class DummySocket extends Socket {
     }
 
     public DummySocket(String host, int port, InetAddress localAddr,
-        int localPort) {
+                       int localPort) {
         throw new UnsupportedOperationException();
     }
 
     public DummySocket(InetAddress address, int port, InetAddress localAddr,
-        int localPort) {
+                       int localPort) {
         throw new UnsupportedOperationException();
     }
 
@@ -83,7 +83,7 @@ public class DummySocket extends Socket {
      *
      */
     public void connect(SocketAddress endpoint, int timeout)
-        throws IOException {
+            throws IOException {
         throw new UnsupportedOperationException();
     }
 
@@ -115,6 +115,13 @@ public class DummySocket extends Socket {
      *
      */
     public boolean getKeepAlive() throws SocketException {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     *
+     */
+    public void setKeepAlive(boolean on) throws SocketException {
         throw new UnsupportedOperationException();
     }
 
@@ -150,6 +157,13 @@ public class DummySocket extends Socket {
     /**
      *
      */
+    public void setOOBInline(boolean on) throws SocketException {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     *
+     */
     public OutputStream getOutputStream() throws IOException {
         return _out;
     }
@@ -171,6 +185,14 @@ public class DummySocket extends Socket {
     /**
      *
      */
+    public synchronized void setReceiveBufferSize(int size)
+            throws SocketException {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     *
+     */
     public SocketAddress getRemoteSocketAddress() {
         throw new UnsupportedOperationException();
     }
@@ -185,7 +207,22 @@ public class DummySocket extends Socket {
     /**
      *
      */
+    public void setReuseAddress(boolean on) throws SocketException {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     *
+     */
     public synchronized int getSendBufferSize() throws SocketException {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     *
+     */
+    public synchronized void setSendBufferSize(int size)
+            throws SocketException {
         throw new UnsupportedOperationException();
     }
 
@@ -206,6 +243,13 @@ public class DummySocket extends Socket {
     /**
      *
      */
+    public synchronized void setSoTimeout(int timeout)
+            throws SocketException {
+    }
+
+    /**
+     *
+     */
     public boolean getTcpNoDelay() throws SocketException {
         throw new UnsupportedOperationException();
     }
@@ -213,7 +257,21 @@ public class DummySocket extends Socket {
     /**
      *
      */
+    public void setTcpNoDelay(boolean on) throws SocketException {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     *
+     */
     public int getTrafficClass() throws SocketException {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     *
+     */
+    public void setTrafficClass(int tc) throws SocketException {
         throw new UnsupportedOperationException();
     }
 
@@ -262,65 +320,7 @@ public class DummySocket extends Socket {
     /**
      *
      */
-    public void setKeepAlive(boolean on) throws SocketException {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     *
-     */
-    public void setOOBInline(boolean on) throws SocketException {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     *
-     */
-    public synchronized void setReceiveBufferSize(int size)
-        throws SocketException {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     *
-     */
-    public void setReuseAddress(boolean on) throws SocketException {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     *
-     */
-    public synchronized void setSendBufferSize(int size)
-        throws SocketException {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     *
-     */
     public void setSoLinger(boolean on, int linger) throws SocketException {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     *
-     */
-    public synchronized void setSoTimeout(int timeout)
-        throws SocketException {
-    }
-
-    /**
-     *
-     */
-    public void setTcpNoDelay(boolean on) throws SocketException {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     *
-     */
-    public void setTrafficClass(int tc) throws SocketException {
         throw new UnsupportedOperationException();
     }
 

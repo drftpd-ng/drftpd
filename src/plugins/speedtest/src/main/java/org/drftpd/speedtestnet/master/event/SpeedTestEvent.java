@@ -16,38 +16,38 @@
  */
 package org.drftpd.speedtestnet.master.event;
 
-import org.drftpd.master.usermanager.User;
 import org.drftpd.common.slave.TransferStatus;
+import org.drftpd.master.usermanager.User;
 
 /**
  * @author scitz0
  */
 public class SpeedTestEvent {
-	String _filePath;
-	String _slaveName;
-	TransferStatus _status;
-	User _user;
+    String _filePath;
+    String _slaveName;
+    TransferStatus _status;
+    User _user;
 
-	public SpeedTestEvent(String path, String slave, TransferStatus status, User user) {
-		_filePath = path;
-		_slaveName = slave;
-		_status = status;
-		_user = user;
-	}
+    public SpeedTestEvent(String path, String slave, TransferStatus status, User user) {
+        _filePath = path;
+        _slaveName = slave;
+        _status = status;
+        _user = user;
+    }
 
-	public String getFilePath() {
-		return _filePath;
-	}
+    public String getFilePath() {
+        return _filePath;
+    }
 
-	public String getSlaveName() {
-		return _slaveName;
-	}
+    public String getSlaveName() {
+        return _slaveName;
+    }
 
-	public TransferStatus getStatus() {
-		return _status;
-	}
+    public TransferStatus getStatus() {
+        return _status;
+    }
 
-	public User getUser() {
-		return _user;
-	}
+    public User getUser() {
+        return _user;
+    }
 }

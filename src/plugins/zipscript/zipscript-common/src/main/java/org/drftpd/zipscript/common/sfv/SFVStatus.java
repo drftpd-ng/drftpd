@@ -23,57 +23,57 @@ package org.drftpd.zipscript.common.sfv;
  */
 
 public class SFVStatus {
-	private int _offline;
+    private final int _offline;
 
-	private int _present;
+    private final int _present;
 
-	private int _total;
+    private final int _total;
 
-	public SFVStatus(int total, int offline, int present) {
-		_total = total;
-		_offline = offline;
-		_present = present;
-	}
+    public SFVStatus(int total, int offline, int present) {
+        _total = total;
+        _offline = offline;
+        _present = present;
+    }
 
-	/**
-	 * Returns the number of files that are available (online).
-	 * 
-	 * If a file is online, it is of course is also present (exists).
-	 * 
-	 * @return the number of files that are available (present & online)
-	 */
-	public int getAvailable() {
-		return _present - _offline;
-	}
+    /**
+     * Returns the number of files that are available (online).
+     * <p>
+     * If a file is online, it is of course is also present (exists).
+     *
+     * @return the number of files that are available (present & online)
+     */
+    public int getAvailable() {
+        return _present - _offline;
+    }
 
-	/**
-	 * Returns the number of files that don't exist or are 0byte.
-	 * 
-	 * @return the number of files that don't exist or are 0byte.
-	 */
-	public int getMissing() {
-		return _total - _present;
-	}
+    /**
+     * Returns the number of files that don't exist or are 0byte.
+     *
+     * @return the number of files that don't exist or are 0byte.
+     */
+    public int getMissing() {
+        return _total - _present;
+    }
 
-	/**
-	 * Returns the number of files that are offline.
-	 * 
-	 * @return the number of files that are offline.
-	 */
-	public int getOffline() {
-		return _offline;
-	}
+    /**
+     * Returns the number of files that are offline.
+     *
+     * @return the number of files that are offline.
+     */
+    public int getOffline() {
+        return _offline;
+    }
 
-	/**
-	 * Returns the number of files that exist and are not 0 byte.
-	 * 
-	 * @return the number of files that exist and are not 0 byte.
-	 */
-	public int getPresent() {
-		return _present;
-	}
+    /**
+     * Returns the number of files that exist and are not 0 byte.
+     *
+     * @return the number of files that exist and are not 0 byte.
+     */
+    public int getPresent() {
+        return _present;
+    }
 
-	public boolean isFinished() {
-		return getMissing() == 0;
-	}
+    public boolean isFinished() {
+        return getMissing() == 0;
+    }
 }

@@ -17,13 +17,12 @@
  */
 package org.drftpd.raceleader.master;
 
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
+import org.apache.logging.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
-import org.drftpd.master.GlobalContext;
 import org.drftpd.common.util.Bytes;
+import org.drftpd.master.GlobalContext;
 import org.drftpd.master.sitebot.AbstractAnnouncer;
 import org.drftpd.master.sitebot.AnnounceWriter;
 import org.drftpd.master.sitebot.SiteBot;
@@ -41,53 +40,53 @@ import java.util.ResourceBundle;
  */
 public class NewRaceLeaderAnnouncer extends AbstractAnnouncer {
 
-	private static final Logger logger = LogManager.getLogger(NewRaceLeaderAnnouncer.class);
+    private static final Logger logger = LogManager.getLogger(NewRaceLeaderAnnouncer.class);
 
-	private AnnounceConfig _config;
+    private AnnounceConfig _config;
 
-	private ResourceBundle _bundle;
-	
-	public void initialise(AnnounceConfig config, ResourceBundle bundle) {
-		_config = config;
-		_bundle = bundle;
+    private ResourceBundle _bundle;
 
-		// Subscribe to events
-		AnnotationProcessor.process(this);
-	}
+    public void initialise(AnnounceConfig config, ResourceBundle bundle) {
+        _config = config;
+        _bundle = bundle;
 
-	public void stop() {
-		AnnotationProcessor.unprocess(this);
-		logger.debug("Unloaded NewRaceLeader");
-	}
+        // Subscribe to events
+        AnnotationProcessor.process(this);
+    }
 
-	public String[] getEventTypes() {
-		return new String[]{"store.newraceleader"};
-	}
+    public void stop() {
+        AnnotationProcessor.unprocess(this);
+        logger.debug("Unloaded NewRaceLeader");
+    }
 
-	public void setResourceBundle(ResourceBundle bundle) {
-		_bundle = bundle;
-	}
+    public String[] getEventTypes() {
+        return new String[]{"store.newraceleader"};
+    }
 
-	@EventSubscriber
-	public void onNewRaceLeaderEvent(NewRaceLeaderEvent event) {
-		Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
-		AnnounceWriter writer = _config.getPathWriter("store.newraceleader", event.getDirectory());
-		if (writer != null) {
-			env.put("section",writer.getSectionName(event.getDirectory()));
-			env.put("sectioncolor", GlobalContext.getGlobalContext().getSectionManager().lookup(event.getDirectory()).getColor());
-			env.put("dir",writer.getPath(event.getDirectory()));
+    public void setResourceBundle(ResourceBundle bundle) {
+        _bundle = bundle;
+    }
 
-			env.put("path",event.getDirectory().getPath());
-			env.put("filesleft", event.getFiles());
-			env.put("leaduser", event.getUser());
-			env.put("prevuser", event.getPrevUser());
+    @EventSubscriber
+    public void onNewRaceLeaderEvent(NewRaceLeaderEvent event) {
+        Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
+        AnnounceWriter writer = _config.getPathWriter("store.newraceleader", event.getDirectory());
+        if (writer != null) {
+            env.put("section", writer.getSectionName(event.getDirectory()));
+            env.put("sectioncolor", GlobalContext.getGlobalContext().getSectionManager().lookup(event.getDirectory()).getColor());
+            env.put("dir", writer.getPath(event.getDirectory()));
 
-			env.put("size", Bytes.formatBytes(event.getUploaderPosition().getBytes()));
-			env.put("files", event.getUploaderPosition().getFiles());
-			env.put("speed", Bytes.formatBytes(event.getUploaderPosition().getXferspeed()));
-			env.put("percent", event.getFiles() / event.getUploaderPosition().getFiles());
+            env.put("path", event.getDirectory().getPath());
+            env.put("filesleft", event.getFiles());
+            env.put("leaduser", event.getUser());
+            env.put("prevuser", event.getPrevUser());
 
-			sayOutput(ReplacerUtils.jprintf("store.newraceleader", env, _bundle), writer);
-		}
-	}
+            env.put("size", Bytes.formatBytes(event.getUploaderPosition().getBytes()));
+            env.put("files", event.getUploaderPosition().getFiles());
+            env.put("speed", Bytes.formatBytes(event.getUploaderPosition().getXferspeed()));
+            env.put("percent", event.getFiles() / event.getUploaderPosition().getFiles());
+
+            sayOutput(ReplacerUtils.jprintf("store.newraceleader", env, _bundle), writer);
+        }
+    }
 }

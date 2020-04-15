@@ -28,32 +28,32 @@ import java.util.StringTokenizer;
  */
 public abstract class AbstractAnnouncer {
 
-	private String _confDir;
+    private String _confDir;
 
-	protected void setConfDir(String confDir) {
-		_confDir = confDir;
-	}
+    protected String getConfDir() {
+        return _confDir;
+    }
 
-	protected String getConfDir() {
-		return _confDir;
-	}
+    protected void setConfDir(String confDir) {
+        _confDir = confDir;
+    }
 
-	protected abstract void initialise(AnnounceConfig config, ResourceBundle bundle);
+    protected abstract void initialise(AnnounceConfig config, ResourceBundle bundle);
 
-	protected abstract void stop();
+    protected abstract void stop();
 
-	protected abstract String[] getEventTypes();
-	
-	protected abstract void setResourceBundle(ResourceBundle bundle);
-	
-	protected void sayOutput(String output, AnnounceWriter writer) {
-		StringTokenizer st = new StringTokenizer(output,"\n");
-		while (st.hasMoreTokens()) {
-			String token = st.nextToken();
-			for (OutputWriter oWriter : writer.getOutputWriters()) {
-				oWriter.sendMessage(token);
-			}
-		}
-	}
-	
+    protected abstract String[] getEventTypes();
+
+    protected abstract void setResourceBundle(ResourceBundle bundle);
+
+    protected void sayOutput(String output, AnnounceWriter writer) {
+        StringTokenizer st = new StringTokenizer(output, "\n");
+        while (st.hasMoreTokens()) {
+            String token = st.nextToken();
+            for (OutputWriter oWriter : writer.getOutputWriters()) {
+                oWriter.sendMessage(token);
+            }
+        }
+    }
+
 }

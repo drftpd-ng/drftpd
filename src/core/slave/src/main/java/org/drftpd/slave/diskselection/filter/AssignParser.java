@@ -23,66 +23,66 @@ package org.drftpd.slave.diskselection.filter;
  * @version $Id$
  */
 public class AssignParser {
-	private long _score;
+    private long _score;
 
-	private int _root;
-	
-	private boolean _all = false;
+    private int _root;
 
-	public AssignParser(String s) {
-		if (s.equals("all")) {
-			_all = true;
-			_score = 0;
-			return;
-		}
-		
-		boolean positive;
-		int pos = s.indexOf("+");
+    private boolean _all = false;
 
-		if (pos != -1) {
-			positive = true;
-		} else {
-			pos = s.indexOf("-");
+    public AssignParser(String s) {
+        if (s.equals("all")) {
+            _all = true;
+            _score = 0;
+            return;
+        }
 
-			if (pos == -1) {
-				_score = 0;
-				_root = Integer.parseInt(s);
-				return;
-			}
+        boolean positive;
+        int pos = s.indexOf("+");
 
-			positive = false;
-		}
+        if (pos != -1) {
+            positive = true;
+        } else {
+            pos = s.indexOf("-");
 
-		String root = s.substring(0, pos);
-		String assign = s.substring(pos + 1);
+            if (pos == -1) {
+                _score = 0;
+                _root = Integer.parseInt(s);
+                return;
+            }
 
-		_root = Integer.parseInt(root);
+            positive = false;
+        }
 
-		if (assign.equals("remove")) {
-			_score = Integer.MIN_VALUE;
-		} else {
-			_score = Long.parseLong(assign);
+        String root = s.substring(0, pos);
+        String assign = s.substring(pos + 1);
 
-			if (!positive) {
-				_score = -_score;
-			}
-		}
-	}
+        _root = Integer.parseInt(root);
 
-	public int getRoot() {
-		return _root;
-	}
+        if (assign.equals("remove")) {
+            _score = Integer.MIN_VALUE;
+        } else {
+            _score = Long.parseLong(assign);
 
-	public long getScore() {
-		return _score;
-	}
+            if (!positive) {
+                _score = -_score;
+            }
+        }
+    }
 
-	public String toString() {
-		return getClass() + "@" + hashCode() + "[root=" + getRoot() + ",score="
-				+ getScore() + "]";
-	}
-	
-	public boolean allAssigned() {
-		return _all;
-	}
+    public int getRoot() {
+        return _root;
+    }
+
+    public long getScore() {
+        return _score;
+    }
+
+    public String toString() {
+        return getClass() + "@" + hashCode() + "[root=" + getRoot() + ",score="
+                + getScore() + "]";
+    }
+
+    public boolean allAssigned() {
+        return _all;
+    }
 }

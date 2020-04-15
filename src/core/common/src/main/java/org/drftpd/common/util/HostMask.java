@@ -27,75 +27,75 @@ import java.util.regex.PatternSyntaxException;
  */
 public class HostMask {
 
-	private String _hostMask;
+    private String _hostMask;
 
-	private String _identMask;
+    private String _identMask;
 
-	public HostMask(String string) {
-		int pos = string.indexOf('@');
+    public HostMask(String string) {
+        int pos = string.indexOf('@');
 
-		if (pos == -1) {
-			_identMask = "*";
-			_hostMask = string;
-		} else {
-			_identMask = string.substring(0, pos);
-			_hostMask = string.substring(pos + 1);
-		}
-		if (_identMask.equals("")) {
-			_identMask = "*";
-		}
-		if (_hostMask.equals("")) {
-			_hostMask = "*";
-		}
-	}
+        if (pos == -1) {
+            _identMask = "*";
+            _hostMask = string;
+        } else {
+            _identMask = string.substring(0, pos);
+            _hostMask = string.substring(pos + 1);
+        }
+        if (_identMask.equals("")) {
+            _identMask = "*";
+        }
+        if (_hostMask.equals("")) {
+            _hostMask = "*";
+        }
+    }
 
-	public boolean equals(Object obj) {
-		if (!(obj instanceof HostMask)) {
-			return false;
-		}
-		
-		HostMask h = (HostMask) obj;
-		return h.getIdentMask().equals(getIdentMask())
-				&& h.getHostMask().equals(getHostMask());
-	}
+    public boolean equals(Object obj) {
+        if (!(obj instanceof HostMask)) {
+            return false;
+        }
 
-	public String getHostMask() {
-		return _hostMask;
-	}
+        HostMask h = (HostMask) obj;
+        return h.getIdentMask().equals(getIdentMask())
+                && h.getHostMask().equals(getHostMask());
+    }
 
-	public String getIdentMask() {
-		return _identMask;
-	}
+    public String getHostMask() {
+        return _hostMask;
+    }
 
-	public String getMask() {
-		return getIdentMask() + "@" + getHostMask();
-	}
+    public String getIdentMask() {
+        return _identMask;
+    }
 
-	/**
-	 * Is ident used?
-	 * 
-	 * @return false is ident mask equals "*"
-	 */
-	public boolean isIdentMaskSignificant() {
-		return !_identMask.equals("*");
-	}
+    public String getMask() {
+        return getIdentMask() + "@" + getHostMask();
+    }
 
-	public boolean matchesHost(InetAddress a) throws PatternSyntaxException {
-		Pattern p = GlobPattern.compile(getHostMask());
+    /**
+     * Is ident used?
+     *
+     * @return false is ident mask equals "*"
+     */
+    public boolean isIdentMaskSignificant() {
+        return !_identMask.equals("*");
+    }
 
-		return (p.matcher(a.getHostAddress()).matches() || p.matcher(a.getHostName()).matches());
-	}
+    public boolean matchesHost(InetAddress a) throws PatternSyntaxException {
+        Pattern p = GlobPattern.compile(getHostMask());
 
-	public boolean matchesIdent(String ident) throws PatternSyntaxException {
-		if (ident == null) {
-			ident = "";
-		}
+        return (p.matcher(a.getHostAddress()).matches() || p.matcher(a.getHostName()).matches());
+    }
 
-		return !isIdentMaskSignificant()
-				|| GlobPattern.matches(getIdentMask(), ident);
-	}
+    public boolean matchesIdent(String ident) throws PatternSyntaxException {
+        if (ident == null) {
+            ident = "";
+        }
 
-	public String toString() {
-		return _identMask + "@" + _hostMask;
-	}
+        return !isIdentMaskSignificant()
+                || GlobPattern.matches(getIdentMask(), ident);
+    }
+
+    public String toString() {
+        return _identMask + "@" + _hostMask;
+    }
 }

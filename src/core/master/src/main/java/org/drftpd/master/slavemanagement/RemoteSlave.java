@@ -21,32 +21,35 @@ import com.cedarsoftware.util.io.JsonIoException;
 import com.cedarsoftware.util.io.JsonWriter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.drftpd.common.network.AsyncCommand;
-import org.drftpd.common.network.AsyncCommandArgument;
-import org.drftpd.master.vfs.CommitManager;
-import org.drftpd.master.vfs.Commitable;
-import org.drftpd.master.GlobalContext;
-import org.drftpd.master.network.RemoteTransfer;
-import org.drftpd.slave.network.*;
-import org.drftpd.slave.protocol.QueuedOperation;
-import org.drftpd.common.exceptions.AsyncResponseException;
-import org.drftpd.common.exceptions.RemoteIOException;
-import org.drftpd.common.slave.*;
 import org.drftpd.common.dynamicdata.Key;
 import org.drftpd.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.common.dynamicdata.KeyedMap;
+import org.drftpd.common.exceptions.AsyncResponseException;
 import org.drftpd.common.exceptions.DuplicateElementException;
-import org.drftpd.common.protocol.ProtocolException;
+import org.drftpd.common.exceptions.RemoteIOException;
+import org.drftpd.common.network.AsyncCommand;
+import org.drftpd.common.network.AsyncCommandArgument;
 import org.drftpd.common.network.AsyncResponse;
+import org.drftpd.common.protocol.ProtocolException;
+import org.drftpd.common.slave.ConnectInfo;
+import org.drftpd.common.slave.DiskStatus;
+import org.drftpd.common.slave.TransferIndex;
+import org.drftpd.common.slave.TransferStatus;
 import org.drftpd.common.util.HostMaskCollection;
+import org.drftpd.master.GlobalContext;
 import org.drftpd.master.event.SlaveEvent;
 import org.drftpd.master.exceptions.FatalException;
 import org.drftpd.master.exceptions.SlaveUnavailableException;
 import org.drftpd.master.io.SafeFileOutputStream;
+import org.drftpd.master.network.RemoteTransfer;
 import org.drftpd.master.stats.ExtendedTimedStats;
 import org.drftpd.master.usermanager.Entity;
+import org.drftpd.master.vfs.CommitManager;
+import org.drftpd.master.vfs.Commitable;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.FileHandle;
+import org.drftpd.slave.network.*;
+import org.drftpd.slave.protocol.QueuedOperation;
 
 import java.io.*;
 import java.net.Socket;
@@ -64,66 +67,37 @@ import java.util.regex.PatternSyntaxException;
  */
 public class RemoteSlave extends ExtendedTimedStats implements Runnable, Comparable<RemoteSlave>, Entity, Commitable {
 
+    public static final Key<Boolean> SSL = new Key<>(RemoteSlave.class, "ssl");
     private static final Logger logger = LogManager.getLogger(RemoteSlave.class);
-
-    private transient boolean _isAvailable;
-
-    private transient boolean _isRemerging;
-
-    private transient boolean _remergeChecksums;
-
-    protected transient int _errors;
-
-    private transient int _prevSocketTimeout;
-
-    private transient long _lastDownloadSending = 0;
-
-    protected transient long _lastNetworkError;
-
-    private transient long _lastUploadReceiving = 0;
-
-    private transient long _lastResponseReceived = System.currentTimeMillis();
-
-    private transient long _lastCommandSent = System.currentTimeMillis();
-
-    private transient int _maxPath;
-
-    private String _name;
-
-    private transient DiskStatus _status;
-
-    private HostMaskCollection _ipMasks;
-
-    private Properties _keysAndValues;
-
-    private transient KeyedMap<Key<?>, Object> _transientKeyedMap;
-
-    private ConcurrentLinkedDeque<QueuedOperation> _renameQueue;
-
-    private transient LinkedBlockingDeque<String> _indexPool;
-
-    private transient ConcurrentHashMap<String, AsyncResponse> _indexWithCommands;
-
-    private transient ObjectInputStream _sin;
-
-    private transient Socket _socket;
-
-    private transient ObjectOutputStream _sout;
-
-    private transient ConcurrentHashMap<TransferIndex, RemoteTransfer> _transfers;
-
     public transient AtomicBoolean _remergePaused;
-
+    protected transient int _errors;
+    protected transient long _lastNetworkError;
+    private transient boolean _isAvailable;
+    private transient boolean _isRemerging;
+    private transient boolean _remergeChecksums;
+    private transient int _prevSocketTimeout;
+    private transient long _lastDownloadSending = 0;
+    private transient long _lastUploadReceiving = 0;
+    private transient long _lastResponseReceived = System.currentTimeMillis();
+    private transient long _lastCommandSent = System.currentTimeMillis();
+    private transient int _maxPath;
+    private final String _name;
+    private transient DiskStatus _status;
+    private HostMaskCollection _ipMasks;
+    private Properties _keysAndValues;
+    private final transient KeyedMap<Key<?>, Object> _transientKeyedMap;
+    private ConcurrentLinkedDeque<QueuedOperation> _renameQueue;
+    private transient LinkedBlockingDeque<String> _indexPool;
+    private transient ConcurrentHashMap<String, AsyncResponse> _indexWithCommands;
+    private transient ObjectInputStream _sin;
+    private transient Socket _socket;
+    private transient ObjectOutputStream _sout;
+    private transient ConcurrentHashMap<TransferIndex, RemoteTransfer> _transfers;
     private transient boolean _initRemergeCompleted;
-
-    private transient Object _commandMonitor;
-
-    private transient LinkedBlockingQueue<RemergeMessage> _remergeQueue;
-
-    private transient LinkedBlockingQueue<FileHandle> _crcQueue;
-
+    private final transient Object _commandMonitor;
+    private final transient LinkedBlockingQueue<RemergeMessage> _remergeQueue;
+    private final transient LinkedBlockingQueue<FileHandle> _crcQueue;
     private transient RemergeThread _remergeThread;
-
     private transient CrcThread _crcThread;
 
     public RemoteSlave(String name) {
@@ -138,8 +112,6 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
         _commandMonitor = new Object();
     }
 
-    public static final Key<Boolean> SSL = new Key<>(RemoteSlave.class, "ssl");
-
     public static Hashtable<String, RemoteSlave> rslavesToHashtable(Collection<RemoteSlave> rslaves) {
         Hashtable<String, RemoteSlave> map = new Hashtable<>(rslaves.size());
 
@@ -148,6 +120,15 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
         }
 
         return map;
+    }
+
+    public static String getSlaveNameFromObjectInput(ObjectInputStream in)
+            throws IOException {
+        try {
+            return (String) in.readObject();
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void addMask(String mask) throws DuplicateElementException {
@@ -215,15 +196,15 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
         return (Properties) _keysAndValues.clone();
     }
 
-    public KeyedMap<Key<?>, Object> getTransientKeyedMap() {
-        return _transientKeyedMap;
-    }
-
     /**
      * Needed in order for this class to be a Bean
      */
     public void setProperties(Properties keysAndValues) {
         _keysAndValues = keysAndValues;
+    }
+
+    public KeyedMap<Key<?>, Object> getTransientKeyedMap() {
+        return _transientKeyedMap;
     }
 
     public void commit() {
@@ -246,6 +227,10 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
         return _lastDownloadSending;
     }
 
+    public final void setLastDownloadSending(long lastDownloadSending) {
+        _lastDownloadSending = lastDownloadSending;
+    }
+
     public final long getLastTransfer() {
         return Math.max(getLastDownloadSending(), getLastUploadReceiving());
     }
@@ -264,6 +249,10 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 
     public final long getLastUploadReceiving() {
         return _lastUploadReceiving;
+    }
+
+    public final void setLastUploadReceiving(long lastUploadReceiving) {
+        _lastUploadReceiving = lastUploadReceiving;
     }
 
     public HostMaskCollection getMasks() {
@@ -437,6 +426,10 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
         return _isAvailable;
     }
 
+    public void setAvailable(boolean available) {
+        _isAvailable = available;
+    }
+
     public boolean isAvailablePing() {
         if (!isAvailable()) {
             return false;
@@ -461,6 +454,10 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
      */
     public boolean isRemerging() {
         return _isRemerging;
+    }
+
+    public void setRemerging(boolean remerging) {
+        _isRemerging = remerging;
     }
 
     /**
@@ -515,14 +512,6 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
         return ret;
     }
 
-    public void setAvailable(boolean available) {
-        _isAvailable = available;
-    }
-
-    public void setRemerging(boolean remerging) {
-        _isRemerging = remerging;
-    }
-
     protected void makeAvailableAfterRemerge() {
         _initRemergeCompleted = true;
         setProperty("lastConnect", Long.toString(System.currentTimeMillis()));
@@ -552,14 +541,6 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
             default:
                 throw new IllegalArgumentException();
         }
-    }
-
-    public final void setLastDownloadSending(long lastDownloadSending) {
-        _lastDownloadSending = lastDownloadSending;
-    }
-
-    public final void setLastUploadReceiving(long lastUploadReceiving) {
-        _lastUploadReceiving = lastUploadReceiving;
     }
 
     /**
@@ -605,15 +586,6 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 
     public String toString() {
         return moreInfo();
-    }
-
-    public static String getSlaveNameFromObjectInput(ObjectInputStream in)
-            throws IOException {
-        try {
-            return (String) in.readObject();
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     public synchronized void connect(Socket socket, ObjectInputStream in,
@@ -799,7 +771,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
     public String moreInfo() {
         try {
             return getName() + ":address=[" + getPASVIP() + "]port=["
-                    + Integer.toString(getPort()) + "]";
+                    + getPort() + "]";
         } catch (SlaveUnavailableException e) {
             return getName() + ":offline";
         }
@@ -1156,6 +1128,14 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
         return _renameQueue;
     }
 
+    public void setRenameQueue(ConcurrentLinkedDeque<QueuedOperation> renameQueue) {
+        if (renameQueue == null) {
+            _renameQueue = new ConcurrentLinkedDeque<>();
+        } else {
+            _renameQueue = renameQueue;
+        }
+    }
+
     public LinkedBlockingQueue<RemergeMessage> getRemergeQueue() {
         return _remergeQueue;
     }
@@ -1167,14 +1147,6 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
     public void setCRCThreadFinished() {
         if (_crcThread != null && _crcThread.isAlive()) {
             _crcThread.setFinished();
-        }
-    }
-
-    public void setRenameQueue(ConcurrentLinkedDeque<QueuedOperation> renameQueue) {
-        if (renameQueue == null) {
-            _renameQueue = new ConcurrentLinkedDeque<>();
-        } else {
-            _renameQueue = renameQueue;
         }
     }
 
@@ -1209,19 +1181,19 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
         return getName();
     }
 
-	public void writeToDisk() {
-		Map<String,Object> params = new HashMap<>();
-		params.put(JsonWriter.PRETTY_PRINT, true);
-		try (OutputStream out = new SafeFileOutputStream(
-				getGlobalContext().getSlaveManager().getSlaveFile(this.getName()));
-			 JsonWriter writer = new JsonWriter(out, params)) {
-			writer.write(this);
+    public void writeToDisk() {
+        Map<String, Object> params = new HashMap<>();
+        params.put(JsonWriter.PRETTY_PRINT, true);
+        try (OutputStream out = new SafeFileOutputStream(
+                getGlobalContext().getSlaveManager().getSlaveFile(this.getName()));
+             JsonWriter writer = new JsonWriter(out, params)) {
+            writer.write(this);
             logger.debug("Wrote slavefile for {}", this.getName());
-		} catch (IOException | JsonIoException e) {
-			throw new RuntimeException("Error writing slavefile for "
-					+ this.getName() + ": " + e.getMessage(), e);
-		}
-	}
+        } catch (IOException | JsonIoException e) {
+            throw new RuntimeException("Error writing slavefile for "
+                    + this.getName() + ": " + e.getMessage(), e);
+        }
+    }
 
     public ObjectOutputStream getOutputStream() {
         return _sout;

@@ -26,27 +26,23 @@ import org.drftpd.master.vfs.event.ImmutableInodeHandle;
  */
 public interface IndexDataExtensionInterface {
 
-	/**
-	 * This method is called once when the extension is loaded. All field
-	 * instances the extension intends to use for storing data should be
-	 * added to the document at this time.
-	 * 
-	 * @param doc
-	 *            The document to add fields to.
-	 */
+    /**
+     * This method is called once when the extension is loaded. All field
+     * instances the extension intends to use for storing data should be
+     * added to the document at this time.
+     *
+     * @param doc The document to add fields to.
+     */
     void initializeFields(Document doc);
-	
-	/**
-	 * This method is called whenever an inode is being added to the index.
-	 * The fields added to the document in the initializeFields call will be
-	 * present in this document and should have their values set appropriately.
-	 * Any fields not relevant to this particular inode should be cleared.
-	 * 
-	 * @param doc
-	 *            The document to populate fields in.
-	 * 
-	 * @param inode
-	 *            The inode currently being indexed.
-	 */
+
+    /**
+     * This method is called whenever an inode is being added to the index.
+     * The fields added to the document in the initializeFields call will be
+     * present in this document and should have their values set appropriately.
+     * Any fields not relevant to this particular inode should be cleared.
+     *
+     * @param doc   The document to populate fields in.
+     * @param inode The inode currently being indexed.
+     */
     void addData(Document doc, ImmutableInodeHandle inode);
 }

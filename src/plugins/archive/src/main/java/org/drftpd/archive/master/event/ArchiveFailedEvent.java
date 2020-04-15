@@ -16,8 +16,8 @@
  */
 package org.drftpd.archive.master.event;
 
-import org.drftpd.master.util.Time;
 import org.drftpd.archive.master.archivetypes.ArchiveType;
+import org.drftpd.master.util.Time;
 
 /**
  * @author CyBeR
@@ -25,26 +25,26 @@ import org.drftpd.archive.master.archivetypes.ArchiveType;
  */
 public class ArchiveFailedEvent {
 
-	private String _archivereason;
-	private long _archivetime;
-	private ArchiveType _archivetype;
+    private final String _archivereason;
+    private final long _archivetime;
+    private final ArchiveType _archivetype;
 
-	public ArchiveFailedEvent(ArchiveType archivetype, long starttime, String reason) {
-		_archivetype = archivetype;
-		_archivetime = System.currentTimeMillis() - starttime;
-		_archivereason = reason;
-	}
+    public ArchiveFailedEvent(ArchiveType archivetype, long starttime, String reason) {
+        _archivetype = archivetype;
+        _archivetime = System.currentTimeMillis() - starttime;
+        _archivereason = reason;
+    }
 
-	public ArchiveType getArchiveType() {
-		return _archivetype;
-	}
-	
-	public String getFailReason() {
-		return _archivereason;
-	}
-	
-	public String getArchiveTime() {
-		return Time.formatTime(_archivetime);
-	}
-	
+    public ArchiveType getArchiveType() {
+        return _archivetype;
+    }
+
+    public String getFailReason() {
+        return _archivereason;
+    }
+
+    public String getArchiveTime() {
+        return Time.formatTime(_archivetime);
+    }
+
 }

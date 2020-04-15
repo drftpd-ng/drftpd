@@ -23,13 +23,13 @@ package org.drftpd.master.event;
  */
 public class ReloadEvent {
 
-	private String _origin;
+    private final String _origin;
 
-	public ReloadEvent(String origin) {
-		_origin = origin;
-	}
+    public ReloadEvent(String origin) {
+        _origin = origin;
+    }
 
-	public String getOrigin() {
-		return _origin;
-	}
+    public String getOrigin() {
+        return _origin;
+    }
 }

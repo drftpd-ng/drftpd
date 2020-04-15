@@ -22,13 +22,13 @@ import org.apache.logging.log4j.Logger;
 import org.drftpd.common.extensibility.CommandHook;
 import org.drftpd.common.extensibility.HookType;
 import org.drftpd.master.GlobalContext;
+import org.drftpd.master.commands.CommandRequest;
+import org.drftpd.master.commands.CommandResponse;
 import org.drftpd.master.sections.SectionInterface;
+import org.drftpd.master.sections.conf.DatedSection;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.ObjectNotValidException;
 import org.drftpd.master.vfs.VirtualFileSystem;
-import org.drftpd.master.commands.CommandRequest;
-import org.drftpd.master.commands.CommandResponse;
-import org.drftpd.master.sections.conf.DatedSection;
 
 import java.io.FileNotFoundException;
 

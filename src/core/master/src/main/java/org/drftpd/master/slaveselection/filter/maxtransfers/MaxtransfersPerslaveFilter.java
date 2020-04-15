@@ -16,18 +16,18 @@
 
 package org.drftpd.master.slaveselection.filter.maxtransfers;
 
-import org.drftpd.master.GlobalContext;
 import org.drftpd.common.util.PropertyHelper;
+import org.drftpd.common.vfs.InodeHandleInterface;
+import org.drftpd.master.GlobalContext;
+import org.drftpd.master.exceptions.FatalException;
+import org.drftpd.master.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.master.slavemanagement.SlaveManager;
+import org.drftpd.master.slavemanagement.SlaveStatus;
 import org.drftpd.master.slaveselection.filter.Filter;
 import org.drftpd.master.slaveselection.filter.ScoreChart;
-import org.drftpd.master.exceptions.NoAvailableSlaveException;
-import org.drftpd.master.exceptions.FatalException;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.slave.exceptions.ObjectNotFoundException;
-import org.drftpd.master.slavemanagement.SlaveStatus;
-import org.drftpd.common.vfs.InodeHandleInterface;
 
 import java.net.InetAddress;
 import java.util.ArrayList;
@@ -52,21 +52,21 @@ import java.util.regex.Pattern;
  */
 
 public class MaxtransfersPerslaveFilter extends Filter {
-    
-	private ArrayList<AssignSlave> _assigns;
 
-	private Pattern _p;
-	private boolean _negateExpr;
+    private final ArrayList<AssignSlave> _assigns;
+
+    private final Pattern _p;
+    private final boolean _negateExpr;
 
 
-	public MaxtransfersPerslaveFilter(int i, Properties p) {
-		super(i, p);
+    public MaxtransfersPerslaveFilter(int i, Properties p) {
+        super(i, p);
         try {
-			_assigns = parseAssign(PropertyHelper.getProperty(p, i + ".assign"), GlobalContext.getGlobalContext().getSlaveManager());
-			_p = Pattern.compile(PropertyHelper.getProperty(p, i    + ".match"), Pattern.CASE_INSENSITIVE);
-			_negateExpr = PropertyHelper.getProperty(p, i + ".negate.expression", "false").equalsIgnoreCase("true");
+            _assigns = parseAssign(PropertyHelper.getProperty(p, i + ".assign"), GlobalContext.getGlobalContext().getSlaveManager());
+            _p = Pattern.compile(PropertyHelper.getProperty(p, i + ".match"), Pattern.CASE_INSENSITIVE);
+            _negateExpr = PropertyHelper.getProperty(p, i + ".negate.expression", "false").equalsIgnoreCase("true");
         } catch (Exception e) {
-        	throw new FatalException(e);
+            throw new FatalException(e);
         }
     }
 
@@ -81,63 +81,63 @@ public class MaxtransfersPerslaveFilter extends Filter {
     }
 
     @Override
-	public void process(ScoreChart scorechart, User user, InetAddress peer,
-						char direction, InodeHandleInterface dir, RemoteSlave sourceSlave)
-	       throws NoAvailableSlaveException {
+    public void process(ScoreChart scorechart, User user, InetAddress peer,
+                        char direction, InodeHandleInterface dir, RemoteSlave sourceSlave)
+            throws NoAvailableSlaveException {
 
-		Matcher m = _p.matcher(dir.getPath());
-		boolean validPath = _negateExpr != m.find();
+        Matcher m = _p.matcher(dir.getPath());
+        boolean validPath = _negateExpr != m.find();
 
-	 	for (Iterator<ScoreChart.SlaveScore> iterator = scorechart.getSlaveScores().iterator(); iterator.hasNext();) {
-	 		ScoreChart.SlaveScore slavescore = iterator.next();
+        for (Iterator<ScoreChart.SlaveScore> iterator = scorechart.getSlaveScores().iterator(); iterator.hasNext(); ) {
+            ScoreChart.SlaveScore slavescore = iterator.next();
 
-	 		for(AssignSlave assign : _assigns) {
-	 			SlaveStatus status;
-	 			try {
-		 			status = slavescore.getRSlave().getSlaveStatusAvailable();
-	 			}catch (Exception e) {
-	 				iterator.remove();
-        			continue;
-    			}
-	 			if ( (assign._rslave.getName().equalsIgnoreCase(slavescore.getRSlave().getName()) && status.getTransfers() > assign._maxtransfer) && validPath) {
-	 				iterator.remove();
-	 			}
-	 		}
-	 	}
-	 }
+            for (AssignSlave assign : _assigns) {
+                SlaveStatus status;
+                try {
+                    status = slavescore.getRSlave().getSlaveStatusAvailable();
+                } catch (Exception e) {
+                    iterator.remove();
+                    continue;
+                }
+                if ((assign._rslave.getName().equalsIgnoreCase(slavescore.getRSlave().getName()) && status.getTransfers() > assign._maxtransfer) && validPath) {
+                    iterator.remove();
+                }
+            }
+        }
+    }
 
-	    static class AssignSlave {
-	        private RemoteSlave _rslave;
-	        private int _maxtransfer;
+    static class AssignSlave {
+        private final RemoteSlave _rslave;
+        private final int _maxtransfer;
 
-	        public AssignSlave(String s, SlaveManager slaveManager)
-	            throws ObjectNotFoundException {
+        public AssignSlave(String s, SlaveManager slaveManager)
+                throws ObjectNotFoundException {
 
-	            int pos = s.indexOf("+");
+            int pos = s.indexOf("+");
 
-	            if (pos != -1) {
-	            } else {
-	                pos = s.indexOf("-");
+            if (pos != -1) {
+            } else {
+                pos = s.indexOf("-");
 
-	                if (pos == -1) {
-	                    throw new IllegalArgumentException(s + " is not a valid assign slave expression");
-	                }
-	              }
+                if (pos == -1) {
+                    throw new IllegalArgumentException(s + " is not a valid assign slave expression");
+                }
+            }
 
-	            String slavename = s.substring(0, pos);
+            String slavename = s.substring(0, pos);
 
-                _rslave = slaveManager.getRemoteSlave(slavename);
-                
-	            _maxtransfer = Integer.parseInt(s.substring(pos + 1));
+            _rslave = slaveManager.getRemoteSlave(slavename);
 
-	        }
+            _maxtransfer = Integer.parseInt(s.substring(pos + 1));
 
-	        public RemoteSlave getRSlave() {
-	            return _rslave;
-	        }
+        }
 
-	        public long getMaxtransfers() {
-	            return _maxtransfer;
-	        }
-	    }
+        public RemoteSlave getRSlave() {
+            return _rslave;
+        }
+
+        public long getMaxtransfers() {
+            return _maxtransfer;
+        }
+    }
 }

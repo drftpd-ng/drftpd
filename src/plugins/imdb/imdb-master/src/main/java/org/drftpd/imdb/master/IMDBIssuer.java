@@ -17,26 +17,26 @@
  */
 package org.drftpd.imdb.master;
 
+import org.drftpd.common.network.AsyncCommandArgument;
+import org.drftpd.common.protocol.AbstractIssuer;
 import org.drftpd.master.exceptions.SlaveUnavailableException;
 import org.drftpd.master.slavemanagement.RemoteSlave;
-import org.drftpd.common.protocol.AbstractIssuer;
-import org.drftpd.common.network.AsyncCommandArgument;
 
 /**
  * @author lh
  */
 public class IMDBIssuer extends AbstractIssuer {
 
-	@Override
-	public String getProtocolName() {
-		return "IMDBProtocol";
-	}
+    @Override
+    public String getProtocolName() {
+        return "IMDBProtocol";
+    }
 
-	public String issueNFOFileToSlave(RemoteSlave rslave, String path) throws SlaveUnavailableException {
-		String index = rslave.fetchIndex();
-		AsyncCommandArgument ac = new AsyncCommandArgument(index, "iMDBFile", path);
-		rslave.sendCommand(ac);
+    public String issueNFOFileToSlave(RemoteSlave rslave, String path) throws SlaveUnavailableException {
+        String index = rslave.fetchIndex();
+        AsyncCommandArgument ac = new AsyncCommandArgument(index, "iMDBFile", path);
+        rslave.sendCommand(ac);
 
-		return index;
-	}
+        return index;
+    }
 }

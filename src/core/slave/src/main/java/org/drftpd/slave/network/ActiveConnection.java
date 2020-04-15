@@ -17,9 +17,8 @@
  */
 package org.drftpd.slave.network;
 
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
+import org.apache.logging.log4j.Logger;
 import org.drftpd.common.slave.Connection;
 
 import javax.net.SocketFactory;
@@ -34,78 +33,78 @@ import java.net.Socket;
  * @version $Id$
  */
 public class ActiveConnection extends Connection {
-	private static final Logger logger = LogManager.getLogger(ActiveConnection.class);
+    private static final Logger logger = LogManager.getLogger(ActiveConnection.class);
 
-	private SSLContext _ctx;
+    private final SSLContext _ctx;
 
-	private InetSocketAddress _addr;
+    private final InetSocketAddress _addr;
 
-	private Socket _sock;
+    private Socket _sock;
 
-	private boolean _useSSLClientHandshake;
-	
-	private String _bindIP;
+    private final boolean _useSSLClientHandshake;
 
-	public ActiveConnection(SSLContext ctx, InetSocketAddress addr,
-			boolean useSSLClientHandshake, String bindIP) {
-		_addr = addr;
-		_ctx = ctx;
-		_bindIP = bindIP;
-		_useSSLClientHandshake = useSSLClientHandshake;
-	}
+    private final String _bindIP;
 
-	public Socket connect(String[] cipherSuites, String[] sslProtocols, int bufferSize) throws IOException {
+    public ActiveConnection(SSLContext ctx, InetSocketAddress addr,
+                            boolean useSSLClientHandshake, String bindIP) {
+        _addr = addr;
+        _ctx = ctx;
+        _bindIP = bindIP;
+        _useSSLClientHandshake = useSSLClientHandshake;
+    }
+
+    public Socket connect(String[] cipherSuites, String[] sslProtocols, int bufferSize) throws IOException {
         logger.debug("Connecting to {}:{}", _addr.getAddress().getHostAddress(), _addr.getPort());
 
-		if (_ctx != null) {
-			SSLSocket sslsock;
-			sslsock = (SSLSocket) _ctx.getSocketFactory().createSocket();
-			if (bufferSize > 0) {
-				sslsock.setReceiveBufferSize(bufferSize);
-			}
-			
-			if (_bindIP != null) {
-				sslsock.bind(new InetSocketAddress(_bindIP,sslsock.getPort()));
-			}
-			
-			sslsock.connect(_addr, TIMEOUT);
-			setSockOpts(sslsock);
-			if (cipherSuites != null && cipherSuites.length != 0) {
-				sslsock.setEnabledCipherSuites(cipherSuites);
-			}
-			if (sslProtocols != null && sslProtocols.length != 0) {
-				sslsock.setEnabledProtocols(sslProtocols);
-			}
-			sslsock.setUseClientMode(_useSSLClientHandshake);
-			sslsock.startHandshake();
-			_sock = sslsock;
-		} else {
-			_sock = SocketFactory.getDefault().createSocket();
-			if (bufferSize > 0) {
-				_sock.setReceiveBufferSize(bufferSize);
-			}
-			
-			if (_bindIP != null) {
-				_sock.bind(new InetSocketAddress(_bindIP,_sock.getPort()));
-			}
-			 
-			_sock.connect(_addr, TIMEOUT);
-			setSockOpts(_sock);
-		}
+        if (_ctx != null) {
+            SSLSocket sslsock;
+            sslsock = (SSLSocket) _ctx.getSocketFactory().createSocket();
+            if (bufferSize > 0) {
+                sslsock.setReceiveBufferSize(bufferSize);
+            }
 
-		Socket sock = _sock;
-		_sock = null;
+            if (_bindIP != null) {
+                sslsock.bind(new InetSocketAddress(_bindIP, sslsock.getPort()));
+            }
 
-		return sock;
-	}
+            sslsock.connect(_addr, TIMEOUT);
+            setSockOpts(sslsock);
+            if (cipherSuites != null && cipherSuites.length != 0) {
+                sslsock.setEnabledCipherSuites(cipherSuites);
+            }
+            if (sslProtocols != null && sslProtocols.length != 0) {
+                sslsock.setEnabledProtocols(sslProtocols);
+            }
+            sslsock.setUseClientMode(_useSSLClientHandshake);
+            sslsock.startHandshake();
+            _sock = sslsock;
+        } else {
+            _sock = SocketFactory.getDefault().createSocket();
+            if (bufferSize > 0) {
+                _sock.setReceiveBufferSize(bufferSize);
+            }
 
-	public void abort() {
-		try {
-			if (_sock != null) {
-				_sock.close();
-			}
-		} catch (IOException e) {
-			logger.warn("abort() failed to close() socket", e);
-		}
-	}
+            if (_bindIP != null) {
+                _sock.bind(new InetSocketAddress(_bindIP, _sock.getPort()));
+            }
+
+            _sock.connect(_addr, TIMEOUT);
+            setSockOpts(_sock);
+        }
+
+        Socket sock = _sock;
+        _sock = null;
+
+        return sock;
+    }
+
+    public void abort() {
+        try {
+            if (_sock != null) {
+                _sock.close();
+            }
+        } catch (IOException e) {
+            logger.warn("abort() failed to close() socket", e);
+        }
+    }
 }

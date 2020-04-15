@@ -25,13 +25,13 @@ import java.io.IOException;
  */
 @SuppressWarnings("serial")
 public class RemoteIOException extends Exception {
-	public RemoteIOException(IOException cause) {
-		super(cause);
-	}
+    public RemoteIOException(IOException cause) {
+        super(cause);
+    }
 
-	@Override
-	public IOException getCause() {
-		return (IOException) super.getCause();
-	}
+    @Override
+    public IOException getCause() {
+        return (IOException) super.getCause();
+    }
 
 }

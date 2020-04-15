@@ -16,18 +16,17 @@
  */
 package org.drftpd.tvmaze.master.list;
 
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
+import org.apache.logging.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
+import org.drftpd.common.slave.LightRemoteInode;
 import org.drftpd.master.commands.list.AddListElementsInterface;
 import org.drftpd.master.commands.list.ListElementsContainer;
+import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.tvmaze.master.TvMazeConfig;
 import org.drftpd.tvmaze.master.TvMazeUtils;
 import org.drftpd.tvmaze.master.metadata.TvMazeInfo;
 import org.drftpd.tvmaze.master.vfs.TvMazeVFSData;
-import org.drftpd.master.vfs.DirectoryHandle;
-import org.drftpd.common.slave.LightRemoteInode;
 
 import java.io.FileNotFoundException;
 import java.util.Map;
@@ -37,41 +36,41 @@ import java.util.ResourceBundle;
  * @author lh
  */
 public class TvMazeList implements AddListElementsInterface {
-	private static final Logger logger = LogManager.getLogger(TvMazeList.class);
+    private static final Logger logger = LogManager.getLogger(TvMazeList.class);
 
-	public void initialize() { }
+    public void initialize() { }
 
-	public ListElementsContainer addElements(DirectoryHandle dir, ListElementsContainer container) {
-		try {
-			ResourceBundle bundle = container.getCommandManager().getResourceBundle();
-			if (TvMazeConfig.getInstance().barEnabled()) {
-				TvMazeVFSData tvmazeData = new TvMazeVFSData(dir);
-				TvMazeInfo tvmazeInfo = tvmazeData.getTvMazeInfoFromCache();
-				if (tvmazeInfo != null) {
-					Map<String, Object> env;
-					if (tvmazeInfo.getEPList().length == 1) {
-						env = TvMazeUtils.getEPEnv(tvmazeInfo, tvmazeInfo.getEPList()[0]);
-					} else {
-						env = TvMazeUtils.getShowEnv(tvmazeInfo);
-					}
-					String tvmazeDirName = container.getSession().jprintf(bundle, "tvmaze.dir", env, container.getUser());
-					try {
-						container.getElements().add(new LightRemoteInode(tvmazeDirName, "drftpd", "drftpd",
-								TvMazeConfig.getInstance().barAsDirectory(), dir.lastModified(), 0L));
-					} catch (FileNotFoundException e) {
-						// dir was deleted during list operation
-					}
-				}
-			}
-		} catch (Exception e) {
-			logger.error("",e);	
-		}
-		return container;
-	}
+    public ListElementsContainer addElements(DirectoryHandle dir, ListElementsContainer container) {
+        try {
+            ResourceBundle bundle = container.getCommandManager().getResourceBundle();
+            if (TvMazeConfig.getInstance().barEnabled()) {
+                TvMazeVFSData tvmazeData = new TvMazeVFSData(dir);
+                TvMazeInfo tvmazeInfo = tvmazeData.getTvMazeInfoFromCache();
+                if (tvmazeInfo != null) {
+                    Map<String, Object> env;
+                    if (tvmazeInfo.getEPList().length == 1) {
+                        env = TvMazeUtils.getEPEnv(tvmazeInfo, tvmazeInfo.getEPList()[0]);
+                    } else {
+                        env = TvMazeUtils.getShowEnv(tvmazeInfo);
+                    }
+                    String tvmazeDirName = container.getSession().jprintf(bundle, "tvmaze.dir", env, container.getUser());
+                    try {
+                        container.getElements().add(new LightRemoteInode(tvmazeDirName, "drftpd", "drftpd",
+                                TvMazeConfig.getInstance().barAsDirectory(), dir.lastModified(), 0L));
+                    } catch (FileNotFoundException e) {
+                        // dir was deleted during list operation
+                    }
+                }
+            }
+        } catch (Exception e) {
+            logger.error("", e);
+        }
+        return container;
+    }
 
-	public void unload() {  
-		AnnotationProcessor.unprocess(this);
-	}
+    public void unload() {
+        AnnotationProcessor.unprocess(this);
+    }
 
 
 }

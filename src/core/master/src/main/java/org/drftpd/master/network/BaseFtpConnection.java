@@ -20,14 +20,14 @@ package org.drftpd.master.network;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.drftpd.master.*;
+import org.drftpd.common.dynamicdata.Key;
+import org.drftpd.common.dynamicdata.KeyNotFoundException;
+import org.drftpd.common.io.AddAsciiOutputStream;
+import org.drftpd.master.GlobalContext;
 import org.drftpd.master.commands.CommandManagerInterface;
 import org.drftpd.master.commands.CommandRequestInterface;
 import org.drftpd.master.commands.CommandResponseInterface;
-import org.drftpd.common.dynamicdata.Key;
-import org.drftpd.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.master.event.ConnectionEvent;
-import org.drftpd.common.io.AddAsciiOutputStream;
 import org.drftpd.master.usermanager.NoSuchUserException;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.usermanager.UserFileException;
@@ -55,27 +55,76 @@ import java.util.concurrent.atomic.AtomicInteger;
 @SuppressWarnings("serial")
 public class BaseFtpConnection extends Session implements Runnable {
 
-    private static final Logger logger = LogManager.getLogger(BaseFtpConnection.class);
-
     public static final Key<InetAddress> ADDRESS = new Key<>(BaseFtpConnection.class, "address");
     public static final Key<String> IDENT = new Key<>(BaseFtpConnection.class, "ident");
-
     public static final Key<Boolean> FAILEDLOGIN = new Key<>(BaseFtpConnection.class, "failedlogin");
-
     public static final Key<String> FAILEDREASON = new Key<>(BaseFtpConnection.class, "failedreason");
-
     public static final Key<String> FAILEDUSERNAME = new Key<>(BaseFtpConnection.class, "failedusername");
-
     public static final String NEWLINE = "\r\n";
-
+    private static final Logger logger = LogManager.getLogger(BaseFtpConnection.class);
     /**
      * Is the current password authenticated?
      */
     protected boolean _authenticated = false;
-
-    private CommandManagerInterface _commandManager;
-
     protected Socket _controlSocket;
+    protected DirectoryHandle _currentDirectory;
+    /**
+     * time when last command from the client finished execution
+     */
+    protected long _lastActive;
+    protected PrintWriter _out;
+    protected FtpRequest _request;
+    /**
+     * Should this thread stop insted of continue looping?
+     */
+    protected boolean _stopRequest = false;
+    protected String _stopRequestMessage;
+    protected Thread _thread;
+    protected String _user;
+    private CommandManagerInterface _commandManager;
+    private BufferedReader _in;
+    private ThreadPoolExecutor _pool;
+    private boolean _authDone = false;
+    private final AtomicInteger _commandCount = new AtomicInteger(0);
+
+    protected BaseFtpConnection() {
+    }
+
+    public BaseFtpConnection(Socket soc) {
+        setControlSocket(soc);
+    }
+
+    public static int countTransfersForUser(User user, char transferDirection) {
+
+        int count = 0;
+        for (BaseFtpConnection conn : GlobalContext.getConnectionManager().getConnections()) {
+            if (conn.getUserNull() == user) {
+                if (conn.getTransferState().getDirection() == transferDirection) {
+                    count++;
+                } // else we dont need to process it.
+            }
+        }
+        return count;
+    }
+
+    /**
+     * When a user is renamed the control connection looses its owner since the reference to the User
+     * is actually made thru a String containing the username.<br>
+     * This methods iterates thru all control connections trying to match connections owned by 'oldUsername'
+     * and re-sets it to 'newUsername'.
+     *
+     * @param oldUsername
+     * @param newUsername
+     */
+    public static void fixBaseFtpConnUser(String oldUsername, String newUsername) {
+        for (BaseFtpConnection conn : GlobalContext.getConnectionManager().getConnections()) {
+            if (conn.getUsername() == null) {
+                // User authentication not completed yet for this connection
+            } else if (conn.getUsername().equals(oldUsername)) {
+                conn.setUser(newUsername);
+            }
+        }
+    }
 
     public TransferState getTransferState() {
         TransferState ts;
@@ -86,43 +135,6 @@ public class BaseFtpConnection extends Session implements Runnable {
             setObject(TransferState.TRANSFERSTATE, ts);
         }
         return ts;
-    }
-
-    protected DirectoryHandle _currentDirectory;
-
-    private BufferedReader _in;
-
-    /**
-     * time when last command from the client finished execution
-     */
-    protected long _lastActive;
-
-    protected PrintWriter _out;
-
-    protected FtpRequest _request;
-
-    /**
-     * Should this thread stop insted of continue looping?
-     */
-    protected boolean _stopRequest = false;
-
-    protected String _stopRequestMessage;
-
-    protected Thread _thread;
-
-    protected String _user;
-
-    private ThreadPoolExecutor _pool;
-
-    private boolean _authDone = false;
-
-    private AtomicInteger _commandCount = new AtomicInteger(0);
-
-    protected BaseFtpConnection() {
-    }
-
-    public BaseFtpConnection(Socket soc) {
-        setControlSocket(soc);
     }
 
     /**
@@ -144,12 +156,30 @@ public class BaseFtpConnection extends Session implements Runnable {
         return _controlSocket;
     }
 
+    public void setControlSocket(Socket socket) {
+        try {
+            _controlSocket = socket;
+            _in = new BufferedReader(new InputStreamReader(_controlSocket
+                    .getInputStream(), StandardCharsets.ISO_8859_1));
+
+            _out = new PrintWriter(new OutputStreamWriter(
+                    new AddAsciiOutputStream(new BufferedOutputStream(
+                            _controlSocket.getOutputStream())), StandardCharsets.ISO_8859_1));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public PrintWriter getControlWriter() {
         return _out;
     }
 
     public DirectoryHandle getCurrentDirectory() {
         return _currentDirectory;
+    }
+
+    public void setCurrentDirectory(DirectoryHandle path) {
+        _currentDirectory = path;
     }
 
     /*
@@ -185,6 +215,10 @@ public class BaseFtpConnection extends Session implements Runnable {
         } catch (UserFileException e) {
             throw new NoSuchUserException(e);
         }
+    }
+
+    public void setUser(String user) {
+        _user = user;
     }
 
     public User getUserNull() {
@@ -225,6 +259,28 @@ public class BaseFtpConnection extends Session implements Runnable {
 
     public boolean isAuthenticated() {
         return _authenticated;
+    }
+
+    public void setAuthenticated(boolean authenticated) {
+        _authenticated = authenticated;
+
+        if (isAuthenticated()) {
+            try {
+                // If hideips is on, hide ip but not user/group
+                if (GlobalContext.getConfig().getHideIps()) {
+                    _thread.setName("FtpConn thread " + _thread.getId()
+                            + " servicing " + _user + "/"
+                            + getUser().getGroup());
+                } else {
+                    _thread.setName("FtpConn thread " + _thread.getId()
+                            + " from " + getClientAddress().getHostAddress()
+                            + " " + _user + "/" + getUser().getGroup());
+                }
+            } catch (NoSuchUserException e) {
+                logger
+                        .error("User does not exist, yet user is authenticated, this is a bug");
+            }
+        }
     }
 
     /**
@@ -382,50 +438,6 @@ public class BaseFtpConnection extends Session implements Runnable {
         }
     }
 
-    public void setAuthenticated(boolean authenticated) {
-        _authenticated = authenticated;
-
-        if (isAuthenticated()) {
-            try {
-                // If hideips is on, hide ip but not user/group
-                if (GlobalContext.getConfig().getHideIps()) {
-                    _thread.setName("FtpConn thread " + _thread.getId()
-                            + " servicing " + _user + "/"
-                            + getUser().getGroup());
-                } else {
-                    _thread.setName("FtpConn thread " + _thread.getId()
-                            + " from " + getClientAddress().getHostAddress()
-                            + " " + _user + "/" + getUser().getGroup());
-                }
-            } catch (NoSuchUserException e) {
-                logger
-                        .error("User does not exist, yet user is authenticated, this is a bug");
-            }
-        }
-    }
-
-    public void setControlSocket(Socket socket) {
-        try {
-            _controlSocket = socket;
-            _in = new BufferedReader(new InputStreamReader(_controlSocket
-                    .getInputStream(), StandardCharsets.ISO_8859_1));
-
-            _out = new PrintWriter(new OutputStreamWriter(
-                    new AddAsciiOutputStream(new BufferedOutputStream(
-                            _controlSocket.getOutputStream())), StandardCharsets.ISO_8859_1));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public void setCurrentDirectory(DirectoryHandle path) {
-        _currentDirectory = path;
-    }
-
-    public void setUser(String user) {
-        _user = user;
-    }
-
     /**
      * returns a two-line status
      */
@@ -468,38 +480,6 @@ public class BaseFtpConnection extends Session implements Runnable {
         buf.append("]");
 
         return buf.toString();
-    }
-
-    public static int countTransfersForUser(User user, char transferDirection) {
-
-        int count = 0;
-        for (BaseFtpConnection conn : GlobalContext.getConnectionManager().getConnections()) {
-            if (conn.getUserNull() == user) {
-                if (conn.getTransferState().getDirection() == transferDirection) {
-                    count++;
-                } // else we dont need to process it.
-            }
-        }
-        return count;
-    }
-
-    /**
-     * When a user is renamed the control connection looses its owner since the reference to the User
-     * is actually made thru a String containing the username.<br>
-     * This methods iterates thru all control connections trying to match connections owned by 'oldUsername'
-     * and re-sets it to 'newUsername'.
-     *
-     * @param oldUsername
-     * @param newUsername
-     */
-    public static void fixBaseFtpConnUser(String oldUsername, String newUsername) {
-        for (BaseFtpConnection conn : GlobalContext.getConnectionManager().getConnections()) {
-            if (conn.getUsername() == null) {
-                // User authentication not completed yet for this connection
-            } else if (conn.getUsername().equals(oldUsername)) {
-                conn.setUser(newUsername);
-            }
-        }
     }
 
     public synchronized void printOutput(Object o) {
@@ -564,11 +544,26 @@ public class BaseFtpConnection extends Session implements Runnable {
         return o == this;
     }
 
+    static class CommandThreadFactory implements ThreadFactory {
+
+        String _parentName;
+
+        private CommandThreadFactory(String parentName) {
+            _parentName = parentName;
+        }
+
+        public Thread newThread(Runnable r) {
+            Thread ret = Executors.defaultThreadFactory().newThread(r);
+            ret.setName(_parentName + " - " + ret.getName());
+            return ret;
+        }
+    }
+
     class CommandThread implements Runnable {
 
-        private FtpRequest _ftpRequest;
+        private final FtpRequest _ftpRequest;
 
-        private BaseFtpConnection _conn;
+        private final BaseFtpConnection _conn;
 
         private CommandThread(FtpRequest ftpRequest, BaseFtpConnection conn) {
             _ftpRequest = ftpRequest;
@@ -602,21 +597,6 @@ public class BaseFtpConnection extends Session implements Runnable {
             }
 
             _commandCount.decrementAndGet();
-        }
-    }
-
-    static class CommandThreadFactory implements ThreadFactory {
-
-        String _parentName;
-
-        private CommandThreadFactory(String parentName) {
-            _parentName = parentName;
-        }
-
-        public Thread newThread(Runnable r) {
-            Thread ret = Executors.defaultThreadFactory().newThread(r);
-            ret.setName(_parentName + " - " + ret.getName());
-            return ret;
         }
     }
 }

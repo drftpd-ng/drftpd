@@ -17,16 +17,17 @@
  */
 package org.drftpd.slave.network;
 
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
-import org.drftpd.common.network.PassiveConnection;
+import org.apache.logging.log4j.Logger;
 import org.drftpd.common.exceptions.TransferDeniedException;
 import org.drftpd.common.exceptions.TransferFailedException;
 import org.drftpd.common.exceptions.TransferSlowException;
 import org.drftpd.common.io.AddAsciiOutputStream;
 import org.drftpd.common.io.PhysicalFile;
-import org.drftpd.common.slave.*;
+import org.drftpd.common.network.PassiveConnection;
+import org.drftpd.common.slave.Connection;
+import org.drftpd.common.slave.TransferIndex;
+import org.drftpd.common.slave.TransferStatus;
 import org.drftpd.common.util.HostMask;
 import org.drftpd.slave.Slave;
 import org.drftpd.slave.exceptions.FileExistsException;
@@ -46,46 +47,26 @@ import java.util.zip.CheckedOutputStream;
  * @version $Id$
  */
 public class Transfer {
-    private static final Logger logger = LogManager.getLogger(Transfer.class);
-
-    private String _abortReason = null;
-
-    private CRC32 _checksum = null;
-
-    private Connection _conn;
-
-    private char _direction;
-
-    private long _finished = 0;
-
-    private ThrottledInputStream _int;
-
-    private InputStream _in;
-
-    private char _mode = 'I';
-
-    private OutputStream _out;
-
-    private Slave _slave;
-
-    private Socket _sock;
-
-    private long _started = 0;
-
-    private long _transfered = 0;
-
-    private TransferIndex _transferIndex;
-
     public static final char TRANSFER_RECEIVING_UPLOAD = 'R';
-
     public static final char TRANSFER_SENDING_DOWNLOAD = 'S';
-
     public static final char TRANSFER_UNKNOWN = 'U';
-
-    private String _pathForUpload = null;
-
+    private static final Logger logger = LogManager.getLogger(Transfer.class);
     private static final String separator = "/";
-
+    private String _abortReason = null;
+    private CRC32 _checksum = null;
+    private Connection _conn;
+    private char _direction;
+    private long _finished = 0;
+    private ThrottledInputStream _int;
+    private InputStream _in;
+    private final char _mode = 'I';
+    private OutputStream _out;
+    private final Slave _slave;
+    private Socket _sock;
+    private long _started = 0;
+    private long _transfered = 0;
+    private final TransferIndex _transferIndex;
+    private String _pathForUpload = null;
     private long _minSpeed = 0L;
 
     private long _maxSpeed = 0L;
@@ -226,12 +207,12 @@ public class Transfer {
         return _minSpeed;
     }
 
-    public long getMaxSpeed() {
-        return _maxSpeed;
-    }
-
     public void setMinSpeed(long minSpeed) {
         _minSpeed = minSpeed;
+    }
+
+    public long getMaxSpeed() {
+        return _maxSpeed;
     }
 
     public void setMaxSpeed(long maxSpeed) {
@@ -449,7 +430,7 @@ public class Transfer {
                         if (first ? delay >= 5000 : delay >= 5000) {
                             first = false;
                             if (getXferSpeed() < _minSpeed) {
-                                throw new TransferSlowException("Transfer was aborted - '" + String.valueOf(getXferSpeed() + "' is < '" + _minSpeed + "'"), getTransferStatus());
+                                throw new TransferSlowException("Transfer was aborted - '" + getXferSpeed() + "' is < '" + _minSpeed + "'", getTransferStatus());
                             }
                         }
                     }

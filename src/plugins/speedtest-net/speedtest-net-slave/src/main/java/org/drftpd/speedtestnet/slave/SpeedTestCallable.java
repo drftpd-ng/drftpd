@@ -26,7 +26,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.Callable;
@@ -37,79 +36,79 @@ import java.util.concurrent.ExecutionException;
  */
 public class SpeedTestCallable implements Callable<Long> {
 
-	private CloseableHttpResponse response;
-	private CloseableHttpClient httpClient;
-	private HttpPost httpPost;
-	private HttpGet httpGet;
+    private CloseableHttpResponse response;
+    private final CloseableHttpClient httpClient;
+    private HttpPost httpPost;
+    private HttpGet httpGet;
 
-	public SpeedTestCallable() {
-		httpClient = HttpClients.createDefault();
-	}
+    public SpeedTestCallable() {
+        httpClient = HttpClients.createDefault();
+    }
 
-	public void setHttpPost(HttpPost httpPost) {
-		this.httpPost = httpPost;
-	}
+    public void setHttpPost(HttpPost httpPost) {
+        this.httpPost = httpPost;
+    }
 
-	public void setHttpGet(HttpGet httpGet) {
-		this.httpGet = httpGet;
-	}
+    public void setHttpGet(HttpGet httpGet) {
+        this.httpGet = httpGet;
+    }
 
-	@Override
-	public Long call() throws Exception {
-		Long bytes = 0L;
-		try {
-			if (httpPost != null) {
-				response = httpClient.execute(httpPost);
-				final int statusCode = response.getStatusLine().getStatusCode();
-				if (statusCode != HttpStatus.SC_OK) {
-					throw new Exception("Error code " + statusCode + " while running upload test.");
-				}
+    @Override
+    public Long call() throws Exception {
+        Long bytes = 0L;
+        try {
+            if (httpPost != null) {
+                response = httpClient.execute(httpPost);
+                final int statusCode = response.getStatusLine().getStatusCode();
+                if (statusCode != HttpStatus.SC_OK) {
+                    throw new Exception("Error code " + statusCode + " while running upload test.");
+                }
 
-				HttpEntity entity = response.getEntity();
-				String data = EntityUtils.toString(entity);
-				EntityUtils.consume(entity);
-				if (!data.startsWith("size=")) {
-					throw new Exception("Wrong return result from upload messurement from test server.\nReceived: " + data);
-				}
-				bytes = Long.parseLong(data.replaceAll("\\D", ""));
-			} else if (httpGet != null) {
-				response = httpClient.execute(httpGet);
-				final int statusCode = response.getStatusLine().getStatusCode();
-				if (statusCode != HttpStatus.SC_OK) {
-					throw new Exception("Error code " + statusCode + " while running upload test.");
-				}
-				HttpEntity entity = response.getEntity();
-				InputStream instream = entity.getContent();
-				int bufferSize = 10240;
-				byte[] buffer = new byte[bufferSize];
-				int len;
-				while ((len = instream.read(buffer)) != -1) {
-					bytes = bytes + len;
-				}
-				EntityUtils.consume(entity);
-			}
-		} catch (Exception e) {
-			throw new ExecutionException(e);
-		} finally {
-			try {
-				if (response != null) {
-					response.close();
-				}
-			} catch (IOException e) {
-				// Must already be closed, ignore.
-			}
-		}
+                HttpEntity entity = response.getEntity();
+                String data = EntityUtils.toString(entity);
+                EntityUtils.consume(entity);
+                if (!data.startsWith("size=")) {
+                    throw new Exception("Wrong return result from upload messurement from test server.\nReceived: " + data);
+                }
+                bytes = Long.parseLong(data.replaceAll("\\D", ""));
+            } else if (httpGet != null) {
+                response = httpClient.execute(httpGet);
+                final int statusCode = response.getStatusLine().getStatusCode();
+                if (statusCode != HttpStatus.SC_OK) {
+                    throw new Exception("Error code " + statusCode + " while running upload test.");
+                }
+                HttpEntity entity = response.getEntity();
+                InputStream instream = entity.getContent();
+                int bufferSize = 10240;
+                byte[] buffer = new byte[bufferSize];
+                int len;
+                while ((len = instream.read(buffer)) != -1) {
+                    bytes = bytes + len;
+                }
+                EntityUtils.consume(entity);
+            }
+        } catch (Exception e) {
+            throw new ExecutionException(e);
+        } finally {
+            try {
+                if (response != null) {
+                    response.close();
+                }
+            } catch (IOException e) {
+                // Must already be closed, ignore.
+            }
+        }
 
-		return bytes;
-	}
+        return bytes;
+    }
 
-	public void close() {
-		if (httpClient != null) {
-			try {
-				httpClient.close();
-			} catch (IOException e) {
-				// Must already be closed, ignore.
-			}
-		}
-	}
+    public void close() {
+        if (httpClient != null) {
+            try {
+                httpClient.close();
+            } catch (IOException e) {
+                // Must already be closed, ignore.
+            }
+        }
+    }
 }

@@ -21,22 +21,22 @@ package org.drftpd.master.vfs;
  * @author zubov
  * @version $Id$
  * @description To be thrown when the requested file system object isn't of the
- *              requested type of object i.e, getDirectory() when the object is
- *              a file
+ * requested type of object i.e, getDirectory() when the object is
+ * a file
  */
 @SuppressWarnings("serial")
 public class ObjectNotValidException extends Exception {
 
-	public ObjectNotValidException(String arg0) {
-		super(arg0);
-	}
+    public ObjectNotValidException(String arg0) {
+        super(arg0);
+    }
 
-	public ObjectNotValidException(String arg0, Throwable arg1) {
-		super(arg0, arg1);
-	}
+    public ObjectNotValidException(String arg0, Throwable arg1) {
+        super(arg0, arg1);
+    }
 
-	public ObjectNotValidException(Throwable arg0) {
-		super(arg0);
-	}
+    public ObjectNotValidException(Throwable arg0) {
+        super(arg0);
+    }
 
 }

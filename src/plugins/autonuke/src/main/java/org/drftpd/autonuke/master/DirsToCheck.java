@@ -23,46 +23,47 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Holds a queue of items(Directory & NukeConfig) to scan
+ *
  * @author scitz0
  */
 public class DirsToCheck {
-	private static DirsToCheck ref;
-	private ConcurrentLinkedQueue<DirectoryHandle> _dirsToCheck;
+    private static DirsToCheck ref;
+    private final ConcurrentLinkedQueue<DirectoryHandle> _dirsToCheck;
 
-	private DirsToCheck() {
-		_dirsToCheck = new ConcurrentLinkedQueue<>();
-	}
+    private DirsToCheck() {
+        _dirsToCheck = new ConcurrentLinkedQueue<>();
+    }
 
-	public ConcurrentLinkedQueue<DirectoryHandle> get() {
-		return _dirsToCheck;
-	}
+    public static synchronized DirsToCheck getDirsToCheck() {
+        if (ref == null)
+            // it's ok, we can call this constructor
+            ref = new DirsToCheck();
+        return ref;
+    }
 
-	public void add(DirectoryHandle dir) {
-	   	_dirsToCheck.add(dir);
-	}
+    public ConcurrentLinkedQueue<DirectoryHandle> get() {
+        return _dirsToCheck;
+    }
 
-	public void del(String path) {
+    public void add(DirectoryHandle dir) {
+        _dirsToCheck.add(dir);
+    }
+
+    public void del(String path) {
         _dirsToCheck.removeIf(dir -> dir.getPath().equals(path));
-	}
+    }
 
-	public int clear() {
-		int dirsInList = _dirsToCheck.size();
-		_dirsToCheck.clear();
-		return dirsInList;
-	}
+    public int clear() {
+        int dirsInList = _dirsToCheck.size();
+        _dirsToCheck.clear();
+        return dirsInList;
+    }
 
-	public boolean empty() {
-		return _dirsToCheck.isEmpty();
-	}
+    public boolean empty() {
+        return _dirsToCheck.isEmpty();
+    }
 
-	public int size() {
-		return _dirsToCheck.size();
-	}
-
-	public static synchronized DirsToCheck getDirsToCheck() {
-	  	if (ref == null)
-			// it's ok, we can call this constructor
-			ref = new DirsToCheck();
-		return ref;
-	}
+    public int size() {
+        return _dirsToCheck.size();
+    }
 }

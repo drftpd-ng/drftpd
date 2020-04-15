@@ -71,10 +71,12 @@ public class DummyUser extends AbstractUser {
     public AbstractUserManager getAbstractUserManager() {
         return _userManager;
     }
+
     public void writeToDisk() throws IOException {
 
     }
+
     public String descriptiveName() {
-		return getName();
-	}
+        return getName();
+    }
 }

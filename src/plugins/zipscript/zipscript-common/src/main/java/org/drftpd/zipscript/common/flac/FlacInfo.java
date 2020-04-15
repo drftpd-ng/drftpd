@@ -17,9 +17,9 @@
  */
 package org.drftpd.zipscript.common.flac;
 
-import java.io.Serializable;
-
 import org.drftpd.common.dynamicdata.Key;
+
+import java.io.Serializable;
 
 /**
  * @author norox
@@ -27,48 +27,48 @@ import org.drftpd.common.dynamicdata.Key;
 @SuppressWarnings("serial")
 public class FlacInfo implements Serializable {
 
-	public static final Key<FlacInfo> FLACINFO = new Key<>(FlacInfo.class, "flac");
+    public static final Key<FlacInfo> FLACINFO = new Key<>(FlacInfo.class, "flac");
 
-	private VorbisTag _vorbisTag;
+    private VorbisTag _vorbisTag;
 
-	private int _samplerate = 0;
+    private int _samplerate = 0;
 
-	private int _channels = 0;
+    private int _channels = 0;
 
-	private float _runtime = 0;
+    private float _runtime = 0;
 
-	public FlacInfo() {
-	}
+    public FlacInfo() {
+    }
 
-	public VorbisTag getVorbisTag() {
-		return _vorbisTag;
-	}
+    public VorbisTag getVorbisTag() {
+        return _vorbisTag;
+    }
 
-	public void setVorbisTag(VorbisTag vorbisTag) {
-		_vorbisTag = vorbisTag;
-	}
+    public void setVorbisTag(VorbisTag vorbisTag) {
+        _vorbisTag = vorbisTag;
+    }
 
-	public int getSamplerate() {
-		return _samplerate;
-	}
+    public int getSamplerate() {
+        return _samplerate;
+    }
 
-	public void setSamplerate(int samplerate) {
-		_samplerate = samplerate;
-	}
+    public void setSamplerate(int samplerate) {
+        _samplerate = samplerate;
+    }
 
-	public int getChannels() {
-		return _channels;
-	}
+    public int getChannels() {
+        return _channels;
+    }
 
-	public void setChannels(int channels) {
-		_channels = channels;
-	}
+    public void setChannels(int channels) {
+        _channels = channels;
+    }
 
-	public float getRuntime() {
-		return _runtime;
-	}
+    public float getRuntime() {
+        return _runtime;
+    }
 
-	public void setRuntime(float runtime) {
-		_runtime = runtime;
-	}
+    public void setRuntime(float runtime) {
+        _runtime = runtime;
+    }
 }

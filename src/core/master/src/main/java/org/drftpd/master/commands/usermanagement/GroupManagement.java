@@ -26,7 +26,7 @@ import java.util.Date;
  */
 public class GroupManagement {
 
-	public static final Key<Date> CREATED = new Key<>(GroupManagement.class, "created");
+    public static final Key<Date> CREATED = new Key<>(GroupManagement.class, "created");
 
     public static final Key<Integer> GROUPSLOTS = new Key<>(GroupManagement.class, "groupslots");
 

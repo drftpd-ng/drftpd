@@ -18,7 +18,6 @@
 package org.drftpd.master.indexation;
 
 import org.apache.lucene.search.BooleanQuery;
-import org.drftpd.master.indexation.AdvancedSearchParams;
 
 /**
  * @author djb61
@@ -26,11 +25,11 @@ import org.drftpd.master.indexation.AdvancedSearchParams;
  */
 public interface QueryTermExtensionInterface {
 
-	/**
-	 * This method is called whenever a query is made to the index.
-	 * If any relevant data is contained within the extension map of
-	 * the search parameters this should be added to the index query
-	 * appropriately.
-	 */
+    /**
+     * This method is called whenever a query is made to the index.
+     * If any relevant data is contained within the extension map of
+     * the search parameters this should be added to the index query
+     * appropriately.
+     */
     void addQueryTerms(BooleanQuery query, AdvancedSearchParams params);
 }

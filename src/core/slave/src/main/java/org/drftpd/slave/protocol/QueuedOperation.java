@@ -25,38 +25,38 @@ import java.io.Serializable;
  */
 public class QueuedOperation implements Serializable {
 
-	private static final long serialVersionUID = 3258125869099659321L;
+    private static final long serialVersionUID = 3258125869099659321L;
 
-	private String _source;
+    private final String _source;
 
-	private String _destination;
+    private final String _destination;
 
-	public boolean equals(Object obj) {
-		if (!(obj instanceof QueuedOperation)) {
-			return false;
-		}
-		
-		QueuedOperation arg = (QueuedOperation) obj;
-		return arg.getSource().equals(getSource());
-	}
+    public QueuedOperation(String src, String dest) {
+        if (src == null) {
+            throw new IllegalStateException("Source cannot be null");
+        }
+        this._source = src;
+        this._destination = dest;
+    }
 
-	public int hashCode() {
-		return _source.hashCode();
-	}
+    public boolean equals(Object obj) {
+        if (!(obj instanceof QueuedOperation)) {
+            return false;
+        }
 
-	public QueuedOperation(String src, String dest) {
-		if (src == null) {
-			throw new IllegalStateException("Source cannot be null");
-		}
-		this._source = src;
-		this._destination = dest;
-	}
+        QueuedOperation arg = (QueuedOperation) obj;
+        return arg.getSource().equals(getSource());
+    }
 
-	public String getSource() {
-		return _source;
-	}
+    public int hashCode() {
+        return _source.hashCode();
+    }
 
-	public String getDestination() {
-		return _destination;
-	}
+    public String getSource() {
+        return _source;
+    }
+
+    public String getDestination() {
+        return _destination;
+    }
 }

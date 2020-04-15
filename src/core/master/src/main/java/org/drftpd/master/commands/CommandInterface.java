@@ -30,10 +30,15 @@ import org.drftpd.master.usermanager.NoSuchUserException;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.usermanager.UserFileException;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author djb61
@@ -41,129 +46,129 @@ import java.util.*;
  */
 public abstract class CommandInterface {
 
-	private static final Logger logger = LogManager.getLogger(CommandInterface.class);
+    private static final Logger logger = LogManager.getLogger(CommandInterface.class);
 
-	protected String[] _featReplies;
+    protected String[] _featReplies;
 
-	private Multimap<Integer, HookContainer> _postHooks;
+    private Multimap<Integer, HookContainer> _postHooks;
 
-	private Multimap<Integer, HookContainer> _preHooks;
+    private Multimap<Integer, HookContainer> _preHooks;
 
-	public CommandInterface() {
-		// Subscribe to events
-		AnnotationProcessor.process(this);
-	}
+    public CommandInterface() {
+        // Subscribe to events
+        AnnotationProcessor.process(this);
+    }
 
-	public synchronized void initialize(String method, String pluginName, StandardCommandManager cManager) {
-		Multimap<Integer, HookContainer> postHooks = MultimapBuilder.treeKeys().linkedListValues().build();
-		Multimap<Integer, HookContainer> preHooks = MultimapBuilder.treeKeys().linkedListValues().build();
-		Set<Method> hooksMethods = GlobalContext.getHooksMethods();
-		// TODO [DONE] @k2r Plug hooks
-		logger.debug("[" + pluginName + ":" + method + "] Looking for hooks to attach here");
-		try {
-			for (Method annotatedMethod : hooksMethods) {
-				Class<?> declaringClass = annotatedMethod.getDeclaringClass();
-				CommandHook annotation = annotatedMethod.getAnnotation(CommandHook.class);
-				int priority = annotation.priority();
-				List<String> commands = Arrays.asList(annotation.commands());
-				// boolean handleClass = commands.stream().filter(c -> method.matches(c)).collect(Collectors.toList()).size() > 0;
+    public synchronized void initialize(String method, String pluginName, StandardCommandManager cManager) {
+        Multimap<Integer, HookContainer> postHooks = MultimapBuilder.treeKeys().linkedListValues().build();
+        Multimap<Integer, HookContainer> preHooks = MultimapBuilder.treeKeys().linkedListValues().build();
+        Set<Method> hooksMethods = GlobalContext.getHooksMethods();
+        // TODO [DONE] @k2r Plug hooks
+        logger.debug("[" + pluginName + ":" + method + "] Looking for hooks to attach here");
+        try {
+            for (Method annotatedMethod : hooksMethods) {
+                Class<?> declaringClass = annotatedMethod.getDeclaringClass();
+                CommandHook annotation = annotatedMethod.getAnnotation(CommandHook.class);
+                int priority = annotation.priority();
+                List<String> commands = Arrays.asList(annotation.commands());
+                // boolean handleClass = commands.stream().filter(c -> method.matches(c)).collect(Collectors.toList()).size() > 0;
 
-				boolean handleClass = commands.contains(method) || commands.contains("*");
-				if (!handleClass) continue;
+                boolean handleClass = commands.contains(method) || commands.contains("*");
+                if (!handleClass) continue;
 
-				Object hookClass = declaringClass.getConstructor().newInstance();
-				HookType type = annotation.type();
-				if (type.equals(HookType.PRE)) {
-					preHooks.put(priority, new HookContainer(annotatedMethod, hookClass));
-				} else {
-					postHooks.put(priority, new HookContainer(annotatedMethod, hookClass));
-				}
-			}
-		} catch (Exception e) {
-			logger.error("Failed to load plugins for {} extension point 'PreHook', possibly the {} extension point definition has changed in the plugin.xml", pluginName, pluginName, e);
-		}
-		logger.debug("[" + pluginName + ":" + method + "] Loaded [" + preHooks.size() + "] prehooks and [" + postHooks.size() + "] posthooks");
-		_preHooks = preHooks;
-		_postHooks = postHooks;
-	}
+                Object hookClass = declaringClass.getConstructor().newInstance();
+                HookType type = annotation.type();
+                if (type.equals(HookType.PRE)) {
+                    preHooks.put(priority, new HookContainer(annotatedMethod, hookClass));
+                } else {
+                    postHooks.put(priority, new HookContainer(annotatedMethod, hookClass));
+                }
+            }
+        } catch (Exception e) {
+            logger.error("Failed to load plugins for {} extension point 'PreHook', possibly the {} extension point definition has changed in the plugin.xml", pluginName, pluginName, e);
+        }
+        logger.debug("[" + pluginName + ":" + method + "] Loaded [" + preHooks.size() + "] prehooks and [" + postHooks.size() + "] posthooks");
+        _preHooks = preHooks;
+        _postHooks = postHooks;
+    }
 
-	protected void doPostHooks(CommandRequestInterface request, CommandResponseInterface response) {
-		for (HookContainer hook : _postHooks.values()) {
-			Method m = hook.getMethod();
-			try {
-				m.invoke(hook.getHookInterfaceInstance(), request, response);
-			} catch (Exception e) {
-				// Not that important, this just means that this post hook failed and we'll just move onto the next one
-				logger.error("Error while loading/invoking posthook {}", m.toString(), e.getCause());
-			}
-		}
-	}
+    protected void doPostHooks(CommandRequestInterface request, CommandResponseInterface response) {
+        for (HookContainer hook : _postHooks.values()) {
+            Method m = hook.getMethod();
+            try {
+                m.invoke(hook.getHookInterfaceInstance(), request, response);
+            } catch (Exception e) {
+                // Not that important, this just means that this post hook failed and we'll just move onto the next one
+                logger.error("Error while loading/invoking posthook {}", m.toString(), e.getCause());
+            }
+        }
+    }
 
-	protected CommandRequestInterface doPreHooks(CommandRequestInterface request) {
-		request.setAllowed(true);
-		for (HookContainer hook : _preHooks.values()) {
-			Method m = hook.getMethod();
-			try {
-				request = (CommandRequestInterface) m.invoke(hook.getHookInterfaceInstance(), new Object[]{request});
-			} catch (Exception e) {
-				// Not that important, this just means that this pre hook failed and we'll just move onto the next one
-				logger.error("Error while loading/invoking prehook {}", m.toString(), e.getCause());
-			}
-		}
-		return request;
-	}
+    protected CommandRequestInterface doPreHooks(CommandRequestInterface request) {
+        request.setAllowed(true);
+        for (HookContainer hook : _preHooks.values()) {
+            Method m = hook.getMethod();
+            try {
+                request = (CommandRequestInterface) m.invoke(hook.getHookInterfaceInstance(), new Object[]{request});
+            } catch (Exception e) {
+                // Not that important, this just means that this pre hook failed and we'll just move onto the next one
+                logger.error("Error while loading/invoking prehook {}", m.toString(), e.getCause());
+            }
+        }
+        return request;
+    }
 
-	protected User getUserObject(String user) throws NoSuchUserException, UserFileException {
-		return GlobalContext.getGlobalContext().getUserManager().getUserByName(user);
-	}
+    protected User getUserObject(String user) throws NoSuchUserException, UserFileException {
+        return GlobalContext.getGlobalContext().getUserManager().getUserByName(user);
+    }
 
-	public String[] getFeatReplies() {
-		return _featReplies;
-	}
+    public String[] getFeatReplies() {
+        return _featReplies;
+    }
 
-	public void addTextToResponse(CommandResponse response, String file) throws IOException {
-		BufferedReader reader = null;
-		try {
-			reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), StandardCharsets.ISO_8859_1));
-			response.addComment(reader);
-			reader.close();
-		} finally {
-			if (reader != null)
-				reader.close();
-		}
-	}
+    public void addTextToResponse(CommandResponse response, String file) throws IOException {
+        BufferedReader reader = null;
+        try {
+            reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), StandardCharsets.ISO_8859_1));
+            response.addComment(reader);
+            reader.close();
+        } finally {
+            if (reader != null)
+                reader.close();
+        }
+    }
 
-	protected boolean checkCustomPermissionWithPrimaryGroup(User targetUser, CommandRequest request, String permissionName, String defaultPermission) {
-		if (checkCustomPermission(request, permissionName, defaultPermission)) {
-			return false;
-		}
-		try {
-			return targetUser.getGroup().equals(request.getUserObject().getGroup());
-		} catch (NoSuchUserException | UserFileException e) {
-			logger.warn("", e);
-			return false;
-		}
-	}
+    protected boolean checkCustomPermissionWithPrimaryGroup(User targetUser, CommandRequest request, String permissionName, String defaultPermission) {
+        if (checkCustomPermission(request, permissionName, defaultPermission)) {
+            return false;
+        }
+        try {
+            return targetUser.getGroup().equals(request.getUserObject().getGroup());
+        } catch (NoSuchUserException | UserFileException e) {
+            logger.warn("", e);
+            return false;
+        }
+    }
 
-	protected boolean checkCustomPermission(CommandRequest request, String permissionName,
-	                                        String defaultPermission) {
-		String permissionString = request.getProperties().getProperty(permissionName, defaultPermission);
-		User user;
-		try {
-			user = request.getUserObject();
-		} catch (NoSuchUserException | UserFileException e) {
-			logger.warn("", e);
-			return false;
-		}
-		return new Permission(permissionString).check(user);
-	}
+    protected boolean checkCustomPermission(CommandRequest request, String permissionName,
+                                            String defaultPermission) {
+        String permissionString = request.getProperties().getProperty(permissionName, defaultPermission);
+        User user;
+        try {
+            user = request.getUserObject();
+        } catch (NoSuchUserException | UserFileException e) {
+            logger.warn("", e);
+            return false;
+        }
+        return new Permission(permissionString).check(user);
+    }
 
-	/**
-	 * Called when the command instance has been unloaded from the parent command map. At this
-	 * point the command is no longer referenced or accessible, this method performs any cleanup
-	 * required at this point.
-	 */
-	protected void unload() {
-		AnnotationProcessor.unprocess(this);
-	}
+    /**
+     * Called when the command instance has been unloaded from the parent command map. At this
+     * point the command is no longer referenced or accessible, this method performs any cleanup
+     * required at this point.
+     */
+    protected void unload() {
+        AnnotationProcessor.unprocess(this);
+    }
 }

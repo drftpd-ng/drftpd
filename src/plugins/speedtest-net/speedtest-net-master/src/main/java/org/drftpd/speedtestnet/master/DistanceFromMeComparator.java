@@ -23,36 +23,37 @@ import java.util.Comparator;
  * @author scitz0
  */
 public class DistanceFromMeComparator implements Comparator<SpeedTestServer> {
-	double myLat;
-	double myLong;
+    double myLat;
+    double myLong;
 
-	public DistanceFromMeComparator(double lat, double lon) {
-		myLat = lat;
-		myLong = lon;
-	}
+    public DistanceFromMeComparator(double lat, double lon) {
+        myLat = lat;
+        myLong = lon;
+    }
 
-	private Double distanceFromMe(SpeedTestServer s) {
-		double theta = s.getLongitude() - myLong;
-		double dist = Math.sin(deg2rad(s.getLatitude())) * Math.sin(deg2rad(myLat))
-				+ Math.cos(deg2rad(s.getLatitude())) * Math.cos(deg2rad(myLat))
-				* Math.cos(deg2rad(theta));
-		dist = Math.acos(dist);
-		dist = rad2deg(dist);
-		return dist;
-	}
+    private Double distanceFromMe(SpeedTestServer s) {
+        double theta = s.getLongitude() - myLong;
+        double dist = Math.sin(deg2rad(s.getLatitude())) * Math.sin(deg2rad(myLat))
+                + Math.cos(deg2rad(s.getLatitude())) * Math.cos(deg2rad(myLat))
+                * Math.cos(deg2rad(theta));
+        dist = Math.acos(dist);
+        dist = rad2deg(dist);
+        return dist;
+    }
 
-	private double deg2rad(double deg) { return (deg * Math.PI / 180.0); }
-	private double rad2deg(double rad) { return (rad * 180.0 / Math.PI); }
+    private double deg2rad(double deg) { return (deg * Math.PI / 180.0); }
 
-	@Override
-	public int compare(SpeedTestServer s1, SpeedTestServer s2) {
-		int result = distanceFromMe(s1).compareTo(distanceFromMe(s2));
-		if (result != 0) {
-			return result;
-		} else {
-			int a = s1.getId();
-			int b = s2.getId();
-			return Integer.compare(a, b);
-		}
-	}
+    private double rad2deg(double rad) { return (rad * 180.0 / Math.PI); }
+
+    @Override
+    public int compare(SpeedTestServer s1, SpeedTestServer s2) {
+        int result = distanceFromMe(s1).compareTo(distanceFromMe(s2));
+        if (result != 0) {
+            return result;
+        } else {
+            int a = s1.getId();
+            int b = s2.getId();
+            return Integer.compare(a, b);
+        }
+    }
 }

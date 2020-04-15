@@ -25,11 +25,11 @@ import java.io.IOException;
  */
 @SuppressWarnings("serial")
 public class PermissionDeniedException extends IOException {
-	public PermissionDeniedException() {
-		super();
-	}
+    public PermissionDeniedException() {
+        super();
+    }
 
-	public PermissionDeniedException(String message) {
-		super(message);
-	}
+    public PermissionDeniedException(String message) {
+        super(message);
+    }
 }

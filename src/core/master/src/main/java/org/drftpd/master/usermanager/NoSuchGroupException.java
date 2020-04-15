@@ -19,34 +19,33 @@ package org.drftpd.master.usermanager;
 
 /**
  * @author mikevg
- * 
  * @version $Id$
  */
 @SuppressWarnings("serial")
 public class NoSuchGroupException extends Exception {
-	/**
-	 * 
-	 */
-	public NoSuchGroupException() {
-		super();
-	}
+    /**
+     *
+     */
+    public NoSuchGroupException() {
+        super();
+    }
 
-	/**
-	 * @param message
-	 * @param cause
-	 */
-	public NoSuchGroupException(String message, Throwable cause) {
-		super(message, cause);
-	}
+    /**
+     * @param message
+     * @param cause
+     */
+    public NoSuchGroupException(String message, Throwable cause) {
+        super(message, cause);
+    }
 
-	/**
-	 * @param cause
-	 */
-	public NoSuchGroupException(Throwable cause) {
-		super(cause);
-	}
+    /**
+     * @param cause
+     */
+    public NoSuchGroupException(Throwable cause) {
+        super(cause);
+    }
 
-	public NoSuchGroupException(String message) {
-		super(message);
-	}
+    public NoSuchGroupException(String message) {
+        super(message);
+    }
 }

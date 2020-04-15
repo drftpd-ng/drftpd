@@ -22,19 +22,19 @@ package org.drftpd.jobs.master;
  */
 @SuppressWarnings("serial")
 public class SlaveException extends Exception {
-	public SlaveException() {
-		super();
-	}
+    public SlaveException() {
+        super();
+    }
 
-	public SlaveException(Exception e) {
-		super(e);
-	}
+    public SlaveException(Exception e) {
+        super(e);
+    }
 
-	public SlaveException(String s) {
-		super(s);
-	}
+    public SlaveException(String s) {
+        super(s);
+    }
 
-	public SlaveException(Throwable throwable) {
-		super(throwable);
-	}
+    public SlaveException(Throwable throwable) {
+        super(throwable);
+    }
 }

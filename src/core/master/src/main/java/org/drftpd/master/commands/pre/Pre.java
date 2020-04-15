@@ -44,9 +44,25 @@ import java.util.Map;
  * @version $Id$
  */
 public class Pre extends CommandInterface {
+    public static final Key<DirectoryHandle> PREDIR = new Key<>(Pre.class, "predir");
     private static final Logger logger = LogManager.getLogger(Pre.class);
 
-    public static final Key<DirectoryHandle> PREDIR = new Key<>(Pre.class, "predir");
+    private static void recursiveRemoveOwnership(DirectoryHandle dir, long lastModified) {
+        try {
+            dir.setUsername("drftpd");
+            dir.setGroup("drftpd");
+            dir.setLastModified(lastModified);
+            for (InodeHandle file : dir.getInodeHandlesUnchecked()) {
+                file.setUsername("drftpd");
+                file.setGroup("drftpd");
+                file.setLastModified(lastModified);
+                if (file.isDirectory())
+                    recursiveRemoveOwnership((DirectoryHandle) file, lastModified);
+            }
+        } catch (FileNotFoundException e) {
+            logger.warn("FileNotFoundException on recursiveRemoveOwnership()", e);
+        }
+    }
 
     public void initialize(String method, String pluginName, StandardCommandManager cManager) {
         super.initialize(method, pluginName, cManager);
@@ -144,23 +160,6 @@ public class Pre extends CommandInterface {
 
         return response;
 
-    }
-
-    private static void recursiveRemoveOwnership(DirectoryHandle dir, long lastModified) {
-        try {
-            dir.setUsername("drftpd");
-            dir.setGroup("drftpd");
-            dir.setLastModified(lastModified);
-            for (InodeHandle file : dir.getInodeHandlesUnchecked()) {
-                file.setUsername("drftpd");
-                file.setGroup("drftpd");
-                file.setLastModified(lastModified);
-                if (file.isDirectory())
-                    recursiveRemoveOwnership((DirectoryHandle) file, lastModified);
-            }
-        } catch (FileNotFoundException e) {
-            logger.warn("FileNotFoundException on recursiveRemoveOwnership()", e);
-        }
     }
 
     private void preAwardCredits(DirectoryHandle preDir, HashMap<User, Long> awards) {

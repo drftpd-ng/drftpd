@@ -30,87 +30,72 @@ import java.util.List;
  */
 public class FindUtils {
 
-	/**
-	 * Parses the given string using delimiter specified and returns a <tt>HashSet</tt> of
-	 *
-	 * @param slaveNames
-	 * 	      String containing the slave names.
-	 *
-	 * @param delimiter
-	 *        Delimiter to use for splitting the string into an array of slave names.
-	 *
-	 * @return A <tt>HashSet</tt> containing a <tt>RemoteSlave</tt> for each slave name
-	 *         parsed from the slaveNames string.
-	 * 
-	 */
-	public static HashSet<RemoteSlave> parseSlaves(String slaveNames, String delimiter) {
-		return parseSlaves(slaveNames.split(delimiter));
-	}
+    /**
+     * Parses the given string using delimiter specified and returns a <tt>HashSet</tt> of
+     *
+     * @param slaveNames String containing the slave names.
+     * @param delimiter  Delimiter to use for splitting the string into an array of slave names.
+     * @return A <tt>HashSet</tt> containing a <tt>RemoteSlave</tt> for each slave name
+     * parsed from the slaveNames string.
+     */
+    public static HashSet<RemoteSlave> parseSlaves(String slaveNames, String delimiter) {
+        return parseSlaves(slaveNames.split(delimiter));
+    }
 
-	/**
-	 * Gets a <tt>RemoteSlave</tt> object for every slave name in the supplied array and
-	 * returns them as a <tt>HashSet</tt>.
-	 *
-	 * @param slaves
-	 *        String array holding slave names to process.
-	 *
-	 * @return A <tt>HashSet</tt> containing a <tt>RemoteSlave</tt> for each slave name
-	 *         processed in the string array.
-	 */
-	public static HashSet<RemoteSlave> parseSlaves(String[] slaves) {
-		List<String> destSlaveNames = Arrays.asList(slaves);
-		HashSet<RemoteSlave> destSlaves = new HashSet<>();
-		for (RemoteSlave rslave : GlobalContext.getGlobalContext().getSlaveManager().getSlaves()) {
-			if (destSlaveNames.contains(rslave.getName()))
-				destSlaves.add(rslave);
-		}
-		return destSlaves;
-	}
+    /**
+     * Gets a <tt>RemoteSlave</tt> object for every slave name in the supplied array and
+     * returns them as a <tt>HashSet</tt>.
+     *
+     * @param slaves String array holding slave names to process.
+     * @return A <tt>HashSet</tt> containing a <tt>RemoteSlave</tt> for each slave name
+     * processed in the string array.
+     */
+    public static HashSet<RemoteSlave> parseSlaves(String[] slaves) {
+        List<String> destSlaveNames = Arrays.asList(slaves);
+        HashSet<RemoteSlave> destSlaves = new HashSet<>();
+        for (RemoteSlave rslave : GlobalContext.getGlobalContext().getSlaveManager().getSlaves()) {
+            if (destSlaveNames.contains(rslave.getName()))
+                destSlaves.add(rslave);
+        }
+        return destSlaves;
+    }
 
-	/**
-	 * Separates min and max from the given string using delimiter specified.
-	 *
-	 * @param arg
-	 *        The string containing the range.
-	 *
-	 * @param delimiter
-	 *        Delimiter to use for splitting the string into min and max range.
-	 *
-	 * @return A <tt>String</tt> array containing min value a position 0 and max at position 1.
-	 *         If delimiter is missing both min and max is given the same value.
-	 *         If min or max range is left empty null is returned on that position in the array.
-	 */
-	public static String[] getRange(String arg, String delimiter) {
-		String[] range = new String[2];
-		int i = arg.indexOf(delimiter);
-		if (i == -1) {
-			range[0] = arg;
-			range[1] = arg;
-		} else {
-			String min = arg.substring(0,i);
-			String max = arg.substring(i+delimiter.length());
-			range[0] = min.isEmpty() ? null : min;
-			range[1] = max.isEmpty() ? null : max;
-		}
-		return range;
-	}
+    /**
+     * Separates min and max from the given string using delimiter specified.
+     *
+     * @param arg       The string containing the range.
+     * @param delimiter Delimiter to use for splitting the string into min and max range.
+     * @return A <tt>String</tt> array containing min value a position 0 and max at position 1.
+     * If delimiter is missing both min and max is given the same value.
+     * If min or max range is left empty null is returned on that position in the array.
+     */
+    public static String[] getRange(String arg, String delimiter) {
+        String[] range = new String[2];
+        int i = arg.indexOf(delimiter);
+        if (i == -1) {
+            range[0] = arg;
+            range[1] = arg;
+        } else {
+            String min = arg.substring(0, i);
+            String max = arg.substring(i + delimiter.length());
+            range[0] = min.isEmpty() ? null : min;
+            range[1] = max.isEmpty() ? null : max;
+        }
+        return range;
+    }
 
-	/**
-	 * Gets a String representing the array split by the delimiter given.
-	 *
-	 * @param args
-	 *        Array holding the strings to join.
-	 *
-	 * @param delimiter
-	 *        Delimiter to use when joining the strings.
-	 *
-	 * @return A String of all elements in the array.
-	 */
-	public static String getStringFromArray(String[] args, String delimiter) {
-		StringBuilder sb = new StringBuilder();
-		for (String arg : args) {
-			sb.append(delimiter).append(arg);
-		}
-		return sb.toString().substring(delimiter.length());
-	}
+    /**
+     * Gets a String representing the array split by the delimiter given.
+     *
+     * @param args      Array holding the strings to join.
+     * @param delimiter Delimiter to use when joining the strings.
+     * @return A String of all elements in the array.
+     */
+    public static String getStringFromArray(String[] args, String delimiter) {
+        StringBuilder sb = new StringBuilder();
+        for (String arg : args) {
+            sb.append(delimiter).append(arg);
+        }
+        return sb.toString().substring(delimiter.length());
+    }
 }

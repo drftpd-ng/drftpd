@@ -18,7 +18,6 @@ package org.drftpd.links.master;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import org.drftpd.master.commands.*;
 import org.drftpd.master.vfs.DirectoryHandle;
 
@@ -31,54 +30,53 @@ import java.util.LinkedList;
  */
 
 public class LinkManagerCommands extends CommandInterface {
-	private static final Logger logger = LogManager.getLogger(LinkManagerCommands.class);
+    private static final Logger logger = LogManager.getLogger(LinkManagerCommands.class);
 
-	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
-    	super.initialize(method, pluginName, cManager);
-	}
+    public void initialize(String method, String pluginName, StandardCommandManager cManager) {
+        super.initialize(method, pluginName, cManager);
+    }
 
-	/*
-	 * Used to fix links that are either missing or have been deleted.
-	 */
-	public CommandResponse doSITE_FIXLINKS(CommandRequest request) throws ImproperUsageException {
-		if (request.hasArgument()) {
-			throw new ImproperUsageException();
-		}
+    /*
+     * Used to fix links that are either missing or have been deleted.
+     */
+    public CommandResponse doSITE_FIXLINKS(CommandRequest request) throws ImproperUsageException {
+        if (request.hasArgument()) {
+            throw new ImproperUsageException();
+        }
 
-		runFixLinks rfl = new runFixLinks();
-		rfl.dir = request.getCurrentDirectory();
-		rfl.start();
-		
-		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-		return response;
-	}
-	
-	
-	private static class runFixLinks extends Thread {
-		public DirectoryHandle dir;
-		
-		public void run() {
-			if (dir != null) {
-				LinkManager _linkmanager = LinkManager.getLinkManager();
-				LinkedList<DirectoryHandle> dirs = new LinkedList<>();
-				dirs.add(dir); 
-				while (dirs.size() > 0) {
-					DirectoryHandle workingDir = dirs.poll();
-					
-					for (LinkType link : _linkmanager.getLinks()) {
-						link.doFixLink(workingDir);
-					}
-					
-					try {
-						dirs.addAll(workingDir.getDirectoriesUnchecked());
-					}
-					catch (FileNotFoundException e1) {
-						// ignore - dir no longer exists
-					}
-				}
-				logger.info("Site Fixlinks - Finished");
-			}
-		}
-	}
-	
+        runFixLinks rfl = new runFixLinks();
+        rfl.dir = request.getCurrentDirectory();
+        rfl.start();
+
+        CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
+        return response;
+    }
+
+
+    private static class runFixLinks extends Thread {
+        public DirectoryHandle dir;
+
+        public void run() {
+            if (dir != null) {
+                LinkManager _linkmanager = LinkManager.getLinkManager();
+                LinkedList<DirectoryHandle> dirs = new LinkedList<>();
+                dirs.add(dir);
+                while (dirs.size() > 0) {
+                    DirectoryHandle workingDir = dirs.poll();
+
+                    for (LinkType link : _linkmanager.getLinks()) {
+                        link.doFixLink(workingDir);
+                    }
+
+                    try {
+                        dirs.addAll(workingDir.getDirectoriesUnchecked());
+                    } catch (FileNotFoundException e1) {
+                        // ignore - dir no longer exists
+                    }
+                }
+                logger.info("Site Fixlinks - Finished");
+            }
+        }
+    }
+
 }

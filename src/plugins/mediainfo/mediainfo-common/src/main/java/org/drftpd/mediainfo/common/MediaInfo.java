@@ -17,10 +17,10 @@
  */
 package org.drftpd.mediainfo.common;
 
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-import org.drftpd.common.util.Bytes;
+import org.apache.logging.log4j.Logger;
 import org.drftpd.common.dynamicdata.Key;
+import org.drftpd.common.util.Bytes;
 import org.mp4parser.IsoFile;
 
 import java.io.*;
@@ -34,187 +34,99 @@ import java.util.regex.Pattern;
  */
 @SuppressWarnings("serial")
 public class MediaInfo implements Serializable {
-	private static final Logger logger = LogManager.getLogger(MediaInfo.class);
-
     public static final Key<MediaInfo> MEDIAINFO = new Key<>(MediaInfo.class, "mediainfo");
+    private static final Logger logger = LogManager.getLogger(MediaInfo.class);
+    private String _fileName = "";
+    private long _checksum;
+    private boolean _sampleOk = true;
+    private long _actFileSize = 0L;
+    private long _calFileSize = 0L;
+    private String _realFormat = "";
+    private String _uploadedFormat = "";
 
-	private String _fileName = "";
-	private long _checksum;
-	private boolean _sampleOk = true;
-	private long _actFileSize = 0L;
-	private long _calFileSize = 0L;
-	private String _realFormat = "";
-	private String _uploadedFormat = "";
+    private HashMap<String, String> _generalInfo = null;
 
-	private HashMap<String,String> _generalInfo = null;
+    private ArrayList<HashMap<String, String>> _videoInfos = new ArrayList<>();
+    private ArrayList<HashMap<String, String>> _audioInfos = new ArrayList<>();
+    private ArrayList<HashMap<String, String>> _subInfos = new ArrayList<>();
 
-	private ArrayList<HashMap<String,String>> _videoInfos = new ArrayList<>();
-	private ArrayList<HashMap<String,String>> _audioInfos = new ArrayList<>();
-	private ArrayList<HashMap<String,String>> _subInfos = new ArrayList<>();
+    /**
+     * Constructor for MediaInfo
+     */
+    public MediaInfo() { }
 
-	/**
-	 * Constructor for MediaInfo
-	 */
-	public MediaInfo() {	}
-	
-	public void setFileName(String fileName) {
-		_fileName = fileName;
-	}
-	public String getFileName() {
-		return _fileName;
-	}
-	
-	public void setChecksum(long value) {
-		_checksum = value;
-	}
-	public long getChecksum() {
-		return _checksum;
-	}
+    public static MediaInfo getMediaInfoFromFile(File file) throws IOException {
+        MediaInfo mediaInfo = new MediaInfo();
 
-	public void setSampleOk(boolean value) {
-		_sampleOk = value;
-	}
-	public boolean getSampleOk() {
-		return _sampleOk;
-	}
+        String filePath = file.getAbsolutePath();
+        mediaInfo.setActFileSize(file.length());
 
-	public void setActFileSize(long value) {
-		_actFileSize = value;
-	}
-	public long getActFileSize() {
-		return _actFileSize;
-	}
+        Pattern pSection = Pattern.compile("^(General|Video|Audio|Text|Chapters)( #\\d+)?$", Pattern.CASE_INSENSITIVE);
+        Pattern pValue = Pattern.compile("^(.*?)\\s+: (.*)$", Pattern.CASE_INSENSITIVE);
 
-	public void setCalFileSize(long value) {
-		_calFileSize = value;
-	}
-	public long getCalFileSize() {
-		return _calFileSize;
-	}
+        ProcessBuilder builder = new ProcessBuilder("mediainfo", filePath);
+        Process pDD = builder.start();
+        BufferedReader stdout = new BufferedReader(new InputStreamReader(pDD.getInputStream()));
 
-	public void setRealFormat(String realFormat) {
-		_realFormat = realFormat;
-	}
-	public String getRealFormat() {
-		return _realFormat;
-	}
+        HashMap<String, String> props = new HashMap<>();
+        String section = "";
+        String line;
 
-	public void setUploadedFormat(String uploadedFormat) {
-		_uploadedFormat = uploadedFormat;
-	}
-	public String getUploadedFormat() {
-		return _uploadedFormat;
-	}
+        while ((line = stdout.readLine()) != null) {
+            if (!line.trim().equals("")) {
+                Matcher m = pSection.matcher(line);
+                if (m.find() && !line.equalsIgnoreCase(section)) {
+                    if (section.toLowerCase().startsWith("video")) {
+                        mediaInfo.addVideoInfo(props);
+                    } else if (section.toLowerCase().startsWith("audio")) {
+                        mediaInfo.addAudioInfo(props);
+                    } else if (section.toLowerCase().startsWith("text")) {
+                        mediaInfo.addSubInfo(props);
+                    } else if (section.toLowerCase().startsWith("general")) {
+                        mediaInfo.setGeneralInfo(props);
+                    }
+                    section = line;
+                    props = new HashMap<>();
+                }
+                m = pValue.matcher(line);
+                if (m.find()) {
+                    props.put(m.group(1), m.group(2));
+                }
+            }
+        }
 
-	public void setGeneralInfo(HashMap<String,String> generalInfo) {
-		_generalInfo = generalInfo;
-	}
-	public HashMap<String,String> getGeneralInfo() {
-		return _generalInfo;
-	}
+        // Last one
+        if (section.toLowerCase().startsWith("video")) {
+            mediaInfo.addVideoInfo(props);
+        } else if (section.toLowerCase().startsWith("audio")) {
+            mediaInfo.addAudioInfo(props);
+        } else if (section.toLowerCase().startsWith("text")) {
+            mediaInfo.addSubInfo(props);
+        } else if (section.toLowerCase().startsWith("general")) {
+            mediaInfo.setGeneralInfo(props);
+        }
 
-	public void setVideoInfos(ArrayList<HashMap<String,String>> videoInfos) {
-		_videoInfos = videoInfos;
-	}
-	public void addVideoInfo(HashMap<String,String> videoInfo) {
-		_videoInfos.add(videoInfo);
-	}
-	public ArrayList<HashMap<String,String>> getVideoInfos() {
-		return _videoInfos;
-	}
-
-	public void setAudioInfos(ArrayList<HashMap<String,String>> audioInfos) {
-		_audioInfos = audioInfos;
-	}
-	public void addAudioInfo(HashMap<String,String> audioInfo) {
-		_audioInfos.add(audioInfo);
-	}
-	public ArrayList<HashMap<String,String>> getAudioInfos() {
-		return _audioInfos;
-	}
-
-	public void setSubInfos(ArrayList<HashMap<String,String>> subInfos) {
-		_subInfos = subInfos;
-	}
-	public void addSubInfo(HashMap<String,String> subInfo) {
-		_subInfos.add(subInfo);
-	}
-	public ArrayList<HashMap<String,String>> getSubInfos() {
-		return _subInfos;
-	}
-	
-	public static MediaInfo getMediaInfoFromFile(File file) throws IOException {
-		MediaInfo mediaInfo = new MediaInfo();
-
-		String filePath = file.getAbsolutePath();
-		mediaInfo.setActFileSize(file.length());
-
-		Pattern pSection = Pattern.compile("^(General|Video|Audio|Text|Chapters)( #\\d+)?$", Pattern.CASE_INSENSITIVE);
-		Pattern pValue = Pattern.compile("^(.*?)\\s+: (.*)$", Pattern.CASE_INSENSITIVE);
-
-		ProcessBuilder builder = new ProcessBuilder("mediainfo", filePath);
-		Process pDD = builder.start();
-		BufferedReader stdout = new BufferedReader(new InputStreamReader(pDD.getInputStream()));
-
-		HashMap<String,String> props = new HashMap<>();
-		String section = "";
-		String line;
-
-		while ((line = stdout.readLine()) != null) {
-			if (!line.trim().equals("")) {
-				Matcher m = pSection.matcher(line);
-				if (m.find() && !line.equalsIgnoreCase(section)) {
-					if (section.toLowerCase().startsWith("video")) {
-						mediaInfo.addVideoInfo(props);
-					} else if (section.toLowerCase().startsWith("audio")) {
-						mediaInfo.addAudioInfo(props);
-					} else if (section.toLowerCase().startsWith("text")) {
-						mediaInfo.addSubInfo(props);
-					} else if (section.toLowerCase().startsWith("general")) {
-						mediaInfo.setGeneralInfo(props);
-					}
-					section = line;
-					props = new HashMap<>();
-				}
-				m = pValue.matcher(line);
-				if (m.find()) {
-					props.put(m.group(1), m.group(2));
-				}
-			}
-		}
-
-		// Last one
-		if (section.toLowerCase().startsWith("video")) {
-			mediaInfo.addVideoInfo(props);
-		} else if (section.toLowerCase().startsWith("audio")) {
-			mediaInfo.addAudioInfo(props);
-		} else if (section.toLowerCase().startsWith("text")) {
-			mediaInfo.addSubInfo(props);
-		} else if (section.toLowerCase().startsWith("general")) {
-			mediaInfo.setGeneralInfo(props);
-		}
-
-		stdout.close();
-		int exitValue;
-		try {
-			exitValue = pDD.waitFor();
-			if (exitValue != 0) {
+        stdout.close();
+        int exitValue;
+        try {
+            exitValue = pDD.waitFor();
+            if (exitValue != 0) {
                 logger.error("ERROR: mediainfo process failed with exit code {}", exitValue);
-				return null;
-			}
-		} catch (InterruptedException e) {
-			logger.error("ERROR: mediainfo process interrupted");
-		}
-		pDD.destroy();
+                return null;
+            }
+        } catch (InterruptedException e) {
+            logger.error("ERROR: mediainfo process interrupted");
+        }
+        pDD.destroy();
 
-		String realFormat;
-		if (mediaInfo.getGeneralInfo() != null && mediaInfo.getGeneralInfo().get("Format") != null) {
-			realFormat = getRealFormat(mediaInfo.getGeneralInfo().get("Format"));
-		} else {
-			realFormat = getFileExtension(filePath);
-		}
+        String realFormat;
+        if (mediaInfo.getGeneralInfo() != null && mediaInfo.getGeneralInfo().get("Format") != null) {
+            realFormat = getRealFormat(mediaInfo.getGeneralInfo().get("Format"));
+        } else {
+            realFormat = getFileExtension(filePath);
+        }
 
-		// Calculate valid filesize for mp4, mkv and avi
+        // Calculate valid filesize for mp4, mkv and avi
         switch (realFormat) {
             case "MP4":
                 IsoFile isoFile = new IsoFile(filePath);
@@ -276,45 +188,146 @@ public class MediaInfo implements Serializable {
                 break;
         }
 
-		// Check container format type
-		if (filePath.toUpperCase().endsWith(".MP4")) {
-			if (!realFormat.equals("MP4")) {
-				mediaInfo.setRealFormat(realFormat);
-				mediaInfo.setUploadedFormat("MP4");
-				mediaInfo.setSampleOk(false);
-			}
-		} else if (filePath.toUpperCase().endsWith(".MKV")) {
-			if (!realFormat.equals("MKV")) {
-				mediaInfo.setRealFormat(realFormat);
-				mediaInfo.setUploadedFormat("MKV");
-				mediaInfo.setSampleOk(false);
-			}
-		} else if (filePath.toUpperCase().endsWith(".AVI")) {
-			if (!realFormat.equals("AVI")) {
-				mediaInfo.setRealFormat(realFormat);
-				mediaInfo.setUploadedFormat("AVI");
-				mediaInfo.setSampleOk(false);
-			}
-		}
-		
-		return mediaInfo;
-	}
+        // Check container format type
+        if (filePath.toUpperCase().endsWith(".MP4")) {
+            if (!realFormat.equals("MP4")) {
+                mediaInfo.setRealFormat(realFormat);
+                mediaInfo.setUploadedFormat("MP4");
+                mediaInfo.setSampleOk(false);
+            }
+        } else if (filePath.toUpperCase().endsWith(".MKV")) {
+            if (!realFormat.equals("MKV")) {
+                mediaInfo.setRealFormat(realFormat);
+                mediaInfo.setUploadedFormat("MKV");
+                mediaInfo.setSampleOk(false);
+            }
+        } else if (filePath.toUpperCase().endsWith(".AVI")) {
+            if (!realFormat.equals("AVI")) {
+                mediaInfo.setRealFormat(realFormat);
+                mediaInfo.setUploadedFormat("AVI");
+                mediaInfo.setSampleOk(false);
+            }
+        }
 
-	private static String getFileExtension(String fileName) {
-		if (fileName.indexOf('.') == -1) {
-			// No extension on file
-			return null;
-		} else {
-			return fileName.substring(fileName.lastIndexOf('.')+1).toUpperCase();
-		}
-	}
-	private static String getRealFormat(String format) {
-		String realFormat = format;
-		if (format.equals("MPEG-4")) {
-			realFormat = "MP4";
-		} else if (format.equals("Matroska")) {
-			realFormat = "MKV";
-		}
-		return realFormat;
-	}
+        return mediaInfo;
+    }
+
+    private static String getFileExtension(String fileName) {
+        if (fileName.indexOf('.') == -1) {
+            // No extension on file
+            return null;
+        } else {
+            return fileName.substring(fileName.lastIndexOf('.') + 1).toUpperCase();
+        }
+    }
+
+    private static String getRealFormat(String format) {
+        String realFormat = format;
+        if (format.equals("MPEG-4")) {
+            realFormat = "MP4";
+        } else if (format.equals("Matroska")) {
+            realFormat = "MKV";
+        }
+        return realFormat;
+    }
+
+    public String getFileName() {
+        return _fileName;
+    }
+
+    public void setFileName(String fileName) {
+        _fileName = fileName;
+    }
+
+    public long getChecksum() {
+        return _checksum;
+    }
+
+    public void setChecksum(long value) {
+        _checksum = value;
+    }
+
+    public boolean getSampleOk() {
+        return _sampleOk;
+    }
+
+    public void setSampleOk(boolean value) {
+        _sampleOk = value;
+    }
+
+    public long getActFileSize() {
+        return _actFileSize;
+    }
+
+    public void setActFileSize(long value) {
+        _actFileSize = value;
+    }
+
+    public long getCalFileSize() {
+        return _calFileSize;
+    }
+
+    public void setCalFileSize(long value) {
+        _calFileSize = value;
+    }
+
+    public String getRealFormat() {
+        return _realFormat;
+    }
+
+    public void setRealFormat(String realFormat) {
+        _realFormat = realFormat;
+    }
+
+    public String getUploadedFormat() {
+        return _uploadedFormat;
+    }
+
+    public void setUploadedFormat(String uploadedFormat) {
+        _uploadedFormat = uploadedFormat;
+    }
+
+    public HashMap<String, String> getGeneralInfo() {
+        return _generalInfo;
+    }
+
+    public void setGeneralInfo(HashMap<String, String> generalInfo) {
+        _generalInfo = generalInfo;
+    }
+
+    public void addVideoInfo(HashMap<String, String> videoInfo) {
+        _videoInfos.add(videoInfo);
+    }
+
+    public ArrayList<HashMap<String, String>> getVideoInfos() {
+        return _videoInfos;
+    }
+
+    public void setVideoInfos(ArrayList<HashMap<String, String>> videoInfos) {
+        _videoInfos = videoInfos;
+    }
+
+    public void addAudioInfo(HashMap<String, String> audioInfo) {
+        _audioInfos.add(audioInfo);
+    }
+
+    public ArrayList<HashMap<String, String>> getAudioInfos() {
+        return _audioInfos;
+    }
+
+    public void setAudioInfos(ArrayList<HashMap<String, String>> audioInfos) {
+        _audioInfos = audioInfos;
+    }
+
+    public void addSubInfo(HashMap<String, String> subInfo) {
+        _subInfos.add(subInfo);
+    }
+
+    public ArrayList<HashMap<String, String>> getSubInfos() {
+        return _subInfos;
+    }
+
+    public void setSubInfos(ArrayList<HashMap<String, String>> subInfos) {
+        _subInfos = subInfos;
+    }
 }

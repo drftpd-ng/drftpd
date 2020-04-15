@@ -17,9 +17,8 @@
  */
 package org.drftpd.master.vfs;
 
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
+import org.apache.logging.log4j.Logger;
 import org.drftpd.master.event.Event;
 import org.drftpd.master.event.FtpListener;
 import org.drftpd.master.event.TransferEvent;
@@ -31,36 +30,35 @@ import java.util.Date;
 import java.util.Locale;
 
 
-
 /**
- * @see http://www.wu-ftpd.org/man/xferlog.html
  * @author mog
  * @version $Id$
+ * @see http://www.wu-ftpd.org/man/xferlog.html
  */
 public class XferLog extends FtpListener {
     /**
      * xferlog.log - Contains all the upload/download information for all files
-              transferred (if logging of that is enabled). The format is the
-              following: current time, transfer time, user's hostname, number
-              of bytes sent, filename, 'a' if transfer was in ASCII mode or
-              'b' if BINARY, _ (meaningless), 'i' if incoming (user uploading)
-              or 'o' if outgoing (user downloading), 'r' (no meaning), user's
-              name, user's group, 1 if user had ident or 0 if not, user's ident
-
-                  current-time   transfer-time   remote-host    file-
-              size    filename    transfer-type   special-action-
-              flag   direction    access-mode    username    ser?
-              vice-name    authentication-method   authenticated-
-              user-id   completion-status
-
-    example lines:
-    Mon Aug 11 14:03:30 2003 20 hostname 15000000 /path/to/file b _ i r user group 0 *
-    Mon Aug 11 14:03:31 2003 33 hostname 15000000 /path/to/file b _ i r user group 1 user
-    Mon Aug 11 14:03:44 2003 13 hostname 15000000 /path/to/file b _ i r user group 0 *
+     * transferred (if logging of that is enabled). The format is the
+     * following: current time, transfer time, user's hostname, number
+     * of bytes sent, filename, 'a' if transfer was in ASCII mode or
+     * 'b' if BINARY, _ (meaningless), 'i' if incoming (user uploading)
+     * or 'o' if outgoing (user downloading), 'r' (no meaning), user's
+     * name, user's group, 1 if user had ident or 0 if not, user's ident
+     * <p>
+     * current-time   transfer-time   remote-host    file-
+     * size    filename    transfer-type   special-action-
+     * flag   direction    access-mode    username    ser?
+     * vice-name    authentication-method   authenticated-
+     * user-id   completion-status
+     * <p>
+     * example lines:
+     * Mon Aug 11 14:03:30 2003 20 hostname 15000000 /path/to/file b _ i r user group 0 *
+     * Mon Aug 11 14:03:31 2003 33 hostname 15000000 /path/to/file b _ i r user group 1 user
+     * Mon Aug 11 14:03:44 2003 13 hostname 15000000 /path/to/file b _ i r user group 0 *
      */
     public static final SimpleDateFormat DATE_FMT = new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy", Locale.ENGLISH);
-    private PrintStream _out;
     private static final Logger logger = LogManager.getLogger(XferLog.class);
+    private final PrintStream _out;
 
     public XferLog() {
         super();
@@ -108,17 +106,17 @@ public class XferLog extends FtpListener {
         // all transfers are noted as complete
         char completed = 'c';
         try {
-			_out.println(DATE_FMT.format(new Date(event.getTime())) + " " +
-			    (event.getTransferFile().getXfertime() / 1000) + " " +
-			    event.getPeer().getHostName() + " " +
-			    event.getTransferFile().getSize() + " " +
-			    event.getTransferFile().getPath() + " " + transferType + " _ " +
-			    direction + " r " + event.getUser().getName() + " " +
-			    event.getUser().getGroup() +
-			    " 0 * " // authentication-method   authenticated-user-id
-			     +completed);
-		} catch (FileNotFoundException e) {
+            _out.println(DATE_FMT.format(new Date(event.getTime())) + " " +
+                    (event.getTransferFile().getXfertime() / 1000) + " " +
+                    event.getPeer().getHostName() + " " +
+                    event.getTransferFile().getSize() + " " +
+                    event.getTransferFile().getPath() + " " + transferType + " _ " +
+                    direction + " r " + event.getUser().getName() + " " +
+                    event.getUser().getGroup() +
+                    " 0 * " // authentication-method   authenticated-user-id
+                    + completed);
+        } catch (FileNotFoundException e) {
             logger.error("File {} is unable to be found immediately after transfer", event.getTransferFile().getPath());
-		}
+        }
     }
 }

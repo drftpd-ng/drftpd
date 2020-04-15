@@ -22,86 +22,86 @@ package org.drftpd.master.util;
  * @version $Id$
  */
 public class GroupPosition implements Comparable<GroupPosition> {
-	long bytes;
+    long bytes;
 
-	int files;
+    int files;
 
-	String groupname;
+    String groupname;
 
-	long xfertime;
+    long xfertime;
 
-	public GroupPosition(String groupname, long bytes, int files, long xfertime) {
-		this.groupname = groupname;
-		this.bytes = bytes;
-		this.files = files;
-		this.xfertime = xfertime;
-	}
+    public GroupPosition(String groupname, long bytes, int files, long xfertime) {
+        this.groupname = groupname;
+        this.bytes = bytes;
+        this.files = files;
+        this.xfertime = xfertime;
+    }
 
-	/**
-	 * Sorts in reverse order so that the biggest shows up first.
-	 * 
-	 * @see java.lang.Comparable#compareTo(java.lang.Object)
-	 */
-	public int compareTo(GroupPosition o) {
-		long thisVal = getBytes();
-		long anotherVal = o.getBytes();
+    /**
+     * Sorts in reverse order so that the biggest shows up first.
+     *
+     * @see java.lang.Comparable#compareTo(java.lang.Object)
+     */
+    public int compareTo(GroupPosition o) {
+        long thisVal = getBytes();
+        long anotherVal = o.getBytes();
 
-		return (Long.compare(anotherVal, thisVal));
-	}
+        return (Long.compare(anotherVal, thisVal));
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
-	public boolean equals(Object obj) {
-		// if(obj instanceof String && obj.equals(getUsername())) return true;
-		if (!(obj instanceof GroupPosition)) {
-			return false;
-		}
+    /*
+     * (non-Javadoc)
+     *
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
+    public boolean equals(Object obj) {
+        // if(obj instanceof String && obj.equals(getUsername())) return true;
+        if (!(obj instanceof GroupPosition)) {
+            return false;
+        }
 
-		GroupPosition other = (GroupPosition) obj;
+        GroupPosition other = (GroupPosition) obj;
 
-		return getGroupname().equals(other.getGroupname());
-	}
+        return getGroupname().equals(other.getGroupname());
+    }
 
-	public long getBytes() {
-		return this.bytes;
-	}
+    public long getBytes() {
+        return this.bytes;
+    }
 
-	public int getFiles() {
-		return this.files;
-	}
+    public int getFiles() {
+        return this.files;
+    }
 
-	public String getGroupname() {
-		return groupname;
-	}
+    public String getGroupname() {
+        return groupname;
+    }
 
-	public long getXferspeed() {
-		if (getXfertime() == 0) {
-			return 0;
-		}
+    public long getXferspeed() {
+        if (getXfertime() == 0) {
+            return 0;
+        }
 
-		return (long) (getBytes() / (getXfertime() / 1000.0));
-	}
+        return (long) (getBytes() / (getXfertime() / 1000.0));
+    }
 
-	public long getXfertime() {
-		return xfertime;
-	}
+    public long getXfertime() {
+        return xfertime;
+    }
 
-	public int hashCode() {
-		return getGroupname().hashCode();
-	}
+    public int hashCode() {
+        return getGroupname().hashCode();
+    }
 
-	public void updateBytes(long updatebytes) {
-		bytes += updatebytes;
-	}
+    public void updateBytes(long updatebytes) {
+        bytes += updatebytes;
+    }
 
-	public void updateFiles(int updatefiles) {
-		files += updatefiles;
-	}
+    public void updateFiles(int updatefiles) {
+        files += updatefiles;
+    }
 
-	public void updateXfertime(long updatexfertime) {
-		xfertime += updatexfertime;
-	}
+    public void updateXfertime(long updatexfertime) {
+        xfertime += updatexfertime;
+    }
 }

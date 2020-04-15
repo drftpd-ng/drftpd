@@ -58,6 +58,18 @@ public class SecurePassManager implements PluginInterface {
     private ArrayList<Integer> _special;
     private ArrayList<String> _perms;
 
+    /*
+     * Get the securePass Plugin
+     */
+    public static SecurePassManager getSecurePass() {
+        for (PluginInterface plugin : GlobalContext.getGlobalContext().getPlugins()) {
+            if (plugin instanceof SecurePassManager) {
+                return (SecurePassManager) plugin;
+            }
+        }
+        throw new RuntimeException("SecurePass plugin is not loaded.");
+    }
+
     @Override
     public void startPlugin() {
         AnnotationProcessor.process(this);
@@ -72,18 +84,6 @@ public class SecurePassManager implements PluginInterface {
     @EventSubscriber
     public void onReloadEvent(ReloadEvent event) {
         loadConf();
-    }
-
-    /*
-     * Get the securePass Plugin
-     */
-    public static SecurePassManager getSecurePass() {
-        for (PluginInterface plugin : GlobalContext.getGlobalContext().getPlugins()) {
-            if (plugin instanceof SecurePassManager) {
-                return (SecurePassManager) plugin;
-            }
-        }
-        throw new RuntimeException("SecurePass plugin is not loaded.");
     }
 
     /*

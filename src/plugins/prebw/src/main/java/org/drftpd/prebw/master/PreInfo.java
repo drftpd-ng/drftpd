@@ -28,14 +28,14 @@ import java.util.LinkedHashMap;
  * @author lh
  */
 public class PreInfo {
-    private ArrayList<UserInfo> _leechers = new ArrayList<>();
-    private ArrayList<String> _groups = new ArrayList<>();
-    private ArrayList<Long> _bw = new ArrayList<>();
-    private LinkedHashMap<String, String> _messures = new LinkedHashMap<>();
-    private DirectoryHandle _dir;
-    private SectionInterface _section;
+    private final ArrayList<UserInfo> _leechers = new ArrayList<>();
+    private final ArrayList<String> _groups = new ArrayList<>();
+    private final ArrayList<Long> _bw = new ArrayList<>();
+    private final LinkedHashMap<String, String> _messures = new LinkedHashMap<>();
+    private final DirectoryHandle _dir;
+    private final SectionInterface _section;
     private int _mtime = 0;
-    private TimeSetting _timeSetting;
+    private final TimeSetting _timeSetting;
 
     public PreInfo(DirectoryHandle dir, SectionInterface section, TimeSetting timeSetting) {
         _dir = dir;
@@ -83,7 +83,7 @@ public class PreInfo {
             _groups.add(group);
     }
 
-    public LinkedHashMap<String,String> getMessures() {
+    public LinkedHashMap<String, String> getMessures() {
         return _messures;
     }
 
@@ -107,7 +107,7 @@ public class PreInfo {
             tmpSpeed += bw;
             i++;
         }
-        return tmpSpeed/i;
+        return tmpSpeed / i;
     }
 
     public long getBWTop() {
@@ -141,7 +141,7 @@ public class PreInfo {
     public int getMtime() {
         return _mtime;
     }
-    
+
     public void setMtime(int mtime) {
         _mtime = mtime;
     }

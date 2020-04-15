@@ -16,41 +16,42 @@
  */
 package org.drftpd.mediainfo.slave;
 
+import org.drftpd.common.exceptions.AsyncResponseException;
+import org.drftpd.common.network.AsyncCommandArgument;
 import org.drftpd.common.network.AsyncResponse;
 import org.drftpd.mediainfo.common.AsyncResponseMediaInfo;
 import org.drftpd.mediainfo.common.MediaInfo;
-import org.drftpd.slave.protocol.AbstractHandler;
 import org.drftpd.slave.Slave;
+import org.drftpd.slave.protocol.AbstractHandler;
 import org.drftpd.slave.protocol.SlaveProtocolCentral;
-import org.drftpd.common.network.AsyncCommandArgument;
-import org.drftpd.common.exceptions.AsyncResponseException;
 
 import java.io.IOException;
 
 /**
  * Handler for MediaInfo requests.
+ *
  * @author scitz0
  */
 public class MediaInfoHandler extends AbstractHandler {
-	@Override
-	public String getProtocolName() {
-		return "MediaInfoProtocol";
-	}
+    public MediaInfoHandler(SlaveProtocolCentral central) {
+        super(central);
+    }
 
-	public MediaInfoHandler(SlaveProtocolCentral central) {
-		super(central);
-	}
+    @Override
+    public String getProtocolName() {
+        return "MediaInfoProtocol";
+    }
 
-	public AsyncResponse handleMediaInfo(AsyncCommandArgument ac) {
-		try {
-			return new AsyncResponseMediaInfo(ac.getIndex(),
-					getMediaInfo(getSlaveObject(), getSlaveObject().mapPathToRenameQueue(ac.getArgs())));
-		} catch (IOException e) {
-			return new AsyncResponseException(ac.getIndex(), e);
-		}
-	}
+    public AsyncResponse handleMediaInfo(AsyncCommandArgument ac) {
+        try {
+            return new AsyncResponseMediaInfo(ac.getIndex(),
+                    getMediaInfo(getSlaveObject(), getSlaveObject().mapPathToRenameQueue(ac.getArgs())));
+        } catch (IOException e) {
+            return new AsyncResponseException(ac.getIndex(), e);
+        }
+    }
 
-	private MediaInfo getMediaInfo(Slave slave, String path) throws IOException {
-		return MediaInfo.getMediaInfoFromFile(slave.getRoots().getFile(path));
-	}
+    private MediaInfo getMediaInfo(Slave slave, String path) throws IOException {
+        return MediaInfo.getMediaInfoFromFile(slave.getRoots().getFile(path));
+    }
 }

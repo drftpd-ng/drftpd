@@ -28,42 +28,42 @@ import java.util.Collection;
  */
 public interface UserManager extends TimeEventInterface {
 
-	void init() throws UserFileException, GroupFileException;
-	
-	User createUser(String username) throws UserFileException, FileExistsException;
+    void init() throws UserFileException, GroupFileException;
 
-	Group createGroup(String groupname) throws GroupFileException, FileExistsException;
+    User createUser(String username) throws UserFileException, FileExistsException;
 
-	Collection<Group> getAllGroups();
+    Group createGroup(String groupname) throws GroupFileException, FileExistsException;
 
-	/**
-	 * Get all user names in the system.
-	 */
-	Collection<User> getAllUsers();
+    Collection<Group> getAllGroups();
 
-	Collection<User> getAllUsersByGroup(Group g);
+    /**
+     * Get all user names in the system.
+     */
+    Collection<User> getAllUsers();
 
-	/**
-	 * Get user by name.
-	 */
-	User getUserByName(String username) throws NoSuchUserException, UserFileException;
+    Collection<User> getAllUsersByGroup(Group g);
 
-	User getUserByIdent(String ident, String botName) throws NoSuchUserException;
+    /**
+     * Get user by name.
+     */
+    User getUserByName(String username) throws NoSuchUserException, UserFileException;
 
-	User getUserByNameUnchecked(String username) throws NoSuchUserException, UserFileException;
+    User getUserByIdent(String ident, String botName) throws NoSuchUserException;
 
-	User getUserByNameIncludeDeleted(String argument) throws NoSuchUserException, UserFileException;
+    User getUserByNameUnchecked(String username) throws NoSuchUserException, UserFileException;
 
-	/**
-	 * Get group by name.
-	 */
-	Group getGroupByName(String groupname) throws NoSuchGroupException, GroupFileException;
+    User getUserByNameIncludeDeleted(String argument) throws NoSuchUserException, UserFileException;
 
-	Group getGroupByNameUnchecked(String groupname) throws NoSuchGroupException, GroupFileException;
+    /**
+     * Get group by name.
+     */
+    Group getGroupByName(String groupname) throws NoSuchGroupException, GroupFileException;
 
-	boolean isGroupAdminOfUser(User groupadminUser, User requestedUser);
+    Group getGroupByNameUnchecked(String groupname) throws NoSuchGroupException, GroupFileException;
 
-	boolean isGroupAdmin(User user);
+    boolean isGroupAdminOfUser(User groupadminUser, User requestedUser);
 
-	Group getGroupByGroupAdminOfUser(User groupadminUser, User requestedUser);
+    boolean isGroupAdmin(User user);
+
+    Group getGroupByGroupAdminOfUser(User groupadminUser, User requestedUser);
 }

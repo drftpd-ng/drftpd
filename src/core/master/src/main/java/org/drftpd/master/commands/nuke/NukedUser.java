@@ -22,36 +22,36 @@ package org.drftpd.master.commands.nuke;
  * @version $Id$
  */
 public class NukedUser implements Comparable<NukedUser> {
-	private String _username;
+    private final String _username;
 
-	private long _amount;
+    private final long _amount;
 
-	public NukedUser(String user, long amount) {
-		_username = user;
-		_amount = amount;
-	}
+    public NukedUser(String user, long amount) {
+        _username = user;
+        _amount = amount;
+    }
 
-	public long getBytes() {
-		return _amount;
-	}
+    public long getBytes() {
+        return _amount;
+    }
 
-	public int compareTo(NukedUser o) {
-		long thisVal = getBytes();
-		long anotherVal = o.getBytes();
+    public int compareTo(NukedUser o) {
+        long thisVal = getBytes();
+        long anotherVal = o.getBytes();
 
-		return (Long.compare(anotherVal, thisVal));
-	}
+        return (Long.compare(anotherVal, thisVal));
+    }
 
-	public String getUsername() {
-		return _username;
-	}
+    public String getUsername() {
+        return _username;
+    }
 
-	/**
-	 * Returns the amount nuked without multiplier.
-	 * 
-	 * @return the amount nuked without multiplier.
-	 */
-	public long getAmount() {
-		return _amount;
-	}
+    /**
+     * Returns the amount nuked without multiplier.
+     *
+     * @return the amount nuked without multiplier.
+     */
+    public long getAmount() {
+        return _amount;
+    }
 }

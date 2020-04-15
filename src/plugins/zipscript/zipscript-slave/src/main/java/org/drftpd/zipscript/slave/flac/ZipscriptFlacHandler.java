@@ -16,46 +16,45 @@
  */
 package org.drftpd.zipscript.slave.flac;
 
-import org.drftpd.common.network.AsyncResponse;
 import org.drftpd.common.exceptions.AsyncResponseException;
-import org.drftpd.slave.protocol.AbstractHandler;
-import org.drftpd.slave.Slave;
-import org.drftpd.slave.protocol.SlaveProtocolCentral;
-
 import org.drftpd.common.network.AsyncCommandArgument;
+import org.drftpd.common.network.AsyncResponse;
+import org.drftpd.slave.Slave;
+import org.drftpd.slave.protocol.AbstractHandler;
+import org.drftpd.slave.protocol.SlaveProtocolCentral;
 import org.drftpd.zipscript.common.flac.AsyncResponseFlacInfo;
 import org.drftpd.zipscript.common.flac.FlacInfo;
-
 
 import java.io.IOException;
 
 /**
  * Handler for FLAC info requests.
+ *
  * @author norox
  */
 public class ZipscriptFlacHandler extends AbstractHandler {
 
-	@Override
-	public String getProtocolName() {
-		return "ZipscriptFlacProtocol";
-	}
+    public ZipscriptFlacHandler(SlaveProtocolCentral central) {
+        super(central);
+    }
 
-	public ZipscriptFlacHandler(SlaveProtocolCentral central) {
-		super(central);
-	}
+    @Override
+    public String getProtocolName() {
+        return "ZipscriptFlacProtocol";
+    }
 
-	public AsyncResponse handleFlacFile(AsyncCommandArgument ac) {
-		try {
-			return new AsyncResponseFlacInfo(ac.getIndex(),
-					getFlacFile(getSlaveObject(), getSlaveObject().mapPathToRenameQueue(ac.getArgs())));
-		} catch (IOException e) {
-			return new AsyncResponseException(ac.getIndex(), e);
-		}
-	}
+    public AsyncResponse handleFlacFile(AsyncCommandArgument ac) {
+        try {
+            return new AsyncResponseFlacInfo(ac.getIndex(),
+                    getFlacFile(getSlaveObject(), getSlaveObject().mapPathToRenameQueue(ac.getArgs())));
+        } catch (IOException e) {
+            return new AsyncResponseException(ac.getIndex(), e);
+        }
+    }
 
-	private FlacInfo getFlacFile(Slave slave, String path) throws IOException {
-		FlacParser flacparser = new FlacParser(slave.getRoots().getFile(path));
-		FlacInfo flacinfo = flacparser.getFlacInfo();
-		return flacinfo;
-	}
+    private FlacInfo getFlacFile(Slave slave, String path) throws IOException {
+        FlacParser flacparser = new FlacParser(slave.getRoots().getFile(path));
+        FlacInfo flacinfo = flacparser.getFlacInfo();
+        return flacinfo;
+    }
 }

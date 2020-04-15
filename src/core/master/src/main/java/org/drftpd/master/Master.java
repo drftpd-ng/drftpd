@@ -53,16 +53,11 @@ public class Master {
     private static final String themeDir = "config/themes/ftp";
 
     private static Master _master = null;
-
-    private HashMap<String, Properties> _cmds;
-
-    private CommandManagerInterface _commandManager = null;
-
-    private List<BaseFtpConnection> _conns = new Vector<>();
-
-    private ThreadPoolExecutor _pool;
-
     private static String _bindIP;
+    private HashMap<String, Properties> _cmds;
+    private CommandManagerInterface _commandManager = null;
+    private final List<BaseFtpConnection> _conns = new Vector<>();
+    private ThreadPoolExecutor _pool;
 
     /**
      * If you're creating a ConnectionManager object and it's not part of a TestCase
@@ -144,6 +139,10 @@ public class Master {
             logger.error("", th);
             System.exit(1);
         }
+    }
+
+    public static GlobalContext getGlobalContext() {
+        return GlobalContext.getGlobalContext();
     }
 
     public void createThreadPool() {
@@ -246,10 +245,6 @@ public class Master {
      */
     public List<BaseFtpConnection> getConnections() {
         return new ArrayList<>(_conns);
-    }
-
-    public static GlobalContext getGlobalContext() {
-        return GlobalContext.getGlobalContext();
     }
 
     public void remove(BaseFtpConnection conn) {

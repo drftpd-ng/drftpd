@@ -18,22 +18,24 @@
 package org.drftpd.master.slavemanagement;
 
 import com.cedarsoftware.util.io.JsonReader;
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
-import org.drftpd.common.util.PropertyHelper;
-import org.drftpd.common.network.SSLGetContext;
+import org.apache.logging.log4j.Logger;
 import org.drftpd.common.exceptions.RemoteIOException;
 import org.drftpd.common.exceptions.SSLUnavailableException;
+import org.drftpd.common.network.AsyncCommandArgument;
+import org.drftpd.common.network.SSLGetContext;
+import org.drftpd.common.protocol.AbstractIssuer;
+import org.drftpd.common.util.PropertyHelper;
 import org.drftpd.master.GlobalContext;
-import org.drftpd.master.exceptions.*;
 import org.drftpd.master.cron.TimeEventInterface;
+import org.drftpd.master.exceptions.FatalException;
+import org.drftpd.master.exceptions.NoAvailableSlaveException;
+import org.drftpd.master.exceptions.SlaveFileException;
+import org.drftpd.master.exceptions.SlaveUnavailableException;
 import org.drftpd.master.network.RemoteTransfer;
 import org.drftpd.master.protocol.AbstractBasicIssuer;
-import org.drftpd.common.protocol.AbstractIssuer;
 import org.drftpd.master.protocol.MasterProtocolCentral;
 import org.drftpd.master.vfs.DirectoryHandle;
-import org.drftpd.common.network.AsyncCommandArgument;
 import org.drftpd.slave.exceptions.ObjectNotFoundException;
 
 import javax.net.ssl.SSLSocket;
@@ -50,29 +52,19 @@ import java.util.concurrent.ConcurrentHashMap;
  * @version $Id$
  */
 public class SlaveManager implements Runnable, TimeEventInterface {
+    protected static final int actualTimeout = 60000; // one minute, evaluated
     private static final Logger logger = LogManager.getLogger(SlaveManager.class
             .getName());
-
     private static final String slavePath = "userdata/slaves/";
-
     private static final int socketTimeout = 10000; // 10 seconds, for Socket
-
-    protected static final int actualTimeout = 60000; // one minute, evaluated
     // on a SocketTimeout
-
-
     private static AbstractBasicIssuer _basicIssuer = null;
 
     protected Map<String, RemoteSlave> _rslaves = new ConcurrentHashMap<>();
-
-    private int _port;
-
     protected ServerSocket _serverSocket;
-
-    private boolean _sslSlaves;
-
     protected MasterProtocolCentral _central;
-
+    private int _port;
+    private boolean _sslSlaves;
     private boolean _listForSlaves = true;
 
     public SlaveManager() {
@@ -92,6 +84,14 @@ public class SlaveManager implements Runnable, TimeEventInterface {
         _port = Integer.parseInt(PropertyHelper.getProperty(p, "master.bindport"));
         _central = new MasterProtocolCentral();
         loadSlaves();
+    }
+
+    public static AbstractBasicIssuer getBasicIssuer() {
+        if (_basicIssuer == null) { // avoid unecessary lookups.
+            _basicIssuer = (AbstractBasicIssuer) GlobalContext.getGlobalContext().getSlaveManager().
+                    getProtocolCentral().getIssuerForClass(AbstractBasicIssuer.class);
+        }
+        return _basicIssuer;
     }
 
     private void loadSlaves() throws SlaveFileException {
@@ -573,13 +573,5 @@ public class SlaveManager implements Runnable, TimeEventInterface {
             rs.resetYear(d);
             rs.commit();
         }
-    }
-
-    public static AbstractBasicIssuer getBasicIssuer() {
-        if (_basicIssuer == null) { // avoid unecessary lookups.
-            _basicIssuer = (AbstractBasicIssuer) GlobalContext.getGlobalContext().getSlaveManager().
-                    getProtocolCentral().getIssuerForClass(AbstractBasicIssuer.class);
-        }
-        return _basicIssuer;
     }
 }

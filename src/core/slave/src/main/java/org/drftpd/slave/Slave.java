@@ -288,6 +288,31 @@ public class Slave {
         Slave.boot();
     }
 
+    public static void boot() throws Exception {
+        System.out.println("DrFTPD Slave starting, further logging will be done through log4j");
+
+        Thread.currentThread().setName("Slave Main Thread");
+
+        Properties p = ConfigLoader.loadConfig("slave.conf");
+        Slave s = new Slave(p);
+        s.getProtocolCentral().handshakeWithMaster();
+
+        if (isWin32) {
+            s.startFileLockThread();
+        }
+        try {
+            s.sendResponse(new AsyncResponseDiskStatus(s.getDiskStatus()));
+        } catch (Throwable t) {
+            logger.fatal("Error, check config on master for this slave");
+        }
+        s.setOnline(true);
+        try {
+            s.listenForCommands();
+        } finally {
+            s.shutdown();
+        }
+    }
+
     private void loadDiskSelection(Properties cfg) {
         String desiredDs = PropertyHelper.getProperty(cfg, "diskselection");
         try {
@@ -320,31 +345,6 @@ public class Slave {
         return new RootCollection(this, roots);
     }
 
-    public static void boot() throws Exception {
-        System.out.println("DrFTPD Slave starting, further logging will be done through log4j");
-
-        Thread.currentThread().setName("Slave Main Thread");
-
-        Properties p = ConfigLoader.loadConfig("slave.conf");
-        Slave s = new Slave(p);
-        s.getProtocolCentral().handshakeWithMaster();
-
-        if (isWin32) {
-            s.startFileLockThread();
-        }
-        try {
-            s.sendResponse(new AsyncResponseDiskStatus(s.getDiskStatus()));
-        } catch (Throwable t) {
-            logger.fatal("Error, check config on master for this slave");
-        }
-        s.setOnline(true);
-        try {
-            s.listenForCommands();
-        } finally {
-            s.shutdown();
-        }
-    }
-
     public void shutdown() {
         if (_sin != null) {
             try {
@@ -371,56 +371,12 @@ public class Slave {
         setOnline(false);
     }
 
-    public void setOnline(boolean online) {
-        _online = online;
-    }
-
     public boolean isOnline() {
         return _online;
     }
 
-    public class FileLockRunnable implements Runnable {
-
-        public void run() {
-            while (true) {
-                synchronized (_transfers) {
-                    try {
-                        _transfers.wait(5000);
-                    } catch (InterruptedException e) {
-                    }
-                    for (Iterator<QueuedOperation> iter = _renameQueue.iterator(); iter.hasNext(); ) {
-                        QueuedOperation qo = iter.next();
-                        if (qo.getDestination() == null) { // delete
-                            try {
-                                delete(qo.getSource());
-                                // delete successful
-                                iter.remove();
-                            } catch (PermissionDeniedException e) {
-                                // keep it in the queue
-                            } catch (FileNotFoundException e) {
-                                iter.remove();
-                            } catch (IOException e) {
-                                throw new RuntimeException("Win32 stinks", e);
-                            }
-                        } else { // rename
-                            String fileName = qo.getDestination().substring(qo.getDestination().lastIndexOf("/") + 1);
-                            String destDir = qo.getDestination().substring(0, qo.getDestination().lastIndexOf("/"));
-                            try {
-                                rename(qo.getSource(), destDir, fileName);
-                                // rename successful
-                                iter.remove();
-                            } catch (PermissionDeniedException e) {
-                                // keep it in the queue
-                            } catch (FileNotFoundException e) {
-                                iter.remove();
-                            } catch (IOException e) {
-                                throw new RuntimeException("Win32 stinks", e);
-                            }
-                        }
-                    }
-                }
-            }
-        }
+    public void setOnline(boolean online) {
+        _online = online;
     }
 
     private void startFileLockThread() {
@@ -748,5 +704,49 @@ public class Slave {
 
     public boolean concurrentRootIteration() {
         return _concurrentRootIteration;
+    }
+
+    public class FileLockRunnable implements Runnable {
+
+        public void run() {
+            while (true) {
+                synchronized (_transfers) {
+                    try {
+                        _transfers.wait(5000);
+                    } catch (InterruptedException e) {
+                    }
+                    for (Iterator<QueuedOperation> iter = _renameQueue.iterator(); iter.hasNext(); ) {
+                        QueuedOperation qo = iter.next();
+                        if (qo.getDestination() == null) { // delete
+                            try {
+                                delete(qo.getSource());
+                                // delete successful
+                                iter.remove();
+                            } catch (PermissionDeniedException e) {
+                                // keep it in the queue
+                            } catch (FileNotFoundException e) {
+                                iter.remove();
+                            } catch (IOException e) {
+                                throw new RuntimeException("Win32 stinks", e);
+                            }
+                        } else { // rename
+                            String fileName = qo.getDestination().substring(qo.getDestination().lastIndexOf("/") + 1);
+                            String destDir = qo.getDestination().substring(0, qo.getDestination().lastIndexOf("/"));
+                            try {
+                                rename(qo.getSource(), destDir, fileName);
+                                // rename successful
+                                iter.remove();
+                            } catch (PermissionDeniedException e) {
+                                // keep it in the queue
+                            } catch (FileNotFoundException e) {
+                                iter.remove();
+                            } catch (IOException e) {
+                                throw new RuntimeException("Win32 stinks", e);
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }

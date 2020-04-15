@@ -25,23 +25,23 @@ import java.util.Properties;
  * @version $Id$
  */
 public class PropertyHelper {
-	private PropertyHelper() {
-	}
+    private PropertyHelper() {
+    }
 
-	public static String getProperty(Properties p, String name)
-			throws NullPointerException {
-		String result = p.getProperty(name);
+    public static String getProperty(Properties p, String name)
+            throws NullPointerException {
+        String result = p.getProperty(name);
 
-		if (result == null) {
-			throw new NullPointerException("Error getting setting " + name);
-		}
+        if (result == null) {
+            throw new NullPointerException("Error getting setting " + name);
+        }
 
-		return result;
-	}
-	
-	public static String getProperty(Properties p, String name,
-			String defaultValue) throws NullPointerException {
-		return p.getProperty(name, defaultValue);
-		// result can't be null
-	}
+        return result;
+    }
+
+    public static String getProperty(Properties p, String name,
+                                     String defaultValue) throws NullPointerException {
+        return p.getProperty(name, defaultValue);
+        // result can't be null
+    }
 }

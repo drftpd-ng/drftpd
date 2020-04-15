@@ -17,25 +17,25 @@
  */
 package org.drftpd.zipscript.master.flac;
 
+import org.drftpd.common.network.AsyncCommandArgument;
+import org.drftpd.common.protocol.AbstractIssuer;
 import org.drftpd.master.exceptions.SlaveUnavailableException;
 import org.drftpd.master.slavemanagement.RemoteSlave;
-import org.drftpd.common.protocol.AbstractIssuer;
-import org.drftpd.common.network.AsyncCommandArgument;
 
 /**
  * @author norox
  */
 public class ZipscriptFlacIssuer extends AbstractIssuer {
-	@Override
-	public String getProtocolName() {
-		return "ZipscriptFlacProtocol";
-	}
+    @Override
+    public String getProtocolName() {
+        return "ZipscriptFlacProtocol";
+    }
 
-	public String issueFlacFileToSlave(RemoteSlave rslave, String path)throws SlaveUnavailableException {
-		String index = rslave.fetchIndex();
-		AsyncCommandArgument ac = new AsyncCommandArgument(index, "flacfile", path);
-		rslave.sendCommand(ac);
+    public String issueFlacFileToSlave(RemoteSlave rslave, String path) throws SlaveUnavailableException {
+        String index = rslave.fetchIndex();
+        AsyncCommandArgument ac = new AsyncCommandArgument(index, "flacfile", path);
+        rslave.sendCommand(ac);
 
-		return index;
-	}
+        return index;
+    }
 }

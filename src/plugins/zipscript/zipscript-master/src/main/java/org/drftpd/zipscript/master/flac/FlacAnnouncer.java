@@ -36,77 +36,76 @@ import java.util.ResourceBundle;
  */
 public class FlacAnnouncer extends AbstractAnnouncer {
 
-	private AnnounceConfig _config;
+    private AnnounceConfig _config;
 
-	private ResourceBundle _bundle;
+    private ResourceBundle _bundle;
 
 
+    public void initialise(AnnounceConfig config, ResourceBundle bundle) {
+        _config = config;
+        _bundle = bundle;
 
-	public void initialise(AnnounceConfig config, ResourceBundle bundle) {
-		_config = config;
-		_bundle = bundle;
+        // Subscribe to events
+        AnnotationProcessor.process(this);
+    }
 
-		// Subscribe to events
-		AnnotationProcessor.process(this);
-	}
+    public void stop() {
+        // The plugin is unloading so stop asking for events
+        AnnotationProcessor.unprocess(this);
+    }
 
-	public void stop() {
-		// The plugin is unloading so stop asking for events
-		AnnotationProcessor.unprocess(this);
-	}
+    public String[] getEventTypes() {
+        String[] types = {"flac"};
+        return types;
+    }
 
-	public String[] getEventTypes() {
-		String[] types = {"flac"};
-		return types;
-	}
-	
-	public void setResourceBundle(ResourceBundle bundle) {
-		_bundle = bundle;
-	}
+    public void setResourceBundle(ResourceBundle bundle) {
+        _bundle = bundle;
+    }
 
-	@EventSubscriber
-	public void onFlacEvent(FlacEvent event) {
-		AnnounceWriter writer = _config.getPathWriter("flac", event.getDir());
-		// Check we got a writer back, if it is null do nothing and ignore the event
-		if (writer != null) {
-			// Check if this is the first flac in this dir
-			if (event.isFirst()) {
-				Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
-				FlacInfo flacInfo = event.getFlacInfo();
-				VorbisTag vorbis = flacInfo.getVorbisTag();
-				if (vorbis != null) {
-					env.put("artist", vorbis.getArtist());
-					env.put("genre", vorbis.getGenre());
-					env.put("album", vorbis.getAlbum());
-					env.put("year", vorbis.getYear());
-					env.put("title", vorbis.getTitle());
-					if (vorbis.getTrack() == 0) {
-						env.put("track","");
-					} else {
-						env.put("track", vorbis.getTrack());
-					}
-				} else {
-					env.put("artist", "unknown");
-					env.put("genre", "unknown");
-					env.put("album", "unknown");
-					env.put("year", "unknown");
-					env.put("title", "unknown");
-					env.put("track", "unknown");
-				}
-				env.put("samplerate", flacInfo.getSamplerate());
-				env.put("channels", flacInfo.getChannels());
-				int runSeconds = (int)flacInfo.getRuntime();
-				String runtime = "";
-				if (runSeconds > 59) {
-					int runMins = runSeconds / 60;
-					runSeconds %= 60;
-					runtime = runMins + "m ";
-				}
-				runtime = runtime + runSeconds + "s";
-				env.put("runtime", runtime);
-				env.put("path", event.getDir().getName());
-				sayOutput(ReplacerUtils.jprintf("vorbistag", env, _bundle), writer);
-			}
-		}
-	}
+    @EventSubscriber
+    public void onFlacEvent(FlacEvent event) {
+        AnnounceWriter writer = _config.getPathWriter("flac", event.getDir());
+        // Check we got a writer back, if it is null do nothing and ignore the event
+        if (writer != null) {
+            // Check if this is the first flac in this dir
+            if (event.isFirst()) {
+                Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
+                FlacInfo flacInfo = event.getFlacInfo();
+                VorbisTag vorbis = flacInfo.getVorbisTag();
+                if (vorbis != null) {
+                    env.put("artist", vorbis.getArtist());
+                    env.put("genre", vorbis.getGenre());
+                    env.put("album", vorbis.getAlbum());
+                    env.put("year", vorbis.getYear());
+                    env.put("title", vorbis.getTitle());
+                    if (vorbis.getTrack() == 0) {
+                        env.put("track", "");
+                    } else {
+                        env.put("track", vorbis.getTrack());
+                    }
+                } else {
+                    env.put("artist", "unknown");
+                    env.put("genre", "unknown");
+                    env.put("album", "unknown");
+                    env.put("year", "unknown");
+                    env.put("title", "unknown");
+                    env.put("track", "unknown");
+                }
+                env.put("samplerate", flacInfo.getSamplerate());
+                env.put("channels", flacInfo.getChannels());
+                int runSeconds = (int) flacInfo.getRuntime();
+                String runtime = "";
+                if (runSeconds > 59) {
+                    int runMins = runSeconds / 60;
+                    runSeconds %= 60;
+                    runtime = runMins + "m ";
+                }
+                runtime = runtime + runSeconds + "s";
+                env.put("runtime", runtime);
+                env.put("path", event.getDir().getName());
+                sayOutput(ReplacerUtils.jprintf("vorbistag", env, _bundle), writer);
+            }
+        }
+    }
 }

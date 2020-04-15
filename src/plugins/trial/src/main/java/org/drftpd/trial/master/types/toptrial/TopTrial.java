@@ -16,14 +16,14 @@
  */
 package org.drftpd.trial.master.types.toptrial;
 
-import java.util.*;
-
-import org.drftpd.master.GlobalContext;
 import org.drftpd.common.util.Bytes;
-import org.drftpd.master.usermanager.*;
+import org.drftpd.master.GlobalContext;
 import org.drftpd.master.commands.CommandRequest;
 import org.drftpd.master.commands.CommandResponse;
+import org.drftpd.master.usermanager.*;
 import org.drftpd.trial.master.TrialType;
+
+import java.util.*;
 
 /**
  * @author CyBeR
@@ -33,9 +33,9 @@ import org.drftpd.trial.master.TrialType;
 public class TopTrial extends TrialType {
     private int _list;
     private int _keep;
-    private long _min;
+    private final long _min;
 
-    private int _minPercent;
+    private final int _minPercent;
 
     public TopTrial(Properties p, int confnum, String type) {
         super(p, confnum, type);
@@ -228,15 +228,15 @@ public class TopTrial extends TrialType {
 
         if (top) {
             if (getMin() > 0) {
-                response.addComment(request.getSession().jprintf(bundle,  "toptrial.top.header.min", env2, requestuser));
+                response.addComment(request.getSession().jprintf(bundle, "toptrial.top.header.min", env2, requestuser));
             } else {
-                response.addComment(request.getSession().jprintf(bundle,  "toptrial.top.header", env2, requestuser));
+                response.addComment(request.getSession().jprintf(bundle, "toptrial.top.header", env2, requestuser));
             }
         } else {
             if (getMin() > 0) {
-                response.addComment(request.getSession().jprintf(bundle,  "toptrial.cut.header.min", env2, requestuser));
+                response.addComment(request.getSession().jprintf(bundle, "toptrial.cut.header.min", env2, requestuser));
             } else {
-                response.addComment(request.getSession().jprintf(bundle,  "toptrial.cut.header", env2, requestuser));
+                response.addComment(request.getSession().jprintf(bundle, "toptrial.cut.header", env2, requestuser));
             }
         }
 
@@ -260,14 +260,14 @@ public class TopTrial extends TrialType {
             if ((i < getKeep()) && (uploaded >= getMin()) && (uploaded >= minPercentage)) {
                 //Passing
                 if (top) {
-                    response.addComment(request.getSession().jprintf(bundle,  "toptrial.top.passed", env, requestuser));
+                    response.addComment(request.getSession().jprintf(bundle, "toptrial.top.passed", env, requestuser));
                 }
             } else {
                 //Failing
                 if (top) {
-                    response.addComment(request.getSession().jprintf(bundle,  "toptrial.top.failed", env, requestuser));
+                    response.addComment(request.getSession().jprintf(bundle, "toptrial.top.failed", env, requestuser));
                 } else {
-                    response.addComment(request.getSession().jprintf(bundle,  "toptrial.cut.failed", env, requestuser));
+                    response.addComment(request.getSession().jprintf(bundle, "toptrial.cut.failed", env, requestuser));
                 }
             }
             i++;
@@ -333,15 +333,15 @@ public class TopTrial extends TrialType {
                 }
 
                 if (count == 1) {
-                    env.put("place", request.getSession().jprintf(bundle,  "toptrial.place.winning", env2, requestuser));
+                    env.put("place", request.getSession().jprintf(bundle, "toptrial.place.winning", env2, requestuser));
                 } else {
-                    env.put("place", request.getSession().jprintf(bundle,  "toptrial.place.losing", env2, requestuser));
+                    env.put("place", request.getSession().jprintf(bundle, "toptrial.place.losing", env2, requestuser));
                 }
 
                 if ((count < getKeep()) && (uploaded >= getMin())) {
-                    response.addComment(request.getSession().jprintf(bundle,  "toptrial.place.passed", env, requestuser));
+                    response.addComment(request.getSession().jprintf(bundle, "toptrial.place.passed", env, requestuser));
                 } else {
-                    response.addComment(request.getSession().jprintf(bundle,  "toptrial.place.failed", env, requestuser));
+                    response.addComment(request.getSession().jprintf(bundle, "toptrial.place.failed", env, requestuser));
                 }
 
                 break;
@@ -352,7 +352,7 @@ public class TopTrial extends TrialType {
         if (!found) {
             Map<String, Object> env = new HashMap<>();
             env.put("name", request.getArgument());
-            response.addComment(request.getSession().jprintf(bundle,  "toptrial.place.notfound", env, requestuser));
+            response.addComment(request.getSession().jprintf(bundle, "toptrial.place.notfound", env, requestuser));
         }
     }
 }

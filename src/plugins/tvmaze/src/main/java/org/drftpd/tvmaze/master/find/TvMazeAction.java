@@ -20,58 +20,58 @@ package org.drftpd.tvmaze.master.find;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.WordUtils;
 import org.drftpd.find.master.action.ActionInterface;
-import org.drftpd.tvmaze.master.metadata.TvMazeInfo;
-import org.drftpd.tvmaze.master.vfs.TvMazeVFSData;
-import org.drftpd.master.vfs.DirectoryHandle;
-import org.drftpd.master.vfs.InodeHandle;
 import org.drftpd.master.commands.CommandRequest;
 import org.drftpd.master.commands.ImproperUsageException;
+import org.drftpd.master.vfs.DirectoryHandle;
+import org.drftpd.master.vfs.InodeHandle;
+import org.drftpd.tvmaze.master.metadata.TvMazeInfo;
+import org.drftpd.tvmaze.master.vfs.TvMazeVFSData;
 
 /**
  * @author scitz0
  * @version $Id: NukeAction.java 2482 2011-06-28 10:20:44Z scitz0 $
  */
 public class TvMazeAction implements ActionInterface {
-	private boolean _failed;
+    private boolean _failed;
 
-	@Override
-	public String name() {
-		return "PrintTvMaze";
-	}
+    @Override
+    public String name() {
+        return "PrintTvMaze";
+    }
 
-	@Override
-	public void initialize(String action, String[] args) throws ImproperUsageException {
-	}
+    @Override
+    public void initialize(String action, String[] args) throws ImproperUsageException {
+    }
 
-	@Override
-	public String exec(CommandRequest request, InodeHandle inode) {
-		_failed = false;
-		TvMazeVFSData tvmazeData = new TvMazeVFSData((DirectoryHandle)inode);
-		TvMazeInfo tvmazeInfo = tvmazeData.getTvMazeInfoFromCache();
-		if (tvmazeInfo != null) {
-			StringBuilder sb = new StringBuilder();
-			sb.append("#########################################").append(")\n");
-			sb.append("# Title # - ").append(tvmazeInfo.getName()).append("\n");
-			sb.append("# Genre # - ").append(StringUtils.join(tvmazeInfo.getGenres().toString(), ", ")).append("\n");
-			sb.append("# URL # - ").append(tvmazeInfo.getURL()).append("\n");
-			sb.append("# Plot #\n").append(WordUtils.wrap(tvmazeInfo.getSummary(), 70));
-			return sb.toString();
-		}
-		return "#########################################\nNO TvMaze INFO FOUND FOR: " + inode.getPath();
-	}
+    @Override
+    public String exec(CommandRequest request, InodeHandle inode) {
+        _failed = false;
+        TvMazeVFSData tvmazeData = new TvMazeVFSData((DirectoryHandle) inode);
+        TvMazeInfo tvmazeInfo = tvmazeData.getTvMazeInfoFromCache();
+        if (tvmazeInfo != null) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("#########################################").append(")\n");
+            sb.append("# Title # - ").append(tvmazeInfo.getName()).append("\n");
+            sb.append("# Genre # - ").append(StringUtils.join(tvmazeInfo.getGenres().toString(), ", ")).append("\n");
+            sb.append("# URL # - ").append(tvmazeInfo.getURL()).append("\n");
+            sb.append("# Plot #\n").append(WordUtils.wrap(tvmazeInfo.getSummary(), 70));
+            return sb.toString();
+        }
+        return "#########################################\nNO TvMaze INFO FOUND FOR: " + inode.getPath();
+    }
 
-	@Override
-	public boolean execInDirs() {
-		return true;
-	}
+    @Override
+    public boolean execInDirs() {
+        return true;
+    }
 
-	@Override
-	public boolean execInFiles() {
-		return false;
-	}
+    @Override
+    public boolean execInFiles() {
+        return false;
+    }
 
-	@Override
-	public boolean failed() {
-		return _failed;
-	}
+    @Override
+    public boolean failed() {
+        return _failed;
+    }
 }

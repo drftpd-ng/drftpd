@@ -32,29 +32,29 @@ import java.util.Collection;
 /**
  * @author mog
  * @version $Id: SlaveSelectionManagerInterface.java 1443 2006-03-18 00:57:58Z
- *          zubov $
+ * zubov $
  */
 public abstract class SlaveSelectionManagerInterface {
-	public abstract void reload() throws IOException;
+    public static GlobalContext getGlobalContext() {
+        return GlobalContext.getGlobalContext();
+    }
 
-	public abstract RemoteSlave getASlave(BaseFtpConnection conn, char direction, InodeHandle file)
-			throws NoAvailableSlaveException;
+    public abstract void reload() throws IOException;
 
-	public abstract RemoteSlave getASlaveForJobDownload(FileHandle file, Collection<RemoteSlave> destinationSlaves)
-			throws NoAvailableSlaveException, FileNotFoundException;
+    public abstract RemoteSlave getASlave(BaseFtpConnection conn, char direction, InodeHandle file)
+            throws NoAvailableSlaveException;
 
-	public abstract RemoteSlave getASlaveForJobUpload(FileHandle file, Collection<RemoteSlave> destinationSlaves, RemoteSlave sourceSlave)
-			throws NoAvailableSlaveException, FileNotFoundException;
-	
-	public Collection<RemoteSlave> getAvailableSlaves() throws NoAvailableSlaveException {
-		return getSlaveManager().getAvailableSlaves();
-	}
-	
-	public SlaveManager getSlaveManager() {
-		return getGlobalContext().getSlaveManager();
-	}
+    public abstract RemoteSlave getASlaveForJobDownload(FileHandle file, Collection<RemoteSlave> destinationSlaves)
+            throws NoAvailableSlaveException, FileNotFoundException;
 
-	public static GlobalContext getGlobalContext() {
-		return GlobalContext.getGlobalContext();
-	}
+    public abstract RemoteSlave getASlaveForJobUpload(FileHandle file, Collection<RemoteSlave> destinationSlaves, RemoteSlave sourceSlave)
+            throws NoAvailableSlaveException, FileNotFoundException;
+
+    public Collection<RemoteSlave> getAvailableSlaves() throws NoAvailableSlaveException {
+        return getSlaveManager().getAvailableSlaves();
+    }
+
+    public SlaveManager getSlaveManager() {
+        return getGlobalContext().getSlaveManager();
+    }
 }

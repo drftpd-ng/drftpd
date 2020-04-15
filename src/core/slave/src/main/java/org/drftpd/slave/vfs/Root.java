@@ -26,60 +26,58 @@ import java.io.IOException;
  * @version $Id$
  */
 public class Root {
-	private PhysicalFile _rootFile;
+    private static final String separator = "/";
+    private final PhysicalFile _rootFile;
+    private long _lastModified;
 
-	private long _lastModified;
-	
-	private static final String separator = "/";
+    public Root(String root) throws IOException {
+        _rootFile = new PhysicalFile(new PhysicalFile(root).getCanonicalFile());
+        _lastModified = getFile().lastModified();
+    }
 
-	public Root(String root) throws IOException {
-		_rootFile = new PhysicalFile(new PhysicalFile(root).getCanonicalFile());
-		_lastModified = getFile().lastModified();
-	}
+    public PhysicalFile getFile() {
+        return _rootFile;
+    }
 
-	public PhysicalFile getFile() {
-		return _rootFile;
-	}
+    public String getPath() {
+        return _rootFile.getPath();
+    }
 
-	public String getPath() {
-		return _rootFile.getPath();
-	}
+    public long lastModified() {
+        return _lastModified;
+    }
 
-	public long lastModified() {
-		return _lastModified;
-	}
+    public void touch() {
+        getFile().setLastModified(_lastModified = System.currentTimeMillis());
+    }
 
-	public void touch() {
-		getFile().setLastModified(_lastModified = System.currentTimeMillis());
-	}
+    public String toString() {
+        return "[root=" + getPath() + "]";
+    }
 
-	public String toString() {
-		return "[root=" + getPath() + "]";
-	}
+    public long getDiskSpaceAvailable() {
+        return getFile().getUsableSpace();
+    }
 
-	public long getDiskSpaceAvailable() {
-		return getFile().getUsableSpace();
-	}
+    public long getDiskSpaceCapacity() {
+        return getFile().getTotalSpace();
+    }
 
-	public long getDiskSpaceCapacity() {
-		return getFile().getTotalSpace();
-	}
+    public PhysicalFile getFile(String path) {
+        return new PhysicalFile(getPath() + separator + path);
+    }
 
-	public PhysicalFile getFile(String path) {
-		return new PhysicalFile(getPath() + separator + path);
-	}
+    /* (non-Javadoc)
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
+    //@Override
+    public boolean equals(Object arg0) {
+        if (!(arg0 instanceof Root)) {
+            return false;
+        }
+        Root r = (Root) arg0;
+        return r.getPath().equals(getPath());
+    }
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
-	//@Override
-	public boolean equals(Object arg0) {
-		if (!(arg0 instanceof Root)) {
-			return false;
-		}
-		Root r = (Root) arg0;
-		return r.getPath().equals(getPath());
-	}
-	
-	
+
 }

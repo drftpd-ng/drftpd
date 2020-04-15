@@ -17,9 +17,8 @@
  */
 package org.drftpd.master.indexation;
 
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
+import org.apache.logging.log4j.Logger;
 import org.apache.lucene.index.CorruptIndexException;
 import org.drftpd.master.GlobalContext;
 
@@ -27,84 +26,86 @@ import java.io.IOException;
 
 /**
  * Optimizes the index and update the search engine.
+ *
  * @author fr0w
  * @version $Id$
  */
 public class LuceneMaintenanceThread extends Thread {
-	private static final Logger logger = LogManager.getLogger(LuceneMaintenanceThread.class);
+    private static final Logger logger = LogManager.getLogger(LuceneMaintenanceThread.class);
 
-	private int _optimizeInterval;
-	private long _lastOptimization;
-	
-	private boolean _stop;
-	
-	private LuceneEngine _engine;
-	
-	public LuceneMaintenanceThread() {
-		setName("IndexMaintenanceThread");
-		_engine = (LuceneEngine) GlobalContext.getGlobalContext().getIndexEngine();
-		
-		_lastOptimization = System.currentTimeMillis();
-	}
+    private int _optimizeInterval;
+    private long _lastOptimization;
 
-	public void run() {
-		while (true) {
-			long currentTime = System.currentTimeMillis();
+    private boolean _stop;
 
-			try {
-				if (_stop) {
-					break;
-				}
+    private final LuceneEngine _engine;
 
-				if ((currentTime >= _lastOptimization + _optimizeInterval) && !_engine.isRebuilding()) {
-					_engine.getWriter().optimize();
-					_engine.getWriter().commit();
-					updateLastOptimizationTime();
+    public LuceneMaintenanceThread() {
+        setName("IndexMaintenanceThread");
+        _engine = (LuceneEngine) GlobalContext.getGlobalContext().getIndexEngine();
 
-					logger.debug("Index was optimized successfully.");
-				}
+        _lastOptimization = System.currentTimeMillis();
+    }
 
-				// obtaining the object monitor's.
-				synchronized (this) {
-					wait(_optimizeInterval);
-				}
-			} catch (InterruptedException e) {
-			} catch (CorruptIndexException e) {
-				throw new IllegalStateException("Corrupt index, couldn't run periodical maintenance, that's bad!", e);
-			} catch (IOException e) {
-				throw new IllegalStateException("Corrupt index, couldn't run periodical maintenance, that's bad!", e);
-			}
-		}
-	}
-	
-	/**
-	 * Stops the maintenance thread.<br>
-	 * If there's an operation already running when this method is called,
-	 * the operation is firstly finalized and then the query is stopped.
-	 */
-	protected void stopMaintenance() {
-		_stop = true;
-	}
-	
-	/**
-	 * Updates the last optimization time.
-	 */
-	protected void updateLastOptimizationTime() {
-		_lastOptimization = System.currentTimeMillis();
-	}
-	
-	/**
-	 * @return the last time the index was optimized.
-	 */
-	protected long getLastOptimizationTime() {
-		return _lastOptimization;
-	}
-	
-	/**
-	 * Sets how frequently the optimization process is executed.
-	 * @param interval
-	 */
-	protected void setOptimizationInterval(int interval) {
-		_optimizeInterval = interval;
-	}
+    public void run() {
+        while (true) {
+            long currentTime = System.currentTimeMillis();
+
+            try {
+                if (_stop) {
+                    break;
+                }
+
+                if ((currentTime >= _lastOptimization + _optimizeInterval) && !_engine.isRebuilding()) {
+                    _engine.getWriter().optimize();
+                    _engine.getWriter().commit();
+                    updateLastOptimizationTime();
+
+                    logger.debug("Index was optimized successfully.");
+                }
+
+                // obtaining the object monitor's.
+                synchronized (this) {
+                    wait(_optimizeInterval);
+                }
+            } catch (InterruptedException e) {
+            } catch (CorruptIndexException e) {
+                throw new IllegalStateException("Corrupt index, couldn't run periodical maintenance, that's bad!", e);
+            } catch (IOException e) {
+                throw new IllegalStateException("Corrupt index, couldn't run periodical maintenance, that's bad!", e);
+            }
+        }
+    }
+
+    /**
+     * Stops the maintenance thread.<br>
+     * If there's an operation already running when this method is called,
+     * the operation is firstly finalized and then the query is stopped.
+     */
+    protected void stopMaintenance() {
+        _stop = true;
+    }
+
+    /**
+     * Updates the last optimization time.
+     */
+    protected void updateLastOptimizationTime() {
+        _lastOptimization = System.currentTimeMillis();
+    }
+
+    /**
+     * @return the last time the index was optimized.
+     */
+    protected long getLastOptimizationTime() {
+        return _lastOptimization;
+    }
+
+    /**
+     * Sets how frequently the optimization process is executed.
+     *
+     * @param interval
+     */
+    protected void setOptimizationInterval(int interval) {
+        _optimizeInterval = interval;
+    }
 }

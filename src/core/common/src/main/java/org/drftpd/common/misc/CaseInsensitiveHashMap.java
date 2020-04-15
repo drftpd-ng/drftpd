@@ -27,24 +27,24 @@ import java.util.Map;
 @SuppressWarnings("serial")
 public class CaseInsensitiveHashMap<K, V> extends HashMap<K, V> {
 
-	public CaseInsensitiveHashMap() {
-		super();
-	}
+    public CaseInsensitiveHashMap() {
+        super();
+    }
 
-	public CaseInsensitiveHashMap(Map<K,V> map) {
-		super(map);
-	}
+    public CaseInsensitiveHashMap(Map<K, V> map) {
+        super(map);
+    }
 
-	public boolean containsKey(String arg0) {
-		return super.containsKey(arg0.toLowerCase());
-	}
+    public boolean containsKey(String arg0) {
+        return super.containsKey(arg0.toLowerCase());
+    }
 
-	public V get(String arg0) {
-		return super.get(arg0.toLowerCase());
-	}
+    public V get(String arg0) {
+        return super.get(arg0.toLowerCase());
+    }
 
-	@SuppressWarnings("unchecked")
-	public V put(K arg0, V arg1) {
-		return super.put(((K) ((String) arg0).toLowerCase()), arg1);
-	}
+    @SuppressWarnings("unchecked")
+    public V put(K arg0, V arg1) {
+        return super.put(((K) ((String) arg0).toLowerCase()), arg1);
+    }
 }

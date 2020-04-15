@@ -21,13 +21,13 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.drftpd.master.GlobalContext;
+import org.drftpd.master.commands.CommandInterface;
+import org.drftpd.master.commands.CommandRequest;
+import org.drftpd.master.commands.CommandResponse;
 import org.drftpd.master.commands.StandardCommandManager;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.InodeHandle;
-import org.drftpd.master.commands.CommandInterface;
-import org.drftpd.master.commands.CommandRequest;
-import org.drftpd.master.commands.CommandResponse;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;

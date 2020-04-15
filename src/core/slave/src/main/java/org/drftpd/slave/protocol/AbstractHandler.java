@@ -22,33 +22,34 @@ import org.drftpd.slave.Slave;
 
 /**
  * All handlers *MUST* extend this class in order to be proper loaded and used.
+ *
  * @author fr0w
  * @version $Id$
  */
 public abstract class AbstractHandler {
-	private SlaveProtocolCentral _central;
+    private final SlaveProtocolCentral _central;
 
-	public abstract String getProtocolName();
+    public AbstractHandler(SlaveProtocolCentral central) {
+        _central = central;
+    }
 
-	public AbstractHandler(SlaveProtocolCentral central) {
-		_central = central;
-	}
-	
-	/**
-	 * @return the slave-side protocol central.
-	 */
-	public SlaveProtocolCentral getCentral() {
-		return _central;
-	}
-	
-	/**
-	 * @return the Slave instance.
-	 */
-	public Slave getSlaveObject() {
-		return _central.getSlaveObject();
-	}
+    public abstract String getProtocolName();
 
-	public void sendResponse(AsyncResponse ar) {
-		getSlaveObject().sendResponse(ar);
-	}
+    /**
+     * @return the slave-side protocol central.
+     */
+    public SlaveProtocolCentral getCentral() {
+        return _central;
+    }
+
+    /**
+     * @return the Slave instance.
+     */
+    public Slave getSlaveObject() {
+        return _central.getSlaveObject();
+    }
+
+    public void sendResponse(AsyncResponse ar) {
+        getSlaveObject().sendResponse(ar);
+    }
 }

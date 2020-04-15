@@ -1,20 +1,20 @@
 /*
-* BlowfishECB.java version 2.00.00
-*
-* Code Written by k2r (k2r.contact@gmail.com)
-*
-* Tks to Mouser for his precious help.
-* Tks to Murx for correct Padding and Long key.
-*
-* This program is free software; you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
-* (at your option) any later version.
-*/
+ * BlowfishECB.java version 2.00.00
+ *
+ * Code Written by k2r (k2r.contact@gmail.com)
+ *
+ * Tks to Mouser for his precious help.
+ * Tks to Murx for correct Padding and Long key.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ */
 package org.drftpd.master.sitebot.blowfish;
 
-import javax.crypto.*;
-import java.io.*;
+import javax.crypto.Cipher;
+import java.io.UnsupportedEncodingException;
 
 /**
  * Blowfish ECB
@@ -72,9 +72,9 @@ public class BlowfishECB extends Blowfish {
 
     public String decrypt(String textToDecrypt) throws Exception {
         if (textToDecrypt.startsWith(ECB_STANDARD_PREFIX)) {
-            textToDecrypt = textToDecrypt.substring(ECB_STANDARD_PREFIX.length(), textToDecrypt.length());
+            textToDecrypt = textToDecrypt.substring(ECB_STANDARD_PREFIX.length());
         } else if (textToDecrypt.startsWith(ECB_MCPS_PREFIX)) {
-            textToDecrypt = textToDecrypt.substring(ECB_MCPS_PREFIX.length(), textToDecrypt.length());
+            textToDecrypt = textToDecrypt.substring(ECB_MCPS_PREFIX.length());
         } else {
             //Not correct encrypted string, return the source string
             return textToDecrypt;

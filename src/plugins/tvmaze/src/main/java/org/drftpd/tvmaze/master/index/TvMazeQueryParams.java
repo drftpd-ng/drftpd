@@ -25,85 +25,85 @@ import org.drftpd.common.dynamicdata.Key;
  */
 public class TvMazeQueryParams {
 
-	public static final Key<TvMazeQueryParams> TvMazeQUERYPARAMS = new Key<>(TvMazeQueryParams.class, "tvmazequeryparams");
-	
-	private String _name;
-	private String _genre;
-	private Integer _season;
-	private Integer _number;
-	private String _type;
-	private String _status;
-	private String _language;
-	private String _country;
-	private String _network;
-	
-	public String getName() {
-		return _name;
-	}
-	
-	public String getGenre() {
-		return _genre;
-	}
+    public static final Key<TvMazeQueryParams> TvMazeQUERYPARAMS = new Key<>(TvMazeQueryParams.class, "tvmazequeryparams");
 
-	public Integer getSeason() {
-		return _season;
-	}
+    private String _name;
+    private String _genre;
+    private Integer _season;
+    private Integer _number;
+    private String _type;
+    private String _status;
+    private String _language;
+    private String _country;
+    private String _network;
 
-	public Integer getNumber() {
-		return _number;
-	}
+    public String getName() {
+        return _name;
+    }
 
-	public String getType() {
-		return _type;
-	}
+    public void setName(String name) {
+        _name = name;
+    }
 
-	public String getStatus() {
-		return _status;
-	}
+    public String getGenre() {
+        return _genre;
+    }
 
-	public String getLanguage() {
-		return _language;
-	}
+    public void setGenre(String genre) {
+        _genre = genre;
+    }
 
-	public String getCountry() {
-		return _country;
-	}
+    public Integer getSeason() {
+        return _season;
+    }
 
-	public String getNetwork() {
-		return _network;
-	}
+    public void setSeason(Integer season) {
+        _season = season;
+    }
 
-	public void setName(String name) {
-		_name = name;
-	}
-	
-	public void setGenre(String genre) {
-		_genre = genre;
-	}
+    public Integer getNumber() {
+        return _number;
+    }
 
-	public void setSeason(Integer season) {
-		_season = season;
-	}
+    public void setNumber(Integer number) {
+        _number = number;
+    }
 
-	public void setNumber(Integer number) {
-		_number = number;
-	}
+    public String getType() {
+        return _type;
+    }
 
-	public void setType(String type) {
-		_type = type;
-	}
+    public void setType(String type) {
+        _type = type;
+    }
 
-	public void setStatus(String status) {
-		_status = status;
-	}
+    public String getStatus() {
+        return _status;
+    }
 
-	public void setLanguage(String language) {
-		_language = language;
-	}
+    public void setStatus(String status) {
+        _status = status;
+    }
 
-	public void setCountry(String country) { _country = country; }
+    public String getLanguage() {
+        return _language;
+    }
 
-	public void setNetwork(String network) {
-		_network = network;
-	}
+    public void setLanguage(String language) {
+        _language = language;
+    }
+
+    public String getCountry() {
+        return _country;
+    }
+
+    public void setCountry(String country) { _country = country; }
+
+    public String getNetwork() {
+        return _network;
+    }
+
+    public void setNetwork(String network) {
+        _network = network;
+    }
 }

@@ -17,8 +17,8 @@
  */
 package org.drftpd.mirror.master;
 
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.vfs.DirectoryHandle;
@@ -32,45 +32,45 @@ import java.util.ArrayList;
  * @author lh
  */
 public class MirrorUtils {
-	private static final Logger logger = LogManager.getLogger(MirrorUtils.class);
+    private static final Logger logger = LogManager.getLogger(MirrorUtils.class);
 
-	public static void unMirrorDir(DirectoryHandle dir, User user, ArrayList<String> excludePaths) throws FileNotFoundException {
-		for (String excludePath : excludePaths) {
-			if (dir.getPath().matches(excludePath)) {
-				// Skip this dir
-				return;
-			}
-		}
-		for (InodeHandle inode : user == null ? dir.getInodeHandlesUnchecked() : dir.getInodeHandles(user)) {
-			if (inode.isFile()) {
-				boolean skipFile = false;
-				for (String excludePath : excludePaths) {
-					if (inode.getPath().matches(excludePath)) {
-						// Skip this file
-						skipFile = true;
-						break;
-					}
-				}
-				if (!skipFile) unMirrorFile((FileHandle) inode);
-			} else if (inode.isDirectory()) {
-				unMirrorDir((DirectoryHandle) inode, user, excludePaths);
-			}
-		}
-	}
+    public static void unMirrorDir(DirectoryHandle dir, User user, ArrayList<String> excludePaths) throws FileNotFoundException {
+        for (String excludePath : excludePaths) {
+            if (dir.getPath().matches(excludePath)) {
+                // Skip this dir
+                return;
+            }
+        }
+        for (InodeHandle inode : user == null ? dir.getInodeHandlesUnchecked() : dir.getInodeHandles(user)) {
+            if (inode.isFile()) {
+                boolean skipFile = false;
+                for (String excludePath : excludePaths) {
+                    if (inode.getPath().matches(excludePath)) {
+                        // Skip this file
+                        skipFile = true;
+                        break;
+                    }
+                }
+                if (!skipFile) unMirrorFile((FileHandle) inode);
+            } else if (inode.isDirectory()) {
+                unMirrorDir((DirectoryHandle) inode, user, excludePaths);
+            }
+        }
+    }
 
-	public static void unMirrorFile(FileHandle file) {
-		try {
-			boolean first = true;
-			for (RemoteSlave slave : file.getSlaves()) {
-				if (first) {
-					first = false;
-				} else {
-					slave.simpleDelete(file.getPath());
-					file.removeSlave(slave);
-				}
-			}
-		} catch (FileNotFoundException e) {
-			// Just ignore, file doesn't exist any more
-		}
-	}
+    public static void unMirrorFile(FileHandle file) {
+        try {
+            boolean first = true;
+            for (RemoteSlave slave : file.getSlaves()) {
+                if (first) {
+                    first = false;
+                } else {
+                    slave.simpleDelete(file.getPath());
+                    file.removeSlave(slave);
+                }
+            }
+        } catch (FileNotFoundException e) {
+            // Just ignore, file doesn't exist any more
+        }
+    }
 }

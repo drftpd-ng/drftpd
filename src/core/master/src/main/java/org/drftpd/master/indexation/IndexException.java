@@ -20,20 +20,21 @@ package org.drftpd.master.indexation;
 /**
  * Any exception throw by a IndexingEngine must be encapsulated in this exception
  * in order to be handled properly.
+ *
  * @author fr0w
  * @version $Id$
  */
 @SuppressWarnings("serial")
 public class IndexException extends Exception {
-	public IndexException(Throwable cause) {
-		super(cause);
-	}
+    public IndexException(Throwable cause) {
+        super(cause);
+    }
 
-	public IndexException(String message) {
-		super(message);
-	}
+    public IndexException(String message) {
+        super(message);
+    }
 
-	public IndexException(String message, Throwable cause) {
-		super(message, cause);
-	}
+    public IndexException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

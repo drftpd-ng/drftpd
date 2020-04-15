@@ -21,19 +21,18 @@ import java.io.Serializable;
 import java.util.Comparator;
 
 /**
- * 
  * @author zubov
  * @version $Id$
  */
 @SuppressWarnings("serial")
 public class JobIndexComparator implements Comparator<Job>, Serializable {
-	public int compare(Job arg0, Job arg1) {
-		long diff = arg0.getIndex() - arg1.getIndex();
-		if (diff < 0) {
-			return -1;
-		} else if (diff > 0) {
-			return 1;
-		}
-		return 0;
-	}
+    public int compare(Job arg0, Job arg1) {
+        long diff = arg0.getIndex() - arg1.getIndex();
+        if (diff < 0) {
+            return -1;
+        } else if (diff > 0) {
+            return 1;
+        }
+        return 0;
+    }
 }

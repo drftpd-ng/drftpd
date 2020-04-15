@@ -19,8 +19,8 @@ package org.drftpd.master.usermanager;
 import org.drftpd.common.dynamicdata.Key;
 import org.drftpd.common.dynamicdata.KeyedMap;
 import org.drftpd.common.exceptions.DuplicateElementException;
-import org.drftpd.master.stats.ExtendedTimedStats;
 import org.drftpd.common.util.HostMaskCollection;
+import org.drftpd.master.stats.ExtendedTimedStats;
 
 import java.util.List;
 
@@ -29,105 +29,102 @@ import java.util.List;
  * @version $Id$
  */
 public abstract class User extends ExtendedTimedStats implements Entity {
-	public abstract UserManager getUserManager();
+    public abstract UserManager getUserManager();
 
-	public abstract KeyedMap<Key<?>, Object> getKeyedMap();
+    public abstract KeyedMap<Key<?>, Object> getKeyedMap();
 
-	public abstract void addAllMasks(HostMaskCollection hostMaskCollection);
+    public abstract void addAllMasks(HostMaskCollection hostMaskCollection);
 
-	public abstract void addIPMask(String mask) throws DuplicateElementException;
+    public abstract void addIPMask(String mask) throws DuplicateElementException;
 
-	public abstract void addSecondaryGroup(Group g) throws DuplicateElementException;
+    public abstract void addSecondaryGroup(Group g) throws DuplicateElementException;
 
-	public abstract boolean checkPassword(String password);
+    public abstract boolean checkPassword(String password);
 
-	/**
-	 * Commit changes.
-	 */
-	public abstract void commit();
+    /**
+     * Commit changes.
+     */
+    public abstract void commit();
 
-	public abstract long getCredits();
+    public abstract long getCredits();
 
-	public abstract Group getGroup();
+    /**
+     * Sets the credits.
+     *
+     * @param credits The credits to set
+     */
+    public abstract void setCredits(long credits);
 
-	public abstract List<Group> getGroups();
+    public abstract Group getGroup();
 
-	public abstract HostMaskCollection getHostMaskCollection();
+    public abstract void setGroup(Group g);
 
-	/**
-	 * Returns the idleTime.
-	 * 
-	 * @return int
-	 */
-	public abstract int getIdleTime();
+    public abstract List<Group> getGroups();
 
-	public abstract String getName();
+    public abstract HostMaskCollection getHostMaskCollection();
 
-	public abstract boolean isAdmin();
+    /**
+     * Returns the idleTime.
+     *
+     * @return int
+     */
+    public abstract int getIdleTime();
 
-	/**
-	 * Returns the deleted.
-	 * 
-	 * @return boolean
-	 */
-	public abstract boolean isDeleted();
+    /**
+     * Sets the idleTime.
+     *
+     * @param idleTime The idleTime to set
+     */
+    public abstract void setIdleTime(int idleTime);
 
-	public abstract boolean isMemberOf(String group);
+    public abstract String getName();
 
-	public abstract void purge();
+    public abstract boolean isAdmin();
 
-	public abstract void removeIpMask(String mask) throws NoSuchFieldException;
+    /**
+     * Returns the deleted.
+     *
+     * @return boolean
+     */
+    public abstract boolean isDeleted();
 
-	public abstract void removeSecondaryGroup(Group g) throws NoSuchFieldException;
+    /**
+     * Sets the deleted.
+     *
+     * @param deleted The deleted to set
+     */
+    public abstract void setDeleted(boolean deleted);
 
-	public abstract void rename(String username) throws UserExistsException, UserFileException;
+    public abstract boolean isMemberOf(String group);
 
-	/**
-	 * Sets the credits.
-	 * 
-	 * @param credits
-	 *            The credits to set
-	 */
-	public abstract void setCredits(long credits);
+    public abstract void purge();
 
-	/**
-	 * Sets the deleted.
-	 * 
-	 * @param deleted
-	 *            The deleted to set
-	 */
-	public abstract void setDeleted(boolean deleted);
+    public abstract void removeIpMask(String mask) throws NoSuchFieldException;
 
-	public abstract void setGroup(Group g);
-	
-	public abstract void toggleGroup(Group g);
+    public abstract void removeSecondaryGroup(Group g) throws NoSuchFieldException;
 
-	public abstract void updateCredits(long credits);
+    public abstract void rename(String username) throws UserExistsException, UserFileException;
 
-	/**
-	 * Sets the idleTime.
-	 * 
-	 * @param idleTime
-	 *            The idleTime to set
-	 */
-	public abstract void setIdleTime(int idleTime);
+    public abstract void toggleGroup(Group g);
 
-	public abstract void setPassword(String password);
+    public abstract void updateCredits(long credits);
 
-	/**
-	 * Hit user - update last access time
-	 */
-	public abstract void updateLastAccessTime();
+    public abstract void setPassword(String password);
 
-	public abstract void setLastReset(long lastReset);
+    /**
+     * Hit user - update last access time
+     */
+    public abstract void updateLastAccessTime();
 
-	public abstract long getLastReset();
+    public abstract long getLastReset();
 
-	public abstract void setMaxSimUp(int maxup);
+    public abstract void setLastReset(long lastReset);
 
-	public abstract void setMaxSimDown(int maxdown);
+    public abstract int getMaxSimDown();
 
-	public abstract int getMaxSimDown();
+    public abstract void setMaxSimDown(int maxdown);
 
-	public abstract int getMaxSimUp();
+    public abstract int getMaxSimUp();
+
+    public abstract void setMaxSimUp(int maxup);
 }

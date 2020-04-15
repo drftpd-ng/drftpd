@@ -3,9 +3,9 @@ package org.drftpd.master.permissions;
 import org.drftpd.master.config.ConfigHandler;
 
 public class PermissionDefinition {
-    private String directive;
-    private Class<? extends ConfigHandler> handler;
-    private String method;
+    private final String directive;
+    private final Class<? extends ConfigHandler> handler;
+    private final String method;
 
     public PermissionDefinition(String directive, Class<? extends ConfigHandler> handler, String method) {
         this.directive = directive;

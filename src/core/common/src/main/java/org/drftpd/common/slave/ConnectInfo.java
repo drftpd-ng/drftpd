@@ -17,9 +17,6 @@
  */
 package org.drftpd.common.slave;
 
-import org.drftpd.common.slave.TransferIndex;
-import org.drftpd.common.slave.TransferStatus;
-
 import java.io.Serializable;
 
 /**
@@ -28,27 +25,27 @@ import java.io.Serializable;
  */
 @SuppressWarnings("serial")
 public class ConnectInfo implements Serializable {
-	private int _port;
+    private final int _port;
 
-	private TransferIndex _transferIndex;
+    private final TransferIndex _transferIndex;
 
-	private TransferStatus _transferStatus;
+    private final TransferStatus _transferStatus;
 
-	public ConnectInfo(int port, TransferIndex transferIndex, TransferStatus ts) {
-		_port = port;
-		_transferIndex = transferIndex;
-		_transferStatus = ts;
-	}
+    public ConnectInfo(int port, TransferIndex transferIndex, TransferStatus ts) {
+        _port = port;
+        _transferIndex = transferIndex;
+        _transferStatus = ts;
+    }
 
-	public int getPort() {
-		return _port;
-	}
+    public int getPort() {
+        return _port;
+    }
 
-	public TransferIndex getTransferIndex() {
-		return _transferIndex;
-	}
+    public TransferIndex getTransferIndex() {
+        return _transferIndex;
+    }
 
-	public TransferStatus getTransferStatus() {
-		return _transferStatus;
-	}
+    public TransferStatus getTransferStatus() {
+        return _transferStatus;
+    }
 }

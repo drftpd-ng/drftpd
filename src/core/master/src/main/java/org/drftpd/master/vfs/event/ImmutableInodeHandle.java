@@ -33,74 +33,74 @@ import java.util.Set;
  */
 public class ImmutableInodeHandle {
 
-	private VirtualFileSystemInode _inode;
-	
-	private String _path;
-	
-	public ImmutableInodeHandle(VirtualFileSystemInode inode, String path) {
-		_inode = inode;
-		_path = path;
-	}
-	
-	public String getGroup() {
-		return _inode.getGroup();
-	}
-	
-	public long getLastModified() {
-		return _inode.getLastModified();
-	}
-	
-	public String getName() {
-		return _inode.getName();
-	}
-	
-	public DirectoryHandle getParent() {
-		if (_path.equals(VirtualFileSystem.separator)) {
-			throw new IllegalStateException("Can't get the parent of the root directory");
-		}
-		return new DirectoryHandle(VirtualFileSystem.stripLast(getPath()));
-	}
+    private final VirtualFileSystemInode _inode;
 
-	public String getPath() {
-		return _path;
-	}
-	
-	public <T> T getPluginMetaData(Key<T> key) throws KeyNotFoundException {
-		return _inode.getPluginMetaData(key);
-	}
-	
-	public long getSize() {
-		return _inode.getSize();
-	}
-	
-	public Set<String> getSlaveNames() throws UnsupportedOperationException {
-		if (isFile()) {
-			return new HashSet<>(((VirtualFileSystemFile) _inode).getSlaves());
-		}
-		throw new UnsupportedOperationException("Slaves can only be retrieved from file inodes");
-	}
-	
-	public <T> T getUntypedPluginMetaData(String key, Class<T> clazz) {
-		return _inode.getUntypedPluginMetaData(key);
-	}
-	
-	public String getUsername() {
-		return _inode.getUsername();
-	}
-	
-	public boolean isDirectory() {
-		return _inode.isDirectory();
-	}
-	
-	public boolean isFile() {
-		return _inode.isFile();
-	}
-	
-	public boolean isLink() {
-		return _inode.isLink();
-	}
-	
-	public long lastModified() {
-		return _inode.getLastModified();
-	}
+    private final String _path;
+
+    public ImmutableInodeHandle(VirtualFileSystemInode inode, String path) {
+        _inode = inode;
+        _path = path;
+    }
+
+    public String getGroup() {
+        return _inode.getGroup();
+    }
+
+    public long getLastModified() {
+        return _inode.getLastModified();
+    }
+
+    public String getName() {
+        return _inode.getName();
+    }
+
+    public DirectoryHandle getParent() {
+        if (_path.equals(VirtualFileSystem.separator)) {
+            throw new IllegalStateException("Can't get the parent of the root directory");
+        }
+        return new DirectoryHandle(VirtualFileSystem.stripLast(getPath()));
+    }
+
+    public String getPath() {
+        return _path;
+    }
+
+    public <T> T getPluginMetaData(Key<T> key) throws KeyNotFoundException {
+        return _inode.getPluginMetaData(key);
+    }
+
+    public long getSize() {
+        return _inode.getSize();
+    }
+
+    public Set<String> getSlaveNames() throws UnsupportedOperationException {
+        if (isFile()) {
+            return new HashSet<>(((VirtualFileSystemFile) _inode).getSlaves());
+        }
+        throw new UnsupportedOperationException("Slaves can only be retrieved from file inodes");
+    }
+
+    public <T> T getUntypedPluginMetaData(String key, Class<T> clazz) {
+        return _inode.getUntypedPluginMetaData(key);
+    }
+
+    public String getUsername() {
+        return _inode.getUsername();
+    }
+
+    public boolean isDirectory() {
+        return _inode.isDirectory();
+    }
+
+    public boolean isFile() {
+        return _inode.isFile();
+    }
+
+    public boolean isLink() {
+        return _inode.isLink();
+    }
+
+    public long lastModified() {
+        return _inode.getLastModified();
+    }
 }

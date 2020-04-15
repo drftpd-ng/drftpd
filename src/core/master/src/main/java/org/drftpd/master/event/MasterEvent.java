@@ -22,19 +22,19 @@ package org.drftpd.master.event;
  */
 public class MasterEvent extends MessageEvent {
 
-	/**
-	 * @param command
-	 */
-	public MasterEvent(String command, String message) {
-		this(command, message, System.currentTimeMillis());
-	}
+    /**
+     * @param command
+     */
+    public MasterEvent(String command, String message) {
+        this(command, message, System.currentTimeMillis());
+    }
 
-	/**
-	 * @param command
-	 * @param time
-	 */
-	public MasterEvent(String command, String message,
-			long time) {
-		super(command, message, time);
-	}
+    /**
+     * @param command
+     * @param time
+     */
+    public MasterEvent(String command, String message,
+                       long time) {
+        super(command, message, time);
+    }
 }

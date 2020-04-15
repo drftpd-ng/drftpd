@@ -32,92 +32,92 @@ import java.util.StringTokenizer;
 @SuppressWarnings("serial")
 public class ServiceCommand extends Session {
 
-	public static final Key<String> IDENT = new Key<>(ServiceCommand.class, "ident");
+    public static final Key<String> IDENT = new Key<>(ServiceCommand.class, "ident");
 
-	public static final Key<UserDetails> IRCUSER = new Key<>(ServiceCommand.class, "ircuser");
-	
-	public static final Key<String> SOURCE = new Key<>(ServiceCommand.class, "source");
+    public static final Key<UserDetails> IRCUSER = new Key<>(ServiceCommand.class, "ircuser");
 
-	private transient SiteBot _bot;
+    public static final Key<String> SOURCE = new Key<>(ServiceCommand.class, "source");
 
-	private ArrayList<OutputWriter> _outputs;
+    private final transient SiteBot _bot;
 
-	private UserDetails _runningUser;
+    private final ArrayList<OutputWriter> _outputs;
 
-	public ServiceCommand(SiteBot bot, ArrayList<OutputWriter> outputs, UserDetails runningUser, String ident, String source) {
-		_bot = bot;
-		_outputs = outputs;
-		setObject(IRCUSER, runningUser);
-		setObject(IDENT, ident);
-		if (source != null) {
-			setObject(SOURCE, source);
-		}
-		_runningUser = runningUser;
-	}
+    private final UserDetails _runningUser;
 
-	public void printOutput(Object o) {
-		sendOutput(o);
-	}
+    public ServiceCommand(SiteBot bot, ArrayList<OutputWriter> outputs, UserDetails runningUser, String ident, String source) {
+        _bot = bot;
+        _outputs = outputs;
+        setObject(IRCUSER, runningUser);
+        setObject(IDENT, ident);
+        if (source != null) {
+            setObject(SOURCE, source);
+        }
+        _runningUser = runningUser;
+    }
 
-	public void printOutput(int code, Object o) {
-		sendOutput(o);
-	}
+    public void printOutput(Object o) {
+        sendOutput(o);
+    }
 
-	private void sendOutput(Object o) {
-		StringTokenizer st = new StringTokenizer(o.toString(),"\n");
-		while (st.hasMoreTokens()) {
-			String token = st.nextToken();
-			for (OutputWriter output : _outputs) {
-				output.sendMessage(token);
-			}
-		}
-	}
+    public void printOutput(int code, Object o) {
+        sendOutput(o);
+    }
 
-	public String getIdent() {
-		return getObject(IDENT, null);
-	}
+    private void sendOutput(Object o) {
+        StringTokenizer st = new StringTokenizer(o.toString(), "\n");
+        while (st.hasMoreTokens()) {
+            String token = st.nextToken();
+            for (OutputWriter output : _outputs) {
+                output.sendMessage(token);
+            }
+        }
+    }
 
-	public UserDetails getIrcUser() {
-		return getObject(IRCUSER, null);
-	}
-	
-	public String getSource() {
-		return getObject(SOURCE, _runningUser.getNick());
-	}
-	
-	public String[] getDestination() {
-		String[] outputs = new String[_outputs.size()];
-		for (int i = 0; i < outputs.length; i++) {
-			outputs[i] = _outputs.get(i).getDestination();
-		}
-		return outputs;
-	}
+    public String getIdent() {
+        return getObject(IDENT, null);
+    }
 
-	public SiteBot getBot() {
-		return _bot;
-	}
+    public UserDetails getIrcUser() {
+        return getObject(IRCUSER, null);
+    }
 
-	public boolean isSecure() {
-		return _bot.getConfig().getBlowfishEnabled();
-	}
+    public String getSource() {
+        return getObject(SOURCE, _runningUser.getNick());
+    }
 
-	@Override
-	public Map<String, Object> getReplacerEnvironment(Map<String, Object> inheritedEnv, User user) {
-		Map<String, Object> env = super.getReplacerEnvironment(inheritedEnv, user);
-		env.putAll(SiteBot.GLOBAL_ENV);
-		return env;
-	}
+    public String[] getDestination() {
+        String[] outputs = new String[_outputs.size()];
+        for (int i = 0; i < outputs.length; i++) {
+            outputs[i] = _outputs.get(i).getDestination();
+        }
+        return outputs;
+    }
 
-	@Override
-	public void abortCommand() {
-		synchronized(_runningUser) {
-			for (ServiceCommand runningCommand : _runningUser.getCommandSessions()) {
-				runningCommand.setAborted();
-			}
-		}
-	}
+    public SiteBot getBot() {
+        return _bot;
+    }
 
-	protected void setAborted() {
-		super.abortCommand();
-	}
+    public boolean isSecure() {
+        return _bot.getConfig().getBlowfishEnabled();
+    }
+
+    @Override
+    public Map<String, Object> getReplacerEnvironment(Map<String, Object> inheritedEnv, User user) {
+        Map<String, Object> env = super.getReplacerEnvironment(inheritedEnv, user);
+        env.putAll(SiteBot.GLOBAL_ENV);
+        return env;
+    }
+
+    @Override
+    public void abortCommand() {
+        synchronized (_runningUser) {
+            for (ServiceCommand runningCommand : _runningUser.getCommandSessions()) {
+                runningCommand.setAborted();
+            }
+        }
+    }
+
+    protected void setAborted() {
+        super.abortCommand();
+    }
 }

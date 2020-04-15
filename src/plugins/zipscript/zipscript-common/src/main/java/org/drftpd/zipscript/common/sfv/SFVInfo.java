@@ -31,84 +31,84 @@ import java.io.Serializable;
 @SuppressWarnings("serial")
 public class SFVInfo implements Serializable {
 
-	public static final Key<SFVInfo> SFVINFO = new Key<>(SFVInfo.class, "sfv");
+    public static final Key<SFVInfo> SFVINFO = new Key<>(SFVInfo.class, "sfv");
 
-	private CaseInsensitiveTreeMap<String, Long> _entries = null;
-	private String _sfvFileName = null;
-	private long _checksum = 0L;
+    private CaseInsensitiveTreeMap<String, Long> _entries = null;
+    private String _sfvFileName = null;
+    private long _checksum = 0L;
 
-	/**
-	 * Constructor for SFVInfo
-	 */
-	public SFVInfo() {
+    /**
+     * Constructor for SFVInfo
+     */
+    public SFVInfo() {
 
-	}
-	
-	public String getSFVFileName() {
-		return _sfvFileName;
-	}
-	
-	public void setSFVFileName(String name) {
-		_sfvFileName = name;
-	}
+    }
 
-	public CaseInsensitiveTreeMap<String, Long> getEntries() {
-		return _entries;
-	}
+    public static SFVInfo importSFVInfoFromFile(BufferedReader in) throws IOException {
+        String line;
+        CaseInsensitiveTreeMap<String, Long> entries = new CaseInsensitiveTreeMap<>();
+        try {
+            while ((line = in.readLine()) != null) {
+                if (line.length() == 0) {
+                    continue;
+                }
 
-	public void setEntries(CaseInsensitiveTreeMap<String, Long> entries) {
-		_entries = entries;
-	}
+                if (line.charAt(0) == ';') {
+                    continue;
+                }
 
-	public int getSize() {
-		return _entries.size();
-	}
+                int separator = line.indexOf(" ");
 
-	public static SFVInfo importSFVInfoFromFile(BufferedReader in) throws IOException {
-		String line;
-		CaseInsensitiveTreeMap<String, Long> entries = new CaseInsensitiveTreeMap<>();
-		try {
-			while ((line = in.readLine()) != null) {
-				if (line.length() == 0) {
-					continue;
-				}
+                if (separator == -1) {
+                    continue;
+                }
 
-				if (line.charAt(0) == ';') {
-					continue;
-				}
+                String fileName = line.substring(0, separator);
+                String checkSumString = line.substring(separator + 1);
+                Long checkSum;
 
-				int separator = line.indexOf(" ");
+                try {
+                    checkSum = Long.valueOf(checkSumString, 16);
+                } catch (NumberFormatException e) {
+                    continue;
+                }
+                entries.put(fileName, checkSum);
+            }
+        } finally {
+            if (in != null) {
+                in.close();
+            }
+        }
+        SFVInfo tmp = new SFVInfo();
+        tmp.setEntries(entries);
+        return tmp;
+    }
 
-				if (separator == -1) {
-					continue;
-				}
+    public String getSFVFileName() {
+        return _sfvFileName;
+    }
 
-				String fileName = line.substring(0, separator);
-				String checkSumString = line.substring(separator + 1);
-				Long checkSum;
+    public void setSFVFileName(String name) {
+        _sfvFileName = name;
+    }
 
-				try {
-					checkSum = Long.valueOf(checkSumString, 16);
-				} catch (NumberFormatException e) {
-					continue;
-				}
-				entries.put(fileName, checkSum);
-			}
-		} finally {
-			if (in != null) {
-				in.close();
-			}
-		}
-		SFVInfo tmp = new SFVInfo();
-		tmp.setEntries(entries);
-		return tmp;
-	}
+    public CaseInsensitiveTreeMap<String, Long> getEntries() {
+        return _entries;
+    }
 
-	public void setChecksum(long value) {
-		_checksum = value;
-	}
-	
-	public long getChecksum() {
-		return _checksum;
-	}
+    public void setEntries(CaseInsensitiveTreeMap<String, Long> entries) {
+        _entries = entries;
+    }
+
+    public int getSize() {
+        return _entries.size();
+    }
+
+    public long getChecksum() {
+        return _checksum;
+    }
+
+    public void setChecksum(long value) {
+        _checksum = value;
+    }
 }

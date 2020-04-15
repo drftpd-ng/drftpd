@@ -47,7 +47,7 @@ import java.util.Properties;
 public class MirrorPostHook {
     private static final Logger logger = LogManager.getLogger(MirrorPostHook.class);
 
-    private ArrayList<MirrorSetting> _settings;
+    private final ArrayList<MirrorSetting> _settings;
 
     public MirrorPostHook() {
         _settings = new ArrayList<>();
@@ -170,16 +170,12 @@ public class MirrorPostHook {
         }
         if (activeSetting.getSlaves() != null) {
             for (RemoteSlave slave : activeSetting.getSlaves()) {
-                if (!mirrorSlaves.contains(slave.getName())) {
-                    mirrorSlaves.add(slave.getName());
-                }
+                mirrorSlaves.add(slave.getName());
             }
         } else {
             try {
                 for (RemoteSlave slave : GlobalContext.getGlobalContext().getSlaveManager().getAvailableSlaves()) {
-                    if (!mirrorSlaves.contains(slave.getName())) {
-                        mirrorSlaves.add(slave.getName());
-                    }
+                    mirrorSlaves.add(slave.getName());
                 }
             } catch (NoAvailableSlaveException e) {
                 // No need to continue

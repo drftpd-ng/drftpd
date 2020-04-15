@@ -24,20 +24,20 @@ import org.drftpd.master.vfs.InodeHandle;
  */
 public class AFSEvent {
 
-	private InodeHandle _inode;
-	private RemoteSlave _slave;
+    private final InodeHandle _inode;
+    private final RemoteSlave _slave;
 
-	public AFSEvent(InodeHandle inode, RemoteSlave slave) {
-		_inode = inode;
-		_slave = slave;
-	}
+    public AFSEvent(InodeHandle inode, RemoteSlave slave) {
+        _inode = inode;
+        _slave = slave;
+    }
 
-	public InodeHandle getInode() {
-		return _inode;
-	}
+    public InodeHandle getInode() {
+        return _inode;
+    }
 
-	public RemoteSlave getSlave() {
-		return _slave;
-	}
+    public RemoteSlave getSlave() {
+        return _slave;
+    }
 
 }

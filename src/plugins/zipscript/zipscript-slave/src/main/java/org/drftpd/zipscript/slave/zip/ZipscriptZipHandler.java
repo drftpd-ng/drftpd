@@ -16,19 +16,24 @@
  */
 package org.drftpd.zipscript.slave.zip;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.drftpd.common.network.AsyncCommandArgument;
+import org.drftpd.common.network.AsyncResponse;
+import org.drftpd.slave.Slave;
+import org.drftpd.slave.protocol.AbstractHandler;
+import org.drftpd.slave.protocol.SlaveProtocolCentral;
+import org.drftpd.zipscript.common.zip.AsyncResponseDizInfo;
+import org.drftpd.zipscript.common.zip.AsyncResponseZipCRCInfo;
+import org.drftpd.zipscript.common.zip.DizInfo;
+
 import java.io.BufferedInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.PathMatcher;
-import java.nio.file.SimpleFileVisitor;
+import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Base64;
 import java.util.Collections;
@@ -38,17 +43,6 @@ import java.util.regex.Pattern;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
-import org.drftpd.common.network.AsyncResponse;
-import org.drftpd.slave.protocol.AbstractHandler;
-import org.drftpd.slave.protocol.SlaveProtocolCentral;
-import org.drftpd.slave.Slave;
-import org.drftpd.common.network.AsyncCommandArgument;
-import org.drftpd.zipscript.common.zip.AsyncResponseDizInfo;
-import org.drftpd.zipscript.common.zip.AsyncResponseZipCRCInfo;
-import org.drftpd.zipscript.common.zip.DizInfo;
-
 /**
  * Handler for Zip requests.
  *
@@ -56,133 +50,133 @@ import org.drftpd.zipscript.common.zip.DizInfo;
  * @version $Id$
  */
 public class ZipscriptZipHandler extends AbstractHandler {
-	private static final Logger logger = LogManager.getLogger(ZipscriptZipHandler.class);
+    private static final Logger logger = LogManager.getLogger(ZipscriptZipHandler.class);
 
-	@Override
-	public String getProtocolName() {
-		return "ZipscriptZipProtocol";
-	}
+    public ZipscriptZipHandler(SlaveProtocolCentral central) {
+        super(central);
+    }
 
-	public ZipscriptZipHandler(SlaveProtocolCentral central) {
-		super(central);
-	}
-	
-	public AsyncResponse handleZipCRC(AsyncCommandArgument ac) {
-		return new AsyncResponseZipCRCInfo(ac.getIndex(),
-				checkZipFile(getSlaveObject(), getSlaveObject().mapPathToRenameQueue(ac.getArgs())));
-	}
-	
-	public AsyncResponse handleZipDiz(AsyncCommandArgument ac) {
-		return new AsyncResponseDizInfo(ac.getIndex(),
-				getDizInfo(getSlaveObject(), getSlaveObject().mapPathToRenameQueue(ac.getArgs())));
-	}
+    @Override
+    public String getProtocolName() {
+        return "ZipscriptZipProtocol";
+    }
 
-	private URI getZipURI(Slave slave, String path) throws FileNotFoundException, URISyntaxException {
-		return new URI("jar:file", slave.getRoots().getFile(path).toURI().getPath(), null);
-	}
+    public AsyncResponse handleZipCRC(AsyncCommandArgument ac) {
+        return new AsyncResponseZipCRCInfo(ac.getIndex(),
+                checkZipFile(getSlaveObject(), getSlaveObject().mapPathToRenameQueue(ac.getArgs())));
+    }
 
-	private boolean checkZipFile(Slave slave, String path) {
-		URI zipURI;
-		try {
-			zipURI = getZipURI(slave, path);
-		} catch (FileNotFoundException e) {
-			return false;
-		} catch (URISyntaxException e) {
-			return false;
-		}
+    public AsyncResponse handleZipDiz(AsyncCommandArgument ac) {
+        return new AsyncResponseDizInfo(ac.getIndex(),
+                getDizInfo(getSlaveObject(), getSlaveObject().mapPathToRenameQueue(ac.getArgs())));
+    }
 
-		boolean integrityOk = true;
+    private URI getZipURI(Slave slave, String path) throws FileNotFoundException, URISyntaxException {
+        return new URI("jar:file", slave.getRoots().getFile(path).toURI().getPath(), null);
+    }
 
-		try (FileSystem zipFs = FileSystems.newFileSystem(zipURI, Collections.emptyMap())) {
-			AtomicInteger files = new AtomicInteger();
-			for(Path root : zipFs.getRootDirectories()) {
-				Files.walkFileTree(root, new SimpleFileVisitor<Path>() {
-					@Override
-					public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
-							throws IOException {
-						if (Files.isRegularFile(file)) {
-							calculateChecksum(file);
-							files.incrementAndGet();
-						}
-						return FileVisitResult.CONTINUE;
-					}
-				});
-			}
-			if (files.get() == 0) {
-				throw new IOException("Zip file empty");
-			}
-		} catch (Throwable t) {
-			integrityOk = false;
+    private boolean checkZipFile(Slave slave, String path) {
+        URI zipURI;
+        try {
+            zipURI = getZipURI(slave, path);
+        } catch (FileNotFoundException e) {
+            return false;
+        } catch (URISyntaxException e) {
+            return false;
+        }
+
+        boolean integrityOk = true;
+
+        try (FileSystem zipFs = FileSystems.newFileSystem(zipURI, Collections.emptyMap())) {
+            AtomicInteger files = new AtomicInteger();
+            for (Path root : zipFs.getRootDirectories()) {
+                Files.walkFileTree(root, new SimpleFileVisitor<Path>() {
+                    @Override
+                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+                            throws IOException {
+                        if (Files.isRegularFile(file)) {
+                            calculateChecksum(file);
+                            files.incrementAndGet();
+                        }
+                        return FileVisitResult.CONTINUE;
+                    }
+                });
+            }
+            if (files.get() == 0) {
+                throw new IOException("Zip file empty");
+            }
+        } catch (Throwable t) {
+            integrityOk = false;
             logger.debug("Error validating integrity of {} : {}", path, t.getMessage());
-		}
+        }
 
-		return integrityOk;
-	}
+        return integrityOk;
+    }
 
-	private void calculateChecksum(Path file) throws IOException {
-		final byte[] buff = new byte[16384];
-		try (CheckedInputStream in = new CheckedInputStream(new BufferedInputStream(
-				Files.newInputStream(file)), new CRC32())) {
-			while (in.read(buff) != -1) {
-				// do nothing, we are only checking for crc
-			}
-		} catch (IOException e) {
-			throw new IOException("CRC check failed for " + file);
-		}
-	}
+    private void calculateChecksum(Path file) throws IOException {
+        final byte[] buff = new byte[16384];
+        try (CheckedInputStream in = new CheckedInputStream(new BufferedInputStream(
+                Files.newInputStream(file)), new CRC32())) {
+            while (in.read(buff) != -1) {
+                // do nothing, we are only checking for crc
+            }
+        } catch (IOException e) {
+            throw new IOException("CRC check failed for " + file);
+        }
+    }
 
-	private DizInfo getDizInfo(Slave slave, String path) {
-		DizInfo dizInfo = new DizInfo();
-		URI zipURI;
-		try {
-			zipURI = getZipURI(slave, path);
-		} catch (FileNotFoundException e) {
-			return dizInfo;
-		} catch (URISyntaxException e) {
-			return dizInfo;
-		}
+    private DizInfo getDizInfo(Slave slave, String path) {
+        DizInfo dizInfo = new DizInfo();
+        URI zipURI;
+        try {
+            zipURI = getZipURI(slave, path);
+        } catch (FileNotFoundException e) {
+            return dizInfo;
+        } catch (URISyntaxException e) {
+            return dizInfo;
+        }
 
-		try (FileSystem zipFs = FileSystems.newFileSystem(zipURI, Collections.emptyMap())) {
-			final PathMatcher matcher = FileSystems.getDefault().getPathMatcher("regex:(?i).*file_id.diz");
-			for(Path root : zipFs.getRootDirectories()) {
-				Files.walkFileTree(root, new SimpleFileVisitor<Path>() {
-					@Override
-					public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
-							throws IOException {
-						if (Files.isRegularFile(file) && matcher.matches(file)) {
-							String dizString = new String(Files.readAllBytes(file), StandardCharsets.ISO_8859_1);
-							int total = getDizTotal(dizString);
-							if (total > 0) {
-								dizInfo.setValid(true);
-								dizInfo.setTotal(total);
-								dizString = Base64.getMimeEncoder().encodeToString(dizString.getBytes(StandardCharsets.ISO_8859_1));
-								dizInfo.setString(dizString);
-								return FileVisitResult.TERMINATE;
-							}
-						}
-						return FileVisitResult.CONTINUE;
-					}
-				});
-			}
-		} catch (Throwable t) {
+        try (FileSystem zipFs = FileSystems.newFileSystem(zipURI, Collections.emptyMap())) {
+            final PathMatcher matcher = FileSystems.getDefault().getPathMatcher("regex:(?i).*file_id.diz");
+            for (Path root : zipFs.getRootDirectories()) {
+                Files.walkFileTree(root, new SimpleFileVisitor<Path>() {
+                    @Override
+                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+                            throws IOException {
+                        if (Files.isRegularFile(file) && matcher.matches(file)) {
+                            String dizString = new String(Files.readAllBytes(file), StandardCharsets.ISO_8859_1);
+                            int total = getDizTotal(dizString);
+                            if (total > 0) {
+                                dizInfo.setValid(true);
+                                dizInfo.setTotal(total);
+                                dizString = Base64.getMimeEncoder().encodeToString(dizString.getBytes(StandardCharsets.ISO_8859_1));
+                                dizInfo.setString(dizString);
+                                return FileVisitResult.TERMINATE;
+                            }
+                        }
+                        return FileVisitResult.CONTINUE;
+                    }
+                });
+            }
+        } catch (Throwable t) {
             logger.debug("Error getting diz info from {} : {}", path, t.getMessage());
-		}
+        }
 
-		return dizInfo;
-	}
-	
-	private int getDizTotal(String dizString) {
-		int total = 0;
-		String regex = "[\\[\\(\\<\\:\\s](?:\\s)?[0-9oOxX\\*]*(?:\\s)?/(?:\\s)?([0-9oOxX]*[0-9oO])(?:\\s)?[\\]\\)\\>\\s]";
-		Pattern p = Pattern.compile(regex);
-		
-		// Compare the diz file to the pattern compiled above
-		Matcher m = p.matcher(dizString);
-		
-		if (m.find()) {
-			total = Integer.valueOf(m.group(1).replaceAll("[oOxX]", "0"));
-		}
-		
-		return total;
-	}
+        return dizInfo;
+    }
+
+    private int getDizTotal(String dizString) {
+        int total = 0;
+        String regex = "[\\[\\(\\<\\:\\s](?:\\s)?[0-9oOxX\\*]*(?:\\s)?/(?:\\s)?([0-9oOxX]*[0-9oO])(?:\\s)?[\\]\\)\\>\\s]";
+        Pattern p = Pattern.compile(regex);
+
+        // Compare the diz file to the pattern compiled above
+        Matcher m = p.matcher(dizString);
+
+        if (m.find()) {
+            total = Integer.valueOf(m.group(1).replaceAll("[oOxX]", "0"));
+        }
+
+        return total;
+    }
 }

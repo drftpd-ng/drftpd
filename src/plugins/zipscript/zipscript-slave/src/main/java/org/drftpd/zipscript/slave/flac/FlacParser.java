@@ -33,63 +33,63 @@ import java.io.IOException;
  */
 public class FlacParser {
 
-	private File _flacfile;
+    private final File _flacfile;
 
-	public FlacParser(File flacfile) {
-		_flacfile = flacfile;
-	}
-	
-	private String getVorbisTagByName(VorbisComment vorbisComment, String key) {
-		try {
-			return vorbisComment.getCommentByName(key)[0];
-		} catch(ArrayIndexOutOfBoundsException e) {
-			return "";
-		}
-	}
-	
-	public FlacInfo getFlacInfo() throws IOException {
-		FileInputStream in = null;
-		FLACDecoder decoder = null;
-		Metadata metadata[] = null;
-		try {
-			in = new FileInputStream(_flacfile);
-			decoder = new FLACDecoder(in);
-			metadata = decoder.readMetadata();
-		} finally {
-			if (in != null) {
-				in.close();
-			}
-		}
-		
-		if (decoder == null || metadata == null) {
-			throw new IOException(_flacfile.getName() + " is not a valid FLAC file");
-		}
-		
-		FlacInfo flacinfo  = new FlacInfo();
-		VorbisTag vorbistag = new VorbisTag();
-		for (Metadata meta : metadata) {
-			if (meta instanceof StreamInfo) {
-				StreamInfo streamInfo = (StreamInfo)meta;
-				flacinfo.setSamplerate(streamInfo.getSampleRate());
-				flacinfo.setChannels(streamInfo.getChannels());
-				flacinfo.setRuntime((float)streamInfo.getTotalSamples() / (float)streamInfo.getSampleRate());
-			} else if (meta instanceof VorbisComment) {
-				VorbisComment vorbisComment = (VorbisComment)meta;
-				vorbistag.setTitle(getVorbisTagByName(vorbisComment, "Title"));
-				vorbistag.setArtist(getVorbisTagByName(vorbisComment, "Artist"));
-				vorbistag.setAlbum(getVorbisTagByName(vorbisComment, "Album"));
-				vorbistag.setYear(getVorbisTagByName(vorbisComment, "Date"));
-				String s_track = getVorbisTagByName(vorbisComment, "Track");
-				int i_track = 0;
-				if (!s_track.equals("")) {
-					i_track = Integer.parseInt(s_track);
-				}
-				vorbistag.setTrack(i_track);
-				vorbistag.setGenre(getVorbisTagByName(vorbisComment, "Genre"));
-			}
-		}
-		flacinfo.setVorbisTag(vorbistag);
+    public FlacParser(File flacfile) {
+        _flacfile = flacfile;
+    }
 
-		return flacinfo;
-	}
+    private String getVorbisTagByName(VorbisComment vorbisComment, String key) {
+        try {
+            return vorbisComment.getCommentByName(key)[0];
+        } catch (ArrayIndexOutOfBoundsException e) {
+            return "";
+        }
+    }
+
+    public FlacInfo getFlacInfo() throws IOException {
+        FileInputStream in = null;
+        FLACDecoder decoder = null;
+        Metadata[] metadata = null;
+        try {
+            in = new FileInputStream(_flacfile);
+            decoder = new FLACDecoder(in);
+            metadata = decoder.readMetadata();
+        } finally {
+            if (in != null) {
+                in.close();
+            }
+        }
+
+        if (decoder == null || metadata == null) {
+            throw new IOException(_flacfile.getName() + " is not a valid FLAC file");
+        }
+
+        FlacInfo flacinfo = new FlacInfo();
+        VorbisTag vorbistag = new VorbisTag();
+        for (Metadata meta : metadata) {
+            if (meta instanceof StreamInfo) {
+                StreamInfo streamInfo = (StreamInfo) meta;
+                flacinfo.setSamplerate(streamInfo.getSampleRate());
+                flacinfo.setChannels(streamInfo.getChannels());
+                flacinfo.setRuntime((float) streamInfo.getTotalSamples() / (float) streamInfo.getSampleRate());
+            } else if (meta instanceof VorbisComment) {
+                VorbisComment vorbisComment = (VorbisComment) meta;
+                vorbistag.setTitle(getVorbisTagByName(vorbisComment, "Title"));
+                vorbistag.setArtist(getVorbisTagByName(vorbisComment, "Artist"));
+                vorbistag.setAlbum(getVorbisTagByName(vorbisComment, "Album"));
+                vorbistag.setYear(getVorbisTagByName(vorbisComment, "Date"));
+                String s_track = getVorbisTagByName(vorbisComment, "Track");
+                int i_track = 0;
+                if (!s_track.equals("")) {
+                    i_track = Integer.parseInt(s_track);
+                }
+                vorbistag.setTrack(i_track);
+                vorbistag.setGenre(getVorbisTagByName(vorbisComment, "Genre"));
+            }
+        }
+        flacinfo.setVorbisTag(vorbistag);
+
+        return flacinfo;
+    }
 }

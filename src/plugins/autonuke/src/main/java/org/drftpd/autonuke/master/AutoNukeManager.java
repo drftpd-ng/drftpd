@@ -47,6 +47,16 @@ public class AutoNukeManager implements PluginInterface {
 
     private ConfigChain _configChain;
 
+    public static synchronized AutoNukeManager getANC() {
+        for (PluginInterface plugin : GlobalContext.getGlobalContext().getPlugins()) {
+            if (plugin instanceof AutoNukeManager) {
+                return (AutoNukeManager) plugin;
+            }
+        }
+
+        throw new RuntimeException("AutoNuke plugin is not loaded.");
+    }
+
     public void startPlugin() {
         initConfigs();
         loadConf();
@@ -139,16 +149,6 @@ public class AutoNukeManager implements PluginInterface {
      */
     public boolean checkConfigs(DirectoryHandle dir) {
         return getConfigChain().checkConfig(dir);
-    }
-
-    public static synchronized AutoNukeManager getANC() {
-        for (PluginInterface plugin : GlobalContext.getGlobalContext().getPlugins()) {
-            if (plugin instanceof AutoNukeManager) {
-                return (AutoNukeManager) plugin;
-            }
-        }
-
-        throw new RuntimeException("AutoNuke plugin is not loaded.");
     }
 
 }

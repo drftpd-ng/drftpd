@@ -19,10 +19,10 @@ package org.drftpd.master.config;
 
 import org.drftpd.common.dynamicdata.Key;
 import org.drftpd.common.dynamicdata.KeyedMap;
+import org.drftpd.common.util.PortRange;
 import org.drftpd.master.permissions.PathPermission;
 import org.drftpd.master.permissions.Permission;
 import org.drftpd.master.usermanager.User;
-import org.drftpd.common.util.PortRange;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.perms.VFSPermissions;
 
@@ -36,47 +36,47 @@ import java.util.Properties;
  * @version $Id$
  */
 public interface ConfigInterface {
-	KeyedMap<Key<?>, Object> getKeyedMap();
-	
-	Properties getMainProperties();
-	
-	VFSPermissions getVFSPermissions();
-	
-	void reload();
-	
-	boolean checkPathPermission(String directive, User fromUser, DirectoryHandle path);
+    KeyedMap<Key<?>, Object> getKeyedMap();
 
-	boolean checkPathPermission(String directive, User fromUser, DirectoryHandle path, boolean defaults);
+    Properties getMainProperties();
 
-	boolean checkPermission(String directive, User user);
+    VFSPermissions getVFSPermissions();
 
-	void addPathPermission(String directive, PathPermission permission);
-	
-	void addPermission(String directive, Permission permission);
-	
-	List<InetAddress> getBouncerIps();
+    void reload();
 
-	boolean getHideIps();
+    boolean checkPathPermission(String directive, User fromUser, DirectoryHandle path);
 
-	String getLoginPrompt();
-	
-	String getAllowConnectionsDenyReason();
+    boolean checkPathPermission(String directive, User fromUser, DirectoryHandle path, boolean defaults);
 
-	int getMaxUsersExempt();
+    boolean checkPermission(String directive, User user);
 
-	int getMaxUsersTotal();
+    void addPathPermission(String directive, PathPermission permission);
 
-	boolean isLoginAllowed(User user);
+    void addPermission(String directive, Permission permission);
 
-	boolean isLoginExempt(User user);
+    List<InetAddress> getBouncerIps();
 
-	PortRange getPortRange();
+    boolean getHideIps();
 
-	String getPasvAddress() throws NullPointerException;
+    String getLoginPrompt();
 
-	String[] getCipherSuites();
+    String getAllowConnectionsDenyReason();
 
-	String[] getSSLProtocols();
+    int getMaxUsersExempt();
 
-	String getHideInStats();
+    int getMaxUsersTotal();
+
+    boolean isLoginAllowed(User user);
+
+    boolean isLoginExempt(User user);
+
+    PortRange getPortRange();
+
+    String getPasvAddress() throws NullPointerException;
+
+    String[] getCipherSuites();
+
+    String[] getSSLProtocols();
+
+    String getHideInStats();
 }

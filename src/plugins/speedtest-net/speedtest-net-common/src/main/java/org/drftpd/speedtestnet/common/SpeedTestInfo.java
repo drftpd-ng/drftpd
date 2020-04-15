@@ -25,51 +25,51 @@ import java.io.Serializable;
 @SuppressWarnings("serial")
 public class SpeedTestInfo implements Serializable {
 
-	private String slaveName;
-	private float up = 0;
-	private float down = 0;
-	private String url = null;
-	private int latency = 0;
+    private String slaveName;
+    private float up = 0;
+    private float down = 0;
+    private String url = null;
+    private int latency = 0;
 
-	public SpeedTestInfo() {	}
+    public SpeedTestInfo() { }
 
-	public String getSlaveName() {
-		return slaveName;
-	}
+    public String getSlaveName() {
+        return slaveName;
+    }
 
-	public void setSlaveName(String slaveName) {
-		this.slaveName = slaveName;
-	}
+    public void setSlaveName(String slaveName) {
+        this.slaveName = slaveName;
+    }
 
-	public float getUp() {
-		return up;
-	}
+    public float getUp() {
+        return up;
+    }
 
-	public void setUp(float up) {
-		this.up = up;
-	}
+    public void setUp(float up) {
+        this.up = up;
+    }
 
-	public float getDown() {
-		return down;
-	}
+    public float getDown() {
+        return down;
+    }
 
-	public void setDown(float down) {
-		this.down = down;
-	}
+    public void setDown(float down) {
+        this.down = down;
+    }
 
-	public String getURL() {
-		return url;
-	}
+    public String getURL() {
+        return url;
+    }
 
-	public void setURL(String url) {
-		this.url = url;
-	}
+    public void setURL(String url) {
+        this.url = url;
+    }
 
-	public int getLatency() {
-		return latency;
-	}
+    public int getLatency() {
+        return latency;
+    }
 
-	public void setLatency(int latency) {
-		this.latency = latency;
-	}
+    public void setLatency(int latency) {
+        this.latency = latency;
+    }
 }

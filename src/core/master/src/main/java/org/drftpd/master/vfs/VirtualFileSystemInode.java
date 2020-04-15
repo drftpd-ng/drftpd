@@ -17,14 +17,13 @@
  */
 package org.drftpd.master.vfs;
 
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
+import org.apache.logging.log4j.Logger;
 import org.drftpd.common.dynamicdata.Key;
 import org.drftpd.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.common.dynamicdata.KeyedMap;
-import org.drftpd.slave.exceptions.FileExistsException;
 import org.drftpd.common.io.PermissionDeniedException;
+import org.drftpd.slave.exceptions.FileExistsException;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -39,373 +38,360 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public abstract class VirtualFileSystemInode implements Commitable {
 
-	protected static final Logger logger = LogManager.getLogger(VirtualFileSystemInode.class);
+    protected static final Logger logger = LogManager.getLogger(VirtualFileSystemInode.class);
+    protected transient String _name;
+    protected transient VirtualFileSystemDirectory _parent;
+    protected String _username;
+    protected String _group;
+    protected KeyedMap<Key<?>, Object> _keyedMap = new KeyedMap<>();
+    protected KeyedMap<Key<?>, Object> _pluginMap = new KeyedMap<>();
+    protected Map<String, Object> _untypedPluginMap = new TreeMap<>();
+    protected long _lastModified;
+    protected long _creationTime;
+    private transient boolean _inodeLoaded;
 
-	/**
-	 * @return the VirtualFileSystem instance.
-	 */
-	public static VirtualFileSystem getVFS() {
-		return VirtualFileSystem.getVirtualFileSystem();
-	}
+    public VirtualFileSystemInode(String user, String group) {
+        _username = user;
+        _group = group;
+        _lastModified = System.currentTimeMillis();
+        _creationTime = _lastModified;
+    }
 
-	protected transient String _name;
+    /**
+     * @return the VirtualFileSystem instance.
+     */
+    public static VirtualFileSystem getVFS() {
+        return VirtualFileSystem.getVirtualFileSystem();
+    }
 
-	protected transient VirtualFileSystemDirectory _parent;
-	
-	protected String _username;
-	
-	protected String _group;
+    public String descriptiveName() {
+        return getPath();
+    }
 
-	protected KeyedMap<Key<?>, Object> _keyedMap = new KeyedMap<>();
+    public void writeToDisk() throws IOException {
+        VirtualFileSystem.getVirtualFileSystem().writeInode(this);
+    }
 
-	protected KeyedMap<Key<?>, Object> _pluginMap = new KeyedMap<>();
+    /**
+     * Need to ensure that this is called after each (non-transient) change to
+     * the Inode.<br>
+     * When called, this method will save the Inode data to the disk.
+     */
+    public void commit() {
+        //logger.debug("Committing " + getPath());
+        CommitManager.getCommitManager().add(this);
+    }
 
-	protected Map<String,Object> _untypedPluginMap = new TreeMap<>();
-
-	protected long _lastModified;
-	
-	protected long _creationTime;
-
-	private transient boolean _inodeLoaded;
-	
-	public String descriptiveName() {
-		return getPath();
-	}
-
-	public void writeToDisk() throws IOException {
-		VirtualFileSystem.getVirtualFileSystem().writeInode(this);
-	}
-
-	public VirtualFileSystemInode(String user, String group) {
-		_username = user;
-		_group = group;
-		_lastModified = System.currentTimeMillis();
-		_creationTime = _lastModified;
-	}
-
-	/**
-	 * Need to ensure that this is called after each (non-transient) change to
-	 * the Inode.<br>
-	 * When called, this method will save the Inode data to the disk.
-	 */
-	public void commit() {
-		//logger.debug("Committing " + getPath());
-		CommitManager.getCommitManager().add(this);
-	}
-
-	/**
-	 * Deletes a file, directory, or link, RemoteSlave handles issues with
-	 * slaves being offline and queued deletes
-	 */
-	public void delete() {
+    /**
+     * Deletes a file, directory, or link, RemoteSlave handles issues with
+     * slaves being offline and queued deletes
+     */
+    public void delete() {
         logger.info("delete({})", this);
 
-		String path = getPath();
-		VirtualFileSystem.getVirtualFileSystem().deleteInode(getPath());
-		_parent.removeChild(this);
-		CommitManager.getCommitManager().remove(this);
+        String path = getPath();
+        VirtualFileSystem.getVirtualFileSystem().deleteInode(getPath());
+        _parent.removeChild(this);
+        CommitManager.getCommitManager().remove(this);
 
-		getVFS().notifyInodeDeleted(this, path);
-	}
+        getVFS().notifyInodeDeleted(this, path);
+    }
 
-	/**
-	 * @return the owner primary group.
-	 */
-	public String getGroup() {
-		return _group;
-	}
+    /**
+     * @return the owner primary group.
+     */
+    public String getGroup() {
+        return _group;
+    }
 
-	/**
-	 * @return the KeyedMap containing the Dynamic Data. 
-	 */
-	public KeyedMap<Key<?>, Object> getKeyedMap() {
-		return _keyedMap;
-	}
+    /**
+     * @param group Sets the group which owns the Inode.
+     */
+    public void setGroup(String group) {
+        _group = group;
+        if (isInodeLoaded()) {
+            commit();
+            getVFS().notifyOwnershipChanged(this, getUsername(), _group);
+        }
+    }
 
-	/**
-	 * @return when the file was last modified.
-	 */
-	public long getLastModified() {
-		return _lastModified;
-	}
-	
-	/**
-	 * @return when the file was created.
-	 */
-	public long getCreationTime() {
-		return _creationTime;
-	}
+    /**
+     * @return the KeyedMap containing the Dynamic Data.
+     */
+    public KeyedMap<Key<?>, Object> getKeyedMap() {
+        return _keyedMap;
+    }
 
-	/**
-	 * @return the file name.
-	 */
-	public String getName() {
-		return _name;
-	}
+    public void setKeyedMap(KeyedMap<Key<?>, Object> data) {
+        _keyedMap = data;
+    }
 
-	/**
-	 * @return parent dir of the file/directory/link.
-	 */
-	public VirtualFileSystemDirectory getParent() {
-		return _parent;
-	}
+    /**
+     * @return when the file was last modified.
+     */
+    public long getLastModified() {
+        return _lastModified;
+    }
 
-	/**
-	 * @return Returns the full path.
-	 */
-	protected String getPath() {
-		if (this instanceof VirtualFileSystemRoot) {
-			return VirtualFileSystem.separator;
-		}
-		if (getParent() instanceof VirtualFileSystemRoot) {
-			return VirtualFileSystem.separator + getName();
-		}
-		return getParent().getPath() + VirtualFileSystem.separator + getName();
-	}
+    /**
+     * @param modified Set when the file was last modified.
+     */
+    public void setLastModified(long modified) {
+        if (_lastModified != modified) {
+            _lastModified = modified;
+            if (isInodeLoaded()) {
+                commit();
+                getVFS().notifyLastModifiedChanged(this, _lastModified);
+            }
+        }
+    }
 
-	/**
-	 * @return Returns the size of the dir/file/link.
-	 */
-	public abstract long getSize();
-	
-	/**
-	 * Set the size of the dir/file/link.
-	 */
-	public abstract void setSize(long l);
+    /**
+     * @return when the file was created.
+     */
+    public long getCreationTime() {
+        return _creationTime;
+    }
 
-	/**
-	 * Sets that the inode has been fully loaded from disk
-	 */
-	public void inodeLoadCompleted() {
-		_inodeLoaded = true;
-	}
+    /**
+     * @param created Set when the file was created.
+     */
+    public void setCreationTime(long created) {
+        if (_creationTime != created) {
+            _creationTime = created;
+            if (isInodeLoaded()) {
+                commit();
+            }
+        }
+    }
 
-	/**
-	 * Returns whether the inode has been fully loaded from disk
-	 */
-	public boolean isInodeLoaded() {
-		return _inodeLoaded;
-	}
+    /**
+     * @return the file name.
+     */
+    public String getName() {
+        return _name;
+    }
 
-	/**
-	 * @return the owner username.
-	 */
-	public String getUsername() {
-		return _username;
-	}
+    /**
+     * Sets the Inode name.
+     */
+    protected void setName(String name) {
+        _name = name;
+    }
 
-	public boolean isDirectory() {
-		return this instanceof VirtualFileSystemDirectory;
-	}
+    /**
+     * @return parent dir of the file/directory/link.
+     */
+    public VirtualFileSystemDirectory getParent() {
+        return _parent;
+    }
 
-	public boolean isFile() {
-		return this instanceof VirtualFileSystemFile;
-	}
+    public void setParent(VirtualFileSystemDirectory directory) {
+        _parent = directory;
+    }
 
-	public boolean isLink() {
-		return this instanceof VirtualFileSystemLink;
-	}
+    /**
+     * @return Returns the full path.
+     */
+    protected String getPath() {
+        if (this instanceof VirtualFileSystemRoot) {
+            return VirtualFileSystem.separator;
+        }
+        if (getParent() instanceof VirtualFileSystemRoot) {
+            return VirtualFileSystem.separator + getName();
+        }
+        return getParent().getPath() + VirtualFileSystem.separator + getName();
+    }
 
-	/**
-	 * Renames this Inode.
-	 * @param destination
-	 * @throws FileExistsException
-	 */
-	protected void rename(String destination) throws FileExistsException {
-		if (!destination.startsWith(VirtualFileSystem.separator)) {
-			throw new IllegalArgumentException(destination + " is a relative path and it should be a full path");
-		}
-		
-		try {
-			VirtualFileSystemInode destinationInode = getVFS().getInodeByPath(destination);
-			if (!destinationInode.equals(this)) {
-				throw new FileExistsException(destination + "already exists");
-			}
-		} catch (FileNotFoundException e) {
-			// This is good
-		}
-		
-		VirtualFileSystemDirectory destinationDir = null;
-		try {
-			destinationDir = (VirtualFileSystemDirectory) getVFS().getInodeByPath(VirtualFileSystem.stripLast(destination));
-		} catch (FileNotFoundException e) {
-			throw new RuntimeException("Error in logic, this should not happen", e);
-		}
-		// Ensure source/destination is flushed to ondisk VFS in case either is newly created
-		CommitManager.getCommitManager().flushImmediate(destinationDir);
-		CommitManager.getCommitManager().flushImmediate(this);
-		String fileString = "rename(" + this + ")";
-		String sourcePath = getPath();
-		_parent.removeChild(this);
-		try {			
-			VirtualFileSystem.getVirtualFileSystem().renameInode(
-					this.getPath(),
-					destinationDir.getPath() + VirtualFileSystem.separator
-							+ VirtualFileSystem.getLast(destination));
-		} catch (FileNotFoundException e) {
-			throw new RuntimeException("Tried to rename a file that does not exist: " + getPath(), e);
-		} catch (PermissionDeniedException e) {
-			throw new RuntimeException("FileSystemError", e);
-		}
-		_name = VirtualFileSystem.getLast(destination);
-		_parent = destinationDir;
-		_parent.addChild(this, true);
-		fileString = fileString + ",(" + this + ")";
-		logger.info(fileString);
-		getVFS().notifyInodeRenamed(sourcePath,this);
-	}
+    /**
+     * @return Returns the size of the dir/file/link.
+     */
+    public abstract long getSize();
 
-	/**
-	 * @param group
-	 * Sets the group which owns the Inode.
-	 */
-	public void setGroup(String group) {
-		_group = group;
-		if (isInodeLoaded()) {
-			commit();
-			getVFS().notifyOwnershipChanged(this, getUsername(), _group);
-		}
-	}
+    /**
+     * Set the size of the dir/file/link.
+     */
+    public abstract void setSize(long l);
 
-	public void setKeyedMap(KeyedMap<Key<?>, Object> data) {
-		_keyedMap = data;
-	}
+    /**
+     * Sets that the inode has been fully loaded from disk
+     */
+    public void inodeLoadCompleted() {
+        _inodeLoaded = true;
+    }
 
-	/**
-	 * @param modified
-	 * Set when the file was last modified.
-	 */
-	public void setLastModified(long modified) {
-		if (_lastModified != modified) {
-			_lastModified = modified;
-			if (isInodeLoaded()) {
-				commit();
-				getVFS().notifyLastModifiedChanged(this,_lastModified);
-			}
-		}
-	}
-	
-	/**
-	 * @param created
-	 * Set when the file was created.
-	 */
-	public void setCreationTime(long created) {
-		if (_creationTime != created) {
-			_creationTime = created;
-			if (isInodeLoaded()) {
-				commit();
-			}
-		}
-	}
+    /**
+     * Returns whether the inode has been fully loaded from disk
+     */
+    public boolean isInodeLoaded() {
+        return _inodeLoaded;
+    }
 
-	/**
-	 * Sets the Inode name.
-	 */
-	protected void setName(String name) {
-		_name = name;
-	}
+    /**
+     * @return the owner username.
+     */
+    public String getUsername() {
+        return _username;
+    }
 
-	public void setParent(VirtualFileSystemDirectory directory) {
-		_parent = directory;
-	}
+    /**
+     * @param user The user to set.
+     */
+    public void setUsername(String user) {
+        _username = user;
+        if (isInodeLoaded()) {
+            commit();
+            getVFS().notifyOwnershipChanged(this, _username, getGroup());
+        }
+    }
 
-	/**
-	 * @param user
-	 *            The user to set.
-	 */
-	public void setUsername(String user) {
-		_username = user; 
-		if (isInodeLoaded()) {
-			commit();
-			getVFS().notifyOwnershipChanged(this, _username, getGroup());
-		}
-	}
+    public boolean isDirectory() {
+        return this instanceof VirtualFileSystemDirectory;
+    }
 
-	public KeyedMap<Key<?>, Object> getPluginMap() {
-		return _pluginMap;
-	}
+    public boolean isFile() {
+        return this instanceof VirtualFileSystemFile;
+    }
 
-	public void setPluginMap(KeyedMap<Key<?>, Object> data) {
-		_pluginMap = data;
-	}
+    public boolean isLink() {
+        return this instanceof VirtualFileSystemLink;
+    }
 
-	public Map<String,Object> getUntypedPluginMap() {
-		return _untypedPluginMap;
-	}
+    /**
+     * Renames this Inode.
+     *
+     * @param destination
+     * @throws FileExistsException
+     */
+    protected void rename(String destination) throws FileExistsException {
+        if (!destination.startsWith(VirtualFileSystem.separator)) {
+            throw new IllegalArgumentException(destination + " is a relative path and it should be a full path");
+        }
 
-	public void setUntypedPluginMap(Map<String,Object> data) {
-		_untypedPluginMap = data;
-	}
+        try {
+            VirtualFileSystemInode destinationInode = getVFS().getInodeByPath(destination);
+            if (!destinationInode.equals(this)) {
+                throw new FileExistsException(destination + "already exists");
+            }
+        } catch (FileNotFoundException e) {
+            // This is good
+        }
 
-	protected <T> void addPluginMetaData(Key<T> key, T object) {
-		_pluginMap.setObject(key,object);
-		commit();
-		getVFS().notifyInodeRefresh(this, false);
-	}
+        VirtualFileSystemDirectory destinationDir = null;
+        try {
+            destinationDir = (VirtualFileSystemDirectory) getVFS().getInodeByPath(VirtualFileSystem.stripLast(destination));
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException("Error in logic, this should not happen", e);
+        }
+        // Ensure source/destination is flushed to ondisk VFS in case either is newly created
+        CommitManager.getCommitManager().flushImmediate(destinationDir);
+        CommitManager.getCommitManager().flushImmediate(this);
+        String fileString = "rename(" + this + ")";
+        String sourcePath = getPath();
+        _parent.removeChild(this);
+        try {
+            VirtualFileSystem.getVirtualFileSystem().renameInode(
+                    this.getPath(),
+                    destinationDir.getPath() + VirtualFileSystem.separator
+                            + VirtualFileSystem.getLast(destination));
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException("Tried to rename a file that does not exist: " + getPath(), e);
+        } catch (PermissionDeniedException e) {
+            throw new RuntimeException("FileSystemError", e);
+        }
+        _name = VirtualFileSystem.getLast(destination);
+        _parent = destinationDir;
+        _parent.addChild(this, true);
+        fileString = fileString + ",(" + this + ")";
+        logger.info(fileString);
+        getVFS().notifyInodeRenamed(sourcePath, this);
+    }
 
-	@SuppressWarnings("unchecked")
-	protected <T> T removePluginMetaData(Key<T> key) {
-		T value = (T)_pluginMap.remove(key);
-		commit();
-		getVFS().notifyInodeRefresh(this, false);
-		return value;
-	}
+    public KeyedMap<Key<?>, Object> getPluginMap() {
+        return _pluginMap;
+    }
 
-	public <T> T getPluginMetaData(Key<T> key) throws KeyNotFoundException {
-		return _pluginMap.getObject(key);
-	}
+    public void setPluginMap(KeyedMap<Key<?>, Object> data) {
+        _pluginMap = data;
+    }
 
-	protected synchronized <T> void addUntypedPluginMetaData(String key, T object) {
-		_untypedPluginMap.put(key,object);
-		commit();
-	}
+    public Map<String, Object> getUntypedPluginMap() {
+        return _untypedPluginMap;
+    }
 
-	@SuppressWarnings("unchecked")
-	protected <T> T removeUntypedPluginMetaData(String key) {
-		T value = (T)_untypedPluginMap.remove(key);
-		if (value != null) {
-			commit();
-		}
-		return value;
-	}
+    public void setUntypedPluginMap(Map<String, Object> data) {
+        _untypedPluginMap = data;
+    }
 
-	@SuppressWarnings("unchecked")
-	public <T> T getUntypedPluginMetaData(String key) {
-		T value = (T)_untypedPluginMap.get(key);
+    protected <T> void addPluginMetaData(Key<T> key, T object) {
+        _pluginMap.setObject(key, object);
+        commit();
+        getVFS().notifyInodeRefresh(this, false);
+    }
 
-		return value;
-	}
+    @SuppressWarnings("unchecked")
+    protected <T> T removePluginMetaData(Key<T> key) {
+        T value = (T) _pluginMap.remove(key);
+        commit();
+        getVFS().notifyInodeRefresh(this, false);
+        return value;
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#toString()
-	 */
-	@Override
-	public String toString() {
-		StringBuilder ret = new StringBuilder();
-		ret.append("[path=").append(getPath()).append("]");
-		ret.append("[user,group=").append(getUsername()).append(",").append(getGroup()).append("]");
-		ret.append("[creationTime=").append(getCreationTime()).append("]");
-		ret.append("[lastModified=").append(getLastModified()).append("]");
-		ret.append("[size=").append(getSize()).append("]");
-		return ret.toString();
-	}
-	
-	@Override
-	public boolean equals(Object obj) {
-		if (!(obj instanceof VirtualFileSystemInode))
-			return false;
-		
-		return ((VirtualFileSystemInode) obj).getPath().equalsIgnoreCase(getPath());
-	}
+    public <T> T getPluginMetaData(Key<T> key) throws KeyNotFoundException {
+        return _pluginMap.getObject(key);
+    }
 
-	protected abstract Map<String,AtomicInteger> getSlaveRefCounts();
-	
-	/**
-	 * Publish a refresh notification for this inode
-	 */
-	protected void refresh(boolean sync) {
-		getVFS().notifyInodeRefresh(this, sync);
-	}
+    protected synchronized <T> void addUntypedPluginMetaData(String key, T object) {
+        _untypedPluginMap.put(key, object);
+        commit();
+    }
+
+    @SuppressWarnings("unchecked")
+    protected <T> T removeUntypedPluginMetaData(String key) {
+        T value = (T) _untypedPluginMap.remove(key);
+        if (value != null) {
+            commit();
+        }
+        return value;
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T getUntypedPluginMetaData(String key) {
+        T value = (T) _untypedPluginMap.get(key);
+
+        return value;
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+        StringBuilder ret = new StringBuilder();
+        ret.append("[path=").append(getPath()).append("]");
+        ret.append("[user,group=").append(getUsername()).append(",").append(getGroup()).append("]");
+        ret.append("[creationTime=").append(getCreationTime()).append("]");
+        ret.append("[lastModified=").append(getLastModified()).append("]");
+        ret.append("[size=").append(getSize()).append("]");
+        return ret.toString();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof VirtualFileSystemInode))
+            return false;
+
+        return ((VirtualFileSystemInode) obj).getPath().equalsIgnoreCase(getPath());
+    }
+
+    protected abstract Map<String, AtomicInteger> getSlaveRefCounts();
+
+    /**
+     * Publish a refresh notification for this inode
+     */
+    protected void refresh(boolean sync) {
+        getVFS().notifyInodeRefresh(this, sync);
+    }
 }

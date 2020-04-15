@@ -40,25 +40,9 @@ import java.util.*;
  */
 public class GroupManagementHandler extends CommandInterface {
     private static final Logger logger = LogManager.getLogger();
-
-    private ResourceBundle _bundle;
-
     private static final GroupCaseInsensitiveComparator GROUP_CASE_INSENSITIVE_COMPARATOR = new GroupCaseInsensitiveComparator();
     private static final UserCaseInsensitiveComparator USER_CASE_INSENSITIVE_COMPARATOR = new UserCaseInsensitiveComparator();
-
-    static class GroupCaseInsensitiveComparator implements Comparator<Group> {
-        @Override
-        public int compare(Group group0, Group group1) {
-            return String.CASE_INSENSITIVE_ORDER.compare(group0.getName(), group1.getName());
-        }
-    }
-
-    static class UserCaseInsensitiveComparator implements Comparator<User> {
-        @Override
-        public int compare(User user0, User user1) {
-            return String.CASE_INSENSITIVE_ORDER.compare(user0.getName(), user1.getName());
-        }
-    }
+    private ResourceBundle _bundle;
 
     public void initialize(String method, String pluginName, StandardCommandManager cManager) {
         super.initialize(method, pluginName, cManager);
@@ -768,5 +752,19 @@ public class GroupManagementHandler extends CommandInterface {
         requestedGroup.commit();
 
         return response;
+    }
+
+    static class GroupCaseInsensitiveComparator implements Comparator<Group> {
+        @Override
+        public int compare(Group group0, Group group1) {
+            return String.CASE_INSENSITIVE_ORDER.compare(group0.getName(), group1.getName());
+        }
+    }
+
+    static class UserCaseInsensitiveComparator implements Comparator<User> {
+        @Override
+        public int compare(User user0, User user1) {
+            return String.CASE_INSENSITIVE_ORDER.compare(user0.getName(), user1.getName());
+        }
     }
 }

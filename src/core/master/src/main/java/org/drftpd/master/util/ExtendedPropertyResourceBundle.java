@@ -28,12 +28,12 @@ import java.util.ResourceBundle;
  */
 public class ExtendedPropertyResourceBundle extends PropertyResourceBundle {
 
-	public ExtendedPropertyResourceBundle(InputStream stream) throws IOException {
-		super(stream);
-	}
+    public ExtendedPropertyResourceBundle(InputStream stream) throws IOException {
+        super(stream);
+    }
 
-	@Override
-	public void setParent(ResourceBundle parent) {
-		super.setParent(parent);
-	}
+    @Override
+    public void setParent(ResourceBundle parent) {
+        super.setParent(parent);
+    }
 }

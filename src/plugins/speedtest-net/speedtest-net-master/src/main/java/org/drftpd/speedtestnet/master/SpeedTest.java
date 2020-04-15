@@ -37,12 +37,11 @@ import java.util.concurrent.*;
  * @author scitz0
  */
 public class SpeedTest extends CommandInterface {
+    private static final DecimalFormat _numberFormat = new DecimalFormat("#.00");
     private ResourceBundle _bundle;
-
     private HashSet<SpeedTestServer> _servers;
     private char _unit;
     private String _unitSuffix;
-    private static final DecimalFormat _numberFormat = new DecimalFormat("#.00");
 
     public void initialize(String method, String pluginName, StandardCommandManager cManager) {
         super.initialize(method, pluginName, cManager);

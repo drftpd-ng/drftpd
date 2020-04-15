@@ -16,9 +16,9 @@
  */
 package org.drftpd.trial.master.types.grouptop;
 
-import java.util.ArrayList;
-
 import org.drftpd.master.usermanager.User;
+
+import java.util.ArrayList;
 
 /**
  * @author CyBeR
@@ -26,49 +26,57 @@ import org.drftpd.master.usermanager.User;
  */
 public class GroupTopEvent {
 
-	private String _name;
-	private ArrayList<User> _users;
-	private int _period;
-	private String _periodstr;
-	private int _keep;
-	private long _min;
+    private final String _name;
+    private final ArrayList<User> _users;
+    private final int _period;
+    private final String _periodstr;
+    private final int _keep;
+    private final long _min;
 
-	public GroupTopEvent(String name, ArrayList<User> users, int period, int keep, long min) {
-		_name = name;
-		_users = users;
-		_period = period;
-		_keep = keep;
-		_min = min;
-		
-		switch (_period) {
-			case 1: _periodstr = "MONTHUP"; break;
-			case 2: _periodstr = "WKUP"; break;
-			case 3: _periodstr = "DAYUP"; break;
-			default: _periodstr = "UNKNOWN"; break;
-		}
-	}
+    public GroupTopEvent(String name, ArrayList<User> users, int period, int keep, long min) {
+        _name = name;
+        _users = users;
+        _period = period;
+        _keep = keep;
+        _min = min;
 
-	public String getName() {
-		return _name;
-	}
-	
-	public ArrayList<User> getUsers() {
-		return _users;
-	}
-	
-	public int getPeriod() {
-		return _period;
-	}
+        switch (_period) {
+            case 1:
+                _periodstr = "MONTHUP";
+                break;
+            case 2:
+                _periodstr = "WKUP";
+                break;
+            case 3:
+                _periodstr = "DAYUP";
+                break;
+            default:
+                _periodstr = "UNKNOWN";
+                break;
+        }
+    }
 
-	public String getPeriodStr() {
-		return _periodstr;
-	}
-	
-	public int getKeep() {
-		return _keep;
-	}
-	
-	public long getMin() {
-		return _min;
-	}
+    public String getName() {
+        return _name;
+    }
+
+    public ArrayList<User> getUsers() {
+        return _users;
+    }
+
+    public int getPeriod() {
+        return _period;
+    }
+
+    public String getPeriodStr() {
+        return _periodstr;
+    }
+
+    public int getKeep() {
+        return _keep;
+    }
+
+    public long getMin() {
+        return _min;
+    }
 }

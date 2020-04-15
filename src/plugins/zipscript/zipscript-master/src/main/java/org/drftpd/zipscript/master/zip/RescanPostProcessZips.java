@@ -16,19 +16,18 @@
  */
 package org.drftpd.zipscript.master.zip;
 
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
-import org.drftpd.zipscript.master.zip.vfs.ZipscriptVFSDataZip;
+import org.apache.logging.log4j.Logger;
+import org.drftpd.common.exceptions.RemoteIOException;
 import org.drftpd.master.commands.CommandRequest;
 import org.drftpd.master.commands.StandardCommandManager;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.exceptions.SlaveUnavailableException;
-import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.master.network.Session;
+import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.FileHandle;
-import org.drftpd.common.exceptions.RemoteIOException;
+import org.drftpd.zipscript.master.zip.vfs.ZipscriptVFSDataZip;
 
 import java.io.FileNotFoundException;
 
@@ -38,48 +37,48 @@ import java.io.FileNotFoundException;
  */
 public class RescanPostProcessZips extends ZipTools implements RescanPostProcessDirInterface {
 
-	private static final Logger logger = LogManager.getLogger(RescanPostProcessZips.class);
+    private static final Logger logger = LogManager.getLogger(RescanPostProcessZips.class);
 
-	public void initialize(StandardCommandManager cManager) {
-	}
+    public void initialize(StandardCommandManager cManager) {
+    }
 
-	public void postProcessDir(CommandRequest workingDirReq, boolean quiet) {
-		Session session = workingDirReq.getSession();
-		DirectoryHandle dir = workingDirReq.getCurrentDirectory();
-		try {
-			for (FileHandle file : dir.getSortedFiles(
-					session.getUserNull(workingDirReq.getUser()))) {
-				if (file.getSize() > 0 && file.getName().endsWith(".zip")) {
-					try {
-						RemoteSlave rslave = file.getASlaveForFunction();
-						String index = ZipscriptVFSDataZip.getZipIssuer().issueZipCRCToSlave(rslave, file.getPath());
-						boolean ok = getZipIntegrityFromIndex(rslave, index);
-						if (ok) {
-							if (!quiet) {
-								session.printOutput(200,file.getName() + " - Zip integrity check OK");
-							}
-						} else {
-							session.printOutput(200,file.getName() + " - Zip integrity check failed, deleting file");
-							try {
-								file.deleteUnchecked();
-							} catch (FileNotFoundException e) {
-								// file disappeared, not a problem as we wanted it gone anyway
-							}
-						}
-					} catch (SlaveUnavailableException e) {
-						// okay, it went offline while trying
-						session.printOutput(200,file.getName() + " - Slave went offline whilst checking zip integrity");
-					} catch (RemoteIOException e) {
-						session.printOutput(200,file.getName() + " - Slave encountered an error whilst checking zip integrity");
-						logger.warn("Error encountered whilst checking zip integrity",e);
-					} catch (NoAvailableSlaveException e) {
-						session.printOutput(200,file.getName() + " - No available slave found to perform zip integrity check");
-					}
-				}
-			}
-		} catch (FileNotFoundException e) {
-			session.printOutput(200,dir.getName() + " - Directory deleted  whilst checking integrity of zips");
-		}
-	}
+    public void postProcessDir(CommandRequest workingDirReq, boolean quiet) {
+        Session session = workingDirReq.getSession();
+        DirectoryHandle dir = workingDirReq.getCurrentDirectory();
+        try {
+            for (FileHandle file : dir.getSortedFiles(
+                    session.getUserNull(workingDirReq.getUser()))) {
+                if (file.getSize() > 0 && file.getName().endsWith(".zip")) {
+                    try {
+                        RemoteSlave rslave = file.getASlaveForFunction();
+                        String index = ZipscriptVFSDataZip.getZipIssuer().issueZipCRCToSlave(rslave, file.getPath());
+                        boolean ok = getZipIntegrityFromIndex(rslave, index);
+                        if (ok) {
+                            if (!quiet) {
+                                session.printOutput(200, file.getName() + " - Zip integrity check OK");
+                            }
+                        } else {
+                            session.printOutput(200, file.getName() + " - Zip integrity check failed, deleting file");
+                            try {
+                                file.deleteUnchecked();
+                            } catch (FileNotFoundException e) {
+                                // file disappeared, not a problem as we wanted it gone anyway
+                            }
+                        }
+                    } catch (SlaveUnavailableException e) {
+                        // okay, it went offline while trying
+                        session.printOutput(200, file.getName() + " - Slave went offline whilst checking zip integrity");
+                    } catch (RemoteIOException e) {
+                        session.printOutput(200, file.getName() + " - Slave encountered an error whilst checking zip integrity");
+                        logger.warn("Error encountered whilst checking zip integrity", e);
+                    } catch (NoAvailableSlaveException e) {
+                        session.printOutput(200, file.getName() + " - No available slave found to perform zip integrity check");
+                    }
+                }
+            }
+        } catch (FileNotFoundException e) {
+            session.printOutput(200, dir.getName() + " - Directory deleted  whilst checking integrity of zips");
+        }
+    }
 
 }

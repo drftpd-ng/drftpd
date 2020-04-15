@@ -27,15 +27,15 @@ import org.drftpd.master.permissions.Permission;
  */
 
 public abstract class ConfigHandler {
-	protected static GlobalContext getGlobalContext() {
-		return GlobalContext.getGlobalContext();
-	}
+    protected static GlobalContext getGlobalContext() {
+        return GlobalContext.getGlobalContext();
+    }
 
-	protected void addPathPermission(String directive, PathPermission pathPerm) {
-		GlobalContext.getConfig().addPathPermission(directive, pathPerm);
-	}
-	
-	protected void addPermission(String directive, Permission permission) {
-		GlobalContext.getConfig().addPermission(directive, permission);
-	}
+    protected void addPathPermission(String directive, PathPermission pathPerm) {
+        GlobalContext.getConfig().addPathPermission(directive, pathPerm);
+    }
+
+    protected void addPermission(String directive, Permission permission) {
+        GlobalContext.getConfig().addPermission(directive, permission);
+    }
 }

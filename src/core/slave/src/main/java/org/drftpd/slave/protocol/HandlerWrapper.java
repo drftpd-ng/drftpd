@@ -16,29 +16,28 @@
  */
 package org.drftpd.slave.protocol;
 
-import org.drftpd.slave.protocol.AbstractHandler;
-
 import java.lang.reflect.Method;
 
 /**
  * Simple helper class to keep code cleaner.
+ *
  * @author fr0w
  * @version $Id$
  */
 public class HandlerWrapper {
-	private AbstractHandler _ah;
-	private Method _method;
-	
-	public HandlerWrapper(AbstractHandler ah, Method method) {
-		_ah = ah;
-		_method = method;
-	}
-	
-	public Method getMethod() {
-		return _method;
-	}
-	
-	public AbstractHandler getAsyncHandler() {
-		return _ah;
-	}
+    private final AbstractHandler _ah;
+    private final Method _method;
+
+    public HandlerWrapper(AbstractHandler ah, Method method) {
+        _ah = ah;
+        _method = method;
+    }
+
+    public Method getMethod() {
+        return _method;
+    }
+
+    public AbstractHandler getAsyncHandler() {
+        return _ah;
+    }
 }

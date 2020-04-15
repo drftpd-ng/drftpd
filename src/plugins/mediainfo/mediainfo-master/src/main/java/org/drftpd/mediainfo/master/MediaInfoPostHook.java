@@ -47,8 +47,8 @@ import java.util.Properties;
 public class MediaInfoPostHook {
     private static final Logger logger = LogManager.getLogger(MediaInfoPostHook.class);
 
-    private ArrayList<String> _exclSections = new ArrayList<>();
-    private ArrayList<String> _extensions = new ArrayList<>();
+    private final ArrayList<String> _exclSections = new ArrayList<>();
+    private final ArrayList<String> _extensions = new ArrayList<>();
 
     public MediaInfoPostHook() {
         loadConf();

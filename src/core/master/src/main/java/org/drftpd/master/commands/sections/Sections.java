@@ -19,10 +19,10 @@ package org.drftpd.master.commands.sections;
 
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.commands.CommandInterface;
-import org.drftpd.master.commands.StandardCommandManager;
-import org.drftpd.master.sections.SectionInterface;
 import org.drftpd.master.commands.CommandRequest;
 import org.drftpd.master.commands.CommandResponse;
+import org.drftpd.master.commands.StandardCommandManager;
+import org.drftpd.master.sections.SectionInterface;
 
 import java.util.*;
 
@@ -31,11 +31,11 @@ import java.util.*;
  * @version $Id$
  */
 public class Sections extends CommandInterface {
-	private ResourceBundle _bundle;
-	
-	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
-    	super.initialize(method, pluginName, cManager);
-    	_bundle = cManager.getResourceBundle();
+    private ResourceBundle _bundle;
+
+    public void initialize(String method, String pluginName, StandardCommandManager cManager) {
+        super.initialize(method, pluginName, cManager);
+        _bundle = cManager.getResourceBundle();
 
     }
 
@@ -46,23 +46,23 @@ public class Sections extends CommandInterface {
 
         ArrayList<SectionInterface> sections =
                 new ArrayList<>(GlobalContext.getGlobalContext().getSectionManager().getSections());
-        
-       sections.sort(new SectionComparator());
-        
+
+        sections.sort(new SectionComparator());
+
         for (SectionInterface section : sections) {
             env.put("section", section.getName());
-			env.put("sectioncolor", section.getName());
+            env.put("sectioncolor", section.getName());
             env.put("path", section.getCurrentDirectory().getPath());
             response.addComment(request.getSession().jprintf(_bundle, "section", env, request.getUser()));
         }
 
         return response;
     }
-    
+
     private static class SectionComparator implements Comparator<SectionInterface> {
-		public int compare(SectionInterface o1, SectionInterface o2) {
-			return o1.getName().compareToIgnoreCase(o2.getName());
-		}    	
+        public int compare(SectionInterface o1, SectionInterface o2) {
+            return o1.getName().compareToIgnoreCase(o2.getName());
+        }
     }
 }
 

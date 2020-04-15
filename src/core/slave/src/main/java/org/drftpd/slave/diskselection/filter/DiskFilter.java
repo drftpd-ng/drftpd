@@ -26,92 +26,92 @@ import java.util.Properties;
 
 /**
  * Generic interface.
- * @version $Id$
+ *
  * @author fr0w
+ * @version $Id$
  */
 public abstract class DiskFilter {
-	private DiskSelectionFilter _diskSelection;
+    protected ArrayList<AssignParser> _assignList;
+    private final DiskSelectionFilter _diskSelection;
 
-	public DiskFilter(DiskSelectionFilter diskSelection, Properties p, Integer i) {
-		_diskSelection = diskSelection;
-	}
+    public DiskFilter(DiskSelectionFilter diskSelection, Properties p, Integer i) {
+        _diskSelection = diskSelection;
+    }
 
-	protected ArrayList<AssignParser> _assignList;
-	
-	/**
-	 * This method is called to process the ScoreChart of each file.
-	 * 
-	 * @param sc
-	 * @param path
-	 */
-	public abstract void process(ScoreChart sc, String path);
+    public static float parseMultiplier(String string) {
+        if (string.equalsIgnoreCase("remove")) {
+            return 0;
+        }
 
-	public DiskSelectionFilter getDiskSelection() {
-		return _diskSelection;
-	}
-	
-	/**
-	 * @return ArrayList with 'Root' objects
-	 */
-	public ArrayList<Root> getRootList() {
-		return getDiskSelection().getRootCollection().getRootList();
-	}
+        boolean isMultiplier;
+        float multiplier = 1;
 
-	public static float parseMultiplier(String string) {
-		if (string.equalsIgnoreCase("remove")) {
-			return 0;
-		}
+        while (string.length() != 0) {
+            char c = string.charAt(0);
 
-		boolean isMultiplier;
-		float multiplier = 1;
+            if (c == '*') {
+                isMultiplier = true;
+                string = string.substring(1);
+            } else if (c == '/') {
+                isMultiplier = false;
+                string = string.substring(1);
+            } else {
+                isMultiplier = true;
+            }
 
-		while (string.length() != 0) {
-			char c = string.charAt(0);
+            int pos = string.indexOf('*');
 
-			if (c == '*') {
-				isMultiplier = true;
-				string = string.substring(1);
-			} else if (c == '/') {
-				isMultiplier = false;
-				string = string.substring(1);
-			} else {
-				isMultiplier = true;
-			}
+            if (pos == -1) {
+                pos = string.length();
+            }
 
-			int pos = string.indexOf('*');
+            int tmp = string.indexOf('/');
 
-			if (pos == -1) {
-				pos = string.length();
-			}
+            if ((tmp != -1) && (tmp < pos)) {
+                pos = tmp;
+            }
 
-			int tmp = string.indexOf('/');
+            if (isMultiplier) {
+                multiplier *= Float.parseFloat(string.substring(0, pos));
+            } else {
+                multiplier /= Float.parseFloat(string.substring(0, pos));
+            }
 
-			if ((tmp != -1) && (tmp < pos)) {
-				pos = tmp;
-			}
+            string = string.substring(pos);
+        }
 
-			if (isMultiplier) {
-				multiplier *= Float.parseFloat(string.substring(0, pos));
-			} else {
-				multiplier /= Float.parseFloat(string.substring(0, pos));
-			}
+        return multiplier;
+    }
 
-			string = string.substring(pos);
-		}
+    /**
+     * This method is called to process the ScoreChart of each file.
+     *
+     * @param sc
+     * @param path
+     */
+    public abstract void process(ScoreChart sc, String path);
 
-		return multiplier;
-	}
-	
-	public String getAssignList() {
-		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < _assignList.size(); i++) {
-			AssignParser ap = _assignList.get(i);
-			sb.append(ap.getRoot());
-			
-			if (i+1 != _assignList.size()) {
-				sb.append(',');
-			}
-		}
-		return sb.toString();
-	}
+    public DiskSelectionFilter getDiskSelection() {
+        return _diskSelection;
+    }
+
+    /**
+     * @return ArrayList with 'Root' objects
+     */
+    public ArrayList<Root> getRootList() {
+        return getDiskSelection().getRootCollection().getRootList();
+    }
+
+    public String getAssignList() {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < _assignList.size(); i++) {
+            AssignParser ap = _assignList.get(i);
+            sb.append(ap.getRoot());
+
+            if (i + 1 != _assignList.size()) {
+                sb.append(',');
+            }
+        }
+        return sb.toString();
+    }
 }

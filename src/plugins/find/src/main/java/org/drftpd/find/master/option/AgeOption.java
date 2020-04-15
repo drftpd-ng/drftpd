@@ -18,8 +18,8 @@
 package org.drftpd.find.master.option;
 
 import org.drftpd.find.master.FindUtils;
-import org.drftpd.master.indexation.AdvancedSearchParams;
 import org.drftpd.master.commands.ImproperUsageException;
+import org.drftpd.master.indexation.AdvancedSearchParams;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -30,32 +30,32 @@ import java.text.SimpleDateFormat;
  */
 public class AgeOption implements OptionInterface {
 
-	@Override
-	public void exec(String option, String[] args, AdvancedSearchParams params) throws ImproperUsageException {
-		SimpleDateFormat fullDate = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss");
-		SimpleDateFormat shortDate = new SimpleDateFormat("yyyy.MM.dd");
-		try {
-			String[] range = FindUtils.getRange(args[0], ":");
+    @Override
+    public void exec(String option, String[] args, AdvancedSearchParams params) throws ImproperUsageException {
+        SimpleDateFormat fullDate = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss");
+        SimpleDateFormat shortDate = new SimpleDateFormat("yyyy.MM.dd");
+        try {
+            String[] range = FindUtils.getRange(args[0], ":");
 
-			if (range[0] != null) {
-				if (range[0].length() == 10)
-					params.setMinAge(shortDate.parse(range[0]).getTime());
-				else if (range[0].length() == 19)
-					params.setMinAge(fullDate.parse(range[0]).getTime());
-				else
-					throw new ImproperUsageException("Invalid date format for min age.");
-			}
+            if (range[0] != null) {
+                if (range[0].length() == 10)
+                    params.setMinAge(shortDate.parse(range[0]).getTime());
+                else if (range[0].length() == 19)
+                    params.setMinAge(fullDate.parse(range[0]).getTime());
+                else
+                    throw new ImproperUsageException("Invalid date format for min age.");
+            }
 
-			if (range[1] != null) {
-				if (range[1].length() == 10)
-					params.setMaxAge(shortDate.parse(range[1]).getTime());
-				else if (range[1].length() == 19)
-					params.setMaxAge(fullDate.parse(range[1]).getTime());
-				else
-					throw new ImproperUsageException("Invalid date format for max age.");
-			}
-		} catch (ParseException e) {
-			throw new ImproperUsageException("Invalid date format", e);
-		}
-	}
+            if (range[1] != null) {
+                if (range[1].length() == 10)
+                    params.setMaxAge(shortDate.parse(range[1]).getTime());
+                else if (range[1].length() == 19)
+                    params.setMaxAge(fullDate.parse(range[1]).getTime());
+                else
+                    throw new ImproperUsageException("Invalid date format for max age.");
+            }
+        } catch (ParseException e) {
+            throw new ImproperUsageException("Invalid date format", e);
+        }
+    }
 }

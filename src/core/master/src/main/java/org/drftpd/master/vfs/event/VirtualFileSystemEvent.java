@@ -25,38 +25,39 @@ import org.drftpd.master.vfs.VirtualFileSystemInode;
 /**
  * This class represents an event that occured in the Virtual File System.
  * All events that are fired from the VFS must extend this class.
- * 
+ *
  * @author fr0w
  * @version $Id$
  */
 public abstract class VirtualFileSystemEvent {
-	
-	private InodeHandle _inode;
-	
-	private ImmutableInodeHandle _immutableInode;
 
-	/**
-	 * This constructor accepts a {@link VirtualFileSystemInode} but in order
-	 * to prevent futher access to low level VFS API it uses {@link VFSUtils}
-	 * to convert the current <code>realInode</code> to an {@link InodeHandle}
-	 * @param realInode
-	 */
-	public VirtualFileSystemEvent(VirtualFileSystemInode realInode, String path) {
-		_inode = VFSUtils.getInodeHandleFor(realInode);
-		_immutableInode = new ImmutableInodeHandle(realInode, path);
-	}
-	
-	/**
-	 * @return the {@link InodeHandle} that this event is related to.
-	 */
-	public InodeHandle getInode() {
-		return _inode;
-	}
-	
-	/**
-	 * @return the {@link ImmutableInodeHandle} that this event is related to.
-	 */
-	public ImmutableInodeHandle getImmutableInode() {
-		return _immutableInode;
-	}
+    private final InodeHandle _inode;
+
+    private final ImmutableInodeHandle _immutableInode;
+
+    /**
+     * This constructor accepts a {@link VirtualFileSystemInode} but in order
+     * to prevent futher access to low level VFS API it uses {@link VFSUtils}
+     * to convert the current <code>realInode</code> to an {@link InodeHandle}
+     *
+     * @param realInode
+     */
+    public VirtualFileSystemEvent(VirtualFileSystemInode realInode, String path) {
+        _inode = VFSUtils.getInodeHandleFor(realInode);
+        _immutableInode = new ImmutableInodeHandle(realInode, path);
+    }
+
+    /**
+     * @return the {@link InodeHandle} that this event is related to.
+     */
+    public InodeHandle getInode() {
+        return _inode;
+    }
+
+    /**
+     * @return the {@link ImmutableInodeHandle} that this event is related to.
+     */
+    public ImmutableInodeHandle getImmutableInode() {
+        return _immutableInode;
+    }
 }

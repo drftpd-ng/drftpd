@@ -26,36 +26,36 @@ import java.util.Properties;
 
 /**
  * /**
- * 
+ *
  * <pre>
  *  X.filter=minfreespace
  *  X.multiplier=1
  *  X.minfreespace=1GB
  *  X.assign=1, 2
  * </pre>
- * 
- * Works like this: if(diskfree < minfreespace) { 
+ * <p>
+ * Works like this: if(diskfree < minfreespace) {
  * addScore( -1 * ( (minfreespace - diskfree) * multiplier) )
  * }
- * 
+ *
  * @author fr0w
  * @version $Id$
  */
 public class MinfreespaceFilter extends DiskFilter {
 
-	private long _minfreespace;
+    private final long _minfreespace;
 
-	private float _multiplier;
+    private final float _multiplier;
 
-	public MinfreespaceFilter(DiskSelectionFilter diskSelection, Properties p, Integer i) {
-		super(diskSelection, p, i);
-		_minfreespace = Bytes.parseBytes(PropertyHelper.getProperty(p, i+ ".minfreespace"));
-		_multiplier = DiskFilter.parseMultiplier(p.getProperty(i+ ".multiplier", "0"));
-		_assignList = AssignRoot.parseAssign(this, p.getProperty(i+ ".assign", "all"));
-	}
+    public MinfreespaceFilter(DiskSelectionFilter diskSelection, Properties p, Integer i) {
+        super(diskSelection, p, i);
+        _minfreespace = Bytes.parseBytes(PropertyHelper.getProperty(p, i + ".minfreespace"));
+        _multiplier = DiskFilter.parseMultiplier(p.getProperty(i + ".multiplier", "0"));
+        _assignList = AssignRoot.parseAssign(this, p.getProperty(i + ".assign", "all"));
+    }
 
-	public void process(ScoreChart sc, String path) {
-		AssignRoot.addScoresToChart(this, _assignList, sc);
+    public void process(ScoreChart sc, String path) {
+        AssignRoot.addScoresToChart(this, _assignList, sc);
 
         for (Root o : getRootList()) {
             if (!AssignRoot.isAssignedRoot(this, o, _assignList))
@@ -70,9 +70,9 @@ public class MinfreespaceFilter extends DiskFilter {
                 }
             }
         }
-	}
-	
-	public String toString() {
-		return getClass().getName()+"[minfreespace="+_minfreespace+",roots="+getAssignList()+"]";
-	}
+    }
+
+    public String toString() {
+        return getClass().getName() + "[minfreespace=" + _minfreespace + ",roots=" + getAssignList() + "]";
+    }
 }

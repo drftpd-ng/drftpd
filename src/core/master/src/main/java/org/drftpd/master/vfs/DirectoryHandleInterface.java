@@ -27,13 +27,14 @@ import java.io.FileNotFoundException;
 /**
  * Lowest level of DirectoryHandles.<br>
  * This class provides more flexibility and organization to the VFS.
+ *
  * @author zubov
  * @version $Id$
  */
 public interface DirectoryHandleInterface extends InodeHandleInterface {
 
-	DirectoryHandleInterface createDirectorySystem(String string) throws FileExistsException, FileNotFoundException;
+    DirectoryHandleInterface createDirectorySystem(String string) throws FileExistsException, FileNotFoundException;
 
-	FileHandle createFileUnchecked(String string, String user, String group, RemoteSlave rslave) throws FileExistsException, FileNotFoundException;
+    FileHandle createFileUnchecked(String string, String user, String group, RemoteSlave rslave) throws FileExistsException, FileNotFoundException;
 
 }

@@ -23,15 +23,15 @@ package org.drftpd.master.exceptions;
  * @version $Id$
  */
 public class NoAvailableSlaveException extends Exception {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -3761274351911054556L;
+    /**
+     *
+     */
+    private static final long serialVersionUID = -3761274351911054556L;
 
-	public NoAvailableSlaveException(String message) {
-		super(message);
-	}
+    public NoAvailableSlaveException(String message) {
+        super(message);
+    }
 
-	public NoAvailableSlaveException() {
-	}
+    public NoAvailableSlaveException() {
+    }
 }

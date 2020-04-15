@@ -22,24 +22,24 @@ import com.google.gson.reflect.TypeToken;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.drftpd.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.master.GlobalContext;
+import org.drftpd.master.exceptions.NoAvailableSlaveException;
+import org.drftpd.master.exceptions.SlaveUnavailableException;
+import org.drftpd.master.indexation.AdvancedSearchParams;
+import org.drftpd.master.indexation.IndexEngineInterface;
+import org.drftpd.master.indexation.IndexException;
+import org.drftpd.master.sections.SectionInterface;
 import org.drftpd.master.sitebot.SiteBot;
+import org.drftpd.master.usermanager.User;
+import org.drftpd.master.util.HttpUtils;
+import org.drftpd.master.vfs.DirectoryHandle;
+import org.drftpd.master.vfs.VirtualFileSystem;
 import org.drftpd.tvmaze.master.event.TvMazeEvent;
 import org.drftpd.tvmaze.master.index.TvMazeQueryParams;
 import org.drftpd.tvmaze.master.metadata.TvEpisode;
 import org.drftpd.tvmaze.master.metadata.TvMazeInfo;
 import org.drftpd.tvmaze.master.vfs.TvMazeVFSData;
-import org.drftpd.common.dynamicdata.KeyNotFoundException;
-import org.drftpd.master.exceptions.NoAvailableSlaveException;
-import org.drftpd.master.exceptions.SlaveUnavailableException;
-import org.drftpd.master.sections.SectionInterface;
-import org.drftpd.master.usermanager.User;
-import org.drftpd.master.util.HttpUtils;
-import org.drftpd.master.vfs.DirectoryHandle;
-import org.drftpd.master.vfs.VirtualFileSystem;
-import org.drftpd.master.indexation.AdvancedSearchParams;
-import org.drftpd.master.indexation.IndexEngineInterface;
-import org.drftpd.master.indexation.IndexException;
 import org.joda.time.DateTime;
 import org.joda.time.Period;
 import org.joda.time.format.DateTimeFormat;
@@ -64,6 +64,7 @@ public class TvMazeUtils {
     private static final Logger logger = LogManager.getLogger(TvMazeUtils.class);
 
     private static final String[] _seperators = {".", "-", "_"};
+    public static Comparator<TvEpisode> epNumberComparator = Comparator.comparingInt(TvEpisode::getNumber);
 
     public static Map<String, Object> getShowEnv(TvMazeInfo tvShow) {
         Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
@@ -434,8 +435,6 @@ public class TvMazeUtils {
         Matcher m = p.matcher(dirName);
         return m.find();
     }
-
-    public static Comparator<TvEpisode> epNumberComparator = Comparator.comparingInt(TvEpisode::getNumber);
 
     public static boolean containSection(SectionInterface section, ArrayList<SectionInterface> sectionList) {
         boolean containsSection = false;

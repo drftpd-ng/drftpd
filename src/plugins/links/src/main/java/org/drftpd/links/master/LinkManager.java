@@ -49,6 +49,18 @@ public class LinkManager implements PluginInterface {
 
     private ArrayList<LinkType> _links;
 
+    /*
+     * Get the LinkManager Plugin
+     */
+    public static LinkManager getLinkManager() {
+        for (PluginInterface plugin : GlobalContext.getGlobalContext().getPlugins()) {
+            if (plugin instanceof LinkManager) {
+                return (LinkManager) plugin;
+            }
+        }
+        throw new RuntimeException("LinkManager plugin is not loaded.");
+    }
+
     @Override
     public void startPlugin() {
         AnnotationProcessor.process(this);
@@ -63,18 +75,6 @@ public class LinkManager implements PluginInterface {
     @EventSubscriber
     public void onReloadEvent(ReloadEvent event) {
         loadConf();
-    }
-
-    /*
-     * Get the LinkManager Plugin
-     */
-    public static LinkManager getLinkManager() {
-        for (PluginInterface plugin : GlobalContext.getGlobalContext().getPlugins()) {
-            if (plugin instanceof LinkManager) {
-                return (LinkManager) plugin;
-            }
-        }
-        throw new RuntimeException("LinkManager plugin is not loaded.");
     }
 
     /*

@@ -17,9 +17,8 @@
  */
 package org.drftpd.master.sitebot;
 
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
+import org.apache.logging.log4j.Logger;
 import org.drftpd.master.commands.CommandResponseInterface;
 
 import java.util.Arrays;
@@ -31,77 +30,77 @@ import java.util.Vector;
  */
 public class IrcReply {
 
-	private static final Logger logger = LogManager.getLogger(IrcReply.class);
+    private static final Logger logger = LogManager.getLogger(IrcReply.class);
 
-	protected int _code;
+    protected int _code;
 
-	protected Vector<String> _lines;
+    protected Vector<String> _lines;
 
-	protected String _message;
+    protected String _message;
 
-	public IrcReply(CommandResponseInterface response) {
-		setCode(response.getCode());
-		setMessage(response.getMessage());
-		_lines = response.getComment();
-	}
+    public IrcReply(CommandResponseInterface response) {
+        setCode(response.getCode());
+        setMessage(response.getMessage());
+        _lines = response.getComment();
+    }
 
-	public IrcReply addComment(Object response) {
-		String resp = String.valueOf(response);
+    public IrcReply addComment(Object response) {
+        String resp = String.valueOf(response);
 
-		if (resp.indexOf('\n') != -1) {
-			String[] lines = resp.split("\n");
+        if (resp.indexOf('\n') != -1) {
+            String[] lines = resp.split("\n");
 
-			_lines.addAll(Arrays.asList(lines));
-		} else {
-			_lines.add(resp);
-		}
-		return this;
-	}
+            _lines.addAll(Arrays.asList(lines));
+        } else {
+            _lines.add(resp);
+        }
+        return this;
+    }
 
-	public void setCode(int code) {
-		_code = code;
-	}
+    public void setCode(int code) {
+        _code = code;
+    }
 
-	public void setMessage(String response) {
-		if (response == null) {
-			return;
-		}
-			
-		int pos = response.indexOf('\n');
+    public int size() {
+        return _lines.size();
+    }
 
-		if (pos != -1) {
-			addComment(response.substring(pos + 1));
-			response = response.substring(0, pos);
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+
+        if ((_lines.size() == 0) && (_message == null)) {
+            setMessage("No text specified");
+        }
+
+        for (String line : _lines) {
+            sb.append(line);
+            sb.append("\n");
+        }
+
+        if (_lines.size() == 0) {
+            sb.append(_message);
+            sb.append("\n");
+        }
+
+        return sb.toString();
+    }
+
+    public String getMessage() {
+        return _message;
+    }
+
+    public void setMessage(String response) {
+        if (response == null) {
+            return;
+        }
+
+        int pos = response.indexOf('\n');
+
+        if (pos != -1) {
+            addComment(response.substring(pos + 1));
+            response = response.substring(0, pos);
             logger.debug("Truncated response message with multiple lines: {}", response);
-		}
-		_message = response;
-	}
-
-	public int size() {
-		return _lines.size();
-	}
-
-	public String toString() {
-		StringBuilder sb = new StringBuilder();
-
-		if ((_lines.size() == 0) && (_message == null)) {
-			setMessage("No text specified");
-		}
-
-		for (String line: _lines) {
-			sb.append(line);
-			sb.append("\n");
-		}
-
-		if (_lines.size() == 0) {
-			sb.append(_message);
-			sb.append("\n");
-		}
-
-		return sb.toString();
-	}
-
-	public String getMessage() {
-		return _message;
-	}
+        }
+        _message = response;
+    }
 }

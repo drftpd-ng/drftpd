@@ -24,16 +24,16 @@ import java.io.IOException;
  * @version $Id$
  */
 public class FileExistsException extends IOException {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 7603086353912792453L;
+    /**
+     *
+     */
+    private static final long serialVersionUID = 7603086353912792453L;
 
-	public FileExistsException() {
-		super();
-	}
+    public FileExistsException() {
+        super();
+    }
 
-	public FileExistsException(String arg0) {
-		super(arg0);
-	}
+    public FileExistsException(String arg0) {
+        super(arg0);
+    }
 }

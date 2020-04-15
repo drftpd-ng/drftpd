@@ -33,7 +33,7 @@ import java.util.regex.PatternSyntaxException;
 public class HostMaskTest extends TestCase {
 
     public void testMatchesHost()
-        throws UnknownHostException, PatternSyntaxException {
+            throws UnknownHostException, PatternSyntaxException {
         HostMask h = new HostMask("*@1.1.1.1");
         Assert.assertTrue(h.matchesHost(InetAddress.getByName("1.1.1.1")));
         Assert.assertFalse(h.matchesHost(InetAddress.getByName("1.1.1.2")));
@@ -51,17 +51,17 @@ public class HostMaskTest extends TestCase {
         Assert.assertTrue(h.matchesIdent("anything"));
         Assert.assertFalse(h.matchesIdent("nothing"));
     }
-    
+
     public void testEquals() {
-    	HostMask a = new HostMask("test@1.1.1.1");
-    	HostMask b = new HostMask("test@1.1.1.1");
-    	Assert.assertEquals(a,b);
-    	a = new HostMask("*@1.1.1.*");
-    	b = new HostMask("1.1.1.*");
-    	Assert.assertEquals(a,b);
-    	a = new HostMask("@1.1.1.*");
-    	Assert.assertEquals(a,b);
-    	a = new HostMask("notequal@4.2.3.4");
-    	Assert.assertFalse(a.equals(b));
+        HostMask a = new HostMask("test@1.1.1.1");
+        HostMask b = new HostMask("test@1.1.1.1");
+        Assert.assertEquals(a, b);
+        a = new HostMask("*@1.1.1.*");
+        b = new HostMask("1.1.1.*");
+        Assert.assertEquals(a, b);
+        a = new HostMask("@1.1.1.*");
+        Assert.assertEquals(a, b);
+        a = new HostMask("notequal@4.2.3.4");
+        Assert.assertFalse(a.equals(b));
     }
 }

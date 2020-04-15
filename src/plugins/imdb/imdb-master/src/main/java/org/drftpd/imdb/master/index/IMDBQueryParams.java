@@ -25,106 +25,106 @@ import org.drftpd.common.dynamicdata.Key;
  */
 public class IMDBQueryParams {
 
-	public static final Key<IMDBQueryParams> IMDBQUERYPARAMS = new Key<>(IMDBQueryParams.class, "imdbqueryparams");
-	
-	private String _title;
-	private String _director;
-	private String _genres;
-	private Integer _minVotes;
-	private Integer _maxVotes;
-	private Integer _minRating;
-	private Integer _maxRating;
-	private Integer _minYear;
-	private Integer _maxYear;
-	private Integer _minRuntime;
-	private Integer _maxRuntime;
+    public static final Key<IMDBQueryParams> IMDBQUERYPARAMS = new Key<>(IMDBQueryParams.class, "imdbqueryparams");
 
-	public String getTitle() {
-		return _title;
-	}
-	
-	public String getDirector() {
-		return _director;
-	}
-	
-	public String getGenres() {
-		return _genres;
-	}
+    private String _title;
+    private String _director;
+    private String _genres;
+    private Integer _minVotes;
+    private Integer _maxVotes;
+    private Integer _minRating;
+    private Integer _maxRating;
+    private Integer _minYear;
+    private Integer _maxYear;
+    private Integer _minRuntime;
+    private Integer _maxRuntime;
 
-	public Integer getMinVotes() {
-		return _minVotes;
-	}
+    public String getTitle() {
+        return _title;
+    }
 
-	public Integer getMaxVotes() {
-		return _maxVotes;
-	}
+    public void setTitle(String title) {
+        _title = title;
+    }
 
-	public Integer getMinRating() {
-		return _minRating;
-	}
+    public String getDirector() {
+        return _director;
+    }
 
-	public Integer getMaxRating() {
-		return _maxRating;
-	}
+    public void setDirector(String director) {
+        _director = director;
+    }
 
-	public Integer getMinYear() {
-		return _minYear;
-	}
+    public String getGenres() {
+        return _genres;
+    }
 
-	public Integer getMaxYear() {
-		return _maxYear;
-	}
+    public void setGenres(String genres) {
+        _genres = genres;
+    }
 
-	public Integer getMinRuntime() {
-		return _minRuntime;
-	}
+    public Integer getMinVotes() {
+        return _minVotes;
+    }
 
-	public Integer getMaxRuntime() {
-		return _maxRuntime;
-	}
+    public void setMinVotes(Integer votes) {
+        _minVotes = votes;
+    }
 
-	public void setTitle(String title) {
-		_title = title;
-	}
-	
-	public void setDirector(String director) {
-		_director = director;
-	}
-	
-	public void setGenres(String genres) {
-		_genres = genres;
-	}
+    public Integer getMaxVotes() {
+        return _maxVotes;
+    }
 
-	public void setMinVotes(Integer votes) {
-		_minVotes = votes;
-	}
+    public void setMaxVotes(Integer votes) {
+        _maxVotes = votes;
+    }
 
-	public void setMaxVotes(Integer votes) {
-		_maxVotes = votes;
-	}
+    public Integer getMinRating() {
+        return _minRating;
+    }
 
-	public void setMinRating(Integer rating) {
-		_minRating = rating;
-	}
+    public void setMinRating(Integer rating) {
+        _minRating = rating;
+    }
 
-	public void setMaxRating(Integer rating) {
-		_maxRating = rating;
-	}
+    public Integer getMaxRating() {
+        return _maxRating;
+    }
 
-	public void setMinYear(Integer year) {
-		_minYear = year;
-	}
+    public void setMaxRating(Integer rating) {
+        _maxRating = rating;
+    }
 
-	public void setMaxYear(Integer year) {
-		_maxYear = year;
-	}
+    public Integer getMinYear() {
+        return _minYear;
+    }
 
-	public void setMinRuntime(Integer runtime) {
-		_minRuntime = runtime;
-	}
+    public void setMinYear(Integer year) {
+        _minYear = year;
+    }
 
-	public void setMaxRuntime(Integer runtime) {
-		_maxRuntime = runtime;
-	}
+    public Integer getMaxYear() {
+        return _maxYear;
+    }
+
+    public void setMaxYear(Integer year) {
+        _maxYear = year;
+    }
+
+    public Integer getMinRuntime() {
+        return _minRuntime;
+    }
+
+    public void setMinRuntime(Integer runtime) {
+        _minRuntime = runtime;
+    }
+
+    public Integer getMaxRuntime() {
+        return _maxRuntime;
+    }
+
+    public void setMaxRuntime(Integer runtime) {
+        _maxRuntime = runtime;
+    }
 
 }

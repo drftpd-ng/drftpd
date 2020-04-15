@@ -25,23 +25,23 @@ import org.drftpd.common.network.AsyncResponse;
  */
 @SuppressWarnings("serial")
 public class AsyncResponseIMDBInfo extends AsyncResponse {
-	private IMDBInfo _imdb;
+    private final IMDBInfo _imdb;
 
-	public AsyncResponseIMDBInfo(String index, IMDBInfo imdb) {
-		super(index);
+    public AsyncResponseIMDBInfo(String index, IMDBInfo imdb) {
+        super(index);
 
-		if (imdb == null) {
-			throw new IllegalArgumentException("imdb cannot be null");
-		}
+        if (imdb == null) {
+            throw new IllegalArgumentException("imdb cannot be null");
+        }
 
-		_imdb = imdb;
-	}
+        _imdb = imdb;
+    }
 
-	public IMDBInfo getIMDB() {
-		return _imdb;
-	}
+    public IMDBInfo getIMDB() {
+        return _imdb;
+    }
 
-	public String toString() {
-		return getClass().getName();
-	}
+    public String toString() {
+        return getClass().getName();
+    }
 }

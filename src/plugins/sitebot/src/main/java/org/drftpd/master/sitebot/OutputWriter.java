@@ -26,74 +26,73 @@ import org.apache.commons.text.WordUtils;
  */
 public class OutputWriter {
 
-	private static final String LINESEP = System.getProperty("line.separator");
+    private static final String LINESEP = System.getProperty("line.separator");
 
-	private BlowfishManager _cipher;
+    private BlowfishManager _cipher;
 
-	private boolean _blowfishEnabled;
+    private boolean _blowfishEnabled;
 
-	private SiteBot _bot;
+    private SiteBot _bot;
 
-	private String _output;
+    private String _output;
 
-	private int _maxOutputLen;
+    private int _maxOutputLen;
 
-	protected OutputWriter() {
-		// Empty constructor for extending classes
-	}
+    protected OutputWriter() {
+        // Empty constructor for extending classes
+    }
 
-	public OutputWriter(SiteBot bot, String output, BlowfishManager cipher) {
-		_bot = bot;
-		_output = output;
-		_cipher = cipher;
-		_blowfishEnabled = _bot.getConfig().getBlowfishEnabled();
-		_maxOutputLen = getMaxLineLength();
-	}
+    public OutputWriter(SiteBot bot, String output, BlowfishManager cipher) {
+        _bot = bot;
+        _output = output;
+        _cipher = cipher;
+        _blowfishEnabled = _bot.getConfig().getBlowfishEnabled();
+        _maxOutputLen = getMaxLineLength();
+    }
 
-	public synchronized void sendMessage(String message) {
-		for (String line : splitLines(message)) {
-			if (_blowfishEnabled) {
-				// Check if we have a valid cipher before proceeding, this is to cover
-				// the case where the OutputWriter is for a private message to a user
-				// yet they don't have a blowfish key available. This is possible since
-				// they could've initiated the command using blowfish in a channel. If
-				// this is the case just skip the output to them.
-				if (_cipher != null) {
-					_bot.sendMessage(_output, _cipher.encrypt(line));
-				}
-			}
-			else {
-				_bot.sendMessage(_output, line);
-			}
-		}
-	}
+    public synchronized void sendMessage(String message) {
+        for (String line : splitLines(message)) {
+            if (_blowfishEnabled) {
+                // Check if we have a valid cipher before proceeding, this is to cover
+                // the case where the OutputWriter is for a private message to a user
+                // yet they don't have a blowfish key available. This is possible since
+                // they could've initiated the command using blowfish in a channel. If
+                // this is the case just skip the output to them.
+                if (_cipher != null) {
+                    _bot.sendMessage(_output, _cipher.encrypt(line));
+                }
+            } else {
+                _bot.sendMessage(_output, line);
+            }
+        }
+    }
 
-	public void reload() {
-		_blowfishEnabled = _bot.getConfig().getBlowfishEnabled();
-		_maxOutputLen = getMaxLineLength();
-	}
+    public void reload() {
+        _blowfishEnabled = _bot.getConfig().getBlowfishEnabled();
+        _maxOutputLen = getMaxLineLength();
+    }
 
-	protected void updateCipher(BlowfishManager cipher) {
-		_cipher = cipher;
-	}
+    protected void updateCipher(BlowfishManager cipher) {
+        _cipher = cipher;
+    }
 
-	protected String getDestination() {
-		return _output;
-	}
+    protected String getDestination() {
+        return _output;
+    }
 
-	private String[] splitLines(String message) {
-		if (message.length() > _maxOutputLen) {
-			return StringUtils.split(WordUtils.wrap(message, _maxOutputLen, LINESEP, true), LINESEP);
-		}
-		return new String[] { message };
-	}
+    private String[] splitLines(String message) {
+        if (message.length() > _maxOutputLen) {
+            return StringUtils.split(WordUtils.wrap(message, _maxOutputLen, LINESEP, true), LINESEP);
+        }
+        return new String[]{message};
+    }
 
-	private int getMaxLineLength() {
-		int maxLen = _bot.getConfig().getMaxLineLength() - _bot.getHostMask().length() - _output.length() - 14;
-		if (_blowfishEnabled) {
-			maxLen = ((maxLen / 12) * 8) - 4;
-		}
+    private int getMaxLineLength() {
+        int maxLen = _bot.getConfig().getMaxLineLength() - _bot.getHostMask().length() - _output.length() - 14;
+        if (_blowfishEnabled) {
+            maxLen = ((maxLen / 12) * 8) - 4;
+        }
 
-		return maxLen;
-	}
+        return maxLen;
+    }
 }

@@ -23,11 +23,11 @@ package org.drftpd.master.commands.nuke;
  */
 @SuppressWarnings("serial")
 public class NukeException extends Exception {
-	public NukeException(String message) {
-		super(message);
-	}
+    public NukeException(String message) {
+        super(message);
+    }
 
-	public NukeException(String message, Throwable cause) {
-		super(message, cause);
-	}
+    public NukeException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

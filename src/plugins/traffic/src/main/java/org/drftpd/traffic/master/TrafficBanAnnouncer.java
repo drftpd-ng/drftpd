@@ -16,21 +16,20 @@
  */
 package org.drftpd.traffic.master;
 
+import org.bushe.swing.event.annotation.AnnotationProcessor;
+import org.bushe.swing.event.annotation.EventSubscriber;
+import org.drftpd.common.util.Bytes;
+import org.drftpd.master.sitebot.AbstractAnnouncer;
+import org.drftpd.master.sitebot.AnnounceWriter;
+import org.drftpd.master.sitebot.SiteBot;
+import org.drftpd.master.sitebot.config.AnnounceConfig;
+import org.drftpd.master.util.ReplacerUtils;
+import org.drftpd.master.util.Time;
+import org.drftpd.traffic.master.types.ban.TrafficTypeBanEvent;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
-
-import org.bushe.swing.event.annotation.AnnotationProcessor;
-import org.bushe.swing.event.annotation.EventSubscriber;
-import org.drftpd.master.sitebot.SiteBot;
-import org.drftpd.master.sitebot.config.AnnounceConfig;
-import org.drftpd.master.util.Time;
-import org.drftpd.common.util.Bytes;
-import org.drftpd.master.util.ReplacerUtils;
-
-import org.drftpd.master.sitebot.AbstractAnnouncer;
-import org.drftpd.master.sitebot.AnnounceWriter;
-import org.drftpd.traffic.master.types.ban.TrafficTypeBanEvent;
 
 /**
  * @author CyBeR
@@ -41,7 +40,7 @@ public class TrafficBanAnnouncer extends AbstractAnnouncer {
     private AnnounceConfig _config;
 
     private ResourceBundle _bundle;
-    
+
     public void initialise(AnnounceConfig config, ResourceBundle bundle) {
         _config = config;
         _bundle = bundle;
@@ -80,9 +79,9 @@ public class TrafficBanAnnouncer extends AbstractAnnouncer {
                 env.put("bantime", Time.formatTime(event.getBanTime()));
 
                 if (event.isStor()) {
-                    sayOutput(ReplacerUtils.jprintf( "traffic.ban.up", env, _bundle), writer);
+                    sayOutput(ReplacerUtils.jprintf("traffic.ban.up", env, _bundle), writer);
                 } else {
-                    sayOutput(ReplacerUtils.jprintf( "traffic.ban.dn", env, _bundle), writer);
+                    sayOutput(ReplacerUtils.jprintf("traffic.ban.dn", env, _bundle), writer);
                 }
             }
         }

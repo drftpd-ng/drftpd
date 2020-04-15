@@ -20,13 +20,13 @@ package org.drftpd.master.network;
 import org.drftpd.common.exceptions.RemoteIOException;
 import org.drftpd.common.exceptions.TransferFailedException;
 import org.drftpd.common.slave.ConnectInfo;
-import org.drftpd.master.slavemanagement.RemoteSlave;
-import org.drftpd.master.slavemanagement.SlaveManager;
-import org.drftpd.slave.network.Transfer;
 import org.drftpd.common.slave.TransferIndex;
 import org.drftpd.common.slave.TransferStatus;
 import org.drftpd.master.exceptions.SlaveUnavailableException;
+import org.drftpd.master.slavemanagement.RemoteSlave;
+import org.drftpd.master.slavemanagement.SlaveManager;
 import org.drftpd.master.vfs.TransferPointer;
+import org.drftpd.slave.network.Transfer;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -38,159 +38,159 @@ import java.net.InetSocketAddress;
  * All calls to this class should be made through the TransferState object
  */
 public class RemoteTransfer {
-	
-	private InetSocketAddress _address;
 
-	private TransferIndex _transferIndex;
+    private final InetSocketAddress _address;
 
-	private RemoteSlave _rslave;
+    private final TransferIndex _transferIndex;
 
-	private TransferStatus _status;
+    private final RemoteSlave _rslave;
 
-	private char _transferDirection = Transfer.TRANSFER_UNKNOWN;
+    private TransferStatus _status;
 
-	private String _path;
-	
-	private TransferPointer _pointer;
+    private char _transferDirection = Transfer.TRANSFER_UNKNOWN;
 
-	public RemoteTransfer(ConnectInfo ci, RemoteSlave rslave)
-			throws SlaveUnavailableException {
-		_transferIndex = ci.getTransferIndex();
-		_address = new InetSocketAddress(rslave.getPASVIP(), ci.getPort());
-		_rslave = rslave;
-		_status = ci.getTransferStatus();
-	}
+    private String _path;
 
-	public void updateTransferStatus(TransferStatus ts) {
-		_status = ts;
+    private TransferPointer _pointer;
 
-		if (_status.isFinished()) {
-			synchronized (this) {
-				if (_pointer != null && _transferDirection != Transfer.TRANSFER_UNKNOWN) {
-					_pointer.unlinkPointer(this);
-				}
-				_pointer = null;
-			}
-		}
-	}
+    public RemoteTransfer(ConnectInfo ci, RemoteSlave rslave)
+            throws SlaveUnavailableException {
+        _transferIndex = ci.getTransferIndex();
+        _address = new InetSocketAddress(rslave.getPASVIP(), ci.getPort());
+        _rslave = rslave;
+        _status = ci.getTransferStatus();
+    }
 
-	public char getTransferDirection() {
-		return _transferDirection;
-	}
+    public void updateTransferStatus(TransferStatus ts) {
+        _status = ts;
 
-	public long getChecksum() {
-		return _status.getChecksum();
-	}
+        if (_status.isFinished()) {
+            synchronized (this) {
+                if (_pointer != null && _transferDirection != Transfer.TRANSFER_UNKNOWN) {
+                    _pointer.unlinkPointer(this);
+                }
+                _pointer = null;
+            }
+        }
+    }
 
-	/**
-	 * Returns how long this transfer has been running in milliseconds.
-	 */
-	public long getElapsed() {
-		return _status.getElapsed();
-	}
+    public char getTransferDirection() {
+        return _transferDirection;
+    }
 
-	/**
-	 * For a passive connection, returns the port the serversocket is listening
-	 * on.
-	 */
-	public int getLocalPort() {
-		return _address.getPort();
-	}
+    public long getChecksum() {
+        return _status.getChecksum();
+    }
 
-	public TransferStatus getTransferStatus() throws TransferFailedException {
-		if (!_rslave.isOnline()) {
-			throw new TransferFailedException("Slave is offline", _status);
-		}
+    /**
+     * Returns how long this transfer has been running in milliseconds.
+     */
+    public long getElapsed() {
+        return _status.getElapsed();
+    }
 
-		if (_status.threwException()) {
-			throw new TransferFailedException((Exception) _status.getThrowable(), _status);
-		}
+    /**
+     * For a passive connection, returns the port the serversocket is listening
+     * on.
+     */
+    public int getLocalPort() {
+        return _address.getPort();
+    }
 
-		return _status;
-	}
+    public TransferStatus getTransferStatus() throws TransferFailedException {
+        if (!_rslave.isOnline()) {
+            throw new TransferFailedException("Slave is offline", _status);
+        }
 
-	/**
-	 * Returns the number of bytes transfered.
-	 */
-	public long getTransfered() {
-		return _status.getTransfered();
-	}
+        if (_status.threwException()) {
+            throw new TransferFailedException((Exception) _status.getThrowable(), _status);
+        }
 
-	/**
-	 * Returns how fast the transfer is going in bytes per second.
-	 */
-	public long getXferSpeed() {
-		return _status.getXferSpeed();
-	}
+        return _status;
+    }
 
-	public String getPathNull() {
-		return _path;
-	}
+    /**
+     * Returns the number of bytes transfered.
+     */
+    public long getTransfered() {
+        return _status.getTransfered();
+    }
 
-	public TransferIndex getTransferIndex() {
-		return _transferIndex;
-	}
+    /**
+     * Returns how fast the transfer is going in bytes per second.
+     */
+    public long getXferSpeed() {
+        return _status.getXferSpeed();
+    }
 
-	public InetSocketAddress getAddress() {
-		return _address;
-	}
+    public String getPathNull() {
+        return _path;
+    }
 
-	public void abort(String reason) {
-		if (_status.isFinished()) {
-			// no need to abort a transfer that isn't transferring
-			return;
-		}
-		try {
-			SlaveManager.getBasicIssuer().issueAbortToSlave(_rslave, getTransferIndex(), reason);
-		} catch (SlaveUnavailableException e) {
-			_status = new TransferStatus(getTransferIndex(), e);
-		} finally {	
-			synchronized (this) {
-				if (_pointer != null && _transferDirection != Transfer.TRANSFER_UNKNOWN) {
-					_pointer.unlinkPointer(this);
-				}
-				_pointer = null;
-			}
-		}
-	}
-	
-	public void receiveFile(String path, char type, long position, String inetAddress, long minSpeed, long maxSpeed)
-			throws IOException, SlaveUnavailableException {
-		_path = path;
-		
-		String index = SlaveManager.getBasicIssuer().issueReceiveToSlave(
-				_rslave, path, type, position,	inetAddress, getTransferIndex(), minSpeed, maxSpeed);
-		
-		_transferDirection = Transfer.TRANSFER_RECEIVING_UPLOAD;
-		try {
-			_rslave.fetchResponse(index);
-		} catch (RemoteIOException e) {
-			throw e.getCause();
-		}
-		_pointer = new TransferPointer(_path, this);
-	}
+    public TransferIndex getTransferIndex() {
+        return _transferIndex;
+    }
 
-	public void sendFile(String path, char type, long position, String inetAddress, long minSpeed, long maxSpeed)
-			throws IOException, SlaveUnavailableException {
-		_path = path;
-		String index = SlaveManager.getBasicIssuer().issueSendToSlave(
-				_rslave, path, type, position, inetAddress, getTransferIndex(), minSpeed, maxSpeed);
-		_transferDirection = Transfer.TRANSFER_SENDING_DOWNLOAD;
-		try {
-			_rslave.fetchResponse(index);
-		} catch (RemoteIOException e) {
-			throw e.getCause();
-		}
-		_pointer = new TransferPointer(_path, this);
-	}
+    public InetSocketAddress getAddress() {
+        return _address;
+    }
 
-	public String toString() {
-		try {
-			return getClass().getName() + "[file=" + _path + ",status="
-					+ getTransferStatus() + "]";
-		} catch (TransferFailedException e) {
-			return getClass().getName() + "[file=" + _path + ",status=failed]";
-		}
+    public void abort(String reason) {
+        if (_status.isFinished()) {
+            // no need to abort a transfer that isn't transferring
+            return;
+        }
+        try {
+            SlaveManager.getBasicIssuer().issueAbortToSlave(_rslave, getTransferIndex(), reason);
+        } catch (SlaveUnavailableException e) {
+            _status = new TransferStatus(getTransferIndex(), e);
+        } finally {
+            synchronized (this) {
+                if (_pointer != null && _transferDirection != Transfer.TRANSFER_UNKNOWN) {
+                    _pointer.unlinkPointer(this);
+                }
+                _pointer = null;
+            }
+        }
+    }
 
-	}
+    public void receiveFile(String path, char type, long position, String inetAddress, long minSpeed, long maxSpeed)
+            throws IOException, SlaveUnavailableException {
+        _path = path;
+
+        String index = SlaveManager.getBasicIssuer().issueReceiveToSlave(
+                _rslave, path, type, position, inetAddress, getTransferIndex(), minSpeed, maxSpeed);
+
+        _transferDirection = Transfer.TRANSFER_RECEIVING_UPLOAD;
+        try {
+            _rslave.fetchResponse(index);
+        } catch (RemoteIOException e) {
+            throw e.getCause();
+        }
+        _pointer = new TransferPointer(_path, this);
+    }
+
+    public void sendFile(String path, char type, long position, String inetAddress, long minSpeed, long maxSpeed)
+            throws IOException, SlaveUnavailableException {
+        _path = path;
+        String index = SlaveManager.getBasicIssuer().issueSendToSlave(
+                _rslave, path, type, position, inetAddress, getTransferIndex(), minSpeed, maxSpeed);
+        _transferDirection = Transfer.TRANSFER_SENDING_DOWNLOAD;
+        try {
+            _rslave.fetchResponse(index);
+        } catch (RemoteIOException e) {
+            throw e.getCause();
+        }
+        _pointer = new TransferPointer(_path, this);
+    }
+
+    public String toString() {
+        try {
+            return getClass().getName() + "[file=" + _path + ",status="
+                    + getTransferStatus() + "]";
+        } catch (TransferFailedException e) {
+            return getClass().getName() + "[file=" + _path + ",status=failed]";
+        }
+
+    }
 }

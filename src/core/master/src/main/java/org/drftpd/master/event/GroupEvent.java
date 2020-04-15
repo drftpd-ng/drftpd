@@ -24,14 +24,14 @@ import org.drftpd.master.usermanager.Group;
  * @version $Id$
  */
 public class GroupEvent extends Event {
-	protected Group _group;
+    protected Group _group;
 
-	public GroupEvent(Group group, String command, long time) {
-		super(command, time);
-		_group = group;
-	}
+    public GroupEvent(Group group, String command, long time) {
+        super(command, time);
+        _group = group;
+    }
 
-	public Group getGroup() {
-		return _group;
-	}
+    public Group getGroup() {
+        return _group;
+    }
 }

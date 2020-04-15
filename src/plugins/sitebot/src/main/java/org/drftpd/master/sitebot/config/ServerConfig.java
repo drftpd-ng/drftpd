@@ -28,44 +28,44 @@ import javax.net.ssl.X509TrustManager;
  */
 public class ServerConfig {
 
-	private String _hostName;
+    private final String _hostName;
 
-	private int _port;
+    private final int _port;
 
-	private String _password;
+    private final String _password;
 
-	private boolean _ssl;
+    private final boolean _ssl;
 
-	private X509TrustManager _trustManager;
+    private final X509TrustManager _trustManager;
 
-	public ServerConfig(String hostName, int port, String password, boolean ssl, X509TrustManager trustManager) {
-		_hostName = hostName;
-		_port = port;
-		_password = password;
-		_ssl = ssl;
-		_trustManager = trustManager;
-	}
+    public ServerConfig(String hostName, int port, String password, boolean ssl, X509TrustManager trustManager) {
+        _hostName = hostName;
+        _port = port;
+        _password = password;
+        _ssl = ssl;
+        _trustManager = trustManager;
+    }
 
-	public String getHostName() {
-		return _hostName;
-	}
+    public String getHostName() {
+        return _hostName;
+    }
 
-	public int getPort() {
-		return _port;
-	}
+    public int getPort() {
+        return _port;
+    }
 
-	public String getPassword() {
-		return _password;
-	}
+    public String getPassword() {
+        return _password;
+    }
 
-	public SocketFactory getSocketFactory() {
-		if (_ssl) {
-			return new SiteBotSSLSocketFactory(_trustManager);
-		}
-		return null;
-	}
+    public SocketFactory getSocketFactory() {
+        if (_ssl) {
+            return new SiteBotSSLSocketFactory(_trustManager);
+        }
+        return null;
+    }
 
-	public boolean isSsl() {
-		return _ssl;
-	}
+    public boolean isSsl() {
+        return _ssl;
+    }
 }

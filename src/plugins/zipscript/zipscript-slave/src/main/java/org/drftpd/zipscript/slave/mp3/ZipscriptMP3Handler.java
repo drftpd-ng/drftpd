@@ -16,12 +16,12 @@
  */
 package org.drftpd.zipscript.slave.mp3;
 
+import org.drftpd.common.exceptions.AsyncResponseException;
+import org.drftpd.common.network.AsyncCommandArgument;
 import org.drftpd.common.network.AsyncResponse;
+import org.drftpd.slave.Slave;
 import org.drftpd.slave.protocol.AbstractHandler;
 import org.drftpd.slave.protocol.SlaveProtocolCentral;
-import org.drftpd.slave.Slave;
-import org.drftpd.common.network.AsyncCommandArgument;
-import org.drftpd.common.exceptions.AsyncResponseException;
 import org.drftpd.zipscript.common.mp3.AsyncResponseMP3Info;
 import org.drftpd.zipscript.common.mp3.MP3Info;
 
@@ -29,32 +29,33 @@ import java.io.IOException;
 
 /**
  * Handler for MP3 info requests.
+ *
  * @author djb61
  * @version $Id$
  */
 public class ZipscriptMP3Handler extends AbstractHandler {
 
-	@Override
-	public String getProtocolName() {
-		return "ZipscriptMP3Protocol";
-	}
+    public ZipscriptMP3Handler(SlaveProtocolCentral central) {
+        super(central);
+    }
 
-	public ZipscriptMP3Handler(SlaveProtocolCentral central) {
-		super(central);
-	}
+    @Override
+    public String getProtocolName() {
+        return "ZipscriptMP3Protocol";
+    }
 
-	public AsyncResponse handleMP3File(AsyncCommandArgument ac) {
-		try {
-			return new AsyncResponseMP3Info(ac.getIndex(),
-					getMP3File(getSlaveObject(), getSlaveObject().mapPathToRenameQueue(ac.getArgs())));
-		} catch (IOException e) {
-			return new AsyncResponseException(ac.getIndex(), e);
-		}
-	}
+    public AsyncResponse handleMP3File(AsyncCommandArgument ac) {
+        try {
+            return new AsyncResponseMP3Info(ac.getIndex(),
+                    getMP3File(getSlaveObject(), getSlaveObject().mapPathToRenameQueue(ac.getArgs())));
+        } catch (IOException e) {
+            return new AsyncResponseException(ac.getIndex(), e);
+        }
+    }
 
-	private MP3Info getMP3File(Slave slave, String path) throws IOException {
-		MP3Parser mp3parser = new MP3Parser(slave.getRoots().getFile(path));
-		MP3Info mp3info = mp3parser.getMP3Info();
-		return mp3info;
-	}
+    private MP3Info getMP3File(Slave slave, String path) throws IOException {
+        MP3Parser mp3parser = new MP3Parser(slave.getRoots().getFile(path));
+        MP3Info mp3info = mp3parser.getMP3Info();
+        return mp3info;
+    }
 }

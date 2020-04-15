@@ -24,20 +24,20 @@ import java.lang.reflect.Method;
  * @version $Id$
  */
 public class ConfigContainer {
-	
-	private ConfigHandler _instance;
-	private Method _method;
 
-	public ConfigContainer(ConfigHandler instance, Method method) {
-		_instance = instance;
-		_method = method;
-	}
-	
-	public ConfigHandler getInstance() {
-		return _instance;
-	}
-	
-	public Method getMethod() {
-		return _method;
-	}
+    private final ConfigHandler _instance;
+    private final Method _method;
+
+    public ConfigContainer(ConfigHandler instance, Method method) {
+        _instance = instance;
+        _method = method;
+    }
+
+    public ConfigHandler getInstance() {
+        return _instance;
+    }
+
+    public Method getMethod() {
+        return _method;
+    }
 }

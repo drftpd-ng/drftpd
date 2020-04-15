@@ -17,10 +17,10 @@
  */
 package org.drftpd.tvmaze.master.find;
 
-import org.drftpd.find.master.option.OptionInterface;
 import org.drftpd.common.dynamicdata.KeyNotFoundException;
-import org.drftpd.master.indexation.AdvancedSearchParams;
+import org.drftpd.find.master.option.OptionInterface;
 import org.drftpd.master.commands.ImproperUsageException;
+import org.drftpd.master.indexation.AdvancedSearchParams;
 import org.drftpd.tvmaze.master.index.TvMazeQueryParams;
 
 /**
@@ -29,47 +29,47 @@ import org.drftpd.tvmaze.master.index.TvMazeQueryParams;
  */
 public class TvMazeOption implements OptionInterface {
 
-	@Override
-	public void exec(String option, String[] args,
-			AdvancedSearchParams params) throws ImproperUsageException {
-		if (args == null) {
-			throw new ImproperUsageException("Missing argument for "+option+" option");
-		}
-		TvMazeQueryParams queryParams;
-		try {
-			queryParams = params.getExtensionData(TvMazeQueryParams.TvMazeQUERYPARAMS);
-		} catch (KeyNotFoundException e) {
-			queryParams = new TvMazeQueryParams();
-			params.addExtensionData(TvMazeQueryParams.TvMazeQUERYPARAMS, queryParams);
-		}
-		if (option.equalsIgnoreCase("-tvname")) {
-			queryParams.setName(args[0]);
-			params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
-		} else if (option.equalsIgnoreCase("-tvgenre")) {
-			queryParams.setGenre(args[0]);
-			params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
-		} else if (option.equalsIgnoreCase("-tvseason")) {
-			queryParams.setSeason(Integer.parseInt(args[0]));
-			params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
-		} else if (option.equalsIgnoreCase("-tvnumber")) {
-			queryParams.setNumber(Integer.parseInt(args[0]));
-			params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
-		} else if (option.equalsIgnoreCase("-tvtype")) {
-			queryParams.setType(args[0]);
-			params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
-		} else if (option.equalsIgnoreCase("-tvstatus")) {
-			queryParams.setStatus(args[0]);
-			params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
-		} else if (option.equalsIgnoreCase("-tvlanguage")) {
-			queryParams.setLanguage(args[0]);
-			params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
-		} else if (option.equalsIgnoreCase("-tvcountry")) {
-			queryParams.setCountry(args[0]);
-			params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
-		} else if (option.equalsIgnoreCase("-tvnetwork")) {
-			queryParams.setNetwork(args[0]);
-			params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
-		}
-	}
+    @Override
+    public void exec(String option, String[] args,
+                     AdvancedSearchParams params) throws ImproperUsageException {
+        if (args == null) {
+            throw new ImproperUsageException("Missing argument for " + option + " option");
+        }
+        TvMazeQueryParams queryParams;
+        try {
+            queryParams = params.getExtensionData(TvMazeQueryParams.TvMazeQUERYPARAMS);
+        } catch (KeyNotFoundException e) {
+            queryParams = new TvMazeQueryParams();
+            params.addExtensionData(TvMazeQueryParams.TvMazeQUERYPARAMS, queryParams);
+        }
+        if (option.equalsIgnoreCase("-tvname")) {
+            queryParams.setName(args[0]);
+            params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
+        } else if (option.equalsIgnoreCase("-tvgenre")) {
+            queryParams.setGenre(args[0]);
+            params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
+        } else if (option.equalsIgnoreCase("-tvseason")) {
+            queryParams.setSeason(Integer.parseInt(args[0]));
+            params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
+        } else if (option.equalsIgnoreCase("-tvnumber")) {
+            queryParams.setNumber(Integer.parseInt(args[0]));
+            params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
+        } else if (option.equalsIgnoreCase("-tvtype")) {
+            queryParams.setType(args[0]);
+            params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
+        } else if (option.equalsIgnoreCase("-tvstatus")) {
+            queryParams.setStatus(args[0]);
+            params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
+        } else if (option.equalsIgnoreCase("-tvlanguage")) {
+            queryParams.setLanguage(args[0]);
+            params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
+        } else if (option.equalsIgnoreCase("-tvcountry")) {
+            queryParams.setCountry(args[0]);
+            params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
+        } else if (option.equalsIgnoreCase("-tvnetwork")) {
+            queryParams.setNetwork(args[0]);
+            params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
+        }
+    }
 
 }

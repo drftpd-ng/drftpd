@@ -17,31 +17,31 @@
  */
 package org.drftpd.master.indexation.analysis;
 
-import java.io.Reader;
-
 import org.apache.lucene.analysis.CharTokenizer;
 import org.apache.lucene.util.Version;
+
+import java.io.Reader;
 
 /**
  * @author fr0w
  * @version $Id$
  */
 public class AlphanumericalTokenizer extends CharTokenizer {
-	public AlphanumericalTokenizer(Reader input) {
-		super(Version.LUCENE_36, input);
-	}
+    public AlphanumericalTokenizer(Reader input) {
+        super(Version.LUCENE_36, input);
+    }
 
-	@Override
-	protected boolean isTokenChar(int c) {
-		return Character.isLetter(c) || Character.isDigit(c) || isWildcardChar(c);
-	}
-	
-	private boolean isWildcardChar(int c) {
-		return c == '?' || c == '*';
-	}
-	
-	@Override
-	protected int normalize(int c) {
-	    return (Character.isLetter(c) ? Character.toLowerCase(c) : c);
-	}
+    @Override
+    protected boolean isTokenChar(int c) {
+        return Character.isLetter(c) || Character.isDigit(c) || isWildcardChar(c);
+    }
+
+    private boolean isWildcardChar(int c) {
+        return c == '?' || c == '*';
+    }
+
+    @Override
+    protected int normalize(int c) {
+        return (Character.isLetter(c) ? Character.toLowerCase(c) : c);
+    }
 }

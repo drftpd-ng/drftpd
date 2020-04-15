@@ -24,14 +24,14 @@ import org.drftpd.master.usermanager.User;
  * @version $Id$
  */
 public class UserEvent extends Event {
-	protected User _user;
+    protected User _user;
 
-	public UserEvent(User user, String command, long time) {
-		super(command, time);
-		_user = user;
-	}
+    public UserEvent(User user, String command, long time) {
+        super(command, time);
+        _user = user;
+    }
 
-	public User getUser() {
-		return _user;
-	}
+    public User getUser() {
+        return _user;
+    }
 }

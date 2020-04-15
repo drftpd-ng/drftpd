@@ -33,11 +33,11 @@ public class Textoutput extends CommandInterface {
 
     public CommandResponse doTEXT_OUTPUT(CommandRequest request) {
         if (request.hasArgument()) {
-        	return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+            return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
         }
 
         try {
-        	CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
+            CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
             addTextToResponse(response, request.getProperties().getProperty("file"));
 
             return response;

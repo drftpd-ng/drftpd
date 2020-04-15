@@ -17,9 +17,9 @@
  */
 package org.drftpd.zipscript.common.zip;
 
-import java.io.Serializable;
-
 import org.drftpd.common.dynamicdata.Key;
+
+import java.io.Serializable;
 
 /**
  * @author djb61
@@ -28,39 +28,39 @@ import org.drftpd.common.dynamicdata.Key;
 @SuppressWarnings("serial")
 public class DizInfo implements Serializable {
 
-	public static final Key<DizInfo> DIZINFO = new Key<>(DizInfo.class, "diz");
+    public static final Key<DizInfo> DIZINFO = new Key<>(DizInfo.class, "diz");
 
-	private boolean _dizValid = false;
+    private boolean _dizValid = false;
 
-	private int _dizTotal = 0;
+    private int _dizTotal = 0;
 
-	private String _dizString;
+    private String _dizString;
 
-	public DizInfo() {
-		
-	}
+    public DizInfo() {
 
-	public void setValid(boolean dizValid) {
-		_dizValid = dizValid;
-	}
+    }
 
-	public void setTotal(int dizTotal) {
-		_dizTotal = dizTotal;
-	}
+    public boolean isValid() {
+        return _dizValid;
+    }
 
-	public void setString(String dizString) {
-		_dizString = dizString;
-	}
+    public void setValid(boolean dizValid) {
+        _dizValid = dizValid;
+    }
 
-	public boolean isValid() {
-		return _dizValid;
-	}
+    public int getTotal() {
+        return _dizTotal;
+    }
 
-	public int getTotal() {
-		return _dizTotal;
-	}
+    public void setTotal(int dizTotal) {
+        _dizTotal = dizTotal;
+    }
 
-	public String getString() {
-		return _dizString;
-	}
+    public String getString() {
+        return _dizString;
+    }
+
+    public void setString(String dizString) {
+        _dizString = dizString;
+    }
 }

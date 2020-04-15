@@ -22,63 +22,61 @@ import java.io.InputStream;
 
 /**
  * Not thread-safe (is any-In/OutputStream thread-safe?).
- * 
+ *
  * @author mog
  * @version $Id$
  */
 public class StripAsciiInputStream extends InputStream {
-	private InputStream _in;
+    boolean _lastWasCarriageReturn = false;
+    private final InputStream _in;
+    private int peekChar = -1;
 
-	private int peekChar = -1;
+    public StripAsciiInputStream(InputStream in) {
+        _in = in;
+    }
 
-	boolean _lastWasCarriageReturn = false;
+    public int read() throws IOException {
+        if (peekChar != -1) {
+            int ret = peekChar;
+            peekChar = -1;
+            System.err.println("return peeked " + ret);
 
-	public StripAsciiInputStream(InputStream in) {
-		_in = in;
-	}
+            return ret;
+        }
 
-	public int read() throws IOException {
-		if (peekChar != -1) {
-			int ret = peekChar;
-			peekChar = -1;
-			System.err.println("return peeked " + ret);
+        while (true) {
+            int b = _in.read();
+            System.err.println("read: " + (char) b + "(" + b + ")");
 
-			return ret;
-		}
+            if (b == '\r') {
+                System.err.println("read: was \\r");
+                _lastWasCarriageReturn = true;
 
-		while (true) {
-			int b = _in.read();
-			System.err.println("read: " + (char) b + "(" + b + ")");
+                continue;
+            }
 
-			if (b == '\r') {
-				System.err.println("read: was \\r");
-				_lastWasCarriageReturn = true;
+            if (b == '\n') {
+                System.err.println("read: was \\n");
+            }
 
-				continue;
-			}
+            if (_lastWasCarriageReturn) {
+                _lastWasCarriageReturn = false;
 
-			if (b == '\n') {
-				System.err.println("read: was \\n");
-			}
+                if (b != '\n') {
+                    peekChar = b;
+                    System.err.println("return \\r");
 
-			if (_lastWasCarriageReturn) {
-				_lastWasCarriageReturn = false;
+                    return '\r';
+                }
+            }
 
-				if (b != '\n') {
-					peekChar = b;
-					System.err.println("return \\r");
+            System.err.println("return " + (char) b + " (" + b + ")");
 
-					return '\r';
-				}
-			}
+            return b;
+        }
+    }
 
-			System.err.println("return " + (char) b + " (" + b + ")");
-
-			return b;
-		}
-	}
-
-	public void close() throws IOException {
-		_in.close();
-	}
+    public void close() throws IOException {
+        _in.close();
+    }
 }

@@ -18,8 +18,8 @@
 package org.drftpd.find.master.option;
 
 import org.drftpd.find.master.FindUtils;
-import org.drftpd.master.indexation.AdvancedSearchParams;
 import org.drftpd.master.commands.ImproperUsageException;
+import org.drftpd.master.indexation.AdvancedSearchParams;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -30,33 +30,33 @@ import java.util.HashSet;
  */
 public class SlaveOption implements OptionInterface {
 
-	@Override
-	public void exec(String option, String[] args, AdvancedSearchParams params) throws ImproperUsageException {
-		if (args == null) {
-			throw new ImproperUsageException("Missing argument for "+option+" option");
-		}
-		if (option.equalsIgnoreCase("-slaves")) {
-			HashSet<String> slaves = new HashSet<>(Arrays.asList(args));
-			params.setSlaves(slaves);
-		} else if (option.equalsIgnoreCase("-nbrofslaves")) {
-			try {
-				String[] range = FindUtils.getRange(args[0], ":");
-				if (range[0] != null && range[1] != null) {
-					int minNbrOfSlaves = Integer.parseInt(range[0]);
-					int maxNbrOfSlaves = Integer.parseInt(range[1]);
-					if (minNbrOfSlaves > maxNbrOfSlaves) {
-						throw new ImproperUsageException("Slave number range invalid, min value higher than max");
-					}
-					params.setMinSlaves(minNbrOfSlaves);
-					params.setMaxSlaves(maxNbrOfSlaves);
-				} else if (range[0] != null) {
-					params.setMinSlaves(Integer.parseInt(range[0]));
-				} else if (range[1] != null) {
-					params.setMaxSlaves(Integer.parseInt(range[1]));
-				}
-			} catch (NumberFormatException e) {
-				throw new ImproperUsageException(e);
-			}
-		}
-	}
+    @Override
+    public void exec(String option, String[] args, AdvancedSearchParams params) throws ImproperUsageException {
+        if (args == null) {
+            throw new ImproperUsageException("Missing argument for " + option + " option");
+        }
+        if (option.equalsIgnoreCase("-slaves")) {
+            HashSet<String> slaves = new HashSet<>(Arrays.asList(args));
+            params.setSlaves(slaves);
+        } else if (option.equalsIgnoreCase("-nbrofslaves")) {
+            try {
+                String[] range = FindUtils.getRange(args[0], ":");
+                if (range[0] != null && range[1] != null) {
+                    int minNbrOfSlaves = Integer.parseInt(range[0]);
+                    int maxNbrOfSlaves = Integer.parseInt(range[1]);
+                    if (minNbrOfSlaves > maxNbrOfSlaves) {
+                        throw new ImproperUsageException("Slave number range invalid, min value higher than max");
+                    }
+                    params.setMinSlaves(minNbrOfSlaves);
+                    params.setMaxSlaves(maxNbrOfSlaves);
+                } else if (range[0] != null) {
+                    params.setMinSlaves(Integer.parseInt(range[0]));
+                } else if (range[1] != null) {
+                    params.setMaxSlaves(Integer.parseInt(range[1]));
+                }
+            } catch (NumberFormatException e) {
+                throw new ImproperUsageException(e);
+            }
+        }
+    }
 }

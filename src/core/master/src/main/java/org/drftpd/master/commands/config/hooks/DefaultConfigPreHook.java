@@ -17,18 +17,18 @@
  */
 package org.drftpd.master.commands.config.hooks;
 
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-import org.drftpd.master.commands.usermanagement.UserManagementHandler;
+import org.apache.logging.log4j.Logger;
 import org.drftpd.common.extensibility.CommandHook;
 import org.drftpd.common.extensibility.HookType;
 import org.drftpd.master.GlobalContext;
-import org.drftpd.master.commands.CommandRequestInterface;
-import org.drftpd.master.network.BaseFtpConnection;
 import org.drftpd.master.Master;
 import org.drftpd.master.commands.CommandRequest;
+import org.drftpd.master.commands.CommandRequestInterface;
 import org.drftpd.master.commands.StandardCommandManager;
+import org.drftpd.master.commands.usermanagement.UserManagementHandler;
 import org.drftpd.master.config.ConfigInterface;
+import org.drftpd.master.network.BaseFtpConnection;
 import org.drftpd.master.vfs.perms.VFSPermissions;
 
 import java.util.List;
@@ -56,7 +56,7 @@ public class DefaultConfigPreHook {
         return request;
     }
 
-	@CommandHook(commands = "doRETR", priority = 2, type = HookType.PRE)
+    @CommandHook(commands = "doRETR", priority = 2, type = HookType.PRE)
     public CommandRequestInterface checkDownloadPermsHook(CommandRequest request) {
         VFSPermissions vfsPerms = GlobalContext.getConfig().getVFSPermissions();
 

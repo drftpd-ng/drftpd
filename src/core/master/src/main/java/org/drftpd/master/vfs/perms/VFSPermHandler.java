@@ -20,7 +20,6 @@ package org.drftpd.master.vfs.perms;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.permissions.PathPermission;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -28,9 +27,11 @@ import java.util.Map;
  * @version $Id$
  */
 public abstract class VFSPermHandler {
-	public abstract Map<String, String> getDirectives();
-	public abstract int getPriority();
-	protected void addPermission(String directive, PathPermission pathPerm) {
-		GlobalContext.getConfig().getVFSPermissions().addPermissionToMap(directive, pathPerm);
-	}
+    public abstract Map<String, String> getDirectives();
+
+    public abstract int getPriority();
+
+    protected void addPermission(String directive, PathPermission pathPerm) {
+        GlobalContext.getConfig().getVFSPermissions().addPermissionToMap(directive, pathPerm);
+    }
 }

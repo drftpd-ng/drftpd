@@ -24,16 +24,16 @@ import java.io.IOException;
  * @version $Id$
  */
 public class IllegalFileNameException extends IOException {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 6757210098358700968L;
+    /**
+     *
+     */
+    private static final long serialVersionUID = 6757210098358700968L;
 
-	public IllegalFileNameException() {
-		super();
-	}
+    public IllegalFileNameException() {
+        super();
+    }
 
-	public IllegalFileNameException(String s) {
-		super(s);
-	}
+    public IllegalFileNameException(String s) {
+        super(s);
+    }
 }

@@ -46,7 +46,7 @@ import java.util.ResourceBundle;
  */
 public class ZipscriptMP3PostHook {
 
-    private ResourceBundle _bundle;
+    private final ResourceBundle _bundle;
 
 
     public ZipscriptMP3PostHook() {
@@ -142,7 +142,7 @@ public class ZipscriptMP3PostHook {
                 env.put("title", "unknown");
                 env.put("track", "unknown");
             }
-            env.put("bitrate", Integer.toString(mp3Info.getBitrate() / 1000) + " kbit/s " + mp3Info.getEncodingtype());
+            env.put("bitrate", mp3Info.getBitrate() / 1000 + " kbit/s " + mp3Info.getEncodingtype());
             env.put("samplerate", mp3Info.getSamplerate());
             env.put("stereomode", mp3Info.getStereoMode());
             int runSeconds = (int) (mp3Info.getRuntime() / 1000);

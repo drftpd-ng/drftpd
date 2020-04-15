@@ -17,12 +17,12 @@
 package org.drftpd.zipscript.slave.sfv;
 
 
+import org.drftpd.common.exceptions.AsyncResponseException;
+import org.drftpd.common.network.AsyncCommandArgument;
 import org.drftpd.common.network.AsyncResponse;
+import org.drftpd.slave.Slave;
 import org.drftpd.slave.protocol.AbstractHandler;
 import org.drftpd.slave.protocol.SlaveProtocolCentral;
-import org.drftpd.slave.Slave;
-import org.drftpd.common.network.AsyncCommandArgument;
-import org.drftpd.common.exceptions.AsyncResponseException;
 import org.drftpd.zipscript.common.sfv.AsyncResponseSFVInfo;
 import org.drftpd.zipscript.common.sfv.SFVInfo;
 
@@ -32,43 +32,44 @@ import java.util.zip.CheckedInputStream;
 
 /**
  * Handler for SFV requests.
+ *
  * @author fr0w
  * @version $Id$
  */
 public class ZipscriptHandler extends AbstractHandler {
-	@Override
-	public String getProtocolName() {
-		return "ZipscriptProtocol";
-	}
+    public ZipscriptHandler(SlaveProtocolCentral central) {
+        super(central);
+    }
 
-	public ZipscriptHandler(SlaveProtocolCentral central) {
-		super(central);
-	}
+    @Override
+    public String getProtocolName() {
+        return "ZipscriptProtocol";
+    }
 
-	public AsyncResponse handleSfvFile(AsyncCommandArgument ac) {
-		try {
-			return new AsyncResponseSFVInfo(ac.getIndex(),
-					getSFVFile(getSlaveObject(), getSlaveObject().mapPathToRenameQueue(ac.getArgs())));
-		} catch (IOException e) {
-			return new AsyncResponseException(ac.getIndex(), e);
-		}
-	}
+    public AsyncResponse handleSfvFile(AsyncCommandArgument ac) {
+        try {
+            return new AsyncResponseSFVInfo(ac.getIndex(),
+                    getSFVFile(getSlaveObject(), getSlaveObject().mapPathToRenameQueue(ac.getArgs())));
+        } catch (IOException e) {
+            return new AsyncResponseException(ac.getIndex(), e);
+        }
+    }
 
-	private SFVInfo getSFVFile(Slave slave, String path) throws IOException {
-		BufferedReader reader = null;
-		CRC32 checksum;
-		try {
-			File file = slave.getRoots().getFile(path);
-			checksum = new CRC32();
-			reader = new BufferedReader(new InputStreamReader(new CheckedInputStream(new FileInputStream(file), checksum)));
-			SFVInfo sfvInfo = SFVInfo.importSFVInfoFromFile(reader);
-			sfvInfo.setSFVFileName(file.getName());
-			sfvInfo.setChecksum(checksum.getValue());
-			return sfvInfo;
-		} finally {
-			if (reader != null) {
-				reader.close();
-			}
-		}
-	}
+    private SFVInfo getSFVFile(Slave slave, String path) throws IOException {
+        BufferedReader reader = null;
+        CRC32 checksum;
+        try {
+            File file = slave.getRoots().getFile(path);
+            checksum = new CRC32();
+            reader = new BufferedReader(new InputStreamReader(new CheckedInputStream(new FileInputStream(file), checksum)));
+            SFVInfo sfvInfo = SFVInfo.importSFVInfoFromFile(reader);
+            sfvInfo.setSFVFileName(file.getName());
+            sfvInfo.setChecksum(checksum.getValue());
+            return sfvInfo;
+        } finally {
+            if (reader != null) {
+                reader.close();
+            }
+        }
+    }
 }

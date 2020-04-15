@@ -18,60 +18,60 @@
 package org.drftpd.master.vfs;
 
 public class VirtualFileSystemRoot extends VirtualFileSystemDirectory {
-	
-	public VirtualFileSystemRoot() {
-		this("drftpd","drftpd");
-	}
 
-	public VirtualFileSystemRoot(String user, String group) {
-		super(user, group, true);
-		setName(VirtualFileSystem.separator);
-	}
+    public VirtualFileSystemRoot() {
+        this("drftpd", "drftpd");
+    }
 
-	/**
-	 * @throws IllegalStateException whenever this method is called, since
-	 * root dir does not have a parent.
-	 * @see org.drftpd.master.vfs.VirtualFileSystemInode#getParent()
-	 */
-	@Override
-	public VirtualFileSystemDirectory getParent() {
-		throw new IllegalStateException("Root does not have a parent");
-	}
+    public VirtualFileSystemRoot(String user, String group) {
+        super(user, group, true);
+        setName(VirtualFileSystem.separator);
+    }
 
-	/**
-	 * @see org.drftpd.master.vfs.VirtualFileSystemInode#getPath()
-	 */
-	@Override
-	public String getPath() {
-		return _name;
-	}
+    /**
+     * @throws IllegalStateException whenever this method is called, since
+     *                               root dir does not have a parent.
+     * @see org.drftpd.master.vfs.VirtualFileSystemInode#getParent()
+     */
+    @Override
+    public VirtualFileSystemDirectory getParent() {
+        throw new IllegalStateException("Root does not have a parent");
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.drftpd.master.vfs.VirtualFileSystemDirectory#addSize(long)
-	 */
-	@Override
-	protected void addSize(long l) {
-		if (l != 0L) {
-			_size = getSize() + l;
-			commit();
-			getVFS().notifySizeChanged(this,_size);
-		}
-	}
+    /**
+     * @see org.drftpd.master.vfs.VirtualFileSystemInode#getPath()
+     */
+    @Override
+    public String getPath() {
+        return _name;
+    }
 
-	/**
-	 * @see org.drftpd.master.vfs.VirtualFileSystemInode#delete()
-	 * @throws UnsupportedOperationException everytime this method is called,
-	 * since it's impossible to delete the root dir.
-	 */
-	@Override
-	public void delete() {
-		throw new UnsupportedOperationException();
-	}
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.drftpd.master.vfs.VirtualFileSystemDirectory#addSize(long)
+     */
+    @Override
+    protected void addSize(long l) {
+        if (l != 0L) {
+            _size = getSize() + l;
+            commit();
+            getVFS().notifySizeChanged(this, _size);
+        }
+    }
 
-	@Override
-	protected boolean isRoot() {
-		return true;
-	}
+    /**
+     * @throws UnsupportedOperationException everytime this method is called,
+     *                                       since it's impossible to delete the root dir.
+     * @see org.drftpd.master.vfs.VirtualFileSystemInode#delete()
+     */
+    @Override
+    public void delete() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    protected boolean isRoot() {
+        return true;
+    }
 }

@@ -34,7 +34,7 @@ public class SiteBotWrapper implements PluginInterface {
 
     private static final Logger logger = LogManager.getLogger(SiteBotWrapper.class);
 
-    private ArrayList<SiteBot> _bots = new ArrayList<>();
+    private final ArrayList<SiteBot> _bots = new ArrayList<>();
 
     public void startPlugin() {
         Properties cfg = ConfigLoader.loadPluginConfig("irc.conf");

@@ -21,24 +21,25 @@ import org.drftpd.master.vfs.VirtualFileSystemInode;
 
 /**
  * This event is fired whenever the last modified timestamp of an inode changes
+ *
  * @author scitz0
  * @version $Id$
  */
 public class VirtualFileSystemSizeEvent extends VirtualFileSystemEvent {
 
-	private long _size;
+    private final long _size;
 
-	public VirtualFileSystemSizeEvent(VirtualFileSystemInode inode, String path, long size) {
-		super(inode, path);
-		
-		_size = size;
-	}
+    public VirtualFileSystemSizeEvent(VirtualFileSystemInode inode, String path, long size) {
+        super(inode, path);
 
-	/**
-	 * @return the new size of the inode
-	 */
-	public long getSize() {
-		return _size;
-	}
+        _size = size;
+    }
+
+    /**
+     * @return the new size of the inode
+     */
+    public long getSize() {
+        return _size;
+    }
 
 }

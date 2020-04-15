@@ -17,43 +17,44 @@
  */
 package org.drftpd.master.commands.nuke;
 
-import org.drftpd.master.commands.CommandRequestInterface;
-import org.drftpd.master.commands.nuke.metadata.NukeData;
 import org.drftpd.common.extensibility.CommandHook;
 import org.drftpd.common.extensibility.HookType;
 import org.drftpd.master.commands.CommandRequest;
+import org.drftpd.master.commands.CommandRequestInterface;
 import org.drftpd.master.commands.CommandResponse;
+import org.drftpd.master.commands.nuke.metadata.NukeData;
 import org.drftpd.master.vfs.VirtualFileSystem;
 
 /**
- * Nuke PreHook. 
+ * Nuke PreHook.
+ *
  * @author fr0w
  * @version $Id$
  */
 public class NukePreHook {
 
-	@CommandHook(commands = {"doMKD", "doRNTO"}, priority = 1000, type = HookType.PRE)
-	public CommandRequestInterface doNukeCheck(CommandRequest request) {
-		String path = VirtualFileSystem.fixPath(request.getArgument());
+    @CommandHook(commands = {"doMKD", "doRNTO"}, priority = 1000, type = HookType.PRE)
+    public CommandRequestInterface doNukeCheck(CommandRequest request) {
+        String path = VirtualFileSystem.fixPath(request.getArgument());
 
-		if (!path.startsWith(VirtualFileSystem.separator)) {
-			// Create full path
-			if (request.getCurrentDirectory().isRoot()) {
-				path = VirtualFileSystem.separator + path;
-			} else {
-				path = request.getCurrentDirectory().getPath() + VirtualFileSystem.separator + path;
-			}
-		}
+        if (!path.startsWith(VirtualFileSystem.separator)) {
+            // Create full path
+            if (request.getCurrentDirectory().isRoot()) {
+                path = VirtualFileSystem.separator + path;
+            } else {
+                path = request.getCurrentDirectory().getPath() + VirtualFileSystem.separator + path;
+            }
+        }
 
-		NukeData nd = NukeBeans.getNukeBeans().findPath(path);
+        NukeData nd = NukeBeans.getNukeBeans().findPath(path);
 
-		if (nd != null) {
-			// This path exist in nukelog
-			request.setAllowed(false);
-			request.setDeniedResponse(new CommandResponse(530, "Access denied - " +
-					nd.getPath() + " already nuked for '"+ nd.getReason() + "'"));
-		}
+        if (nd != null) {
+            // This path exist in nukelog
+            request.setAllowed(false);
+            request.setDeniedResponse(new CommandResponse(530, "Access denied - " +
+                    nd.getPath() + " already nuked for '" + nd.getReason() + "'"));
+        }
 
-		return request;		
-	}
+        return request;
+    }
 }

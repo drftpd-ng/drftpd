@@ -16,13 +16,7 @@
  */
 package org.drftpd.master.tests;
 
-import org.drftpd.master.usermanager.AbstractUserManager;
-import org.drftpd.master.usermanager.Group;
-import org.drftpd.master.usermanager.NoSuchUserException;
-import org.drftpd.master.usermanager.NoSuchGroupException;
-import org.drftpd.master.usermanager.User;
-import org.drftpd.master.usermanager.UserFileException;
-import org.drftpd.master.usermanager.GroupFileException;
+import org.drftpd.master.usermanager.*;
 
 import java.io.File;
 import java.lang.ref.SoftReference;
@@ -77,12 +71,12 @@ public class DummyUserManager extends AbstractUserManager {
     }
 
     public User getUserByNameUnchecked(String username)
-        throws NoSuchUserException, UserFileException {
+            throws NoSuchUserException, UserFileException {
         return _user;
     }
 
     public Group getGroupByNameUnchecked(String groupname)
-        throws NoSuchGroupException, GroupFileException {
+            throws NoSuchGroupException, GroupFileException {
         return _group;
     }
 
@@ -102,24 +96,24 @@ public class DummyUserManager extends AbstractUserManager {
         return Collections.singletonList(_user);
     }
 
-	protected File getGrouppathFile() {
-		throw new UnsupportedOperationException();
-	}
+    protected File getGrouppathFile() {
+        throw new UnsupportedOperationException();
+    }
 
-	protected File getGroupFile(String groupname) {
-		throw new UnsupportedOperationException();
-	}
+    protected File getGroupFile(String groupname) {
+        throw new UnsupportedOperationException();
+    }
 
-	protected File getUserpathFile() {
-		throw new UnsupportedOperationException();
-	}
+    protected File getUserpathFile() {
+        throw new UnsupportedOperationException();
+    }
 
-	protected File getUserFile(String username) {
-		throw new UnsupportedOperationException();
-	}
+    protected File getUserFile(String username) {
+        throw new UnsupportedOperationException();
+    }
 
-	@Override
-	public void init() throws UserFileException {
-		
-	}
+    @Override
+    public void init() throws UserFileException {
+
+    }
 }

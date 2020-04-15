@@ -25,18 +25,18 @@ import java.net.Socket;
  * @version $Id$
  */
 public abstract class Connection {
-	public static final int TIMEOUT = 10000;
+    public static final int TIMEOUT = 10000;
 
-	public abstract Socket connect(String[] cipherSuites, String[] sslProtocols, int bufferSize) throws IOException;
+    public abstract Socket connect(String[] cipherSuites, String[] sslProtocols, int bufferSize) throws IOException;
 
-	protected void setSockOpts(Socket sock) throws IOException {
-		/*
-		 * IPTOS_LOWCOST (0x02) IPTOS_RELIABILITY (0x04) IPTOS_THROUGHPUT (0x08)
-		 * IPTOS_LOWDELAY (0x10)
-		 */
-		sock.setTrafficClass(0x08);
-		sock.setSoTimeout(TIMEOUT);
-	}
+    protected void setSockOpts(Socket sock) throws IOException {
+        /*
+         * IPTOS_LOWCOST (0x02) IPTOS_RELIABILITY (0x04) IPTOS_THROUGHPUT (0x08)
+         * IPTOS_LOWDELAY (0x10)
+         */
+        sock.setTrafficClass(0x08);
+        sock.setSoTimeout(TIMEOUT);
+    }
 
-	public abstract void abort();
+    public abstract void abort();
 }

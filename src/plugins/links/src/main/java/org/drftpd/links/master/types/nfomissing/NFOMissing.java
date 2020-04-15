@@ -16,12 +16,13 @@
  */
 package org.drftpd.links.master.types.nfomissing;
 
+import org.drftpd.links.master.LinkType;
+import org.drftpd.master.vfs.DirectoryHandle;
+import org.drftpd.master.vfs.FileHandle;
+
 import java.io.FileNotFoundException;
 import java.util.Properties;
 import java.util.Set;
-import org.drftpd.master.vfs.DirectoryHandle;
-import org.drftpd.master.vfs.FileHandle;
-import org.drftpd.links.master.LinkType;
 
 /**
  * @author CyBeR
@@ -30,65 +31,65 @@ import org.drftpd.links.master.LinkType;
 
 public class NFOMissing extends LinkType {
 
-	public NFOMissing(Properties p, int confnum, String type) {
-		super(p, confnum, type);
-	}
+    public NFOMissing(Properties p, int confnum, String type) {
+        super(p, confnum, type);
+    }
 
-	/*
-	 * This checks if any Dir from inside the targetDir matches
-	 * AddParentDir, and if it does, add the link, if not don't create one
-	 * 
-	 * IE: /section/subsection/rls - we do not want a no nfo for /section/subsection
-	 */
-	@Override
-	public void doCreateLink(DirectoryHandle targetDir) {
-		boolean foundMatch = false;
-		try {
-			Set<DirectoryHandle> dirs = targetDir.getDirectoriesUnchecked();
-			if (dirs.size() > 0) {
-				for (DirectoryHandle dir : dirs) {
-					if (dir.getPath().matches(getAddParentDir())) {
-						foundMatch = true;
-					}
-				}
-			} else {
-				// No SubDirs found - Create Link
-				foundMatch = true;
-			}
-		} catch (FileNotFoundException e) {
-			// targetDir No Longer Exists
-		}
-		if (foundMatch) {
-			createLink(targetDir,targetDir.getPath(),targetDir.getName());
-		}
-	}
-	
-	/*
-	 * This just passes the target dir through to creating the Link
-	 * No special setup is needed for this type.
-	 */
-	@Override
-	public void doDeleteLink(DirectoryHandle targetDir) {
-		deleteLink(targetDir,targetDir.getPath(),targetDir.getName());
-	}
+    /*
+     * This checks if any Dir from inside the targetDir matches
+     * AddParentDir, and if it does, add the link, if not don't create one
+     *
+     * IE: /section/subsection/rls - we do not want a no nfo for /section/subsection
+     */
+    @Override
+    public void doCreateLink(DirectoryHandle targetDir) {
+        boolean foundMatch = false;
+        try {
+            Set<DirectoryHandle> dirs = targetDir.getDirectoriesUnchecked();
+            if (dirs.size() > 0) {
+                for (DirectoryHandle dir : dirs) {
+                    if (dir.getPath().matches(getAddParentDir())) {
+                        foundMatch = true;
+                    }
+                }
+            } else {
+                // No SubDirs found - Create Link
+                foundMatch = true;
+            }
+        } catch (FileNotFoundException e) {
+            // targetDir No Longer Exists
+        }
+        if (foundMatch) {
+            createLink(targetDir, targetDir.getPath(), targetDir.getName());
+        }
+    }
 
-	/*
-	 * This loops though the files, and checks to see if any end with .nfo
-	 * If one does, it creates the link, if not, it deletes the link 
-	 */
-	@Override
-	public void doFixLink(DirectoryHandle targetDir) {
-		try {
-			for (FileHandle file : targetDir.getFilesUnchecked()) {
-				if (file.getName().toLowerCase().endsWith(".nfo")) {
-					doDeleteLink(targetDir);
-					return;
-				}
-			}
-			doCreateLink(targetDir);
-		} catch (FileNotFoundException e) {
-			// No Files found - Ignore
-		}
-	}
+    /*
+     * This just passes the target dir through to creating the Link
+     * No special setup is needed for this type.
+     */
+    @Override
+    public void doDeleteLink(DirectoryHandle targetDir) {
+        deleteLink(targetDir, targetDir.getPath(), targetDir.getName());
+    }
+
+    /*
+     * This loops though the files, and checks to see if any end with .nfo
+     * If one does, it creates the link, if not, it deletes the link
+     */
+    @Override
+    public void doFixLink(DirectoryHandle targetDir) {
+        try {
+            for (FileHandle file : targetDir.getFilesUnchecked()) {
+                if (file.getName().toLowerCase().endsWith(".nfo")) {
+                    doDeleteLink(targetDir);
+                    return;
+                }
+            }
+            doCreateLink(targetDir);
+        } catch (FileNotFoundException e) {
+            // No Files found - Ignore
+        }
+    }
 
 }

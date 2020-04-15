@@ -30,22 +30,21 @@ import java.util.TreeSet;
  */
 public class FileUtils {
 
-	public static FileHandle getOldestFile(DirectoryHandle dir) throws FileNotFoundException {
-		TreeSet<FileHandle> files = new TreeSet<>(new FileAgeComparator());
-		files.addAll(dir.getFilesUnchecked());
-		return files.first();
-	}
+    public static FileHandle getOldestFile(DirectoryHandle dir) throws FileNotFoundException {
+        TreeSet<FileHandle> files = new TreeSet<>(new FileAgeComparator());
+        files.addAll(dir.getFilesUnchecked());
+        return files.first();
+    }
 
-	static class FileAgeComparator implements Comparator<FileHandle> {
+    static class FileAgeComparator implements Comparator<FileHandle> {
 
-		public int compare(FileHandle f1, FileHandle f2) {
+        public int compare(FileHandle f1, FileHandle f2) {
 
-			try {
-				return (Long.compare(f1.lastModified(), f2.lastModified()));
-			}
-			catch (FileNotFoundException e) {
-				return 0;
-			}
-		}
-	}
+            try {
+                return (Long.compare(f1.lastModified(), f2.lastModified()));
+            } catch (FileNotFoundException e) {
+                return 0;
+            }
+        }
+    }
 }

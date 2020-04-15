@@ -26,20 +26,20 @@ import java.util.concurrent.ConcurrentHashMap;
 @SuppressWarnings("serial")
 public class CaseInsensitiveConcurrentHashMap<K, V> extends ConcurrentHashMap<K, V> {
 
-	public CaseInsensitiveConcurrentHashMap() {
-		super();
-	}
+    public CaseInsensitiveConcurrentHashMap() {
+        super();
+    }
 
-	public boolean containsKey(String arg0) {
-		return super.containsKey(arg0.toLowerCase());
-	}
+    public boolean containsKey(String arg0) {
+        return super.containsKey(arg0.toLowerCase());
+    }
 
-	public V get(String arg0) {
-		return super.get(arg0.toLowerCase());
-	}
+    public V get(String arg0) {
+        return super.get(arg0.toLowerCase());
+    }
 
-	@SuppressWarnings("unchecked")
-	public V put(K arg0, V arg1) {
-		return super.put(((K) ((String) arg0).toLowerCase()), arg1);
-	}
+    @SuppressWarnings("unchecked")
+    public V put(K arg0, V arg1) {
+        return super.put(((K) ((String) arg0).toLowerCase()), arg1);
+    }
 }

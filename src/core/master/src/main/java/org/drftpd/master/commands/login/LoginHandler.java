@@ -19,13 +19,12 @@ package org.drftpd.master.commands.login;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import org.drftpd.master.GlobalContext;
-import org.drftpd.master.commands.usermanagement.UserManagement;
 import org.drftpd.master.commands.CommandInterface;
 import org.drftpd.master.commands.CommandRequest;
 import org.drftpd.master.commands.CommandResponse;
 import org.drftpd.master.commands.StandardCommandManager;
+import org.drftpd.master.commands.usermanagement.UserManagement;
 import org.drftpd.master.event.UserEvent;
 import org.drftpd.master.network.BaseFtpConnection;
 import org.drftpd.master.network.FtpReply;
@@ -36,8 +35,6 @@ import org.drftpd.master.usermanager.UserFileException;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.regex.PatternSyntaxException;
 
@@ -48,12 +45,12 @@ import java.util.regex.PatternSyntaxException;
  */
 public class LoginHandler extends CommandInterface {
     private static final Logger logger = LogManager.getLogger(LoginHandler.class);
-    
+
     private ResourceBundle _bundle;
 
     public void initialize(String method, String pluginName, StandardCommandManager cManager) {
-    	super.initialize(method, pluginName, cManager);
-    	_bundle = cManager.getResourceBundle();
+        super.initialize(method, pluginName, cManager);
+        _bundle = cManager.getResourceBundle();
 
     }
 
@@ -62,8 +59,8 @@ public class LoginHandler extends CommandInterface {
      * Returns nothing on success.
      */
     public CommandResponse doIDNT(CommandRequest request) {
-    	BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
-    	request.getSession().setObject(BaseFtpConnection.FAILEDLOGIN, true);
+        BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
+        request.getSession().setObject(BaseFtpConnection.FAILEDLOGIN, true);
         if (request.getSession().getObject(BaseFtpConnection.ADDRESS, null) != null) {
             logger.error("Multiple IDNT commands");
             request.getSession().setObject(BaseFtpConnection.FAILEDREASON, "IDNT Multiple");
@@ -81,15 +78,15 @@ public class LoginHandler extends CommandInterface {
         int pos1 = arg.indexOf('@');
 
         if (pos1 == -1) {
-        	request.getSession().setObject(BaseFtpConnection.FAILEDREASON, "IDNT Syntax");
-        	return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+            request.getSession().setObject(BaseFtpConnection.FAILEDREASON, "IDNT Syntax");
+            return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
         }
 
         int pos2 = arg.indexOf(':', pos1 + 1);
 
         if (pos2 == -1) {
-        	request.getSession().setObject(BaseFtpConnection.FAILEDREASON, "IDNT Syntax");
-        	return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+            request.getSession().setObject(BaseFtpConnection.FAILEDREASON, "IDNT Syntax");
+            return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
         }
 
         try {
@@ -110,17 +107,17 @@ public class LoginHandler extends CommandInterface {
 
     /**
      * <code>PASS &lt;SP&gt; <password> &lt;CRLF&gt;</code><br>
-     *
+     * <p>
      * The argument field is a Telnet string specifying the user's
      * password.  This command must be immediately preceded by the
      * user name command.
      */
     public CommandResponse doPASS(CommandRequest request) {
-    	BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
-    	request.getSession().setObject(BaseFtpConnection.FAILEDLOGIN, true);
+        BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
+        request.getSession().setObject(BaseFtpConnection.FAILEDLOGIN, true);
         if (conn.getUserNullUnchecked() == null) {
-        	request.getSession().setObject(BaseFtpConnection.FAILEDREASON, "PASS Bad-Sequence");
-        	return StandardCommandManager.genericResponse("RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS");
+            request.getSession().setObject(BaseFtpConnection.FAILEDREASON, "PASS Bad-Sequence");
+            return StandardCommandManager.genericResponse("RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS");
         }
 
         // set user password and login
@@ -133,7 +130,7 @@ public class LoginHandler extends CommandInterface {
                     conn.getUserNull(), "LOGIN", System.currentTimeMillis()));
 
             CommandResponse response = new CommandResponse(230, conn.jprintf(_bundle, "pass.success", conn.getUsername()));
-            
+
             try {
                 addTextToResponse(response, "userdata/text/welcome.txt");
             } catch (IOException e) {
@@ -145,17 +142,17 @@ public class LoginHandler extends CommandInterface {
         }
 
         request.getSession().setObject(BaseFtpConnection.FAILEDREASON, "PASS Failed");
-        return new CommandResponse(530, conn.jprintf(_bundle, "pass.fail", request.getUser() == null ? request.getSession().getObject(BaseFtpConnection.FAILEDUSERNAME,"") : request.getUser()));
+        return new CommandResponse(530, conn.jprintf(_bundle, "pass.fail", request.getUser() == null ? request.getSession().getObject(BaseFtpConnection.FAILEDUSERNAME, "") : request.getUser()));
     }
 
     /**
      * <code>QUIT &lt;CRLF&gt;</code><br>
-     *
+     * <p>
      * This command terminates a USER and if file transfer is not
      * in progress, the server closes the control connection.
      */
     public CommandResponse doQUIT(CommandRequest request) {
-    	BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
+        BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
         conn.stop();
 
         return new CommandResponse(221, conn.jprintf(_bundle, "quit.success", request.getUser()));
@@ -163,13 +160,13 @@ public class LoginHandler extends CommandInterface {
 
     private void getIP(CommandRequest request) {
         if (request.getSession().getObject(BaseFtpConnection.ADDRESS, null) == null) {
-        	request.getSession().setObject(BaseFtpConnection.ADDRESS, ((BaseFtpConnection) request.getSession()).getClientAddress());        	
+            request.getSession().setObject(BaseFtpConnection.ADDRESS, ((BaseFtpConnection) request.getSession()).getClientAddress());
         }
     }
-    
+
     /**
      * <code>USER &lt;SP&gt; &lt;username&gt; &lt;CRLF&gt;</code><br>
-     *
+     * <p>
      * The argument field is a Telnet string identifying the user.
      * The user identification is that which is required by the
      * server for access to its file system.  This command will
@@ -177,28 +174,28 @@ public class LoginHandler extends CommandInterface {
      * the control connections are made.
      */
     public CommandResponse doUSER(CommandRequest request) {
-    	BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
-    	request.getSession().setObject(BaseFtpConnection.FAILEDLOGIN, true);
+        BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
+        request.getSession().setObject(BaseFtpConnection.FAILEDLOGIN, true);
         conn.setAuthenticated(false);
         conn.setUser(null);
 
         // argument check
         if (!request.hasArgument()) {
-        	request.getSession().setObject(BaseFtpConnection.FAILEDREASON, "USER Syntax");
-        	getIP(request);
-        	return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+            request.getSession().setObject(BaseFtpConnection.FAILEDREASON, "USER Syntax");
+            getIP(request);
+            return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
         }
 
         request.getSession().setObject(BaseFtpConnection.FAILEDUSERNAME, request.getArgument());
-        
+
         User newUser;
 
         try {
             newUser = conn.getGlobalContext().getUserManager().getUserByNameIncludeDeleted(request.getArgument());
         } catch (NoSuchUserException ex) {
-        	getIP(request);
-        	request.getSession().setObject(BaseFtpConnection.FAILEDREASON, "USER Non-Existant");
-        	return new CommandResponse(530, ex.getMessage());
+            getIP(request);
+            request.getSession().setObject(BaseFtpConnection.FAILEDREASON, "USER Non-Existant");
+            return new CommandResponse(530, ex.getMessage());
         } catch (UserFileException ex) {
             logger.warn(ex, ex);
             getIP(request);
@@ -212,52 +209,52 @@ public class LoginHandler extends CommandInterface {
         }
 
         if (newUser.isDeleted()) {
-        	getIP(request);
-        	request.getSession().setObject(BaseFtpConnection.FAILEDREASON, "USER Deleted");
-        	return new CommandResponse(530,newUser.getKeyedMap().getObject(UserManagement.REASON,StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED").getMessage()));
+            getIP(request);
+            request.getSession().setObject(BaseFtpConnection.FAILEDREASON, "USER Deleted");
+            return new CommandResponse(530, newUser.getKeyedMap().getObject(UserManagement.REASON, StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED").getMessage()));
         }
-        
-        if(!GlobalContext.getConfig().isLoginAllowed(newUser)) {
-        	getIP(request);
-        	request.getSession().setObject(BaseFtpConnection.FAILEDREASON, "USER Not-Allowed");
-        	if (GlobalContext.getConfig().getAllowConnectionsDenyReason() != null) {
-        		return new CommandResponse(530, GlobalContext.getConfig().getAllowConnectionsDenyReason());
-        	}
-        	return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");	
+
+        if (!GlobalContext.getConfig().isLoginAllowed(newUser)) {
+            getIP(request);
+            request.getSession().setObject(BaseFtpConnection.FAILEDREASON, "USER Not-Allowed");
+            if (GlobalContext.getConfig().getAllowConnectionsDenyReason() != null) {
+                return new CommandResponse(530, GlobalContext.getConfig().getAllowConnectionsDenyReason());
+            }
+            return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
         }
 
         try {
-        	InetAddress address = request.getSession().getObject(BaseFtpConnection.ADDRESS, null);
-        	String ident = request.getSession().getObject(BaseFtpConnection.IDENT, null);
-        	
-        	boolean hostMaskPassed;
-        	if (address != null) {
-        		// this means that the user is connecting from a BNC.
-        		hostMaskPassed = newUser.getHostMaskCollection().check(ident, address, null);
-        	} else {
-        		// this mean that the user is connecting to the ftp directly.
-        		hostMaskPassed = newUser.getHostMaskCollection().check(null, conn.getClientAddress(), conn.getControlSocket());
-        		
-        		// ADDRESS is null, let's set it. 
-        		request.getSession().setObject(BaseFtpConnection.ADDRESS, conn.getClientAddress());
-        	}
-        	
+            InetAddress address = request.getSession().getObject(BaseFtpConnection.ADDRESS, null);
+            String ident = request.getSession().getObject(BaseFtpConnection.IDENT, null);
+
+            boolean hostMaskPassed;
+            if (address != null) {
+                // this means that the user is connecting from a BNC.
+                hostMaskPassed = newUser.getHostMaskCollection().check(ident, address, null);
+            } else {
+                // this mean that the user is connecting to the ftp directly.
+                hostMaskPassed = newUser.getHostMaskCollection().check(null, conn.getClientAddress(), conn.getControlSocket());
+
+                // ADDRESS is null, let's set it.
+                request.getSession().setObject(BaseFtpConnection.ADDRESS, conn.getClientAddress());
+            }
+
             if (hostMaskPassed) {
                 //success
                 // max_users and num_logins restriction
                 FtpReply ftpResponse = GlobalContext.getConnectionManager().canLogin(conn, newUser);
 
                 if (ftpResponse != null) {
-                	return new CommandResponse(ftpResponse.getCode(), ftpResponse.getMessage());
+                    return new CommandResponse(ftpResponse.getCode(), ftpResponse.getMessage());
                 }
-                
+
                 request.getSession().setObject(BaseFtpConnection.FAILEDLOGIN, false);
                 return new CommandResponse(331,
                         conn.jprintf(_bundle, "user.success", newUser.getName()),
-                		request.getCurrentDirectory(), newUser.getName());
+                        request.getCurrentDirectory(), newUser.getName());
             }
         } catch (PatternSyntaxException e) {
-        	return new CommandResponse(530, e.getMessage());
+            return new CommandResponse(530, e.getMessage());
         }
 
         request.getSession().setObject(BaseFtpConnection.FAILEDREASON, "USER IP-Failed");

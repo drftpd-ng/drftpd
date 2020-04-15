@@ -17,10 +17,10 @@
  */
 package org.drftpd.master.slaveselection.filter;
 
+import org.drftpd.common.vfs.InodeHandleInterface;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.master.usermanager.User;
-import org.drftpd.common.vfs.InodeHandleInterface;
 
 import java.net.InetAddress;
 import java.util.ArrayList;
@@ -30,43 +30,43 @@ import java.util.Properties;
 /**
  * Checks ScoreChart for slaves with 0 bw usage and assigns 1 extra point to the
  * one in that has been unused for the longest time.
- * 
+ *
  * @author mog, zubov
  * @version $Id$
  */
 public class CycleFilter extends Filter {
-	public CycleFilter(int i, Properties p) {
-		super(i, p);
-	}
+    public CycleFilter(int i, Properties p) {
+        super(i, p);
+    }
 
-	public void process(ScoreChart scorechart, User user, InetAddress peer,
-						char direction, InodeHandleInterface dir, RemoteSlave sourceSlave)
-			throws NoAvailableSlaveException {
-		
-		ArrayList<ScoreChart.SlaveScore> tempList = new ArrayList<>(scorechart
+    public void process(ScoreChart scorechart, User user, InetAddress peer,
+                        char direction, InodeHandleInterface dir, RemoteSlave sourceSlave)
+            throws NoAvailableSlaveException {
+
+        ArrayList<ScoreChart.SlaveScore> tempList = new ArrayList<>(scorechart
                 .getSlaveScores());
 
-		while (true) {
-			if (tempList.isEmpty()) {
-				return;
-			}
+        while (true) {
+            if (tempList.isEmpty()) {
+                return;
+            }
 
-			ScoreChart.SlaveScore first = tempList.get(0);
-			
-			ArrayList<ScoreChart.SlaveScore> equalList = new ArrayList<>();
-			equalList.add(first);
-			tempList.remove(first);
+            ScoreChart.SlaveScore first = tempList.get(0);
 
-			for (Iterator<ScoreChart.SlaveScore> iter = tempList.iterator(); iter.hasNext();) {
-				ScoreChart.SlaveScore match = iter.next();
+            ArrayList<ScoreChart.SlaveScore> equalList = new ArrayList<>();
+            equalList.add(first);
+            tempList.remove(first);
 
-				if (match.compareTo(first) == 0) {
-					equalList.add(match);
-					iter.remove();
-				}
-			}
+            for (Iterator<ScoreChart.SlaveScore> iter = tempList.iterator(); iter.hasNext(); ) {
+                ScoreChart.SlaveScore match = iter.next();
 
-			ScoreChart.SlaveScore leastUsed = first;
+                if (match.compareTo(first) == 0) {
+                    equalList.add(match);
+                    iter.remove();
+                }
+            }
+
+            ScoreChart.SlaveScore leastUsed = first;
 
             for (ScoreChart.SlaveScore match : equalList) {
                 if (match.getRSlave().getLastTransferForDirection(direction) < leastUsed
@@ -75,9 +75,9 @@ public class CycleFilter extends Filter {
                 }
             }
 
-			if (leastUsed != null) {
-				leastUsed.addScore(1);
-			}
-		}
-	}
+            if (leastUsed != null) {
+                leastUsed.addScore(1);
+            }
+        }
+    }
 }

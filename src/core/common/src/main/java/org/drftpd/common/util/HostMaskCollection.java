@@ -35,98 +35,98 @@ import java.util.regex.PatternSyntaxException;
 @SuppressWarnings("serial")
 public class HostMaskCollection extends ArrayList<HostMask> {
 
-	public HostMaskCollection() {
-	}
+    public HostMaskCollection() {
+    }
 
-	/**
-	 * Converts an existing Collection of String-based masks to a
-	 * HostMaskCollection
-	 *
-	 * @param masks
-	 */
-	public HostMaskCollection(Collection<String> masks) {
-		for (String mask : masks) {
-			add(new HostMask(mask));
-		}
-	}
+    /**
+     * Converts an existing Collection of String-based masks to a
+     * HostMaskCollection
+     *
+     * @param masks
+     */
+    public HostMaskCollection(Collection<String> masks) {
+        for (String mask : masks) {
+            add(new HostMask(mask));
+        }
+    }
 
-	public void addAllMasks(HostMaskCollection hostMaskCollection) {
-		for (HostMask mask : hostMaskCollection) {
-			if (!contains(mask)) {
-				add(mask);
-			}
-		}
-	}
+    public void addAllMasks(HostMaskCollection hostMaskCollection) {
+        for (HostMask mask : hostMaskCollection) {
+            if (!contains(mask)) {
+                add(mask);
+            }
+        }
+    }
 
-	public void addMask(String mask) throws DuplicateElementException {
-		HostMask newMask = new HostMask(mask);
+    public void addMask(String mask) throws DuplicateElementException {
+        HostMask newMask = new HostMask(mask);
 
-		for (HostMask hostMask : this) {
-			if (hostMask.equals(newMask)) {
-				throw new DuplicateElementException();
-			}
-		}
+        for (HostMask hostMask : this) {
+            if (hostMask.equals(newMask)) {
+                throw new DuplicateElementException();
+            }
+        }
 
-		add(newMask);
-	}
+        add(newMask);
+    }
 
-	public boolean check(Socket s) throws PatternSyntaxException {
-		return check(null, s.getInetAddress(), s);
-	}
+    public boolean check(Socket s) throws PatternSyntaxException {
+        return check(null, s.getInetAddress(), s);
+    }
 
-	public boolean check(String ident, InetAddress a, Socket s)
-			throws PatternSyntaxException {
-		if (a == null) {
-			throw new NullPointerException();
-		}
-		for (HostMask mask : this) {
-			if (!mask.matchesHost(a)) {
-				continue;
-			}
+    public boolean check(String ident, InetAddress a, Socket s)
+            throws PatternSyntaxException {
+        if (a == null) {
+            throw new NullPointerException();
+        }
+        for (HostMask mask : this) {
+            if (!mask.matchesHost(a)) {
+                continue;
+            }
 
-			// host matched
-			// request ident if no IDNT, ident hasn't been requested
-			// and ident matters in this hostmask
-			if (mask.isIdentMaskSignificant() && (ident == null)) {
-				try {
-					ident = new Ident(s).getUserName();
-				} catch (IOException e) {
-					ident = "";
-				}
-			}
+            // host matched
+            // request ident if no IDNT, ident hasn't been requested
+            // and ident matters in this hostmask
+            if (mask.isIdentMaskSignificant() && (ident == null)) {
+                try {
+                    ident = new Ident(s).getUserName();
+                } catch (IOException e) {
+                    ident = "";
+                }
+            }
 
-			if (mask.matchesIdent(ident)) {
-				return true;
-			}
-		}
+            if (mask.matchesIdent(ident)) {
+                return true;
+            }
+        }
 
-		return false;
-	}
+        return false;
+    }
 
-	/**
-	 * @param mask
-	 * @return
-	 */
-	public boolean removeMask(String mask) {
-		for (Iterator<HostMask> iter = iterator(); iter.hasNext();) {
-			if ((iter.next()).getMask().equals(mask)) {
-				iter.remove();
-				return true;
-			}
-		}
+    /**
+     * @param mask
+     * @return
+     */
+    public boolean removeMask(String mask) {
+        for (Iterator<HostMask> iter = iterator(); iter.hasNext(); ) {
+            if ((iter.next()).getMask().equals(mask)) {
+                iter.remove();
+                return true;
+            }
+        }
 
-		return false;
-	}
+        return false;
+    }
 
-	public String toString() {
-		if (isEmpty())
-			return "";
-		String masks = "";
+    public String toString() {
+        if (isEmpty())
+            return "";
+        String masks = "";
 
-		for (HostMask hostMask : this) {
-			masks = masks + hostMask + "  ";
-		}
+        for (HostMask hostMask : this) {
+            masks = masks + hostMask + "  ";
+        }
 
-		return masks.substring(0, masks.length() - 2);
-	}
+        return masks.substring(0, masks.length() - 2);
+    }
 }

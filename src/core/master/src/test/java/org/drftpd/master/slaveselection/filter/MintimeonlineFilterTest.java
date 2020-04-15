@@ -18,10 +18,10 @@
 package org.drftpd.master.slaveselection.filter;
 
 import junit.framework.TestCase;
-import org.drftpd.master.util.Time;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
-import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.master.slavemanagement.DummyRemoteSlave;
+import org.drftpd.master.slavemanagement.RemoteSlave;
+import org.drftpd.master.util.Time;
 import org.drftpd.slave.network.Transfer;
 import org.junit.Assert;
 
@@ -44,7 +44,7 @@ public class MintimeonlineFilterTest extends TestCase {
         p.put("1.mintime", "2m");
 
         long time = System.currentTimeMillis();
-        RemoteSlave[] rslaves = { new RS("slave1", time) };
+        RemoteSlave[] rslaves = {new RS("slave1", time)};
         ScoreChart sc = new ScoreChart(Arrays.asList(rslaves));
         MintimeonlineFilter f = new MintimeonlineFilter(1, p);
         f.process(sc, null, null, Transfer.TRANSFER_UNKNOWN, null, time);
@@ -52,7 +52,7 @@ public class MintimeonlineFilterTest extends TestCase {
     }
 
     public static class RS extends DummyRemoteSlave {
-        private long _time;
+        private final long _time;
 
         public RS(String name, long time) {
             super(name);

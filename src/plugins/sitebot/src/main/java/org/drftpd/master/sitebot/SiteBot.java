@@ -55,8 +55,9 @@ import java.util.concurrent.*;
  */
 public class SiteBot implements ReplyConstants, Runnable {
 
-    private static final Logger logger = LogManager.getLogger(SiteBot.class);
     public static final Map<String, Object> GLOBAL_ENV = new HashMap<>();
+    private static final Logger logger = LogManager.getLogger(SiteBot.class);
+    private static final String themeDir = "config/themes/irc";
 
     static {
         GLOBAL_ENV.put("bold", "\u0002");
@@ -66,56 +67,45 @@ public class SiteBot implements ReplyConstants, Runnable {
     }
 
     // Configuration
-    private String _confDir;
+    private final String _confDir;
     private SiteBotConfig _config = null;
     private String _name;
-
     // Connection stuff.
     private InputThread _inputThread = null;
     private OutputThread _outputThread = null;
     private Charset _charset = Charset.defaultCharset();
     private InetAddress _inetAddress = null;
-
     // Details about the last server that we connected to.
     private String _server = null;
     private int _port = -1;
     private String _password = null;
-
     // Outgoing message stuff.
-    private org.drftpd.master.sitebot.Queue _outQueue = new Queue();
-    private CaseInsensitiveConcurrentHashMap<String, OutputWriter> _writers = new CaseInsensitiveConcurrentHashMap<>();
+    private final org.drftpd.master.sitebot.Queue _outQueue = new Queue();
+    private final CaseInsensitiveConcurrentHashMap<String, OutputWriter> _writers = new CaseInsensitiveConcurrentHashMap<>();
     private ThreadPoolExecutor _pool;
-
     // A HashMap of channels that points to a selfreferential HashMap of
     // User objects (used to remember which users are in which channels).
     private CaseInsensitiveHashMap<String, HashMap<IrcUser, IrcUser>> _channels = new CaseInsensitiveHashMap<>();
-
     // A HashMap to temporarily store channel topics when we join them
     // until we find out who set that topic.
-    private HashMap<String, String> _topics = new HashMap<>();
-
+    private final HashMap<String, String> _topics = new HashMap<>();
     // A HashMap of nicknames of which we know details about, such as the
     // corresponding ftp user.
-    private CaseInsensitiveHashMap<String, UserDetails> _users = new CaseInsensitiveHashMap<>();
-
+    private final CaseInsensitiveHashMap<String, UserDetails> _users = new CaseInsensitiveHashMap<>();
     // A HashMap of BlowfishManager objects for channels we are aware of
-    private CaseInsensitiveHashMap<String, BlowfishManager> _ciphers = new CaseInsensitiveHashMap<>();
-
+    private final CaseInsensitiveHashMap<String, BlowfishManager> _ciphers = new CaseInsensitiveHashMap<>();
     /* A HashMap of DH1080 objects for users, this is used to store a
      * temporary object when initiating a DH1080 request whilst we wait
      * for the response
      */
-    private CaseInsensitiveHashMap<String, DH1080> _dh1080 = new CaseInsensitiveHashMap<>();
-
+    private final CaseInsensitiveHashMap<String, DH1080> _dh1080 = new CaseInsensitiveHashMap<>();
     // Command Manager to use for executing commands
     private HashMap<String, Properties> _cmds;
     private CommandManagerInterface _commandManager;
-    private static final String themeDir = "config/themes/irc";
-
     // An ArrayList to hold references to announce plugins we have connected
-    private ArrayList<AbstractAnnouncer> _announcers = new ArrayList<>();
+    private final ArrayList<AbstractAnnouncer> _announcers = new ArrayList<>();
     private AnnounceConfig _announceConfig = null;
-    private ArrayList<String> _eventTypes = new ArrayList<>();
+    private final ArrayList<String> _eventTypes = new ArrayList<>();
 
     // ArrayList to hold Listeners
     private List<ListenerInterface> _listeners = new ArrayList<>();
@@ -133,7 +123,7 @@ public class SiteBot implements ReplyConstants, Runnable {
     private HashMap<String, String> _userPrefixes = new HashMap<>();
     // prefixes as delivered from the server .. highest to lowest - default to op/voice
     private String _userPrefixOrder = "@+";
-    private String _channelPrefixes = "#&+!";
+    private final String _channelPrefixes = "#&+!";
 
     public SiteBot(String confDir) throws FatalException {
         _confDir = confDir;
@@ -806,7 +796,7 @@ public class SiteBot implements ReplyConstants, Runnable {
 
                     if (code != -1) {
                         String errorStr = token;
-                        String response = line.substring(line.indexOf(errorStr, senderInfo.length()) + 4, line.length());
+                        String response = line.substring(line.indexOf(errorStr, senderInfo.length()) + 4);
                         this.processServerResponse(code, response);
                         // Return from the method.
                         return;
@@ -2168,17 +2158,6 @@ public class SiteBot implements ReplyConstants, Runnable {
     }
 
     /**
-     * Sets the internal nick of the bot.  This is only to be called by the
-     * PircBot class in response to notification of nick changes that apply
-     * to us.
-     *
-     * @param nick The new nick.
-     */
-    private void setNick(String nick) {
-        _nick = nick;
-    }
-
-    /**
      * Returns the current nick of the bot. Note that if you have just changed
      * your nick, this method will still return the old nick until confirmation
      * of the nick change is received from the server.
@@ -2193,12 +2172,23 @@ public class SiteBot implements ReplyConstants, Runnable {
         return _nick;
     }
 
-    private void setHostMask(String hostMask) {
-        _hostMask = hostMask;
+    /**
+     * Sets the internal nick of the bot.  This is only to be called by the
+     * PircBot class in response to notification of nick changes that apply
+     * to us.
+     *
+     * @param nick The new nick.
+     */
+    private void setNick(String nick) {
+        _nick = nick;
     }
 
     public String getHostMask() {
         return _hostMask;
+    }
+
+    private void setHostMask(String hostMask) {
+        _hostMask = hostMask;
     }
 
     /**
@@ -2318,6 +2308,18 @@ public class SiteBot implements ReplyConstants, Runnable {
     }
 
     /**
+     * Returns the encoding used to send and receive lines from
+     * the IRC server. Never will return null Use the {@link #setEncoding(Charset)
+     * method to change the encoding charset.
+     *
+     * @return The encoding used to send outgoing messages. Never null
+     * @since PircBot 1.0.4
+     */
+    public Charset getEncoding() {
+        return _charset;
+    }
+
+    /**
      * Sets the encoding charset to be used when sending or receiving lines
      * from the IRC server. Simply a convenience method for {@link #setEncoding(Charset) }
      *
@@ -2352,18 +2354,6 @@ public class SiteBot implements ReplyConstants, Runnable {
             throw new NullPointerException("Can't set charset to null");
 
         _charset = charset;
-    }
-
-    /**
-     * Returns the encoding used to send and receive lines from
-     * the IRC server. Never will return null Use the {@link #setEncoding(Charset)
-     * method to change the encoding charset.
-     *
-     * @return The encoding used to send outgoing messages. Never null
-     * @since PircBot 1.0.4
-     */
-    public Charset getEncoding() {
-        return _charset;
     }
 
     /**
@@ -2978,13 +2968,13 @@ public class SiteBot implements ReplyConstants, Runnable {
 
     class CommandThread implements Runnable {
 
-        private IrcRequest _request;
+        private final IrcRequest _request;
 
-        private ServiceCommand _service;
+        private final ServiceCommand _service;
 
-        private String _nickname;
+        private final String _nickname;
 
-        private String _ident;
+        private final String _ident;
 
         private CommandThread(IrcRequest request, ServiceCommand service, String nick, String ident) {
             _request = request;

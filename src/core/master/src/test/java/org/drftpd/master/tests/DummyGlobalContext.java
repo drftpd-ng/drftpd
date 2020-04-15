@@ -18,8 +18,8 @@
 package org.drftpd.master.tests;
 
 import org.drftpd.master.GlobalContext;
-import org.drftpd.master.slavemanagement.SlaveManager;
 import org.drftpd.master.sections.SectionManagerInterface;
+import org.drftpd.master.slavemanagement.SlaveManager;
 import org.drftpd.master.slaveselection.SlaveSelectionManagerInterface;
 import org.drftpd.master.usermanager.AbstractUserManager;
 

@@ -56,14 +56,10 @@ import java.util.*;
  */
 public class SFVAnnouncer extends AbstractAnnouncer {
 
-    private static final Logger logger = LogManager.getLogger(SFVAnnouncer.class);
-
     public static final Key<Boolean> SFV_FIRST = new Key<>(SFVAnnouncer.class, "sfv_first");
-
     public static final Key<Boolean> SFV_HALFWAY = new Key<>(SFVAnnouncer.class, "sfv_halfway");
-
     public static final Key<Boolean> SFV_COMPLETE = new Key<>(SFVAnnouncer.class, "sfv_complete");
-
+    private static final Logger logger = LogManager.getLogger(SFVAnnouncer.class);
     private Timer _timer;
 
     private AnnounceConfig _config;
@@ -142,8 +138,7 @@ public class SFVAnnouncer extends AbstractAnnouncer {
                             fillEnvSection(env, sfvEvent, writer, true);
                             env.put("filesleft",
                                     Integer.toString(sfvStatus.getMissing()));
-                            env.put("percentdone", Integer.toString(
-                                    (sfvStatus.getPresent() * 100) / sfvEvent.getSFVInfo().getSize()) + "%");
+                            env.put("percentdone", (sfvStatus.getPresent() * 100) / sfvEvent.getSFVInfo().getSize() + "%");
                             sayOutput(ReplacerUtils.jprintf("sfv.store.race", env, _bundle), writer);
                         }
                     }
@@ -170,7 +165,7 @@ public class SFVAnnouncer extends AbstractAnnouncer {
                         env.put("leadfiles", Integer.toString(stat.getFiles()));
                         env.put("leadsize", Bytes.formatBytes(stat.getBytes()));
                         env.put("leadpercent",
-                                Integer.toString((stat.getFiles() * 100) / sfvEvent.getSFVInfo().getSize()) +
+                                (stat.getFiles() * 100) / sfvEvent.getSFVInfo().getSize() +
                                         "%");
                         env.put("filesleft", Integer.toString(sfvStatus.getMissing()));
 
@@ -270,8 +265,7 @@ public class SFVAnnouncer extends AbstractAnnouncer {
                             raceenv.put("size", Bytes.formatBytes(stat.getBytes()));
                             raceenv.put("position", String.valueOf(position));
                             raceenv.put("percent",
-                                    Integer.toString(
-                                            (stat.getFiles() * 100) / sfvEvent.getSFVInfo().getSize()) + "%");
+                                    (stat.getFiles() * 100) / sfvEvent.getSFVInfo().getSize() + "%");
                             raceenv.put("alup",
                                     UserTransferStats.getStatsPlace("ALUP", raceuser,
                                             GlobalContext.getGlobalContext().getUserManager()));
@@ -316,8 +310,7 @@ public class SFVAnnouncer extends AbstractAnnouncer {
                             raceenv.put("size", Bytes.formatBytes(stat.getBytes()));
                             raceenv.put("files", Integer.toString(stat.getFiles()));
                             raceenv.put("percent",
-                                    Integer.toString(
-                                            (stat.getFiles() * 100) / sfvEvent.getSFVInfo().getSize()) + "%");
+                                    (stat.getFiles() * 100) / sfvEvent.getSFVInfo().getSize() + "%");
                             raceenv.put("speed",
                                     Bytes.formatBytes(stat.getXferspeed()) + "/s");
 

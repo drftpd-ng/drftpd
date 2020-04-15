@@ -17,50 +17,49 @@
 package org.drftpd.zipscript.slave.mp3.decoder;
 
 /**
- * This interface describes all error codes that can be thrown 
+ * This interface describes all error codes that can be thrown
  * in <code>BistreamException</code>s.
- * 
- * @see BitstreamException
- * 
+ *
  * @author Originally taken from JLayer - http://www.javazoom.net/javalayer/javalayer.html
  * @version $Id$
+ * @see BitstreamException
  */
 
 public interface BitstreamErrors extends JavaLayerErrors {
 
-	/**
-	 * An undeterminable error occurred. 
-	 */
-	int UNKNOWN_ERROR = BITSTREAM_ERROR;
+    /**
+     * An undeterminable error occurred.
+     */
+    int UNKNOWN_ERROR = BITSTREAM_ERROR;
 
-	/**
-	 * The header describes an unknown sample rate.
-	 */
-	int UNKNOWN_SAMPLE_RATE = BITSTREAM_ERROR + 1;
+    /**
+     * The header describes an unknown sample rate.
+     */
+    int UNKNOWN_SAMPLE_RATE = BITSTREAM_ERROR + 1;
 
-	/**
-	 * A problem occurred reading from the stream.
-	 */
-	int STREAM_ERROR = BITSTREAM_ERROR + 2;
+    /**
+     * A problem occurred reading from the stream.
+     */
+    int STREAM_ERROR = BITSTREAM_ERROR + 2;
 
-	/**
-	 * The end of the stream was reached prematurely. 
-	 */
-	int UNEXPECTED_EOF = BITSTREAM_ERROR + 3;
+    /**
+     * The end of the stream was reached prematurely.
+     */
+    int UNEXPECTED_EOF = BITSTREAM_ERROR + 3;
 
-	/**
-	 * The end of the stream was reached. 
-	 */
-	int STREAM_EOF = BITSTREAM_ERROR + 4;
+    /**
+     * The end of the stream was reached.
+     */
+    int STREAM_EOF = BITSTREAM_ERROR + 4;
 
-	/**
-	 * Frame data are missing. 
-	 */
-	int INVALIDFRAME = BITSTREAM_ERROR + 5;
+    /**
+     * Frame data are missing.
+     */
+    int INVALIDFRAME = BITSTREAM_ERROR + 5;
 
-	/**
-	 * 
-	 */
-	int BITSTREAM_LAST = 0x1ff;
+    /**
+     *
+     */
+    int BITSTREAM_LAST = 0x1ff;
 
 }

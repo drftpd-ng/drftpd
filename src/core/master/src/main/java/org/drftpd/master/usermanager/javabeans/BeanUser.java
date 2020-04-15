@@ -19,14 +19,13 @@ package org.drftpd.master.usermanager.javabeans;
 
 import com.cedarsoftware.util.io.JsonIoException;
 import com.cedarsoftware.util.io.JsonWriter;
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
+import org.apache.logging.log4j.Logger;
 import org.drftpd.master.io.SafeFileOutputStream;
-import org.drftpd.master.vfs.CommitManager;
 import org.drftpd.master.usermanager.AbstractUser;
 import org.drftpd.master.usermanager.AbstractUserManager;
 import org.drftpd.master.usermanager.UserManager;
+import org.drftpd.master.vfs.CommitManager;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -39,72 +38,72 @@ import java.util.Map;
  */
 public class BeanUser extends AbstractUser {
 
-	private static final Logger logger = LogManager.getLogger(BeanUser.class);
+    private static final Logger logger = LogManager.getLogger(BeanUser.class);
 
-	private transient BeanUserManager _um;
+    private transient BeanUserManager _um;
 
-	private String _password = "";
+    private String _password = "";
 
-	private transient boolean _purged;
+    private transient boolean _purged;
 
-	public BeanUser(String username) {
-		super(username);
-	}
+    public BeanUser(String username) {
+        super(username);
+    }
 
-	public BeanUser(BeanUserManager manager, String username) {
-		super(username);
-		_um = manager;
-	}
+    public BeanUser(BeanUserManager manager, String username) {
+        super(username);
+        _um = manager;
+    }
 
-	public AbstractUserManager getAbstractUserManager() {
-		return _um;
-	}
+    public AbstractUserManager getAbstractUserManager() {
+        return _um;
+    }
 
-	public UserManager getUserManager() {
-		return _um;
-	}
+    public UserManager getUserManager() {
+        return _um;
+    }
 
-	public boolean checkPassword(String password) {
-		return password.equals(_password);
-	}
+    public void setUserManager(BeanUserManager manager) {
+        _um = manager;
+    }
 
-	public void commit() {
-		CommitManager.getCommitManager().add(this);
-	}
+    public boolean checkPassword(String password) {
+        return password.equals(_password);
+    }
 
-	public void purge() {
-		_purged = true;
-		_um.deleteUser(getName());
-	}
+    public void commit() {
+        CommitManager.getCommitManager().add(this);
+    }
 
-	public String getPassword() {
-		return _password;
-	}
+    public void purge() {
+        _purged = true;
+        _um.deleteUser(getName());
+    }
 
-	public void setPassword(String password) {
-		_password = password;
-	}
+    public String getPassword() {
+        return _password;
+    }
 
-	public void setUserManager(BeanUserManager manager) {
-		_um = manager;
-	}
+    public void setPassword(String password) {
+        _password = password;
+    }
 
-	public void writeToDisk() throws IOException {
-		if (_purged)
-			return;
+    public void writeToDisk() throws IOException {
+        if (_purged)
+            return;
 
-		Map<String,Object> params = new HashMap<>();
-		params.put(JsonWriter.PRETTY_PRINT, true);
-		try (OutputStream out = new SafeFileOutputStream(_um.getUserFile(getName()));
-			 JsonWriter writer = new JsonWriter(out, params)) {
-			writer.write(this);
+        Map<String, Object> params = new HashMap<>();
+        params.put(JsonWriter.PRETTY_PRINT, true);
+        try (OutputStream out = new SafeFileOutputStream(_um.getUserFile(getName()));
+             JsonWriter writer = new JsonWriter(out, params)) {
+            writer.write(this);
             logger.debug("Wrote userfile for {}", this.getName());
-		} catch (IOException | JsonIoException e) {
-			throw new IOException("Unable to write " + _um.getUserFile(getName()) + " to disk", e);
-		}
-	}
+        } catch (IOException | JsonIoException e) {
+            throw new IOException("Unable to write " + _um.getUserFile(getName()) + " to disk", e);
+        }
+    }
 
-	public String descriptiveName() {
-		return getName();
-	}
+    public String descriptiveName() {
+        return getName();
+    }
 }

@@ -22,26 +22,25 @@ import org.drftpd.common.slave.TransferStatus;
 import java.io.IOException;
 
 /**
- * 
  * @author mog
  * @version $Id$
  */
 @SuppressWarnings("serial")
 public class TransferFailedException extends IOException {
-	private TransferStatus _status;
+    private final TransferStatus _status;
 
-	public TransferFailedException(Exception e, TransferStatus status) {
-		super(e.getMessage());
-		initCause(e);
-		_status = status;
-	}
+    public TransferFailedException(Exception e, TransferStatus status) {
+        super(e.getMessage());
+        initCause(e);
+        _status = status;
+    }
 
-	public TransferFailedException(String message, TransferStatus status) {
-		super(message);
-		_status = status;
-	}
+    public TransferFailedException(String message, TransferStatus status) {
+        super(message);
+        _status = status;
+    }
 
-	public TransferStatus getStatus() {
-		return _status;
-	}
+    public TransferStatus getStatus() {
+        return _status;
+    }
 }

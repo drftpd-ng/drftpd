@@ -25,33 +25,32 @@ import java.util.Collection;
 
 /**
  * @author mog
- * 
  * @version $Id$
  */
 public class MessagePathPermission extends StringPathPermission {
-	private ArrayList<String> _message;
+    private final ArrayList<String> _message;
 
-	public MessagePathPermission(String pattern, String messageFile,
-			Collection<String> users) throws IOException {
-		super(pattern, users);
-		
-		_message = new ArrayList<>();
+    public MessagePathPermission(String pattern, String messageFile,
+                                 Collection<String> users) throws IOException {
+        super(pattern, users);
 
-		BufferedReader in = new BufferedReader(new FileReader(messageFile));
-		String line;
+        _message = new ArrayList<>();
 
-		try {
-			while ((line = in.readLine()) != null) {
-				_message.add(line);
-			}
-		} finally {
-			in.close();
-		}
+        BufferedReader in = new BufferedReader(new FileReader(messageFile));
+        String line;
 
-		_message.trimToSize();
-	}
-	
-	public ArrayList<String> getMessage() {
-		return _message;
-	}
+        try {
+            while ((line = in.readLine()) != null) {
+                _message.add(line);
+            }
+        } finally {
+            in.close();
+        }
+
+        _message.trimToSize();
+    }
+
+    public ArrayList<String> getMessage() {
+        return _message;
+    }
 }

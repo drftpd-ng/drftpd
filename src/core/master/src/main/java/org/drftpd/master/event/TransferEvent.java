@@ -28,65 +28,65 @@ import java.net.InetAddress;
  * @version $Id$
  */
 public class TransferEvent extends DirectoryFtpEvent {
-	private InetAddress _peer;
+    private final InetAddress _peer;
 
-	private char _type;
+    private final char _type;
 
-	private InetAddress _clientHost;
+    private final InetAddress _clientHost;
 
-	private BaseFtpConnection _conn;
-	
-	private FileHandle _file;
+    private final BaseFtpConnection _conn;
 
-	public TransferEvent(BaseFtpConnection conn, String command,
-			FileHandle file, InetAddress clientHost,
-			RemoteSlave rslave, InetAddress peer, char type) {
-		this(conn, command, file, clientHost, rslave, peer, type, System
-				.currentTimeMillis());
-	}
+    private final FileHandle _file;
 
-	private TransferEvent(BaseFtpConnection conn, String command,
-			FileHandle file, InetAddress clientHost,
-			RemoteSlave rslave, InetAddress peer, char type, long time) {
-		super(conn.getUserNull(), command, file.getParent(), time);
-		_clientHost = clientHost;
+    public TransferEvent(BaseFtpConnection conn, String command,
+                         FileHandle file, InetAddress clientHost,
+                         RemoteSlave rslave, InetAddress peer, char type) {
+        this(conn, command, file, clientHost, rslave, peer, type, System
+                .currentTimeMillis());
+    }
 
-		if (peer == null) {
-			throw new NullPointerException();
-		}
-		_file = file;
-		_peer = peer;
-		_type = type;
-		_conn = conn;
-	}
+    private TransferEvent(BaseFtpConnection conn, String command,
+                          FileHandle file, InetAddress clientHost,
+                          RemoteSlave rslave, InetAddress peer, char type, long time) {
+        super(conn.getUserNull(), command, file.getParent(), time);
+        _clientHost = clientHost;
 
-	public char getType() {
-		return _type;
-	}
+        if (peer == null) {
+            throw new NullPointerException();
+        }
+        _file = file;
+        _peer = peer;
+        _type = type;
+        _conn = conn;
+    }
 
-	public InetAddress getClientHost() {
-		return _clientHost;
-	}
+    public char getType() {
+        return _type;
+    }
 
-	public InetAddress getXferHost() {
-		return _peer;
-	}
+    public InetAddress getClientHost() {
+        return _clientHost;
+    }
 
-	public InetAddress getPeer() {
-		return _peer;
-	}
+    public InetAddress getXferHost() {
+        return _peer;
+    }
 
-	public BaseFtpConnection getConn() {
-		return _conn;
-	}
-	
-	public FileHandle getTransferFile() {
-		return _file;
-	}
+    public InetAddress getPeer() {
+        return _peer;
+    }
 
-	@Override
-	public String toString() {
-		return getClass().getName() + "[user=" + getUser() + ",cmd="
-				+ getCommand() + ",type=" + _type + ",file=" + _file.getPath() + "]";
-	}
+    public BaseFtpConnection getConn() {
+        return _conn;
+    }
+
+    public FileHandle getTransferFile() {
+        return _file;
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getName() + "[user=" + getUser() + ",cmd="
+                + getCommand() + ",type=" + _type + ",file=" + _file.getPath() + "]";
+    }
 }

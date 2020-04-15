@@ -21,16 +21,16 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
-
 import org.drftpd.common.slave.LightRemoteInode;
-import org.drftpd.master.*;
+import org.drftpd.common.vfs.InodeHandleInterface;
+import org.drftpd.master.GlobalContext;
+import org.drftpd.master.Master;
 import org.drftpd.master.commands.*;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.network.*;
 import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.vfs.*;
-import org.drftpd.common.vfs.InodeHandleInterface;
 import org.reflections.Reflections;
 
 import java.io.*;
@@ -44,62 +44,59 @@ import java.util.*;
  */
 public class ListHandler extends CommandInterface {
 
-	private static final Logger logger = LogManager.getLogger(ListHandler.class);
+    private static final Logger logger = LogManager.getLogger(ListHandler.class);
 
-	private static final DateFormat AFTER_SIX = new SimpleDateFormat(" yyyy");
+    private static final DateFormat AFTER_SIX = new SimpleDateFormat(" yyyy");
 
-	private static final DateFormat BEFORE_SIX = new SimpleDateFormat("HH:mm");
+    private static final DateFormat BEFORE_SIX = new SimpleDateFormat("HH:mm");
 
-	private static final DateFormat FULL = new SimpleDateFormat("HH:mm:ss yyyy");
+    private static final DateFormat FULL = new SimpleDateFormat("HH:mm:ss yyyy");
 
-	private static final String[] MONTHS = { "Jan", "Feb", "Mar", "Apr", "May",
-		"Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+    private static final String[] MONTHS = {"Jan", "Feb", "Mar", "Apr", "May",
+            "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 
-	private static final SimpleDateFormat MLSTTIME = new SimpleDateFormat("yyyyMMddHHmmss.SSS");
+    private static final SimpleDateFormat MLSTTIME = new SimpleDateFormat("yyyyMMddHHmmss.SSS");
+    private static final String NEWLINE = "\r\n";
+    private static final String DELIM = " ";
+    private static final String PADDING = "          ";
 
-	static {
-		MLSTTIME.setTimeZone(TimeZone.getTimeZone("GMT"));
-	}
+    static {
+        MLSTTIME.setTimeZone(TimeZone.getTimeZone("GMT"));
+    }
 
-	private static final String NEWLINE = "\r\n";
+    private final ArrayList<AddListElementsInterface> _listAddons = new ArrayList<>();
 
-	private static final String DELIM = " ";
+    private StandardCommandManager _cManager;
 
-	private static final String PADDING = "          ";
+    private ResourceBundle _bundle;
 
-	private ArrayList<AddListElementsInterface> _listAddons = new ArrayList<>();
-
-	private StandardCommandManager _cManager;
-
-	private ResourceBundle _bundle;
-
-	@Override
-	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
-		super.initialize(method, pluginName, cManager);
-		_cManager = cManager;
-		_featReplies = new String[] {
-				"MLST type*,x.crc32*,size*,modify*,unix.owner*,unix.group*,x.slaves*,x.xfertime*"
-		};
-		_bundle = cManager.getResourceBundle();
+    @Override
+    public void initialize(String method, String pluginName, StandardCommandManager cManager) {
+        super.initialize(method, pluginName, cManager);
+        _cManager = cManager;
+        _featReplies = new String[]{
+                "MLST type*,x.crc32*,size*,modify*,unix.owner*,unix.group*,x.slaves*,x.xfertime*"
+        };
+        _bundle = cManager.getResourceBundle();
 
 
-		// Subscribe to events
-		AnnotationProcessor.process(this);
+        // Subscribe to events
+        AnnotationProcessor.process(this);
 
-		// Load any additional element providers from plugins
-		// @TODO JRI [DONE] Add addons
-		try {
-			Set<Class<? extends AddListElementsInterface>> addListElements = new Reflections("org.drftpd")
-					.getSubTypesOf(AddListElementsInterface.class);
-			for (Class<? extends AddListElementsInterface> addListElement : addListElements) {
-				AddListElementsInterface listAddon = addListElement.getConstructor().newInstance();
-				listAddon.initialize();
-				_listAddons.add(listAddon);
-			}
-		} catch (Exception e) {
-			logger.error("Failed to load plugins for org.drftpd.master.commands.list extension point 'AddElements', possibly the "+
-					"org.drftpd.master.commands.list extension point definition has changed in the plugin.xml",e);
-		}
+        // Load any additional element providers from plugins
+        // @TODO JRI [DONE] Add addons
+        try {
+            Set<Class<? extends AddListElementsInterface>> addListElements = new Reflections("org.drftpd")
+                    .getSubTypesOf(AddListElementsInterface.class);
+            for (Class<? extends AddListElementsInterface> addListElement : addListElements) {
+                AddListElementsInterface listAddon = addListElement.getConstructor().newInstance();
+                listAddon.initialize();
+                _listAddons.add(listAddon);
+            }
+        } catch (Exception e) {
+            logger.error("Failed to load plugins for org.drftpd.master.commands.list extension point 'AddElements', possibly the " +
+                    "org.drftpd.master.commands.list extension point definition has changed in the plugin.xml", e);
+        }
 
 		/*
 		try {
@@ -113,408 +110,408 @@ public class ListHandler extends CommandInterface {
 			logger.error("Failed to load plugins for org.drftpd.master.commands.list extension point 'AddElements', possibly the "+
 					"org.drftpd.master.commands.list extension point definition has changed in the plugin.xml",e);
 		}*/
-	}
+    }
 
-	public CommandResponse doLIST(CommandRequest request) throws ImproperUsageException {
-		return list(request, true, false, false, false);
-	}
+    public CommandResponse doLIST(CommandRequest request) throws ImproperUsageException {
+        return list(request, true, false, false, false);
+    }
 
-	public CommandResponse doSTAT(CommandRequest request) throws ImproperUsageException {
-		if (!request.hasArgument()) {
-			BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
+    public CommandResponse doSTAT(CommandRequest request) throws ImproperUsageException {
+        if (!request.hasArgument()) {
+            BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
 
-			Map<String, Object> env = new HashMap<>();
-			
-			env.put("ssl.enabled", conn.isSecure() ? "Yes" : "No");
-			env.put("user", conn.getUsername());
-			env.put("user.ip", conn.getObject(BaseFtpConnection.ADDRESS, null).getHostAddress());
-			env.put("user.timeout", conn.getUserNull().getIdleTime());
-			env.put("conns", Master.getConnectionManager().getConnections().size()); // TODO sync this.
-			env.put("version", GlobalContext.VERSION);
-			
-			CommandResponse response = new CommandResponse(211, "End of status");
-			response.addComment(conn.jprintf(_bundle, env,  "daemon.stat"));
-			
-			return response;
-		}
-		return list(request, false, true, false, false);
-	}
+            Map<String, Object> env = new HashMap<>();
 
-	public CommandResponse doMLST(CommandRequest request) throws ImproperUsageException {
-		return list(request, false, false, true, false);
-	}
+            env.put("ssl.enabled", conn.isSecure() ? "Yes" : "No");
+            env.put("user", conn.getUsername());
+            env.put("user.ip", conn.getObject(BaseFtpConnection.ADDRESS, null).getHostAddress());
+            env.put("user.timeout", conn.getUserNull().getIdleTime());
+            env.put("conns", Master.getConnectionManager().getConnections().size()); // TODO sync this.
+            env.put("version", GlobalContext.VERSION);
 
-	public CommandResponse doMLSD(CommandRequest request) throws ImproperUsageException {
-		return list(request, false, false, false, true);
-	}
+            CommandResponse response = new CommandResponse(211, "End of status");
+            response.addComment(conn.jprintf(_bundle, env, "daemon.stat"));
 
-	protected CommandResponse list(CommandRequest request, boolean isList, boolean isStat, boolean isMlst, boolean isMlsd)
-	throws ImproperUsageException {
-		try {
-			String directoryName = null;
-			String options = "";
-			BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
-			TransferState ts = conn.getTransferState();
+            return response;
+        }
+        return list(request, false, true, false, false);
+    }
 
-			if (request.hasArgument()) {
-				StringBuilder optionsSb = new StringBuilder(4);
-				StringTokenizer st = new StringTokenizer(request.getArgument()," ");
+    public CommandResponse doMLST(CommandRequest request) throws ImproperUsageException {
+        return list(request, false, false, true, false);
+    }
 
-				while (st.hasMoreTokens() && (!isMlst)) {
-					String token = st.nextToken();
-					if (token.charAt(0) == '-') {
-						if (isStat || isList) {
-							if (token.length() > 1) {
-								optionsSb.append(token.substring(1));
-							}
-						} else {
-							throw new ImproperUsageException();
-						}
-					} else {
-						directoryName = token;
-					}
-				}
-				options = optionsSb.toString();
-			}
+    public CommandResponse doMLSD(CommandRequest request) throws ImproperUsageException {
+        return list(request, false, false, false, true);
+    }
 
-			boolean fulldate = options.indexOf('T') != -1;
+    protected CommandResponse list(CommandRequest request, boolean isList, boolean isStat, boolean isMlst, boolean isMlsd)
+            throws ImproperUsageException {
+        try {
+            String directoryName = null;
+            String options = "";
+            BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
+            TransferState ts = conn.getTransferState();
 
-			if (!ts.isPasv() && !ts.isPort() && !isStat && !isMlst) {
-				return StandardCommandManager.genericResponse("RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS");
-			}
+            if (request.hasArgument()) {
+                StringBuilder optionsSb = new StringBuilder(4);
+                StringTokenizer st = new StringTokenizer(request.getArgument(), " ");
 
-			if (isMlst) {
-				if (!request.hasArgument()) {
-					throw new ImproperUsageException();
-				}
-				
-				try {
-					conn.getCurrentDirectory().getInodeHandleUnchecked(request.getArgument());
-				} catch (FileNotFoundException e) {
-					return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");			
-				}
-			}
-			
-			DirectoryHandle directoryFile;
-			CommandResponse response = null;	
-			User user = request.getSession().getUserNull(request.getUser());
+                while (st.hasMoreTokens() && (!isMlst)) {
+                    String token = st.nextToken();
+                    if (token.charAt(0) == '-') {
+                        if (isStat || isList) {
+                            if (token.length() > 1) {
+                                optionsSb.append(token.substring(1));
+                            }
+                        } else {
+                            throw new ImproperUsageException();
+                        }
+                    } else {
+                        directoryName = token;
+                    }
+                }
+                options = optionsSb.toString();
+            }
 
-			if (directoryName != null) {
-				try {
-					directoryFile = conn.getCurrentDirectory().getDirectory(directoryName, user);
-				} catch (FileNotFoundException ex) {
-					return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
-				} catch (ObjectNotValidException e) {
-					return StandardCommandManager.genericResponse("RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM");
-				}
-			} else {
-				directoryFile = conn.getCurrentDirectory();
-			}
-			Writer os = null;
+            boolean fulldate = options.indexOf('T') != -1;
 
-			if (isStat) {
-				response = new CommandResponse(213, "End of STAT");
-				conn.printOutput("213-STAT"+NEWLINE);
-				os = conn.getControlWriter();
-			} else if (isMlst) {
-				response = new CommandResponse(250, "End");
-				conn.printOutput("250- Listing " + request.getArgument() + NEWLINE);
-				os = conn.getControlWriter();
-			} else {
-				if (!ts.getSendFilesEncrypted() && GlobalContext.getConfig().checkPermission("denydiruncrypted", conn.getUserNull())) {
-					return new CommandResponse(550, "Secure Listing Required");
-				}
+            if (!ts.isPasv() && !ts.isPort() && !isStat && !isMlst) {
+                return StandardCommandManager.genericResponse("RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS");
+            }
 
-				conn.printOutput(new FtpReply(StandardCommandManager.genericResponse("RESPONSE_150_OK")));
+            if (isMlst) {
+                if (!request.hasArgument()) {
+                    throw new ImproperUsageException();
+                }
 
-				try {
-					os = new PrintWriter(new OutputStreamWriter(ts.getDataSocketForLIST().getOutputStream()));
-				} catch (IOException ex) {
-					logger.warn(ex);
-					return new CommandResponse(425, ex.getMessage());
-				}
-			}
-			ListElementsContainer container = null;
-			boolean slavenames = request.getProperties().getProperty("slavenames","false").equalsIgnoreCase("true");
-			try {
-				container = listElements(directoryFile, conn, request.getUser(), slavenames);
-			} catch (IOException e) {
-				logger.error(e);
-				return new CommandResponse(450, e.getMessage());
-			}
+                try {
+                    conn.getCurrentDirectory().getInodeHandleUnchecked(request.getArgument());
+                } catch (FileNotFoundException e) {
+                    return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
+                }
+            }
 
-			// execute list addons.
-			for (AddListElementsInterface listAddon : _listAddons) {
-				container = listAddon.addElements(directoryFile,container);
-			}
+            DirectoryHandle directoryFile;
+            CommandResponse response = null;
+            User user = request.getSession().getUserNull(request.getUser());
 
-			try {
-				if (isStat || isList) {
-					os.write("total 0" + NEWLINE);
-					os.write(toList(container.getElements(), fulldate, slavenames));
-				} else {
-					os.write(toMLST(container.getElements(),request.getArgument()));
-				}
-				if (isStat || isMlst)
-					return response;
-				os.close();
-				response = StandardCommandManager.genericResponse("RESPONSE_226_CLOSING_DATA_CONNECTION");
-				response.addComment(conn.status());
-				return response;
-			} catch (IOException ex) {
-				logger.warn(ex);
-				return new CommandResponse(450, ex.getMessage());
-			}
-		} finally {
-			BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
-			conn.getTransferState().reset();
-		}
-	}
+            if (directoryName != null) {
+                try {
+                    directoryFile = conn.getCurrentDirectory().getDirectory(directoryName, user);
+                } catch (FileNotFoundException ex) {
+                    return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
+                } catch (ObjectNotValidException e) {
+                    return StandardCommandManager.genericResponse("RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM");
+                }
+            } else {
+                directoryFile = conn.getCurrentDirectory();
+            }
+            Writer os = null;
 
-	protected ListElementsContainer listElements(DirectoryHandle dir, Session session, String user, boolean slavenames) throws IOException {
-		ListElementsContainer container = new ListElementsContainer(session, user, _cManager);
-		ArrayList<InodeHandle> tempFileList = new ArrayList<>(dir.getInodeHandles(session.getUserNull(user)));
-		ArrayList<InodeHandleInterface> listFiles = container.getElements();
-		ArrayList<String> fileTypes = container.getFileTypes();
-		int numOnline = container.getNumOnline();
-		int numTotal = container.getNumTotal();
+            if (isStat) {
+                response = new CommandResponse(213, "End of STAT");
+                conn.printOutput("213-STAT" + NEWLINE);
+                os = conn.getControlWriter();
+            } else if (isMlst) {
+                response = new CommandResponse(250, "End");
+                conn.printOutput("250- Listing " + request.getArgument() + NEWLINE);
+                os = conn.getControlWriter();
+            } else {
+                if (!ts.getSendFilesEncrypted() && GlobalContext.getConfig().checkPermission("denydiruncrypted", conn.getUserNull())) {
+                    return new CommandResponse(550, "Secure Listing Required");
+                }
 
-		for (InodeHandle element : tempFileList) {
-			boolean offlineFilesEnabled = GlobalContext.getConfig().getMainProperties().getProperty("files.offline.enabled", "true").equals("true");
-			
-			if (offlineFilesEnabled && element.isFile()) {
-				try {
-					if (!((FileHandleInterface) element).isAvailable()) {
-						Map<String, Object> env = new HashMap<>();
-						env.put("ofilename", element.getName());
-						String oFileName = session.jprintf(_bundle, "files.offline.filename", env, user);
-	
-						listFiles.add(new LightRemoteInode(oFileName, element.getUsername(),
-								slavenames ? getSlaveList((FileHandle)element) : element.getGroup(), element.lastModified(), element.getSize()));
-						numTotal++;
-					}
-				} catch (IOException e) {
-					//File No Longer Exists - This can happen and is normal 
-					// if file is deleted to to bad crc or aborted during the list process
-					// Ignore
-				}
-				// -OFFLINE and "ONLINE" files will both be present until someone implements
-				// a way to reupload OFFLINE files.
-				// It could be confusing to the user and/or client if the file doesn't exist, but you can't upload it. 
-			}
+                conn.printOutput(new FtpReply(StandardCommandManager.genericResponse("RESPONSE_150_OK")));
 
-			if (element.isFile()) {
-				//else element is a file, and is online
-				int typePosition = element.getName().lastIndexOf(".");
-				String fileType;
-				if (typePosition != -1) {
-					fileType = element.getName().substring(typePosition, element.getName().length());
-					if (!fileTypes.contains(fileType)) {
-						fileTypes.add(fileType);
-					}
-				}
-			}
-			numOnline++;
-			numTotal++;
-			listFiles.add(element);
-		}
+                try {
+                    os = new PrintWriter(new OutputStreamWriter(ts.getDataSocketForLIST().getOutputStream()));
+                } catch (IOException ex) {
+                    logger.warn(ex);
+                    return new CommandResponse(425, ex.getMessage());
+                }
+            }
+            ListElementsContainer container = null;
+            boolean slavenames = request.getProperties().getProperty("slavenames", "false").equalsIgnoreCase("true");
+            try {
+                container = listElements(directoryFile, conn, request.getUser(), slavenames);
+            } catch (IOException e) {
+                logger.error(e);
+                return new CommandResponse(450, e.getMessage());
+            }
 
-		container.setNumOnline(numOnline);
-		container.setNumTotal(numTotal);
-		return container;
-	}
+            // execute list addons.
+            for (AddListElementsInterface listAddon : _listAddons) {
+                container = listAddon.addElements(directoryFile, container);
+            }
 
-	private String toMLST(Collection<InodeHandleInterface> listElements, String filename) {
-		StringBuilder output = new StringBuilder();
+            try {
+                if (isStat || isList) {
+                    os.write("total 0" + NEWLINE);
+                    os.write(toList(container.getElements(), fulldate, slavenames));
+                } else {
+                    os.write(toMLST(container.getElements(), request.getArgument()));
+                }
+                if (isStat || isMlst)
+                    return response;
+                os.close();
+                response = StandardCommandManager.genericResponse("RESPONSE_226_CLOSING_DATA_CONNECTION");
+                response.addComment(conn.status());
+                return response;
+            } catch (IOException ex) {
+                logger.warn(ex);
+                return new CommandResponse(450, ex.getMessage());
+            }
+        } finally {
+            BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
+            conn.getTransferState().reset();
+        }
+    }
 
-		for (InodeHandleInterface inode : listElements) {
-			if (filename.isEmpty() || inode.getName().equals(filename)) {
-				try {
-					StringBuilder line = new StringBuilder();
-					if (inode.isLink()) {
-						line.append("type=OS.unix=slink:" + ((LinkHandle) inode).getTargetString() + ";");
-					} else if (inode.isFile()) {
-						line.append("type=file;");
-					} else if (inode.isDirectory()) {
-						line.append("type=dir;");
-					} else {
-						throw new RuntimeException("type");
-					}
-	
-					FileHandle file = null;
-					boolean isFileHandle = false;
-					if (inode.isFile() && inode instanceof FileHandle) {
-						file = (FileHandle) inode;
-						isFileHandle = true;
-					}
-	
-					try {
-						if (isFileHandle && file.getCheckSum() != 0) {
-							line.append("x.crc32=" + Checksum.formatChecksum(file.getCheckSum())+ ";");
-						}
-					} catch (NoAvailableSlaveException e) {
+    protected ListElementsContainer listElements(DirectoryHandle dir, Session session, String user, boolean slavenames) throws IOException {
+        ListElementsContainer container = new ListElementsContainer(session, user, _cManager);
+        ArrayList<InodeHandle> tempFileList = new ArrayList<>(dir.getInodeHandles(session.getUserNull(user)));
+        ArrayList<InodeHandleInterface> listFiles = container.getElements();
+        ArrayList<String> fileTypes = container.getFileTypes();
+        int numOnline = container.getNumOnline();
+        int numTotal = container.getNumTotal();
+
+        for (InodeHandle element : tempFileList) {
+            boolean offlineFilesEnabled = GlobalContext.getConfig().getMainProperties().getProperty("files.offline.enabled", "true").equals("true");
+
+            if (offlineFilesEnabled && element.isFile()) {
+                try {
+                    if (!((FileHandleInterface) element).isAvailable()) {
+                        Map<String, Object> env = new HashMap<>();
+                        env.put("ofilename", element.getName());
+                        String oFileName = session.jprintf(_bundle, "files.offline.filename", env, user);
+
+                        listFiles.add(new LightRemoteInode(oFileName, element.getUsername(),
+                                slavenames ? getSlaveList((FileHandle) element) : element.getGroup(), element.lastModified(), element.getSize()));
+                        numTotal++;
+                    }
+                } catch (IOException e) {
+                    //File No Longer Exists - This can happen and is normal
+                    // if file is deleted to to bad crc or aborted during the list process
+                    // Ignore
+                }
+                // -OFFLINE and "ONLINE" files will both be present until someone implements
+                // a way to reupload OFFLINE files.
+                // It could be confusing to the user and/or client if the file doesn't exist, but you can't upload it.
+            }
+
+            if (element.isFile()) {
+                //else element is a file, and is online
+                int typePosition = element.getName().lastIndexOf(".");
+                String fileType;
+                if (typePosition != -1) {
+                    fileType = element.getName().substring(typePosition);
+                    if (!fileTypes.contains(fileType)) {
+                        fileTypes.add(fileType);
+                    }
+                }
+            }
+            numOnline++;
+            numTotal++;
+            listFiles.add(element);
+        }
+
+        container.setNumOnline(numOnline);
+        container.setNumTotal(numTotal);
+        return container;
+    }
+
+    private String toMLST(Collection<InodeHandleInterface> listElements, String filename) {
+        StringBuilder output = new StringBuilder();
+
+        for (InodeHandleInterface inode : listElements) {
+            if (filename.isEmpty() || inode.getName().equals(filename)) {
+                try {
+                    StringBuilder line = new StringBuilder();
+                    if (inode.isLink()) {
+                        line.append("type=OS.unix=slink:" + ((LinkHandle) inode).getTargetString() + ";");
+                    } else if (inode.isFile()) {
+                        line.append("type=file;");
+                    } else if (inode.isDirectory()) {
+                        line.append("type=dir;");
+                    } else {
+                        throw new RuntimeException("type");
+                    }
+
+                    FileHandle file = null;
+                    boolean isFileHandle = false;
+                    if (inode.isFile() && inode instanceof FileHandle) {
+                        file = (FileHandle) inode;
+                        isFileHandle = true;
+                    }
+
+                    try {
+                        if (isFileHandle && file.getCheckSum() != 0) {
+                            line.append("x.crc32=" + Checksum.formatChecksum(file.getCheckSum()) + ";");
+                        }
+                    } catch (NoAvailableSlaveException e) {
                         logger.debug("Unable to fetch checksum for: {}", inode.getPath());
-					}
-	
-					line.append("size=" + inode.getSize() + ";");
-					synchronized(MLSTTIME) {
-						line.append("modify=" + MLSTTIME.format(new Date(inode.lastModified())) +";");
-					}
-	
-					line.append("unix.owner=" + inode.getUsername() + ";");
-					line.append("unix.group=" + inode.getGroup() + ";");
-	
-					if (isFileHandle) {
-						Iterator<RemoteSlave> iter = file.getSlaves().iterator();
-						line.append("x.slaves=");
-	
-						if (iter.hasNext()) {
-							line.append(iter.next().getName());
-	
-							while (iter.hasNext()) {
-								line.append("," + iter.next().getName());
-							}
-						}
-	
-						line.append(";");
-					}
-	
-					if (isFileHandle && file.getXfertime() != 0) {
-						line.append("x.xfertime=" + file.getXfertime() + ";");
-					}
-	
-					line.append(" " + inode.getName());
-					line.append(NEWLINE);
-					output.append(line.toString());
-				} catch (FileNotFoundException e) {
-					// entry was deleted whilst listing the dir, it will simply be omitted
-				}
-			}
-		}
-		return output.toString();
-	}
+                    }
 
-	private String toList(Collection<InodeHandleInterface> listElements, boolean fulldate, boolean slavenames) {
-		StringBuilder output = new StringBuilder();
+                    line.append("size=" + inode.getSize() + ";");
+                    synchronized (MLSTTIME) {
+                        line.append("modify=" + MLSTTIME.format(new Date(inode.lastModified())) + ";");
+                    }
 
-		for (InodeHandleInterface inode : listElements) {
-			try {
-				StringBuilder line = new StringBuilder();
-				if (inode instanceof FileHandle
-						&& !((FileHandle) inode).isAvailable()) {
-					line.append("----------");
-				} else {
-					addPermission(inode, line);
-				}
+                    line.append("unix.owner=" + inode.getUsername() + ";");
+                    line.append("unix.group=" + inode.getGroup() + ";");
 
-				line.append(DELIM);
-				line.append((inode.isDirectory() ? "3" : "1"));
-				line.append(DELIM);
-				line.append(padToLength(inode.getUsername(), 8));
-				line.append(DELIM);
-				if (inode.isFile() && slavenames && inode instanceof FileHandle) {
-					// Replace group name with a list of all slaves file exist on.
-					line.append(padToLength(getSlaveList((FileHandle)inode), 8));
-				} else {
-					line.append(padToLength(inode.getGroup(), 8));
-				}
-				line.append(DELIM);
-				line.append(inode.getSize());
-				line.append(DELIM);
-				line.append(getUnixDate(inode.lastModified(), fulldate));
-				line.append(DELIM);
-				line.append(inode.getName());
-				if (inode.isLink()) {
-					line.append(DELIM + "->" + DELIM + ((LinkHandle)inode).getTargetString());
-				}
-				line.append(NEWLINE);
-				output.append(line.toString());
-			} catch (FileNotFoundException e) {
-				// entry was deleted whilst listing the dir, it will simply be omitted
-			}
-		}
-		return output.toString();
-	}
+                    if (isFileHandle) {
+                        Iterator<RemoteSlave> iter = file.getSlaves().iterator();
+                        line.append("x.slaves=");
 
-	private String getSlaveList(FileHandle file) {
-		String slaveList = "";
-		try {
-			slaveList = StringUtils.join(file.getSlaveNames(), ",");
-		} catch (FileNotFoundException e) {
-			//File removed
-		}
-		return slaveList;
-	}
+                        if (iter.hasNext()) {
+                            line.append(iter.next().getName());
 
-	protected void addPermission(InodeHandleInterface inode, StringBuilder output) throws FileNotFoundException {
-		if (inode.isLink()) {
-			output.append("l");
-		} else if (inode.isDirectory()) {
-			output.append("d");
-		} else {
-			output.append("-");
-		}
-		output.append("rw");
-		output.append(inode.isDirectory() ? "x" : "-");
+                            while (iter.hasNext()) {
+                                line.append("," + iter.next().getName());
+                            }
+                        }
 
-		output.append("rw");
-		output.append(inode.isDirectory() ? "x" : "-");
+                        line.append(";");
+                    }
 
-		output.append("rw");
-		output.append(inode.isDirectory() ? "x" : "-");
-	}
+                    if (isFileHandle && file.getXfertime() != 0) {
+                        line.append("x.xfertime=" + file.getXfertime() + ";");
+                    }
 
-	protected String getUnixDate(long date, boolean fulldate) {
-		Date date1 = new Date(date);
-		long dateTime = date1.getTime();
+                    line.append(" " + inode.getName());
+                    line.append(NEWLINE);
+                    output.append(line.toString());
+                } catch (FileNotFoundException e) {
+                    // entry was deleted whilst listing the dir, it will simply be omitted
+                }
+            }
+        }
+        return output.toString();
+    }
 
-		if (dateTime < 0) {
-			return "------------";
-		}
+    private String toList(Collection<InodeHandleInterface> listElements, boolean fulldate, boolean slavenames) {
+        StringBuilder output = new StringBuilder();
 
-		Calendar cal = new GregorianCalendar();
-		cal.setTime(date1);
+        for (InodeHandleInterface inode : listElements) {
+            try {
+                StringBuilder line = new StringBuilder();
+                if (inode instanceof FileHandle
+                        && !((FileHandle) inode).isAvailable()) {
+                    line.append("----------");
+                } else {
+                    addPermission(inode, line);
+                }
 
-		String firstPart = MONTHS[cal.get(Calendar.MONTH)] + ' ';
+                line.append(DELIM);
+                line.append((inode.isDirectory() ? "3" : "1"));
+                line.append(DELIM);
+                line.append(padToLength(inode.getUsername(), 8));
+                line.append(DELIM);
+                if (inode.isFile() && slavenames && inode instanceof FileHandle) {
+                    // Replace group name with a list of all slaves file exist on.
+                    line.append(padToLength(getSlaveList((FileHandle) inode), 8));
+                } else {
+                    line.append(padToLength(inode.getGroup(), 8));
+                }
+                line.append(DELIM);
+                line.append(inode.getSize());
+                line.append(DELIM);
+                line.append(getUnixDate(inode.lastModified(), fulldate));
+                line.append(DELIM);
+                line.append(inode.getName());
+                if (inode.isLink()) {
+                    line.append(DELIM + "->" + DELIM + ((LinkHandle) inode).getTargetString());
+                }
+                line.append(NEWLINE);
+                output.append(line.toString());
+            } catch (FileNotFoundException e) {
+                // entry was deleted whilst listing the dir, it will simply be omitted
+            }
+        }
+        return output.toString();
+    }
 
-		String dateStr = String.valueOf(cal.get(Calendar.DATE));
+    private String getSlaveList(FileHandle file) {
+        String slaveList = "";
+        try {
+            slaveList = StringUtils.join(file.getSlaveNames(), ",");
+        } catch (FileNotFoundException e) {
+            //File removed
+        }
+        return slaveList;
+    }
 
-		if (dateStr.length() == 1) {
-			dateStr = ' ' + dateStr;
-		}
+    protected void addPermission(InodeHandleInterface inode, StringBuilder output) throws FileNotFoundException {
+        if (inode.isLink()) {
+            output.append("l");
+        } else if (inode.isDirectory()) {
+            output.append("d");
+        } else {
+            output.append("-");
+        }
+        output.append("rw");
+        output.append(inode.isDirectory() ? "x" : "-");
 
-		firstPart += (dateStr + ' ');
+        output.append("rw");
+        output.append(inode.isDirectory() ? "x" : "-");
 
-		long nowTime = System.currentTimeMillis();
+        output.append("rw");
+        output.append(inode.isDirectory() ? "x" : "-");
+    }
 
-		if (fulldate) {
-			synchronized(FULL) {
-				return firstPart + FULL.format(date1);
-			}
-		} else if (Math.abs(nowTime - dateTime) > (183L * 24L * 60L * 60L * 1000L)) {
-			synchronized(AFTER_SIX) {
-				return firstPart + AFTER_SIX.format(date1);
-			}
-		} else {
-			synchronized(BEFORE_SIX) {
-				return firstPart + BEFORE_SIX.format(date1);
-			}
-		}
-	}
+    protected String getUnixDate(long date, boolean fulldate) {
+        Date date1 = new Date(date);
+        long dateTime = date1.getTime();
 
-	protected String padToLength(String value, int length) {
-		if (value.length() >= length) {
-			return value;
-		}
+        if (dateTime < 0) {
+            return "------------";
+        }
 
-		if (PADDING.length() < length) {
-			throw new RuntimeException("padding must be longer than length");
-		}
+        Calendar cal = new GregorianCalendar();
+        cal.setTime(date1);
 
-		return PADDING.substring(0, length - value.length()) + value;
-	}
+        String firstPart = MONTHS[cal.get(Calendar.MONTH)] + ' ';
 
-	// TODO @k2r onUnloadPluginEvent
+        String dateStr = String.valueOf(cal.get(Calendar.DATE));
+
+        if (dateStr.length() == 1) {
+            dateStr = ' ' + dateStr;
+        }
+
+        firstPart += (dateStr + ' ');
+
+        long nowTime = System.currentTimeMillis();
+
+        if (fulldate) {
+            synchronized (FULL) {
+                return firstPart + FULL.format(date1);
+            }
+        } else if (Math.abs(nowTime - dateTime) > (183L * 24L * 60L * 60L * 1000L)) {
+            synchronized (AFTER_SIX) {
+                return firstPart + AFTER_SIX.format(date1);
+            }
+        } else {
+            synchronized (BEFORE_SIX) {
+                return firstPart + BEFORE_SIX.format(date1);
+            }
+        }
+    }
+
+    protected String padToLength(String value, int length) {
+        if (value.length() >= length) {
+            return value;
+        }
+
+        if (PADDING.length() < length) {
+            throw new RuntimeException("padding must be longer than length");
+        }
+
+        return PADDING.substring(0, length - value.length()) + value;
+    }
+
+    // TODO @k2r onUnloadPluginEvent
 	/*
 	@EventSubscriber @Override
 	public synchronized void onUnloadPluginEvent(UnloadPluginEvent event) {
@@ -559,10 +556,10 @@ public class ListHandler extends CommandInterface {
 	}
 	*/
 
-	/*
-	 * Returning a copy of listAddons, so we can't change them.
-	 */
-	public ArrayList<AddListElementsInterface> getAddons() {
-		return new ArrayList<>(_listAddons);
-	}
+    /*
+     * Returning a copy of listAddons, so we can't change them.
+     */
+    public ArrayList<AddListElementsInterface> getAddons() {
+        return new ArrayList<>(_listAddons);
+    }
 }

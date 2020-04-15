@@ -17,26 +17,26 @@
  */
 package org.drftpd.zipscript.master.sfv;
 
+import org.drftpd.common.network.AsyncCommandArgument;
+import org.drftpd.common.protocol.AbstractIssuer;
 import org.drftpd.master.exceptions.SlaveUnavailableException;
 import org.drftpd.master.slavemanagement.RemoteSlave;
-import org.drftpd.common.protocol.AbstractIssuer;
-import org.drftpd.common.network.AsyncCommandArgument;
 
 /**
  * @author fr0w
  * @version $Id$
  */
 public class ZipscriptIssuer extends AbstractIssuer {
-	@Override
-	public String getProtocolName() {
-		return "ZipscriptProtocol";
-	}
+    @Override
+    public String getProtocolName() {
+        return "ZipscriptProtocol";
+    }
 
-	public String issueSFVFileToSlave(RemoteSlave rslave, String path)throws SlaveUnavailableException {
-		String index = rslave.fetchIndex();
-		AsyncCommandArgument ac = new AsyncCommandArgument(index, "sfvFile", path);
-		rslave.sendCommand(ac);
+    public String issueSFVFileToSlave(RemoteSlave rslave, String path) throws SlaveUnavailableException {
+        String index = rslave.fetchIndex();
+        AsyncCommandArgument ac = new AsyncCommandArgument(index, "sfvFile", path);
+        rslave.sendCommand(ac);
 
-		return index;
-	}
+        return index;
+    }
 }

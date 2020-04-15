@@ -25,18 +25,18 @@ import org.drftpd.common.network.AsyncResponse;
  */
 @SuppressWarnings("serial")
 public class AsyncResponseMaxPath extends AsyncResponse {
-	int _maxPath;
+    int _maxPath;
 
-	public AsyncResponseMaxPath(String index, int maxPath) {
-		super(index);
-		_maxPath = maxPath;
-	}
+    public AsyncResponseMaxPath(String index, int maxPath) {
+        super(index);
+        _maxPath = maxPath;
+    }
 
-	public int getMaxPath() {
-		return _maxPath;
-	}
+    public int getMaxPath() {
+        return _maxPath;
+    }
 
-	public String toString() {
-		return getClass().getName() + "[maxPath=" + getMaxPath() + "]";
-	}
+    public String toString() {
+        return getClass().getName() + "[maxPath=" + getMaxPath() + "]";
+    }
 }

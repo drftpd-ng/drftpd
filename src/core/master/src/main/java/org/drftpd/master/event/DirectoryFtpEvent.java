@@ -22,29 +22,28 @@ import org.drftpd.master.vfs.DirectoryHandle;
 
 /**
  * @author mog
- * 
  * @version $Id$
  */
 public class DirectoryFtpEvent extends ConnectionEvent {
-	private DirectoryHandle directory;
+    private final DirectoryHandle directory;
 
-	public DirectoryFtpEvent(User user, String command,
-			DirectoryHandle directory) {
-		this(user, command, directory, System.currentTimeMillis());
-	}
+    public DirectoryFtpEvent(User user, String command,
+                             DirectoryHandle directory) {
+        this(user, command, directory, System.currentTimeMillis());
+    }
 
-	public DirectoryFtpEvent(User user, String command,
-			DirectoryHandle directory, long time) {
-		super(user, command, time);
-		this.directory = directory;
-	}
+    public DirectoryFtpEvent(User user, String command,
+                             DirectoryHandle directory, long time) {
+        super(user, command, time);
+        this.directory = directory;
+    }
 
-	public DirectoryHandle getDirectory() {
-		return directory;
-	}
+    public DirectoryHandle getDirectory() {
+        return directory;
+    }
 
-	public String toString() {
-		return getClass().getName() + "[user=" + getUser() + ",cmd="
-				+ getCommand() + ",directory=" + directory.getPath() + "]";
-	}
+    public String toString() {
+        return getClass().getName() + "[user=" + getUser() + ",cmd="
+                + getCommand() + ",directory=" + directory.getPath() + "]";
+    }
 }

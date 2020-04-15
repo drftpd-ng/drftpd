@@ -26,22 +26,22 @@ import org.drftpd.common.slave.DiskStatus;
  */
 @SuppressWarnings("serial")
 public class AsyncResponseDiskStatus extends AsyncResponse {
-	private DiskStatus _status;
+    private final DiskStatus _status;
 
-	public AsyncResponseDiskStatus(DiskStatus status) {
-		super("DiskStatus");
-		if (status == null) {
-			throw new IllegalArgumentException("status cannot be null");
-		}
+    public AsyncResponseDiskStatus(DiskStatus status) {
+        super("DiskStatus");
+        if (status == null) {
+            throw new IllegalArgumentException("status cannot be null");
+        }
 
-		_status = status;
-	}
+        _status = status;
+    }
 
-	public DiskStatus getDiskStatus() {
-		return _status;
-	}
+    public DiskStatus getDiskStatus() {
+        return _status;
+    }
 
-	public String toString() {
-		return getClass().getName() + "[status=" + getDiskStatus() + "]";
-	}
+    public String toString() {
+        return getClass().getName() + "[status=" + getDiskStatus() + "]";
+    }
 }

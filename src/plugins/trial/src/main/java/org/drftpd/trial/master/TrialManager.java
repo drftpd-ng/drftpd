@@ -44,6 +44,18 @@ public class TrialManager implements PluginInterface {
 
     private ArrayList<TrialType> _trials;
 
+    /*
+     * Get the TrialManager Plugin
+     */
+    public static TrialManager getTrialManager() {
+        for (PluginInterface plugin : GlobalContext.getGlobalContext().getPlugins()) {
+            if (plugin instanceof TrialManager) {
+                return (TrialManager) plugin;
+            }
+        }
+        throw new RuntimeException("TrialManager plugin is not loaded.");
+    }
+
     @Override
     public void startPlugin() {
         AnnotationProcessor.process(this);
@@ -58,18 +70,6 @@ public class TrialManager implements PluginInterface {
     @EventSubscriber
     public void onReloadEvent(ReloadEvent event) {
         loadConf();
-    }
-
-    /*
-     * Get the TrialManager Plugin
-     */
-    public static TrialManager getTrialManager() {
-        for (PluginInterface plugin : GlobalContext.getGlobalContext().getPlugins()) {
-            if (plugin instanceof TrialManager) {
-                return (TrialManager) plugin;
-            }
-        }
-        throw new RuntimeException("TrialManager plugin is not loaded.");
     }
 
     /*

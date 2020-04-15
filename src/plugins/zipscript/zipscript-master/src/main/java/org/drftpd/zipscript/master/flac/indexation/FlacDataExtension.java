@@ -22,8 +22,8 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.NumericField;
 import org.drftpd.common.dynamicdata.KeyNotFoundException;
-import org.drftpd.master.vfs.event.ImmutableInodeHandle;
 import org.drftpd.master.indexation.IndexDataExtensionInterface;
+import org.drftpd.master.vfs.event.ImmutableInodeHandle;
 import org.drftpd.zipscript.common.flac.FlacInfo;
 import org.drftpd.zipscript.common.flac.VorbisTag;
 
@@ -32,43 +32,43 @@ import org.drftpd.zipscript.common.flac.VorbisTag;
  */
 public class FlacDataExtension implements IndexDataExtensionInterface {
 
-	private static final Field FIELD_GENRE = new Field("flacGenre", "", Field.Store.YES, Field.Index.ANALYZED);
-	private static final Field FIELD_TITLE = new Field("flacTitle", "", Field.Store.YES, Field.Index.ANALYZED);
-	private static final Field FIELD_ARTIST = new Field("flacArtist", "", Field.Store.YES, Field.Index.ANALYZED);
-	private static final Field FIELD_ALBUM = new Field("flacAlbum", "", Field.Store.YES, Field.Index.ANALYZED);
-	private static final NumericField FIELD_YEAR = new NumericField("flacYear", Field.Store.YES, Boolean.TRUE);
-	
-	@Override
-	public void initializeFields(Document doc) {
-		doc.add(FIELD_GENRE);
-		doc.add(FIELD_TITLE);
-		doc.add(FIELD_ARTIST);
-		doc.add(FIELD_ALBUM);
-		doc.add(FIELD_YEAR);
-	}
+    private static final Field FIELD_GENRE = new Field("flacGenre", "", Field.Store.YES, Field.Index.ANALYZED);
+    private static final Field FIELD_TITLE = new Field("flacTitle", "", Field.Store.YES, Field.Index.ANALYZED);
+    private static final Field FIELD_ARTIST = new Field("flacArtist", "", Field.Store.YES, Field.Index.ANALYZED);
+    private static final Field FIELD_ALBUM = new Field("flacAlbum", "", Field.Store.YES, Field.Index.ANALYZED);
+    private static final NumericField FIELD_YEAR = new NumericField("flacYear", Field.Store.YES, Boolean.TRUE);
 
-	@Override
-	public void addData(Document doc, ImmutableInodeHandle inode) {
-		VorbisTag vorbisTag = null;
-		try {
-			FlacInfo flacInfo = inode.getPluginMetaData(FlacInfo.FLACINFO);
-			vorbisTag = flacInfo.getVorbisTag();
-		} catch (KeyNotFoundException e) {
-			// Fields will be cleared below
-		}
-		if (vorbisTag == null) {
-			FIELD_GENRE.setValue("");
-			FIELD_TITLE.setValue("");
-			FIELD_ARTIST.setValue("");
-			FIELD_ALBUM.setValue("");
-			FIELD_YEAR.setIntValue(-1);
-		} else {
-			FIELD_GENRE.setValue(vorbisTag.getGenre());
-			FIELD_TITLE.setValue(vorbisTag.getTitle());
-			FIELD_ARTIST.setValue(vorbisTag.getArtist());
-			FIELD_ALBUM.setValue(vorbisTag.getAlbum());
-			FIELD_YEAR.setIntValue(NumberUtils.isDigits(vorbisTag.getYear()) ?
-					Integer.parseInt(vorbisTag.getYear()) : -1);
-		}
-	}
+    @Override
+    public void initializeFields(Document doc) {
+        doc.add(FIELD_GENRE);
+        doc.add(FIELD_TITLE);
+        doc.add(FIELD_ARTIST);
+        doc.add(FIELD_ALBUM);
+        doc.add(FIELD_YEAR);
+    }
+
+    @Override
+    public void addData(Document doc, ImmutableInodeHandle inode) {
+        VorbisTag vorbisTag = null;
+        try {
+            FlacInfo flacInfo = inode.getPluginMetaData(FlacInfo.FLACINFO);
+            vorbisTag = flacInfo.getVorbisTag();
+        } catch (KeyNotFoundException e) {
+            // Fields will be cleared below
+        }
+        if (vorbisTag == null) {
+            FIELD_GENRE.setValue("");
+            FIELD_TITLE.setValue("");
+            FIELD_ARTIST.setValue("");
+            FIELD_ALBUM.setValue("");
+            FIELD_YEAR.setIntValue(-1);
+        } else {
+            FIELD_GENRE.setValue(vorbisTag.getGenre());
+            FIELD_TITLE.setValue(vorbisTag.getTitle());
+            FIELD_ARTIST.setValue(vorbisTag.getArtist());
+            FIELD_ALBUM.setValue(vorbisTag.getAlbum());
+            FIELD_YEAR.setIntValue(NumberUtils.isDigits(vorbisTag.getYear()) ?
+                    Integer.parseInt(vorbisTag.getYear()) : -1);
+        }
+    }
 }

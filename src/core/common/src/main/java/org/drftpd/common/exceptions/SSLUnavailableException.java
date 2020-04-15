@@ -23,19 +23,19 @@ package org.drftpd.common.exceptions;
  */
 @SuppressWarnings("serial")
 public class SSLUnavailableException extends Exception {
-	public SSLUnavailableException() {
-		super();
-	}
+    public SSLUnavailableException() {
+        super();
+    }
 
-	public SSLUnavailableException(String message) {
-		super(message);
-	}
+    public SSLUnavailableException(String message) {
+        super(message);
+    }
 
-	public SSLUnavailableException(String message, Throwable cause) {
-		super(message, cause);
-	}
+    public SSLUnavailableException(String message, Throwable cause) {
+        super(message, cause);
+    }
 
-	public SSLUnavailableException(Throwable cause) {
-		super(cause);
-	}
+    public SSLUnavailableException(Throwable cause) {
+        super(cause);
+    }
 }

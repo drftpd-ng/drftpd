@@ -18,17 +18,16 @@
 package org.drftpd.master.commands.transferstatistics;
 
 import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
-import org.drftpd.master.GlobalContext;
-import org.drftpd.master.commands.usermanagement.UserManagement;
+import org.apache.logging.log4j.Logger;
 import org.drftpd.common.util.Bytes;
-import org.drftpd.master.network.Session;
+import org.drftpd.master.GlobalContext;
 import org.drftpd.master.commands.CommandInterface;
 import org.drftpd.master.commands.CommandRequest;
 import org.drftpd.master.commands.CommandResponse;
 import org.drftpd.master.commands.StandardCommandManager;
+import org.drftpd.master.commands.usermanagement.UserManagement;
+import org.drftpd.master.network.Session;
 import org.drftpd.master.permissions.Permission;
 import org.drftpd.master.usermanager.NoSuchUserException;
 import org.drftpd.master.usermanager.User;
@@ -53,13 +52,6 @@ public class TransferStatistics extends CommandInterface {
     private static final Logger logger = LogManager.getLogger(TransferStatistics.class);
 
     private ResourceBundle _bundle;
-
-
-    public void initialize(String method, String pluginName, StandardCommandManager cManager) {
-        super.initialize(method, pluginName, cManager);
-        _bundle = cManager.getResourceBundle();
-
-    }
 
     /* TODO: not sure this method is actually
      * use anywhere
@@ -106,6 +98,36 @@ public class TransferStatistics extends CommandInterface {
         }
 
         throw new IllegalArgumentException("unhandled command = " + command);
+    }
+
+    public static String getUpRate(User user, int period) {
+        double s = user.getUploadedTimeForPeriod(period) / 1000.0;
+
+        if (s <= 0) {
+            return "- k/s";
+        }
+
+        double rate = user.getUploadedBytesForPeriod(period) / s;
+
+        return Bytes.formatBytes((long) rate) + "/s";
+    }
+
+    public static String getDownRate(User user, int period) {
+        double s = user.getDownloadedTimeForPeriod(period) / 1000.0;
+
+        if (s <= 0) {
+            return "- k/s";
+        }
+
+        double rate = user.getDownloadedBytesForPeriod(period) / s;
+
+        return Bytes.formatBytes((long) rate) + "/s";
+    }
+
+    public void initialize(String method, String pluginName, StandardCommandManager cManager) {
+        super.initialize(method, pluginName, cManager);
+        _bundle = cManager.getResourceBundle();
+
     }
 
     /**
@@ -316,29 +338,5 @@ public class TransferStatistics extends CommandInterface {
         }
 
         return response;
-    }
-
-    public static String getUpRate(User user, int period) {
-        double s = user.getUploadedTimeForPeriod(period) / 1000.0;
-
-        if (s <= 0) {
-            return "- k/s";
-        }
-
-        double rate = user.getUploadedBytesForPeriod(period) / s;
-
-        return Bytes.formatBytes((long) rate) + "/s";
-    }
-
-    public static String getDownRate(User user, int period) {
-        double s = user.getDownloadedTimeForPeriod(period) / 1000.0;
-
-        if (s <= 0) {
-            return "- k/s";
-        }
-
-        double rate = user.getDownloadedBytesForPeriod(period) / s;
-
-        return Bytes.formatBytes((long) rate) + "/s";
     }
 }

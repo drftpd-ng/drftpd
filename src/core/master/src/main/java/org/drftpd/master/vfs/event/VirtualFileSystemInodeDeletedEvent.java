@@ -21,12 +21,13 @@ import org.drftpd.master.vfs.VirtualFileSystemInode;
 
 /**
  * This event is fired whenever an inode is deleted.
+ *
  * @author fr0w
  * @version $Id$
  */
 public class VirtualFileSystemInodeDeletedEvent extends VirtualFileSystemEvent {
-	
-	public VirtualFileSystemInodeDeletedEvent(VirtualFileSystemInode inode, String path) {
-		super(inode, path);
-	}
+
+    public VirtualFileSystemInodeDeletedEvent(VirtualFileSystemInode inode, String path) {
+        super(inode, path);
+    }
 }

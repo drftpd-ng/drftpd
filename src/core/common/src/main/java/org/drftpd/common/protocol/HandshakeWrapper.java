@@ -21,53 +21,57 @@ import java.io.Serializable;
 /**
  * HandshakeWrapper is the object which is serialized by the slave and
  * unserialized by master in order to check if the handshake was successful or not.
+ *
  * @author fr0w
  * @version $Id$
  */
 @SuppressWarnings("serial")
 public class HandshakeWrapper implements Serializable {
-	private boolean _status;
-	private Exception _exception;
+    private boolean _status;
+    private Exception _exception;
 
-	/**
-	 * @return true if *all* plugins were found on the slave-side
-	 * false if there's was a problem while handshaking.
-	 */
-	public boolean pluginStatus() {
-		return _status;
-	}
-	
-	/**
-	 * If there was a problem, it's most likely an exception were thrown.
-	 * @return the thrown Exception.
-	 * @throws IllegalStateException if no exceptions were thrown.
-	 */
-	public Exception getException() {
-		if (!_status)
-			return _exception;
-		
-		throw new IllegalStateException("No exception were thrown");
-	}
-	
-	/**
-	 * Sets the status of the handshake.
-	 * @param status
-	 * @see #pluginStatus()
-	 */
-	public void setPluginStatus(boolean status) {
-		_status = status;
-	}
-	
-	/**
-	 * Set the thrown Exception.
-	 * @param e
-	 * @see #getException()
-	 */
-	public void setException(Exception e) {
-		_exception = e;
-	}
-	
-	public String toString() {
-		return getClass().getName() + "[pluginStatus="+pluginStatus()+"]";
-	}
+    /**
+     * @return true if *all* plugins were found on the slave-side
+     * false if there's was a problem while handshaking.
+     */
+    public boolean pluginStatus() {
+        return _status;
+    }
+
+    /**
+     * If there was a problem, it's most likely an exception were thrown.
+     *
+     * @return the thrown Exception.
+     * @throws IllegalStateException if no exceptions were thrown.
+     */
+    public Exception getException() {
+        if (!_status)
+            return _exception;
+
+        throw new IllegalStateException("No exception were thrown");
+    }
+
+    /**
+     * Set the thrown Exception.
+     *
+     * @param e
+     * @see #getException()
+     */
+    public void setException(Exception e) {
+        _exception = e;
+    }
+
+    /**
+     * Sets the status of the handshake.
+     *
+     * @param status
+     * @see #pluginStatus()
+     */
+    public void setPluginStatus(boolean status) {
+        _status = status;
+    }
+
+    public String toString() {
+        return getClass().getName() + "[pluginStatus=" + pluginStatus() + "]";
+    }
 }

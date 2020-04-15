@@ -16,8 +16,8 @@
  */
 package org.drftpd.archive.master.event;
 
-import org.drftpd.master.util.Time;
 import org.drftpd.archive.master.archivetypes.ArchiveType;
+import org.drftpd.master.util.Time;
 
 /**
  * @author CyBeR
@@ -25,20 +25,20 @@ import org.drftpd.archive.master.archivetypes.ArchiveType;
  */
 public class ArchiveFinishEvent {
 
-	private long _archivetime;
-	private ArchiveType _archivetype;
+    private final long _archivetime;
+    private final ArchiveType _archivetype;
 
-	public ArchiveFinishEvent(ArchiveType archivetype, long starttime) {
-		_archivetype = archivetype;
-		_archivetime = System.currentTimeMillis() - starttime;
-	}
+    public ArchiveFinishEvent(ArchiveType archivetype, long starttime) {
+        _archivetype = archivetype;
+        _archivetime = System.currentTimeMillis() - starttime;
+    }
 
-	public ArchiveType getArchiveType() {
-		return _archivetype;
-	}
-	
-	public String getArchiveTime() {
-		return Time.formatTime(_archivetime);
-	}
+    public ArchiveType getArchiveType() {
+        return _archivetype;
+    }
+
+    public String getArchiveTime() {
+        return Time.formatTime(_archivetime);
+    }
 
 }

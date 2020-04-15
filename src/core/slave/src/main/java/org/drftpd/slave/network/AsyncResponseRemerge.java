@@ -30,43 +30,43 @@ import java.util.List;
  */
 @SuppressWarnings("serial")
 public class AsyncResponseRemerge extends AsyncResponse {
-	private List<LightRemoteInode> _inodes;
+    private final List<LightRemoteInode> _inodes;
 
-	private String _path;
-	
-	private long _lastModified;
+    private final String _path;
 
-	public AsyncResponseRemerge(String directoryPath,
-			List<LightRemoteInode> inodes, long lastModified) {
-		super("Remerge");
-		if (File.separatorChar == '\\') { // stupid win32 hack
-			directoryPath = directoryPath.replaceAll("\\\\", "/");
-		}
-		if (directoryPath.indexOf('\\') != -1) {
-			throw new RuntimeException(
-					"\\ is not an acceptable character in a directory path");
-		}
-		if (directoryPath.equals("")) {
-			directoryPath = File.separator;
-		}
-		_path = directoryPath;
-		_inodes = inodes;
-		_lastModified = lastModified;
-	}
+    private final long _lastModified;
 
-	public String getPath() {
-		return _path;
-	}
+    public AsyncResponseRemerge(String directoryPath,
+                                List<LightRemoteInode> inodes, long lastModified) {
+        super("Remerge");
+        if (File.separatorChar == '\\') { // stupid win32 hack
+            directoryPath = directoryPath.replaceAll("\\\\", "/");
+        }
+        if (directoryPath.indexOf('\\') != -1) {
+            throw new RuntimeException(
+                    "\\ is not an acceptable character in a directory path");
+        }
+        if (directoryPath.equals("")) {
+            directoryPath = File.separator;
+        }
+        _path = directoryPath;
+        _inodes = inodes;
+        _lastModified = lastModified;
+    }
 
-	public List<LightRemoteInode> getFiles() {
-		return Collections.unmodifiableList(_inodes);
-	}
-	
-	public long getLastModified() {
-		return _lastModified;
-	}
+    public String getPath() {
+        return _path;
+    }
 
-	public String toString() {
-		return getClass().getName() + "[path=" + getPath() + "]";
-	}
+    public List<LightRemoteInode> getFiles() {
+        return Collections.unmodifiableList(_inodes);
+    }
+
+    public long getLastModified() {
+        return _lastModified;
+    }
+
+    public String toString() {
+        return getClass().getName() + "[path=" + getPath() + "]";
+    }
 }

@@ -29,28 +29,28 @@ import java.net.UnknownHostException;
  * @version $Id$
  */
 public class DummySocketFactory extends SocketFactory {
-    private DummySocket _socket = new DummySocket();
+    private final DummySocket _socket = new DummySocket();
 
     public DummySocketFactory() {
     }
 
     public Socket createSocket(String arg0, int arg1)
-        throws IOException, UnknownHostException {
+            throws IOException {
         return createSocket();
     }
 
     public Socket createSocket(String arg0, int arg1, InetAddress arg2, int arg3)
-        throws IOException, UnknownHostException {
+            throws IOException {
         return createSocket();
     }
 
     public Socket createSocket(InetAddress arg0, int arg1)
-        throws IOException {
+            throws IOException {
         return createSocket();
     }
 
     public Socket createSocket(InetAddress arg0, int arg1, InetAddress arg2,
-        int arg3) throws IOException {
+                               int arg3) throws IOException {
         return createSocket();
     }
 

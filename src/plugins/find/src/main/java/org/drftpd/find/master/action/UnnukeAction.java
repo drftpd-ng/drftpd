@@ -16,59 +16,60 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 package org.drftpd.find.master.action;
+
+import org.drftpd.master.commands.CommandRequest;
+import org.drftpd.master.commands.ImproperUsageException;
 import org.drftpd.master.commands.nuke.NukeException;
 import org.drftpd.master.commands.nuke.NukeUtils;
 import org.drftpd.master.commands.nuke.metadata.NukeData;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.InodeHandle;
-import org.drftpd.master.commands.CommandRequest;
-import org.drftpd.master.commands.ImproperUsageException;
 
 /**
  * @author scitz0
  * @version $Id$
  */
 public class UnnukeAction implements ActionInterface {
-	private boolean _failed;
-	private String _reason = "";
+    private boolean _failed;
+    private String _reason = "";
 
-	@Override
-	public String name() {
-		return "Unnuke";
-	}
+    @Override
+    public String name() {
+        return "Unnuke";
+    }
 
-	@Override
-	public void initialize(String action, String[] args) throws ImproperUsageException {
-		if (args != null) {
-			_reason = args[0];
-		}
-	}
+    @Override
+    public void initialize(String action, String[] args) throws ImproperUsageException {
+        if (args != null) {
+            _reason = args[0];
+        }
+    }
 
-	@Override
-	public String exec(CommandRequest request, InodeHandle inode) {
-		// Try to unnuke dir, if its not previously nuked an NukeException will be thrown.
-		NukeData nd;
-		try {
-			nd = NukeUtils.unnuke((DirectoryHandle) inode, _reason);
-		} catch (NukeException e) {
-			_failed = true;
-			return "Unnuke failed for " + inode.getPath() + ": " + e.getMessage();
-		}
-		return "Successfully unnuked " + nd.getPath();
-	}
+    @Override
+    public String exec(CommandRequest request, InodeHandle inode) {
+        // Try to unnuke dir, if its not previously nuked an NukeException will be thrown.
+        NukeData nd;
+        try {
+            nd = NukeUtils.unnuke((DirectoryHandle) inode, _reason);
+        } catch (NukeException e) {
+            _failed = true;
+            return "Unnuke failed for " + inode.getPath() + ": " + e.getMessage();
+        }
+        return "Successfully unnuked " + nd.getPath();
+    }
 
-	@Override
-	public boolean execInDirs() {
-		return true;
-	}
+    @Override
+    public boolean execInDirs() {
+        return true;
+    }
 
-	@Override
-	public boolean execInFiles() {
-		return false;
-	}
+    @Override
+    public boolean execInFiles() {
+        return false;
+    }
 
-	@Override
-	public boolean failed() {
-		return _failed;
-	}
+    @Override
+    public boolean failed() {
+        return _failed;
+    }
 }

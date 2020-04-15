@@ -17,8 +17,6 @@
  */
 package org.drftpd.common.slave;
 
-import org.drftpd.common.slave.TransferIndex;
-
 import java.io.Serializable;
 
 /**
@@ -27,76 +25,76 @@ import java.io.Serializable;
  */
 @SuppressWarnings("serial")
 public class TransferStatus implements Serializable {
-	private long _checksum;
+    private final long _checksum;
 
-	private long _elapsed;
+    private final long _elapsed;
 
-	private boolean _isFinished;
+    private final boolean _isFinished;
 
-	private Throwable _throwable;
+    private Throwable _throwable;
 
-	private long _transfered;
+    private final long _transfered;
 
-	private TransferIndex _transferIndex;
+    private final TransferIndex _transferIndex;
 
-	public TransferStatus(long elapsed, long transfered, long checksum,
-			boolean isFinished, TransferIndex transferIndex) {
-		_transferIndex = transferIndex;
-		_elapsed = elapsed;
-		_transfered = transfered;
-		_checksum = checksum;
-		_isFinished = isFinished;
-		_throwable = null;
-	}
+    public TransferStatus(long elapsed, long transfered, long checksum,
+                          boolean isFinished, TransferIndex transferIndex) {
+        _transferIndex = transferIndex;
+        _elapsed = elapsed;
+        _transfered = transfered;
+        _checksum = checksum;
+        _isFinished = isFinished;
+        _throwable = null;
+    }
 
-	public TransferStatus(TransferIndex transferIndex, Throwable t) {
-		this(0, 0, 0, true, transferIndex);
-		_throwable = t;
-	}
+    public TransferStatus(TransferIndex transferIndex, Throwable t) {
+        this(0, 0, 0, true, transferIndex);
+        _throwable = t;
+    }
 
-	public long getChecksum() {
-		return _checksum;
-	}
+    public long getChecksum() {
+        return _checksum;
+    }
 
-	public long getElapsed() {
-		return _elapsed;
-	}
+    public long getElapsed() {
+        return _elapsed;
+    }
 
-	public Throwable getThrowable() {
-		return _throwable;
-	}
+    public Throwable getThrowable() {
+        return _throwable;
+    }
 
-	public long getTransfered() {
-		return _transfered;
-	}
+    public long getTransfered() {
+        return _transfered;
+    }
 
-	public TransferIndex getTransferIndex() {
-		return _transferIndex;
-	}
+    public TransferIndex getTransferIndex() {
+        return _transferIndex;
+    }
 
-	public long getXferSpeed() {
-		if (_transfered == 0) {
-			return 0;
-		}
+    public long getXferSpeed() {
+        if (_transfered == 0) {
+            return 0;
+        }
 
-		if (_elapsed == 0) {
-			return 0;
-		}
+        if (_elapsed == 0) {
+            return 0;
+        }
 
-		return (long) (_transfered / ((float) _elapsed / (float) 1000));
-	}
+        return (long) (_transfered / ((float) _elapsed / (float) 1000));
+    }
 
-	public boolean isFinished() {
-		return _isFinished;
-	}
+    public boolean isFinished() {
+        return _isFinished;
+    }
 
-	public boolean threwException() {
-		return (_throwable != null);
-	}
+    public boolean threwException() {
+        return (_throwable != null);
+    }
 
-	public String toString() {
-		return "TransferStatus=[xferspeed=" + getXferSpeed() + "][transfered="
-				+ getTransfered() + "][elapsed=" + getElapsed() + "]";
-	}
+    public String toString() {
+        return "TransferStatus=[xferspeed=" + getXferSpeed() + "][transfered="
+                + getTransfered() + "][elapsed=" + getElapsed() + "]";
+    }
 
 }

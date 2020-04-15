@@ -25,32 +25,32 @@ import org.drftpd.master.vfs.DirectoryHandle;
  */
 public class PreEvent {
 
-	private DirectoryHandle _dir;
-	private SectionInterface _section;
-	private String _files;
-	private String _bytes;
+    private final DirectoryHandle _dir;
+    private final SectionInterface _section;
+    private final String _files;
+    private final String _bytes;
 
-	public PreEvent(DirectoryHandle dir, SectionInterface section, String files, String bytes) {
-		_dir = dir;
-		_section = section;
-		_files = files;
-		_bytes = bytes;
-	}
+    public PreEvent(DirectoryHandle dir, SectionInterface section, String files, String bytes) {
+        _dir = dir;
+        _section = section;
+        _files = files;
+        _bytes = bytes;
+    }
 
-	public DirectoryHandle getDir() {
-		return _dir;
-	}
-	
-	public SectionInterface getSection() {
-		return _section;
-	}
-	
-	public String getFiles() {
-		return _files;
-	}
-	
-	public String getBytes() {
-		return _bytes;
-	}
+    public DirectoryHandle getDir() {
+        return _dir;
+    }
+
+    public SectionInterface getSection() {
+        return _section;
+    }
+
+    public String getFiles() {
+        return _files;
+    }
+
+    public String getBytes() {
+        return _bytes;
+    }
 
 }

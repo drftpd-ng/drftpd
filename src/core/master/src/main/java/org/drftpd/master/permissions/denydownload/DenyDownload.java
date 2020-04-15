@@ -19,15 +19,15 @@ package org.drftpd.master.permissions.denydownload;
 import org.drftpd.common.extensibility.CommandHook;
 import org.drftpd.common.extensibility.HookType;
 import org.drftpd.master.GlobalContext;
+import org.drftpd.master.commands.CommandRequest;
 import org.drftpd.master.commands.CommandRequestInterface;
+import org.drftpd.master.commands.CommandResponse;
 import org.drftpd.master.config.ConfigInterface;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.master.vfs.InodeHandle;
 import org.drftpd.master.vfs.LinkHandle;
 import org.drftpd.master.vfs.ObjectNotValidException;
-import org.drftpd.master.commands.CommandRequest;
-import org.drftpd.master.commands.CommandResponse;
 
 import java.io.FileNotFoundException;
 
@@ -38,34 +38,34 @@ import java.io.FileNotFoundException;
 
 public class DenyDownload {
 
-	@CommandHook(commands = "doRETR", type = HookType.PRE)
-	public CommandRequestInterface doPermissionCheck(CommandRequest request) {
-		try {
-			User user = request.getSession().getUserNull(request.getUser());
-			InodeHandle inode = request.getCurrentDirectory().getInodeHandle(request.getArgument(), user);
-			
-			FileHandle file;
-			if (inode.isLink()) {
-				file = ((LinkHandle) inode).getTargetFileUnchecked();
-			} else if (inode.isDirectory()) {
-				// Is a directory, let RETR handle it
-				return request;
-			} else { // Is a file
-				file = (FileHandle) inode;
-			}
+    @CommandHook(commands = "doRETR", type = HookType.PRE)
+    public CommandRequestInterface doPermissionCheck(CommandRequest request) {
+        try {
+            User user = request.getSession().getUserNull(request.getUser());
+            InodeHandle inode = request.getCurrentDirectory().getInodeHandle(request.getArgument(), user);
 
-			if (file.isUploading()) {
-		        ConfigInterface config = GlobalContext.getConfig();
-				if (config.checkPathPermission("denydownload", user, request.getCurrentDirectory())) {
-					request.setDeniedResponse(new CommandResponse(400,"No Permission To Download A File Currently Being Uploaded."));
-					request.setAllowed(false);
-				}
-			}
-			
-			return request;
-		} catch (FileNotFoundException | ObjectNotValidException e) {
-			// File not found, let RETR handle it
-			return request;
-		} // Can't Download a Directory
-	}
+            FileHandle file;
+            if (inode.isLink()) {
+                file = ((LinkHandle) inode).getTargetFileUnchecked();
+            } else if (inode.isDirectory()) {
+                // Is a directory, let RETR handle it
+                return request;
+            } else { // Is a file
+                file = (FileHandle) inode;
+            }
+
+            if (file.isUploading()) {
+                ConfigInterface config = GlobalContext.getConfig();
+                if (config.checkPathPermission("denydownload", user, request.getCurrentDirectory())) {
+                    request.setDeniedResponse(new CommandResponse(400, "No Permission To Download A File Currently Being Uploaded."));
+                    request.setAllowed(false);
+                }
+            }
+
+            return request;
+        } catch (FileNotFoundException | ObjectNotValidException e) {
+            // File not found, let RETR handle it
+            return request;
+        } // Can't Download a Directory
+    }
 }

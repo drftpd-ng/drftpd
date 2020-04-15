@@ -17,13 +17,14 @@
  */
 package org.drftpd.zipscript.master.sfv.event;
 
-import org.drftpd.zipscript.common.sfv.SFVInfo;
-import org.drftpd.zipscript.common.sfv.SFVStatus;
-import org.drftpd.zipscript.master.sfv.ZipscriptVFSDataSFV;
 import org.drftpd.master.event.TransferEvent;
 import org.drftpd.master.network.BaseFtpConnection;
 import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.master.vfs.FileHandle;
+import org.drftpd.zipscript.common.sfv.SFVInfo;
+import org.drftpd.zipscript.common.sfv.SFVStatus;
+import org.drftpd.zipscript.master.sfv.ZipscriptVFSDataSFV;
+
 import java.net.InetAddress;
 
 /**
@@ -32,31 +33,31 @@ import java.net.InetAddress;
  */
 public class SFVMemberTransferEvent extends TransferEvent {
 
-	private ZipscriptVFSDataSFV _sfvData;
-	
-	private SFVInfo _sfvInfo;
-	
-	private SFVStatus _sfvStatus;
-	
-	public SFVMemberTransferEvent(BaseFtpConnection conn, String command,
-								  FileHandle file, InetAddress clientHost,
-								  RemoteSlave rslave, InetAddress peer, char type,
-								  ZipscriptVFSDataSFV sfvData, SFVInfo sfvInfo, SFVStatus sfvStatus) {
-		super(conn, command, file, clientHost, rslave, peer, type);
-		_sfvData = sfvData;
-		_sfvInfo = sfvInfo;
-		_sfvStatus = sfvStatus;
-	}
-	
-	public ZipscriptVFSDataSFV getSFVData() {
-		return _sfvData;
-	}
-	
-	public SFVInfo getSFVInfo() {
-		return _sfvInfo;
-	}
-	
-	public SFVStatus getSFVStatus() {
-		return _sfvStatus;
-	}
+    private final ZipscriptVFSDataSFV _sfvData;
+
+    private final SFVInfo _sfvInfo;
+
+    private final SFVStatus _sfvStatus;
+
+    public SFVMemberTransferEvent(BaseFtpConnection conn, String command,
+                                  FileHandle file, InetAddress clientHost,
+                                  RemoteSlave rslave, InetAddress peer, char type,
+                                  ZipscriptVFSDataSFV sfvData, SFVInfo sfvInfo, SFVStatus sfvStatus) {
+        super(conn, command, file, clientHost, rslave, peer, type);
+        _sfvData = sfvData;
+        _sfvInfo = sfvInfo;
+        _sfvStatus = sfvStatus;
+    }
+
+    public ZipscriptVFSDataSFV getSFVData() {
+        return _sfvData;
+    }
+
+    public SFVInfo getSFVInfo() {
+        return _sfvInfo;
+    }
+
+    public SFVStatus getSFVStatus() {
+        return _sfvStatus;
+    }
 }

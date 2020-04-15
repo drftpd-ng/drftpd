@@ -17,9 +17,8 @@
  */
 package org.drftpd.imdb.master;
 
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
+import org.apache.logging.log4j.Logger;
 import org.drftpd.master.vfs.DirectoryHandle;
 
 /**
@@ -27,30 +26,30 @@ import org.drftpd.master.vfs.DirectoryHandle;
  */
 public class IMDBThread extends Thread {
 
-	private static final Logger logger = LogManager.getLogger(IMDB.class);
+    private static final Logger logger = LogManager.getLogger(IMDB.class);
 
-	public IMDBThread() {
-		setPriority(Thread.MIN_PRIORITY);
-	}
+    public IMDBThread() {
+        setPriority(Thread.MIN_PRIORITY);
+    }
 
-	@Override
-	public void run() {
-		while (true) {
-			try {
-				if (Thread.interrupted()) {
-					throw new InterruptedException();
-				}
-				// Process one item in queue
-				DirectoryHandle dir = IMDBConfig.getInstance().getDirToProcess();
-				if (dir != null) {
+    @Override
+    public void run() {
+        while (true) {
+            try {
+                if (Thread.interrupted()) {
+                    throw new InterruptedException();
+                }
+                // Process one item in queue
+                DirectoryHandle dir = IMDBConfig.getInstance().getDirToProcess();
+                if (dir != null) {
                     logger.debug("Fetching IMDB data for {}", dir.getPath());
-					IMDBUtils.getIMDBInfo(dir, true);
-				}
-				Thread.sleep(IMDBUtils.randomNumber());
-			} catch (InterruptedException ie) {
-				logger.info("IMDBThread interrupted, thread closing");
-				break;
-			}
-		}
-	}
+                    IMDBUtils.getIMDBInfo(dir, true);
+                }
+                Thread.sleep(IMDBUtils.randomNumber());
+            } catch (InterruptedException ie) {
+                logger.info("IMDBThread interrupted, thread closing");
+                break;
+            }
+        }
+    }
 }

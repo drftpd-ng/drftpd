@@ -28,23 +28,23 @@ import java.util.Comparator;
  */
 public class TimeComparator implements Comparator<InodeHandle> {
 
-	/**
-	 * Sorts FileSystem objects by their date modified
-	 */
-	public TimeComparator() {
+    /**
+     * Sorts FileSystem objects by their date modified
+     */
+    public TimeComparator() {
 
-	}
+    }
 
-	public int compare(InodeHandle arg0, InodeHandle arg1) {
-		if (arg0 == null || arg1 == null) {
-			throw new IllegalArgumentException(
-					"Neither arg0 nor arg1 can be null");
-		}
-		try {
-			return Long.signum(arg1.lastModified() - arg0.lastModified());
-		} catch (FileNotFoundException e) {
-			throw new IllegalArgumentException("File does not exist", e);
-		}
-	}
+    public int compare(InodeHandle arg0, InodeHandle arg1) {
+        if (arg0 == null || arg1 == null) {
+            throw new IllegalArgumentException(
+                    "Neither arg0 nor arg1 can be null");
+        }
+        try {
+            return Long.signum(arg1.lastModified() - arg0.lastModified());
+        } catch (FileNotFoundException e) {
+            throw new IllegalArgumentException("File does not exist", e);
+        }
+    }
 
 }

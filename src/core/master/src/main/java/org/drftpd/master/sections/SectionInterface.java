@@ -26,32 +26,32 @@ import java.util.Set;
  * @version $Id$
  */
 public interface SectionInterface {
-	/**
-	 * @return the base directory for this section.
-	 */
-	DirectoryHandle getBaseDirectory();
+    /**
+     * @return the base directory for this section.
+     */
+    DirectoryHandle getBaseDirectory();
 
-	/**
-	 * @return the (current) directory for this section.
-	 */
-	DirectoryHandle getCurrentDirectory();
+    /**
+     * @return the (current) directory for this section.
+     */
+    DirectoryHandle getCurrentDirectory();
 
-	/**
-	 * @return all directories for this section. For example if this is a
-	 *         dated-dir section, it would return all dated dirs, including
-	 *         current dir.
-	 */
-	Set<DirectoryHandle> getDirectories();
+    /**
+     * @return all directories for this section. For example if this is a
+     * dated-dir section, it would return all dated dirs, including
+     * current dir.
+     */
+    Set<DirectoryHandle> getDirectories();
 
-	/**
-	 * @return The name of this section
-	 */
-	String getName();
+    /**
+     * @return The name of this section
+     */
+    String getName();
 
-	/**
-	 * @return The color of this section
-	 */
-	String getColor();
+    /**
+     * @return The color of this section
+     */
+    String getColor();
 
 
 }

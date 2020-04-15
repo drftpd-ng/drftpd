@@ -17,41 +17,41 @@
  */
 package org.drftpd.imdb.master;
 
+import org.drftpd.imdb.common.IMDBInfo;
 import org.drftpd.imdb.master.vfs.IMDBVFSDataNFO;
 import org.drftpd.master.sections.SectionInterface;
 import org.drftpd.master.vfs.DirectoryHandle;
-import org.drftpd.imdb.common.IMDBInfo;
 
 /**
  * @author scitz0
  */
 public class IMDBPrintThread extends Thread {
-	private DirectoryHandle _dir;
-	private SectionInterface _section;
+    private final DirectoryHandle _dir;
+    private final SectionInterface _section;
 
-	public IMDBPrintThread(DirectoryHandle dir, SectionInterface section) {
-		setPriority(Thread.MIN_PRIORITY);
-		_dir = dir;
-		_section = section;
-	}
+    public IMDBPrintThread(DirectoryHandle dir, SectionInterface section) {
+        setPriority(Thread.MIN_PRIORITY);
+        _dir = dir;
+        _section = section;
+    }
 
-	@Override
-	public void run() {
-		IMDBVFSDataNFO imdbData = new IMDBVFSDataNFO(_dir);
-		IMDBInfo imdbInfo = imdbData.getIMDBInfoFromCache();
-		int sleep = 0; // Time to wait for IMDB data
-		while (sleep < 20 && imdbInfo == null) {
-			sleep++;
-			try {
-				sleep(1000);
-			} catch (InterruptedException ie) {
-				// Thread interrupted
-				break;
-			}
-			imdbInfo = imdbData.getIMDBInfoFromCache();
-		}
-		if (imdbInfo != null) {
-			IMDBUtils.publishEvent(imdbInfo, _dir, _section);
-		}
-	}
+    @Override
+    public void run() {
+        IMDBVFSDataNFO imdbData = new IMDBVFSDataNFO(_dir);
+        IMDBInfo imdbInfo = imdbData.getIMDBInfoFromCache();
+        int sleep = 0; // Time to wait for IMDB data
+        while (sleep < 20 && imdbInfo == null) {
+            sleep++;
+            try {
+                sleep(1000);
+            } catch (InterruptedException ie) {
+                // Thread interrupted
+                break;
+            }
+            imdbInfo = imdbData.getIMDBInfoFromCache();
+        }
+        if (imdbInfo != null) {
+            IMDBUtils.publishEvent(imdbInfo, _dir, _section);
+        }
+    }
 }

@@ -17,11 +17,10 @@
  */
 package org.drftpd.master.sections.conf;
 
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
-import org.drftpd.master.GlobalContext;
+import org.apache.logging.log4j.Logger;
 import org.drftpd.common.util.PropertyHelper;
+import org.drftpd.master.GlobalContext;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.VirtualFileSystem;
 import org.drftpd.slave.exceptions.FileExistsException;
@@ -36,74 +35,70 @@ import java.util.Set;
  * @version $Id$
  */
 public class PlainSection implements ConfigurableSectionInterface {
-	private static Logger logger = LogManager.getLogger(PlainSection.class);
+    private static final Logger logger = LogManager.getLogger(PlainSection.class);
+    protected DirectoryHandle _basePath;
+    private final String _name;
+    private final String _color;
 
-	private String _name;
-	private String _color;
-	
-	protected DirectoryHandle _basePath;
-	
-	public PlainSection(int i, Properties p) {
-		this(PropertyHelper.getProperty(p, i + ".name"), PropertyHelper.getProperty(p, i + ".color", "15"),
-				new DirectoryHandle(PropertyHelper.getProperty(p, i+ ".path")));
-	}
-	
-	public PlainSection(String name, DirectoryHandle dir) {
-		_name = name;
-		_color = "15";
-		_basePath = dir;
-	}
+    public PlainSection(int i, Properties p) {
+        this(PropertyHelper.getProperty(p, i + ".name"), PropertyHelper.getProperty(p, i + ".color", "15"),
+                new DirectoryHandle(PropertyHelper.getProperty(p, i + ".path")));
+    }
 
-	public PlainSection(String name, String color, DirectoryHandle dir) {
-		_name = name;
-		_color = color;
-		_basePath = dir;
-	}
+    public PlainSection(String name, DirectoryHandle dir) {
+        _name = name;
+        _color = "15";
+        _basePath = dir;
+    }
 
-	
-	public String getName() {
-		return _name;
-	}
+    public PlainSection(String name, String color, DirectoryHandle dir) {
+        _name = name;
+        _color = color;
+        _basePath = dir;
+    }
 
-	public String getColor() {
-		return _color;
-	}
+    protected static GlobalContext getGlobalContext() {
+        return GlobalContext.getGlobalContext();
+    }
 
-	public DirectoryHandle getBaseDirectory() {
-		return _basePath;
-	}
-	
-	public String getBasePath() {
-		return _basePath.getPath();
-	}
-	
-	public DirectoryHandle getCurrentDirectory() {
-		return getBaseDirectory();
-	}
+    public String getName() {
+        return _name;
+    }
 
+    public String getColor() {
+        return _color;
+    }
 
-	@SuppressWarnings("unchecked")
-	public Set<DirectoryHandle> getDirectories() {
-		try {
-			return getBaseDirectory().getDirectoriesUnchecked();
-		} catch (FileNotFoundException e) {
-			return Collections.emptySet();
-		}
-	}
-	
-	protected static GlobalContext getGlobalContext() {
-		return GlobalContext.getGlobalContext();
-	}
+    public DirectoryHandle getBaseDirectory() {
+        return _basePath;
+    }
 
-	public void createSectionDir() {
-		try {
-			String path = getCurrentDirectory().getPath();
-			DirectoryHandle dir = new DirectoryHandle(VirtualFileSystem.stripLast(path));		
-			dir.createDirectoryRecursive(VirtualFileSystem.getLast(path), true);
-		} catch (FileExistsException e) {
-			// good the file exists, no need to create it.
-		} catch (FileNotFoundException e) {
-			logger.error("What happened? I don't know how to handle this", e);
-		}
-	}
+    public String getBasePath() {
+        return _basePath.getPath();
+    }
+
+    public DirectoryHandle getCurrentDirectory() {
+        return getBaseDirectory();
+    }
+
+    @SuppressWarnings("unchecked")
+    public Set<DirectoryHandle> getDirectories() {
+        try {
+            return getBaseDirectory().getDirectoriesUnchecked();
+        } catch (FileNotFoundException e) {
+            return Collections.emptySet();
+        }
+    }
+
+    public void createSectionDir() {
+        try {
+            String path = getCurrentDirectory().getPath();
+            DirectoryHandle dir = new DirectoryHandle(VirtualFileSystem.stripLast(path));
+            dir.createDirectoryRecursive(VirtualFileSystem.getLast(path), true);
+        } catch (FileExistsException e) {
+            // good the file exists, no need to create it.
+        } catch (FileNotFoundException e) {
+            logger.error("What happened? I don't know how to handle this", e);
+        }
+    }
 }

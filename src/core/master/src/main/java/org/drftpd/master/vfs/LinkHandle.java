@@ -28,82 +28,82 @@ import java.io.FileNotFoundException;
  */
 public class LinkHandle extends InodeHandle implements LinkHandleInterface {
 
-	public LinkHandle(String path) {
-		super(path);
-	}
+    public LinkHandle(String path) {
+        super(path);
+    }
 
-	@Override
-	protected VirtualFileSystemLink getInode() throws FileNotFoundException {
-		VirtualFileSystemInode inode = super.getInode();
-		if (inode instanceof VirtualFileSystemLink) {
-			return (VirtualFileSystemLink) inode;
-		}
-		throw new ClassCastException("LinkHandle object pointing to Inode:"
-				+ inode);
-	}
-	
-	public void setTarget(String path) throws FileNotFoundException {
-		getInode().setLinkPath(path);
-	}
+    @Override
+    protected VirtualFileSystemLink getInode() throws FileNotFoundException {
+        VirtualFileSystemInode inode = super.getInode();
+        if (inode instanceof VirtualFileSystemLink) {
+            return (VirtualFileSystemLink) inode;
+        }
+        throw new ClassCastException("LinkHandle object pointing to Inode:"
+                + inode);
+    }
 
-	public DirectoryHandle getTargetDirectory(User user) throws FileNotFoundException,
-			ObjectNotValidException {
-		DirectoryHandle dir = getParent().getDirectoryUnchecked(getInode().getLinkPath());
-		checkHiddenPath(dir, user);
-		return dir;
-	}
-	
-	public DirectoryHandle getTargetDirectoryUnchecked() throws FileNotFoundException,
-			ObjectNotValidException {
-		return getParent().getDirectoryUnchecked(getInode().getLinkPath());
-	}
-	
-	public FileHandle getTargetFileUnchecked() throws FileNotFoundException, ObjectNotValidException {
-		return getParent().getFileUnchecked(getInode().getLinkPath());
-	}
-	
-	public FileHandle getTargetFile(User user) throws FileNotFoundException, ObjectNotValidException {
-		FileHandle file = getParent().getFileUnchecked(getInode().getLinkPath());
-		checkHiddenPath(file.getParent(), user);		
-		return file;
-	}
-	
-	public String getTargetString() throws FileNotFoundException {
-		return getInode().getLinkPath();
-	}
+    public void setTarget(String path) throws FileNotFoundException {
+        getInode().setLinkPath(path);
+    }
 
-	public String getTargetStringWithSlash() throws FileNotFoundException {
-		return getInode().getLinkPath() + VirtualFileSystem.separator;
-	}
-	
-	@Override
-	public void removeSlave(RemoteSlave rslave) throws FileNotFoundException {
-		// we don't have anything to remove
-	}
+    public DirectoryHandle getTargetDirectory(User user) throws FileNotFoundException,
+            ObjectNotValidException {
+        DirectoryHandle dir = getParent().getDirectoryUnchecked(getInode().getLinkPath());
+        checkHiddenPath(dir, user);
+        return dir;
+    }
 
-	@Override
-	public boolean isDirectory() {
-		return false;
-	}
+    public DirectoryHandle getTargetDirectoryUnchecked() throws FileNotFoundException,
+            ObjectNotValidException {
+        return getParent().getDirectoryUnchecked(getInode().getLinkPath());
+    }
 
-	@Override
-	public boolean isFile() {
-		return false;
-	}
+    public FileHandle getTargetFileUnchecked() throws FileNotFoundException, ObjectNotValidException {
+        return getParent().getFileUnchecked(getInode().getLinkPath());
+    }
 
-	@Override
-	public boolean isLink() {
-		return true;
-	}
+    public FileHandle getTargetFile(User user) throws FileNotFoundException, ObjectNotValidException {
+        FileHandle file = getParent().getFileUnchecked(getInode().getLinkPath());
+        checkHiddenPath(file.getParent(), user);
+        return file;
+    }
 
-	public InodeHandle getTargetInode(User user) throws FileNotFoundException {
-		InodeHandle inode = getTargetInodeUnchecked();
-		checkHiddenPath(inode, user);
-		return inode;
-	}
+    public String getTargetString() throws FileNotFoundException {
+        return getInode().getLinkPath();
+    }
 
-	public InodeHandle getTargetInodeUnchecked() throws FileNotFoundException {
-		return getParent().getInodeHandleUnchecked(getInode().getLinkPath());
-	}
+    public String getTargetStringWithSlash() throws FileNotFoundException {
+        return getInode().getLinkPath() + VirtualFileSystem.separator;
+    }
+
+    @Override
+    public void removeSlave(RemoteSlave rslave) throws FileNotFoundException {
+        // we don't have anything to remove
+    }
+
+    @Override
+    public boolean isDirectory() {
+        return false;
+    }
+
+    @Override
+    public boolean isFile() {
+        return false;
+    }
+
+    @Override
+    public boolean isLink() {
+        return true;
+    }
+
+    public InodeHandle getTargetInode(User user) throws FileNotFoundException {
+        InodeHandle inode = getTargetInodeUnchecked();
+        checkHiddenPath(inode, user);
+        return inode;
+    }
+
+    public InodeHandle getTargetInodeUnchecked() throws FileNotFoundException {
+        return getParent().getInodeHandleUnchecked(getInode().getLinkPath());
+    }
 
 }
