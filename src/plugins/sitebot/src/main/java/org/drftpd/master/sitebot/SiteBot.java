@@ -274,12 +274,21 @@ public class SiteBot implements ReplyConstants, Runnable {
 
         _inputThread = new InputThread(this, socket, breader, bwriter);
 
+        // During our connect phase we might receive commands we cannot process yet so we store them for later processing
+        // Certain commands expect our _hostMask to be filled with correct data for example
+        List<String> storedCommands = new ArrayList<>();
+
         // Read stuff back from the server to see if we connected.
         String line = null;
         int tries = 1;
         while ((line = breader.readLine()) != null) {
 
-            this.handleLine(line);
+            // Quickly process PING requests otherwise we might be kicked offline during our connecting phase
+            if (line.startsWith("PING ")) {
+                this.onServerPing(line.substring(5));
+                continue;
+            }
+            storedCommands.add(line);
 
             int firstSpace = line.indexOf(" ");
             int secondSpace = line.indexOf(" ", firstSpace + 1);
@@ -316,7 +325,16 @@ public class SiteBot implements ReplyConstants, Runnable {
         line = null;
         String hostMask = "";
         while ((line = breader.readLine()) != null) {
-            this.handleLine(line);
+
+            // Quickly process PING requests otherwise we might be kicked offline during our connecting phase
+            if (line.startsWith("PING ")) {
+                this.onServerPing(line.substring(5));
+                continue;
+            }
+
+            // Store the commands to handle later
+            storedCommands.add(line);
+
             StringTokenizer tokenizer = new StringTokenizer(line);
             // Disregard sender
             tokenizer.nextToken();
@@ -346,6 +364,11 @@ public class SiteBot implements ReplyConstants, Runnable {
         // This makes the socket timeout on read operations after 5 minutes.
         // Maybe in some future version I will let the user change this at runtime.
         socket.setSoTimeout(5 * 60 * 1000);
+
+        // Process all stored messages
+        for (String storedLine : storedCommands) {
+            handleLine(storedLine);
+        }
 
         // Now start the InputThread to read all other lines from the server.
         _inputThread.start();
@@ -2654,49 +2677,54 @@ public class SiteBot implements ReplyConstants, Runnable {
                 break;
             }
         }
+
+        // If we have not found valid inputs, bail out
         if (!proceed) {
             logger.debug("No valid input combination found for command " + request.getCommand());
-        } else {
-            // Find what outputs we should be sending the response to
-            ArrayList<OutputWriter> cmdOutputs = new ArrayList<>();
-            String outputs = cmd.getProperty("output", "");
-            StringTokenizer ost = new StringTokenizer(outputs);
-            while (ost.hasMoreTokens()) {
-                String token = ost.nextToken();
-                if (token.equalsIgnoreCase("public")) {
-                    cmdOutputs.addAll(_writers.values());
-                } else if (token.equalsIgnoreCase("private")) {
+            return;
+        }
+
+        // Find what outputs we should be sending the response to
+        ArrayList<OutputWriter> cmdOutputs = new ArrayList<>();
+        String outputs = cmd.getProperty("output", "");
+        StringTokenizer ost = new StringTokenizer(outputs);
+        while (ost.hasMoreTokens()) {
+            String token = ost.nextToken();
+            if (token.equalsIgnoreCase("public")) {
+                cmdOutputs.addAll(_writers.values());
+            } else if (token.equalsIgnoreCase("private")) {
+                cmdOutputs.add(getUserDetails(sender, ident).getOutputWriter());
+            } else if (token.equalsIgnoreCase("source")) {
+                if (isPublic) {
+                    cmdOutputs.add(_writers.get(channel));
+                } else {
                     cmdOutputs.add(getUserDetails(sender, ident).getOutputWriter());
-                } else if (token.equalsIgnoreCase("source")) {
-                    if (isPublic) {
-                        cmdOutputs.add(_writers.get(channel));
-                    } else {
-                        cmdOutputs.add(getUserDetails(sender, ident).getOutputWriter());
-                    }
-                } else if (token.startsWith("#")) {
-                    if (_writers.containsKey(token)) {
-                        cmdOutputs.add(_writers.get(token));
-                    }
+                }
+            } else if (token.startsWith("#")) {
+                if (_writers.containsKey(token)) {
+                    cmdOutputs.add(_writers.get(token));
                 }
             }
-            // Check if we found valid outputs and if so proceed
-            if (cmdOutputs.isEmpty()) {
-                logger.debug("No valid output combination found for command " + request.getCommand());
+        }
+
+        // If we have not found valid outputs, bail out
+        if (cmdOutputs.isEmpty()) {
+            logger.debug("No valid output combination found for command " + request.getCommand());
+            return;
+        }
+
+        ServiceCommand service = getUserDetails(sender, ident).getCommandSession(cmdOutputs, channel);
+        service.setCommands(_cmds);
+        try {
+            _pool.execute(new CommandThread(request, service, sender, ident));
+        } catch (RejectedExecutionException e) {
+            OutputWriter rejectWriter;
+            if (isPublic) {
+                rejectWriter = _writers.get(channel);
             } else {
-                ServiceCommand service = getUserDetails(sender, ident).getCommandSession(cmdOutputs, channel);
-                service.setCommands(_cmds);
-                try {
-                    _pool.execute(new CommandThread(request, service, sender, ident));
-                } catch (RejectedExecutionException e) {
-                    OutputWriter rejectWriter;
-                    if (isPublic) {
-                        rejectWriter = _writers.get(channel);
-                    } else {
-                        rejectWriter = getUserDetails(sender, ident).getOutputWriter();
-                    }
-                    rejectWriter.sendMessage("All command threads are busy, please wait and try again later");
-                }
+                rejectWriter = getUserDetails(sender, ident).getOutputWriter();
             }
+            rejectWriter.sendMessage("All command threads are busy, please wait and try again later");
         }
     }
 
