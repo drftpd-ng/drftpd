@@ -33,17 +33,16 @@ import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.NativeFSLockFactory;
 import org.apache.lucene.util.Version;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
-import org.drftpd.common.util.ConfigLoader;
-import org.drftpd.common.util.ConfigType;
-import org.drftpd.master.GlobalContext;
-import org.drftpd.common.util.Bytes;
 import org.drftpd.common.io.PhysicalFile;
+import org.drftpd.common.util.Bytes;
+import org.drftpd.common.util.ConfigLoader;
+import org.drftpd.master.GlobalContext;
+import org.drftpd.master.indexation.AdvancedSearchParams.InodeType;
 import org.drftpd.master.indexation.analysis.AlphanumericalAnalyzer;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.InodeHandle;
 import org.drftpd.master.vfs.VirtualFileSystem;
 import org.drftpd.master.vfs.event.ImmutableInodeHandle;
-import org.drftpd.master.indexation.AdvancedSearchParams.InodeType;
 import org.reflections.Reflections;
 
 import java.io.File;
@@ -231,7 +230,7 @@ public class LuceneEngine implements IndexEngineInterface {
      * otherwise use default values.
      */
     private void reload() {
-        Properties cfg = ConfigLoader.loadConfig("indexation.conf", ConfigType.MASTER);
+        Properties cfg = ConfigLoader.loadConfig("indexation.conf");
         _maxHitsNumber = Integer.parseInt(cfg.getProperty("max_hits", "50"));
         _maxDocsBuffer = Integer.parseInt(cfg.getProperty("maxdocs_buffer", "-1"));
         _maxRAMBufferSize = Integer.parseInt(cfg.getProperty("max_rambuffer", "16"));

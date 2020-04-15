@@ -16,21 +16,19 @@
  */
 package org.drftpd.archive.master;
 
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
+import org.apache.logging.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
-import org.drftpd.common.util.ConfigLoader;
-import org.drftpd.common.util.ConfigType;
-import org.drftpd.master.GlobalContext;
-import org.drftpd.common.extensibility.PluginInterface;
-import org.drftpd.common.util.PropertyHelper;
-import org.drftpd.common.misc.CaseInsensitiveHashMap;
-import org.drftpd.master.event.ReloadEvent;
-import org.drftpd.master.sections.SectionInterface;
 import org.drftpd.archive.master.archivetypes.ArchiveHandler;
 import org.drftpd.archive.master.archivetypes.ArchiveType;
+import org.drftpd.common.extensibility.PluginInterface;
+import org.drftpd.common.misc.CaseInsensitiveHashMap;
+import org.drftpd.common.util.ConfigLoader;
+import org.drftpd.common.util.PropertyHelper;
+import org.drftpd.master.GlobalContext;
+import org.drftpd.master.event.ReloadEvent;
+import org.drftpd.master.sections.SectionInterface;
 import org.reflections.Reflections;
 
 import java.util.*;
@@ -40,141 +38,141 @@ import java.util.*;
  * @version $Id$
  */
 public class Archive implements PluginInterface {
-	private static final Logger logger = LogManager.getLogger(Archive.class);
+    private static final Logger logger = LogManager.getLogger(Archive.class);
 
-	private Properties _props;
+    private Properties _props;
 
-	private long _cycleTime;
+    private long _cycleTime;
 
-	private HashSet<ArchiveHandler> _archiveHandlers = null;
+    private HashSet<ArchiveHandler> _archiveHandlers = null;
 
-	private TimerTask _runHandler = null;
-	
-	private CaseInsensitiveHashMap<String, Class<? extends ArchiveType>> _typesMap;
+    private TimerTask _runHandler = null;
 
-	public Properties getProperties() {
-		return _props;
-	}
-	
-	public long getCycleTime() {
-		return _cycleTime;
-	}
+    private CaseInsensitiveHashMap<String, Class<? extends ArchiveType>> _typesMap;
 
-	/*
-	 * Returns the archive type corrisponding with the .conf file
-	 * and which Archive number the loop is on
-	 */
-	public ArchiveType getArchiveType(int count, String type, SectionInterface sec, Properties props) {
-		ArchiveType archiveType = null;
-		Class<?>[] SIG = { Archive.class, SectionInterface.class, Properties.class, int.class };
-		
-		if (!_typesMap.containsKey(type)) {
-			// if we can't find one filter that will be enought to brake the whole chain.
+    public Properties getProperties() {
+        return _props;
+    }
+
+    public long getCycleTime() {
+        return _cycleTime;
+    }
+
+    /*
+     * Returns the archive type corrisponding with the .conf file
+     * and which Archive number the loop is on
+     */
+    public ArchiveType getArchiveType(int count, String type, SectionInterface sec, Properties props) {
+        ArchiveType archiveType = null;
+        Class<?>[] SIG = {Archive.class, SectionInterface.class, Properties.class, int.class};
+
+        if (!_typesMap.containsKey(type)) {
+            // if we can't find one filter that will be enought to brake the whole chain.
             logger.error("Archive Type: {} wasn't loaded.", type);
-			
-		} else {
-	        if (!sec.getName().isEmpty()) {
-				try {
-					Class<? extends ArchiveType> clazz = _typesMap.get(type);
-					archiveType = clazz.getConstructor(SIG).newInstance(this, sec, props, count);
-	
-				} catch (Exception e) {
+
+        } else {
+            if (!sec.getName().isEmpty()) {
+                try {
+                    Class<? extends ArchiveType> clazz = _typesMap.get(type);
+                    archiveType = clazz.getConstructor(SIG).newInstance(this, sec, props, count);
+
+                } catch (Exception e) {
                     logger.error("Unable to load ArchiveType for section {}.{}", count, type, e);
-				}		
-	        } else {
+                }
+            } else {
                 logger.error("Unable to load Section for Archive {}.{}", count, type);
-	        }
-		}
-		return archiveType;	
-	}
+            }
+        }
+        return archiveType;
+    }
 
-	/*
-	 * Returns a list of the current archive types, as a copy.
-	 * We don't want to allow modifications to this.
-	 */
-	public synchronized CaseInsensitiveHashMap<String, Class<? extends ArchiveType>> getTypesMap() {
-		return new CaseInsensitiveHashMap<>(_typesMap);
-	}		
-	
-	/*
-	 * Load the different Types of Archives specified in plugin.xml
-	 */
-	private void initTypes() {
-		CaseInsensitiveHashMap<String, Class<? extends ArchiveType>> typesMap = new CaseInsensitiveHashMap<>();
-		// TODO [DONE] @k2r Archive init types
-		Set<Class<? extends ArchiveType>> archiveTypes = new Reflections("org.drftpd")
-				.getSubTypesOf(ArchiveType.class);
-		for (Class<? extends ArchiveType> archiveType : archiveTypes) {
-			typesMap.put(archiveType.getSimpleName(), archiveType);
-		}
-		_typesMap = typesMap;
-	}
-	
-	/*
-	 * Reloads all the different archive's in .conf file
-	 * Loops though each one and adds to the ArchiveHandler
-	 */
-	private void reload() {
-		initTypes();
-		_props = ConfigLoader.loadPluginConfig("archive.conf", ConfigType.MASTER);
-		_cycleTime = 60000 * Long.parseLong(PropertyHelper.getProperty(_props,"cycletime", "30").trim());
-		
-		if (_runHandler != null) {
-			_runHandler.cancel();
-			GlobalContext.getGlobalContext().getTimer().purge();
-		}
-		
-		_runHandler = new TimerTask() {
-			public void run() {
-				
-				int count = 1;
-				
-				String type;
-				while ((type = PropertyHelper.getProperty(_props, count + ".type",null)) != null) {
-					type = type.trim();
-					SectionInterface sec = GlobalContext.getGlobalContext().getSectionManager().getSection(PropertyHelper.getProperty(_props, count + ".section","").trim());
-					ArchiveType archiveType = getArchiveType(count,type,sec,_props);
-					if (archiveType != null) {
-						new ArchiveHandler(archiveType).start();
-					}
-					count++;					
-				} 
-			}
-		};
-		try {
-			GlobalContext.getGlobalContext().getTimer().schedule(_runHandler, _cycleTime, _cycleTime);
-		} catch (IllegalStateException e) {
-			// Timer Already Canceled
-		}
-	}
+    /*
+     * Returns a list of the current archive types, as a copy.
+     * We don't want to allow modifications to this.
+     */
+    public synchronized CaseInsensitiveHashMap<String, Class<? extends ArchiveType>> getTypesMap() {
+        return new CaseInsensitiveHashMap<>(_typesMap);
+    }
 
-	/*
-	 * This Removes archive handler from current archives in use
-	 */
-	public synchronized boolean removeArchiveHandler(ArchiveHandler handler) {
-		return _archiveHandlers.remove(handler);
-	}
+    /*
+     * Load the different Types of Archives specified in plugin.xml
+     */
+    private void initTypes() {
+        CaseInsensitiveHashMap<String, Class<? extends ArchiveType>> typesMap = new CaseInsensitiveHashMap<>();
+        // TODO [DONE] @k2r Archive init types
+        Set<Class<? extends ArchiveType>> archiveTypes = new Reflections("org.drftpd")
+                .getSubTypesOf(ArchiveType.class);
+        for (Class<? extends ArchiveType> archiveType : archiveTypes) {
+            typesMap.put(archiveType.getSimpleName(), archiveType);
+        }
+        _typesMap = typesMap;
+    }
 
-	/*
-	 * Returns all the current ArchiveHandlers
-	 */
-	public Collection<ArchiveHandler> getArchiveHandlers() {
-		return Collections.unmodifiableCollection(_archiveHandlers);
-	}
+    /*
+     * Reloads all the different archive's in .conf file
+     * Loops though each one and adds to the ArchiveHandler
+     */
+    private void reload() {
+        initTypes();
+        _props = ConfigLoader.loadPluginConfig("archive.conf");
+        _cycleTime = 60000 * Long.parseLong(PropertyHelper.getProperty(_props, "cycletime", "30").trim());
 
-	/*
-	 * Adds a specfic ArchiveHandle to the list.  Makes sure directory already isn't added.
-	 */
-	public synchronized void addArchiveHandler(ArchiveHandler handler) throws DuplicateArchiveException {
-		checkPathForArchiveStatus(handler.getArchiveType().getDirectory().getPath());
-		_archiveHandlers.add(handler);
-	}
+        if (_runHandler != null) {
+            _runHandler.cancel();
+            GlobalContext.getGlobalContext().getTimer().purge();
+        }
 
-	/*
-	 * This checks to see if the current directory is already queued to be archived.
-	 * Throws DuplicateArchive expcetion if it is.
-	 */
-	public synchronized void checkPathForArchiveStatus(String handlerPath) throws DuplicateArchiveException {
+        _runHandler = new TimerTask() {
+            public void run() {
+
+                int count = 1;
+
+                String type;
+                while ((type = PropertyHelper.getProperty(_props, count + ".type", null)) != null) {
+                    type = type.trim();
+                    SectionInterface sec = GlobalContext.getGlobalContext().getSectionManager().getSection(PropertyHelper.getProperty(_props, count + ".section", "").trim());
+                    ArchiveType archiveType = getArchiveType(count, type, sec, _props);
+                    if (archiveType != null) {
+                        new ArchiveHandler(archiveType).start();
+                    }
+                    count++;
+                }
+            }
+        };
+        try {
+            GlobalContext.getGlobalContext().getTimer().schedule(_runHandler, _cycleTime, _cycleTime);
+        } catch (IllegalStateException e) {
+            // Timer Already Canceled
+        }
+    }
+
+    /*
+     * This Removes archive handler from current archives in use
+     */
+    public synchronized boolean removeArchiveHandler(ArchiveHandler handler) {
+        return _archiveHandlers.remove(handler);
+    }
+
+    /*
+     * Returns all the current ArchiveHandlers
+     */
+    public Collection<ArchiveHandler> getArchiveHandlers() {
+        return Collections.unmodifiableCollection(_archiveHandlers);
+    }
+
+    /*
+     * Adds a specfic ArchiveHandle to the list.  Makes sure directory already isn't added.
+     */
+    public synchronized void addArchiveHandler(ArchiveHandler handler) throws DuplicateArchiveException {
+        checkPathForArchiveStatus(handler.getArchiveType().getDirectory().getPath());
+        _archiveHandlers.add(handler);
+    }
+
+    /*
+     * This checks to see if the current directory is already queued to be archived.
+     * Throws DuplicateArchive expcetion if it is.
+     */
+    public synchronized void checkPathForArchiveStatus(String handlerPath) throws DuplicateArchiveException {
         for (ArchiveHandler ah : _archiveHandlers) {
             String ahPath = ah.getArchiveType().getDirectory().getPath();
 
@@ -188,27 +186,27 @@ public class Archive implements PluginInterface {
                 }
             }
         }
-	}
+    }
 
-	@EventSubscriber
-	public void onReloadEvent(ReloadEvent event) {
-		reload();
-	}
+    @EventSubscriber
+    public void onReloadEvent(ReloadEvent event) {
+        reload();
+    }
 
-	public void startPlugin() {
-		// Subscribe to events
-		AnnotationProcessor.process(this);
-		logger.info("Archive plugin loaded successfully");
-		_archiveHandlers = new HashSet<>();
-		reload();
-	}
+    public void startPlugin() {
+        // Subscribe to events
+        AnnotationProcessor.process(this);
+        logger.info("Archive plugin loaded successfully");
+        _archiveHandlers = new HashSet<>();
+        reload();
+    }
 
-	public void stopPlugin(String reason) {
-		if (_runHandler != null) {
-			_runHandler.cancel();
-			GlobalContext.getGlobalContext().getTimer().purge();
-		}
-		AnnotationProcessor.unprocess(this);
-		logger.info("Archive plugin unloaded successfully");
-	}
+    public void stopPlugin(String reason) {
+        if (_runHandler != null) {
+            _runHandler.cancel();
+            GlobalContext.getGlobalContext().getTimer().purge();
+        }
+        AnnotationProcessor.unprocess(this);
+        logger.info("Archive plugin unloaded successfully");
+    }
 }

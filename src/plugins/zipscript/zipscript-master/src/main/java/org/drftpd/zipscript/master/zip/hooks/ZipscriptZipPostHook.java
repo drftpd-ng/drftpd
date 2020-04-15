@@ -19,37 +19,36 @@ package org.drftpd.zipscript.master.zip.hooks;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.drftpd.common.util.ConfigLoader;
-import org.drftpd.common.util.ConfigType;
-import org.drftpd.master.commands.dataconnection.DataConnectionHandler;
-import org.drftpd.master.commands.dir.Dir;
-import org.drftpd.zipscript.common.zip.DizInfo;
-import org.drftpd.zipscript.common.zip.DizStatus;
-import org.drftpd.zipscript.master.zip.ZipTools;
-import org.drftpd.zipscript.master.zip.event.ZipTransferEvent;
-import org.drftpd.zipscript.master.zip.vfs.ZipscriptVFSDataZip;
+import org.drftpd.common.dynamicdata.KeyNotFoundException;
+import org.drftpd.common.exceptions.RemoteIOException;
 import org.drftpd.common.extensibility.CommandHook;
 import org.drftpd.common.extensibility.HookType;
-import org.drftpd.master.GlobalContext;
-import org.drftpd.master.util.RankUtils;
 import org.drftpd.common.util.Bytes;
-import org.drftpd.common.dynamicdata.KeyNotFoundException;
+import org.drftpd.common.util.ConfigLoader;
+import org.drftpd.master.GlobalContext;
+import org.drftpd.master.Master;
 import org.drftpd.master.commands.CommandRequest;
 import org.drftpd.master.commands.CommandResponse;
+import org.drftpd.master.commands.dataconnection.DataConnectionHandler;
+import org.drftpd.master.commands.dir.Dir;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.exceptions.SlaveUnavailableException;
 import org.drftpd.master.network.BaseFtpConnection;
-import org.drftpd.master.Master;
 import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.master.usermanager.NoSuchUserException;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.usermanager.UserFileException;
 import org.drftpd.master.util.GroupPosition;
+import org.drftpd.master.util.RankUtils;
 import org.drftpd.master.util.ReplacerUtils;
 import org.drftpd.master.util.UploaderPosition;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.FileHandle;
-import org.drftpd.common.exceptions.RemoteIOException;
+import org.drftpd.zipscript.common.zip.DizInfo;
+import org.drftpd.zipscript.common.zip.DizStatus;
+import org.drftpd.zipscript.master.zip.ZipTools;
+import org.drftpd.zipscript.master.zip.event.ZipTransferEvent;
+import org.drftpd.zipscript.master.zip.vfs.ZipscriptVFSDataZip;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -78,7 +77,7 @@ public class ZipscriptZipPostHook extends ZipTools {
     @CommandHook(commands = "doSTOR", priority = 13, type = HookType.POST)
     public void doZipscriptSTORZipPostCheck(CommandRequest request, CommandResponse response) {
         // removing this in-case of a bad transfer
-        Properties cfg = ConfigLoader.loadPluginConfig("zipscript.conf", ConfigType.MASTER);
+        Properties cfg = ConfigLoader.loadPluginConfig("zipscript.conf");
         if (cfg.getProperty("stor.zip.integrity.check.enabled", "false").equalsIgnoreCase("true")) {
             FileHandle transferFile;
             try {
@@ -150,7 +149,7 @@ public class ZipscriptZipPostHook extends ZipTools {
             // STOR failed, abort stats
             return;
         }
-        Properties cfg = ConfigLoader.loadPluginConfig("zipscript.conf", ConfigType.MASTER);
+        Properties cfg = ConfigLoader.loadPluginConfig("zipscript.conf");
         if (cfg.getProperty("stor.zip.racestats.enabled", "false").equalsIgnoreCase("true")) {
             addRaceStats(request, response, request.getCurrentDirectory());
         }
@@ -162,7 +161,7 @@ public class ZipscriptZipPostHook extends ZipTools {
             // CWD failed, abort diz info
             return;
         }
-        Properties cfg = ConfigLoader.loadPluginConfig("zipscript.conf", ConfigType.MASTER);
+        Properties cfg = ConfigLoader.loadPluginConfig("zipscript.conf");
         if (cfg.getProperty("cwd.diz.info.enabled", "false").equalsIgnoreCase("true")) {
             try {
                 ZipscriptVFSDataZip zipData = new ZipscriptVFSDataZip(response.getCurrentDirectory());
@@ -180,7 +179,7 @@ public class ZipscriptZipPostHook extends ZipTools {
             // CWD failed, abort stats
             return;
         }
-        Properties cfg = ConfigLoader.loadPluginConfig("zipscript.conf", ConfigType.MASTER);
+        Properties cfg = ConfigLoader.loadPluginConfig("zipscript.conf");
         if (cfg.getProperty("cwd.zip.racestats.enabled", "false").equalsIgnoreCase("true")) {
             addRaceStats(request, response, response.getCurrentDirectory());
         }

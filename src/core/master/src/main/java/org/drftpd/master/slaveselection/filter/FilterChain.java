@@ -17,19 +17,16 @@
  */
 package org.drftpd.master.slaveselection.filter;
 
-import org.drftpd.common.util.ConfigLoader;
-import org.drftpd.common.util.ConfigType;
-import org.drftpd.master.GlobalContext;
 import org.drftpd.common.misc.CaseInsensitiveHashMap;
+import org.drftpd.common.util.ConfigLoader;
+import org.drftpd.common.vfs.InodeHandleInterface;
+import org.drftpd.master.GlobalContext;
 import org.drftpd.master.exceptions.FatalException;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.network.BaseFtpConnection;
 import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.master.usermanager.User;
-import org.drftpd.common.vfs.InodeHandleInterface;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
@@ -41,87 +38,87 @@ import java.util.Properties;
  * @version $Id$
  */
 public class FilterChain {
-	private static Class<?>[] SIG = new Class<?>[] { int.class, Properties.class };
-	
-	private String _cfgfileName;
+    private static Class<?>[] SIG = new Class<?>[]{int.class, Properties.class};
 
-	private ArrayList<Filter> _filters;
-	
-	private CaseInsensitiveHashMap<String, Class<? extends Filter>> _filtersMap;
+    private String _cfgfileName;
 
-	protected FilterChain() {
-	}
-	
-	public Collection<Filter> getFilters() {
-		return new ArrayList<>(_filters);
-	}
+    private ArrayList<Filter> _filters;
 
-	public FilterChain(String cfgFileName, CaseInsensitiveHashMap<String, Class<? extends Filter>> filtersMap) throws IOException {
-		_cfgfileName = cfgFileName;
-		_filtersMap = filtersMap;
-		reload();
-	}
+    private CaseInsensitiveHashMap<String, Class<? extends Filter>> _filtersMap;
 
-	public void filter(ScoreChart sc, BaseFtpConnection conn,
-					   char direction, InodeHandleInterface file, RemoteSlave sourceSlave)
-			throws NoAvailableSlaveException {
-		
-		User u = null;
-		InetAddress peer = null;
-		
-		if (conn != null) {
-			u = conn.getUserNull();
-			peer = conn.getClientAddress();
-		}
-		
-		for (Filter filter : _filters) {
-			filter.process(sc, u, peer, direction, file, sourceSlave);
-		}
-	}
+    protected FilterChain() {
+    }
 
-	public RemoteSlave getBestSlave(ScoreChart sc, BaseFtpConnection conn, char direction, InodeHandleInterface file, RemoteSlave sourceSlave)
-			throws NoAvailableSlaveException {
-		filter(sc, conn, direction, file, sourceSlave);
-		RemoteSlave rslave = sc.getBestSlave();
-		rslave.setLastDirection(direction, System.currentTimeMillis());
-		return rslave;
-	}
+    public Collection<Filter> getFilters() {
+        return new ArrayList<>(_filters);
+    }
 
-	public void reload() throws FileNotFoundException, IOException {
-		Properties p = ConfigLoader.loadConfig(_cfgfileName, ConfigType.MASTER);
-		reload(p);
-	}
+    public FilterChain(String cfgFileName, CaseInsensitiveHashMap<String, Class<? extends Filter>> filtersMap) throws IOException {
+        _cfgfileName = cfgFileName;
+        _filtersMap = filtersMap;
+        reload();
+    }
 
-	public void reload(Properties p) {
-		ArrayList<Filter> filters = new ArrayList<>();
-		int i = 1;
+    public void filter(ScoreChart sc, BaseFtpConnection conn,
+                       char direction, InodeHandleInterface file, RemoteSlave sourceSlave)
+            throws NoAvailableSlaveException {
 
-		for (;; i++) {
-			String filterName = p.getProperty(i + ".filter");
+        User u = null;
+        InetAddress peer = null;
 
-			if (filterName == null) {
-				break;
-			}
+        if (conn != null) {
+            u = conn.getUserNull();
+            peer = conn.getClientAddress();
+        }
 
-			if (!_filtersMap.containsKey(filterName)) {
-				// if we can't find one filter that will be enought to brake the whole chain.
-				throw new FatalException(filterName + " wasn't loaded.");
-			}
+        for (Filter filter : _filters) {
+            filter.process(sc, u, peer, direction, file, sourceSlave);
+        }
+    }
 
-			try {
-				Class<? extends Filter> clazz = _filtersMap.get(filterName);
-				Filter filter = clazz.getConstructor(SIG).newInstance(i, p);
-				filters.add(filter);
-			} catch (Exception e) {
-				throw new FatalException(i + ".filter = " + filterName, e);
-			}
-		}
+    public RemoteSlave getBestSlave(ScoreChart sc, BaseFtpConnection conn, char direction, InodeHandleInterface file, RemoteSlave sourceSlave)
+            throws NoAvailableSlaveException {
+        filter(sc, conn, direction, file, sourceSlave);
+        RemoteSlave rslave = sc.getBestSlave();
+        rslave.setLastDirection(direction, System.currentTimeMillis());
+        return rslave;
+    }
 
-		filters.trimToSize();
-		_filters = filters;
-	}
+    public void reload() {
+        Properties p = ConfigLoader.loadConfig(_cfgfileName);
+        reload(p);
+    }
 
-	public static GlobalContext getGlobalContext() {
-		return GlobalContext.getGlobalContext();
-	}
+    public void reload(Properties p) {
+        ArrayList<Filter> filters = new ArrayList<>();
+        int i = 1;
+
+        for (; ; i++) {
+            String filterName = p.getProperty(i + ".filter");
+
+            if (filterName == null) {
+                break;
+            }
+
+            if (!_filtersMap.containsKey(filterName)) {
+                // if we can't find one filter that will be enought to brake the whole chain.
+                throw new FatalException(filterName + " wasn't loaded.");
+            }
+
+            try {
+                Class<? extends Filter> clazz = _filtersMap.get(filterName);
+                Filter filter = clazz.getConstructor(SIG).newInstance(i, p);
+                filters.add(filter);
+            } catch (Exception e) {
+                throw new FatalException(i + ".filter = " + filterName, e);
+            }
+        }
+
+        filters.trimToSize();
+        _filters = filters;
+    }
+
+    public static GlobalContext getGlobalContext() {
+        return GlobalContext.getGlobalContext();
+    }
 }

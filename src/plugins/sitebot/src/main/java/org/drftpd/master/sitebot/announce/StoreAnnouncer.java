@@ -21,20 +21,19 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
-import org.drftpd.common.util.ConfigLoader;
-import org.drftpd.common.util.ConfigType;
-import org.drftpd.master.GlobalContext;
 import org.drftpd.common.util.Bytes;
+import org.drftpd.common.util.ConfigLoader;
+import org.drftpd.master.GlobalContext;
 import org.drftpd.master.event.DirectoryFtpEvent;
 import org.drftpd.master.event.ReloadEvent;
 import org.drftpd.master.event.TransferEvent;
+import org.drftpd.master.sitebot.AbstractAnnouncer;
+import org.drftpd.master.sitebot.AnnounceWriter;
 import org.drftpd.master.sitebot.SiteBot;
 import org.drftpd.master.sitebot.config.AnnounceConfig;
 import org.drftpd.master.util.ReplacerUtils;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.FileHandle;
-import org.drftpd.master.sitebot.AbstractAnnouncer;
-import org.drftpd.master.sitebot.AnnounceWriter;
 
 import java.io.FileNotFoundException;
 import java.util.*;
@@ -69,7 +68,7 @@ public class StoreAnnouncer extends AbstractAnnouncer {
     }
 
     private void loadConf() {
-        Properties cfg = ConfigLoader.loadPluginConfig(getConfDir() + "irc.announce.conf", ConfigType.MASTER);
+        Properties cfg = ConfigLoader.loadPluginConfig(getConfDir() + "irc.announce.conf");
         _storeGroups.clear();
         for (int i = 1; ; i++) {
             String storeGroupPattern = cfg.getProperty("store.path." + i);

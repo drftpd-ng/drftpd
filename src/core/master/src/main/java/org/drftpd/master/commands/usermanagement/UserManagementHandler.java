@@ -19,27 +19,21 @@ package org.drftpd.master.commands.usermanagement;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import org.drftpd.common.util.ConfigLoader;
-import org.drftpd.common.util.ConfigType;
-import org.drftpd.master.GlobalContext;
-import org.drftpd.master.util.Time;
-import org.drftpd.common.util.Bytes;
 import org.drftpd.common.dynamicdata.Key;
 import org.drftpd.common.exceptions.DuplicateElementException;
-import org.drftpd.master.network.BaseFtpConnection;
+import org.drftpd.common.util.Bytes;
+import org.drftpd.common.util.ConfigLoader;
+import org.drftpd.master.GlobalContext;
 import org.drftpd.master.Master;
+import org.drftpd.master.commands.*;
+import org.drftpd.master.network.BaseFtpConnection;
 import org.drftpd.master.network.Session;
 import org.drftpd.master.network.TransferState;
-import org.drftpd.master.commands.*;
 import org.drftpd.master.permissions.Permission;
-import org.drftpd.master.usermanager.Group;
-import org.drftpd.master.usermanager.NoSuchUserException;
-import org.drftpd.master.usermanager.User;
-import org.drftpd.master.usermanager.UserExistsException;
-import org.drftpd.master.usermanager.UserFileException;
-import org.drftpd.slave.network.Transfer;
+import org.drftpd.master.usermanager.*;
+import org.drftpd.master.util.Time;
 import org.drftpd.slave.exceptions.FileExistsException;
+import org.drftpd.slave.network.Transfer;
 
 import java.io.FileNotFoundException;
 import java.text.ParseException;
@@ -200,13 +194,12 @@ public class UserManagementHandler extends CommandInterface {
 
         // If the currentUser is a group admin check if he actually is the group admin for the group we are adding a user to and that there are enough slots available
         if (isGroupAdmin) {
-            if (!g.isAdmin(currentUser))
-            {
+            if (!g.isAdmin(currentUser)) {
                 return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
             }
             Collection<User> groupUsers = GlobalContext.getGlobalContext().getUserManager().getAllUsersByGroup(g);
             int users = groupUsers.size();
-            logger.debug("Group: ["+g.getName()+"], users["+users+"]: ["+groupUsers+"]");
+            logger.debug("Group: [" + g.getName() + "], users[" + users + "]: [" + groupUsers + "]");
             if (users >= g.getKeyedMap().getObjectInteger(GroupManagement.GROUPSLOTS)) {
                 return new CommandResponse(452, session.jprintf(_bundle, "adduser.noslots", request.getUser()));
             }
@@ -221,7 +214,7 @@ public class UserManagementHandler extends CommandInterface {
             env.put("targetuser", newUsername);
             String pass = st.nextToken();
 
-            Properties cfg = ConfigLoader.loadConfig("defaultuser.conf", ConfigType.MASTER);
+            Properties cfg = ConfigLoader.loadConfig("defaultuser.conf");
 
             String ratio = cfg.getProperty("ratio", "3.0");
             String maxlogins = cfg.getProperty("max_logins", "2");
@@ -665,14 +658,14 @@ public class UserManagementHandler extends CommandInterface {
 
                     String newGroup = commandArguments[0];
                     Group g = session.getGroupNull(newGroup);
-                    if(g == null) {
+                    if (g == null) {
                         return new CommandResponse(550, "Unknown group");
                     }
 
                     logger.info("'{}' changed primary group for '{}' from '{}' to '{}'", currentUser.getName(), userToChange.getName(), userToChange.getGroup().getName(), g.getName());
                     userToChange.setGroup(g);
                     env.put("primgroup", userToChange.getGroup().getName());
-                    response.addComment(session.jprintf(_bundle,"changeprimgroup.success", env, request.getUser()));
+                    response.addComment(session.jprintf(_bundle, "changeprimgroup.success", env, request.getUser()));
 
                     break;
                 case "created":
@@ -693,7 +686,7 @@ public class UserManagementHandler extends CommandInterface {
                     logger.info("'{}' changed created for '{}' from '{}' to '{}'", currentUser.getName(), userToChange.getName(), userToChange.getKeyedMap().getObject(UserManagement.CREATED, new Date(0)), myDate);
                     userToChange.getKeyedMap().setObject(UserManagement.CREATED, myDate);
 
-                    response = new CommandResponse(200, session.jprintf(_bundle,"changeuser.created.success", env, request.getUser()));
+                    response = new CommandResponse(200, session.jprintf(_bundle, "changeuser.created.success", env, request.getUser()));
                     break;
                 case "wkly_allotment":
                     if (commandArguments.length != 1) {
@@ -1489,7 +1482,7 @@ public class UserManagementHandler extends CommandInterface {
         int xfersdn = 0;
         int xferidle = 0;
 
-		Map<String, Object> env = new HashMap<>();
+        Map<String, Object> env = new HashMap<>();
 
         List<BaseFtpConnection> conns = request.getSession().getObject(CONNECTIONS, null);
         if (conns == null) {
@@ -1871,7 +1864,7 @@ public class UserManagementHandler extends CommandInterface {
                     UserManagement.BAN_TIME, new Date()).getTime()
                     - System.currentTimeMillis();
             if (timeleft > 0) {
-				Map<String, Object> env = new HashMap<>();
+                Map<String, Object> env = new HashMap<>();
                 env.put("timeleft", "" + (timeleft / 60000));
                 response.addComment(request.getSession().jprintf(_bundle, "bans", env, user.getName()));
             }
@@ -1882,7 +1875,7 @@ public class UserManagementHandler extends CommandInterface {
 
     public CommandResponse doCredits(CommandRequest request) {
         CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-		Map<String, Object> env = new HashMap<>();
+        Map<String, Object> env = new HashMap<>();
         User user;
         if (!request.hasArgument()) {
             try {
@@ -1917,7 +1910,7 @@ public class UserManagementHandler extends CommandInterface {
 
     protected void showAllUserCredits(CommandRequest request, CommandResponse response) {
         long totalcredits = 0;
-		Map<String, Object> env = new HashMap<>();
+        Map<String, Object> env = new HashMap<>();
 
         ArrayList<User> users = new ArrayList<>(GlobalContext.getGlobalContext().getUserManager().getAllUsers());
         for (User user : users) {

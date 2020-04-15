@@ -16,17 +16,15 @@
  */
 package org.drftpd.links.master;
 
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
+import org.apache.logging.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
-import org.drftpd.common.util.ConfigLoader;
-import org.drftpd.common.util.ConfigType;
-import org.drftpd.master.GlobalContext;
 import org.drftpd.common.extensibility.PluginInterface;
-import org.drftpd.common.util.PropertyHelper;
 import org.drftpd.common.misc.CaseInsensitiveHashMap;
+import org.drftpd.common.util.ConfigLoader;
+import org.drftpd.common.util.PropertyHelper;
+import org.drftpd.master.GlobalContext;
 import org.drftpd.master.event.ReloadEvent;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.InodeHandle;
@@ -116,7 +114,7 @@ public class LinkManager implements PluginInterface {
     public void loadConf() {
         initTypes();
         _links = new ArrayList<>();
-        Properties props = ConfigLoader.loadPluginConfig("links.conf", ConfigType.MASTER);
+        Properties props = ConfigLoader.loadPluginConfig("links.conf");
         int count = 1;
         String type;
         while ((type = PropertyHelper.getProperty(props, count + ".type", null)) != null) {

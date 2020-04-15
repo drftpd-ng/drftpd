@@ -16,30 +16,28 @@
  */
 package org.drftpd.dupecheck.master;
 
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
+import org.apache.logging.log4j.Logger;
 import org.bushe.swing.event.annotation.EventSubscriber;
+import org.drftpd.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.common.extensibility.CommandHook;
 import org.drftpd.common.extensibility.HookType;
 import org.drftpd.common.util.ConfigLoader;
-import org.drftpd.common.util.ConfigType;
+import org.drftpd.dupecheck.master.metadata.DupeCheckFileData;
 import org.drftpd.master.GlobalContext;
-import org.drftpd.common.dynamicdata.KeyNotFoundException;
+import org.drftpd.master.commands.CommandRequest;
 import org.drftpd.master.commands.CommandRequestInterface;
-import org.drftpd.master.event.ReloadEvent;
+import org.drftpd.master.commands.CommandResponse;
 import org.drftpd.master.config.ConfigInterface;
+import org.drftpd.master.event.ReloadEvent;
+import org.drftpd.master.indexation.AdvancedSearchParams;
+import org.drftpd.master.indexation.IndexEngineInterface;
+import org.drftpd.master.indexation.IndexException;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.master.vfs.InodeHandle;
 import org.drftpd.master.vfs.VirtualFileSystem;
-import org.drftpd.master.indexation.AdvancedSearchParams;
-import org.drftpd.master.indexation.IndexEngineInterface;
-import org.drftpd.master.indexation.IndexException;
-import org.drftpd.master.commands.CommandRequest;
-import org.drftpd.master.commands.CommandResponse;
-import org.drftpd.dupecheck.master.metadata.DupeCheckFileData;
 
 import java.io.FileNotFoundException;
 import java.util.Map;
@@ -71,7 +69,7 @@ public class DupeCheckHooks {
      * Loads config from file and sets regex patterns
      */
     private void loadConf() {
-        Properties cfg = ConfigLoader.loadPluginConfig("dupecheck.conf", ConfigType.MASTER);
+        Properties cfg = ConfigLoader.loadPluginConfig("dupecheck.conf");
         String exempt = cfg.getProperty("exempt");
         String type = cfg.getProperty("type");
 

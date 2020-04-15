@@ -19,37 +19,36 @@ package org.drftpd.zipscript.master.sfv.hooks;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.drftpd.common.util.ConfigLoader;
-import org.drftpd.common.util.ConfigType;
-import org.drftpd.master.commands.dataconnection.DataConnectionHandler;
-import org.drftpd.master.commands.dir.Dir;
-import org.drftpd.zipscript.common.sfv.SFVInfo;
-import org.drftpd.zipscript.common.sfv.SFVStatus;
-import org.drftpd.zipscript.master.sfv.SFVTools;
-import org.drftpd.zipscript.master.sfv.event.SFVMemberTransferEvent;
-import org.drftpd.zipscript.master.sfv.ZipscriptVFSDataSFV;
+import org.drftpd.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.common.extensibility.CommandHook;
 import org.drftpd.common.extensibility.HookType;
-import org.drftpd.master.network.Checksum;
-import org.drftpd.master.GlobalContext;
-import org.drftpd.master.util.RankUtils;
 import org.drftpd.common.util.Bytes;
-import org.drftpd.common.dynamicdata.KeyNotFoundException;
+import org.drftpd.common.util.ConfigLoader;
+import org.drftpd.master.GlobalContext;
+import org.drftpd.master.Master;
 import org.drftpd.master.commands.CommandRequest;
 import org.drftpd.master.commands.CommandResponse;
+import org.drftpd.master.commands.dataconnection.DataConnectionHandler;
+import org.drftpd.master.commands.dir.Dir;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.exceptions.SlaveUnavailableException;
 import org.drftpd.master.network.BaseFtpConnection;
-import org.drftpd.master.Master;
+import org.drftpd.master.network.Checksum;
 import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.master.usermanager.NoSuchUserException;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.usermanager.UserFileException;
 import org.drftpd.master.util.GroupPosition;
+import org.drftpd.master.util.RankUtils;
 import org.drftpd.master.util.ReplacerUtils;
 import org.drftpd.master.util.UploaderPosition;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.FileHandle;
+import org.drftpd.zipscript.common.sfv.SFVInfo;
+import org.drftpd.zipscript.common.sfv.SFVStatus;
+import org.drftpd.zipscript.master.sfv.SFVTools;
+import org.drftpd.zipscript.master.sfv.ZipscriptVFSDataSFV;
+import org.drftpd.zipscript.master.sfv.event.SFVMemberTransferEvent;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -225,7 +224,7 @@ public class ZipscriptPostHook extends SFVTools {
             // CWD failed, abort stats
             return;
         }
-        Properties cfg = ConfigLoader.loadPluginConfig("zipscript.conf", ConfigType.MASTER);
+        Properties cfg = ConfigLoader.loadPluginConfig("zipscript.conf");
         if (cfg.getProperty("cwd.racestats.enabled", "false").equalsIgnoreCase("true")) {
             addRaceStats(request, response, response.getCurrentDirectory());
         }
@@ -237,7 +236,7 @@ public class ZipscriptPostHook extends SFVTools {
             // STOR failed, abort stats
             return;
         }
-        Properties cfg = ConfigLoader.loadPluginConfig("zipscript.conf", ConfigType.MASTER);
+        Properties cfg = ConfigLoader.loadPluginConfig("zipscript.conf");
         if (cfg.getProperty("stor.racestats.enabled", "false").equalsIgnoreCase("true")) {
             addRaceStats(request, response, request.getCurrentDirectory());
         }
@@ -334,9 +333,9 @@ public class ZipscriptPostHook extends SFVTools {
                 raceenv.put("files", Integer.toString(stat.getFiles()));
                 raceenv.put("percent", (stat.getFiles() * 100) / sfvInfo.getSize() + "%");
                 raceenv.put("speed", Bytes.formatBytes(stat.getXferspeed()) + "/s");
-				raceTextBuilder.append(ReplacerUtils.jprintf(groupline, raceenv));
-				raceTextBuilder.append('\n');
-				position++;
+                raceTextBuilder.append(ReplacerUtils.jprintf(groupline, raceenv));
+                raceTextBuilder.append('\n');
+                position++;
             }
 
             raceTextBuilder.append(_bundle.getString("cwd.groups.footer"));
@@ -352,7 +351,7 @@ public class ZipscriptPostHook extends SFVTools {
             raceTextBuilder.append(_bundle.getString("cwd.racestats.footer"));
             raceTextBuilder.append('\n');
 
-			response.addComment(ReplacerUtils.jprintf(raceTextBuilder.toString(), env));
+            response.addComment(ReplacerUtils.jprintf(raceTextBuilder.toString(), env));
 
         } catch (SlaveUnavailableException | NoAvailableSlaveException | IOException e) {
             //Error fetching SFV, ignore

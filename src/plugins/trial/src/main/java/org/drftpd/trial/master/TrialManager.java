@@ -20,12 +20,11 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
-import org.drftpd.common.util.ConfigLoader;
-import org.drftpd.common.util.ConfigType;
-import org.drftpd.master.GlobalContext;
 import org.drftpd.common.extensibility.PluginInterface;
-import org.drftpd.common.util.PropertyHelper;
 import org.drftpd.common.misc.CaseInsensitiveHashMap;
+import org.drftpd.common.util.ConfigLoader;
+import org.drftpd.common.util.PropertyHelper;
+import org.drftpd.master.GlobalContext;
 import org.drftpd.master.event.ReloadEvent;
 import org.reflections.Reflections;
 
@@ -111,7 +110,7 @@ public class TrialManager implements PluginInterface {
     public void loadConf() {
         initTypes();
         _trials = new ArrayList<>();
-        Properties props = ConfigLoader.loadPluginConfig("trial.conf", ConfigType.MASTER);
+        Properties props = ConfigLoader.loadPluginConfig("trial.conf");
         int count = 1;
         String type;
         while ((type = PropertyHelper.getProperty(props, count + ".type", null)) != null) {

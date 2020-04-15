@@ -21,28 +21,27 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
-import org.drftpd.common.util.ConfigLoader;
-import org.drftpd.common.util.ConfigType;
-import org.drftpd.master.commands.dataconnection.DataConnectionHandler;
-import org.drftpd.master.commands.pre.Pre;
 import org.drftpd.common.extensibility.CommandHook;
 import org.drftpd.common.extensibility.HookType;
-import org.drftpd.master.GlobalContext;
+import org.drftpd.common.slave.TransferStatus;
 import org.drftpd.common.util.Bytes;
+import org.drftpd.common.util.ConfigLoader;
+import org.drftpd.master.GlobalContext;
+import org.drftpd.master.Master;
+import org.drftpd.master.commands.CommandRequest;
+import org.drftpd.master.commands.CommandResponse;
+import org.drftpd.master.commands.dataconnection.DataConnectionHandler;
+import org.drftpd.master.commands.pre.Pre;
 import org.drftpd.master.event.ReloadEvent;
 import org.drftpd.master.network.BaseFtpConnection;
-import org.drftpd.master.Master;
 import org.drftpd.master.network.TransferState;
 import org.drftpd.master.sections.SectionInterface;
 import org.drftpd.master.usermanager.NoSuchUserException;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.usermanager.UserFileException;
 import org.drftpd.master.vfs.DirectoryHandle;
-import org.drftpd.master.commands.CommandRequest;
-import org.drftpd.master.commands.CommandResponse;
 import org.drftpd.prebw.master.event.PREBWEvent;
 import org.drftpd.slave.network.Transfer;
-import org.drftpd.common.slave.TransferStatus;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -69,7 +68,7 @@ public class PREBWPostHook {
     }
 
     private void loadConf() {
-        Properties cfg = ConfigLoader.loadPluginConfig("prebw.conf", ConfigType.MASTER);
+        Properties cfg = ConfigLoader.loadPluginConfig("prebw.conf");
         PreInfos.getPreInfosSingleton().clearPreInfos();
         _timeSettings.clear();
         _sections = cfg.getProperty("sections", "").split(";");

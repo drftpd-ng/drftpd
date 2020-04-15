@@ -19,17 +19,16 @@ package org.drftpd.request.master;
 
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
-import org.drftpd.common.util.ConfigLoader;
-import org.drftpd.common.util.ConfigType;
-import org.drftpd.master.commands.CommandRequestInterface;
-import org.drftpd.request.master.metadata.RequestUserData;
 import org.drftpd.common.extensibility.CommandHook;
 import org.drftpd.common.extensibility.HookType;
+import org.drftpd.common.util.ConfigLoader;
 import org.drftpd.master.commands.CommandRequest;
+import org.drftpd.master.commands.CommandRequestInterface;
 import org.drftpd.master.commands.CommandResponse;
 import org.drftpd.master.event.ReloadEvent;
 import org.drftpd.master.permissions.Permission;
 import org.drftpd.master.usermanager.User;
+import org.drftpd.request.master.metadata.RequestUserData;
 
 import java.util.Properties;
 
@@ -38,43 +37,43 @@ import java.util.Properties;
  * @version $Id$
  */
 public class RequestPreHook {
-	private int _weekMax;
+    private int _weekMax;
     private Permission _weekExempt;
 
-	public void RequestPreHook() {
-		readConfig();
-		// Subscribe to events
-		AnnotationProcessor.process(this);
-	}
+    public void RequestPreHook() {
+        readConfig();
+        // Subscribe to events
+        AnnotationProcessor.process(this);
+    }
 
-	@CommandHook(commands = "doSITE_REQUEST", priority = 10, type = HookType.PRE)
-	public CommandRequestInterface doWklyAllotmentPreCheck(CommandRequest request) {
-		User user = request.getSession().getUserNull(request.getUser());
-		if (user != null) {
-			int weekReqs = user.getKeyedMap().getObjectInteger(RequestUserData.WEEKREQS);
-			if (_weekMax != 0 && weekReqs >= _weekMax && !_weekExempt.check(user)) {
-				// User is not exempted and max number of request this week is made already
-				request.setAllowed(false);
-				request.setDeniedResponse(new CommandResponse(530, "Access denied - " + "You have reached max(" + _weekMax + ") number of requests per week"));
-			}
-			return request;
-		} 
-		request.setAllowed(false);
-		request.setDeniedResponse(new CommandResponse(530, "Access denied - No Such User"));
-		return request;		
-	}
+    @CommandHook(commands = "doSITE_REQUEST", priority = 10, type = HookType.PRE)
+    public CommandRequestInterface doWklyAllotmentPreCheck(CommandRequest request) {
+        User user = request.getSession().getUserNull(request.getUser());
+        if (user != null) {
+            int weekReqs = user.getKeyedMap().getObjectInteger(RequestUserData.WEEKREQS);
+            if (_weekMax != 0 && weekReqs >= _weekMax && !_weekExempt.check(user)) {
+                // User is not exempted and max number of request this week is made already
+                request.setAllowed(false);
+                request.setDeniedResponse(new CommandResponse(530, "Access denied - " + "You have reached max(" + _weekMax + ") number of requests per week"));
+            }
+            return request;
+        }
+        request.setAllowed(false);
+        request.setDeniedResponse(new CommandResponse(530, "Access denied - No Such User"));
+        return request;
+    }
 
-	/**
-	 * Reads 'conf/plugins/request.conf'
-	 */
-	private void readConfig() {
-		Properties props = ConfigLoader.loadPluginConfig("request.conf", ConfigType.MASTER);
-		_weekMax = Integer.parseInt(props.getProperty("request.weekmax", "0"));
-		_weekExempt = new Permission(props.getProperty("request.weekexempt", ""));
-	}
+    /**
+     * Reads 'conf/plugins/request.conf'
+     */
+    private void readConfig() {
+        Properties props = ConfigLoader.loadPluginConfig("request.conf");
+        _weekMax = Integer.parseInt(props.getProperty("request.weekmax", "0"));
+        _weekExempt = new Permission(props.getProperty("request.weekexempt", ""));
+    }
 
-	@EventSubscriber
-	public void onReloadEvent(ReloadEvent event) {
-		readConfig();
-	}
+    @EventSubscriber
+    public void onReloadEvent(ReloadEvent event) {
+        readConfig();
+    }
 }

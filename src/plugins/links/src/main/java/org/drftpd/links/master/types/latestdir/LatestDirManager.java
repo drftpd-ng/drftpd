@@ -16,110 +16,104 @@
  */
 package org.drftpd.links.master.types.latestdir;
 
-import java.util.*;
-
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
-
 import org.drftpd.common.extensibility.PluginDependencies;
-import org.drftpd.common.util.ConfigLoader;
-import org.drftpd.common.util.ConfigType;
 import org.drftpd.common.extensibility.PluginInterface;
+import org.drftpd.common.util.ConfigLoader;
 import org.drftpd.common.util.PropertyHelper;
-import org.drftpd.master.event.ReloadEvent;
-import org.drftpd.master.event.DirectoryFtpEvent;
-import org.drftpd.master.vfs.DirectoryHandle;
-import org.drftpd.master.vfs.LinkHandle;
 import org.drftpd.links.master.LinkManager;
 import org.drftpd.links.master.LinkType;
+import org.drftpd.master.event.DirectoryFtpEvent;
+import org.drftpd.master.event.ReloadEvent;
+import org.drftpd.master.vfs.DirectoryHandle;
+import org.drftpd.master.vfs.LinkHandle;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Properties;
 
 /**
  * @author freasy
  * @version $Id: LatestDirManager.java freasy $
  */
 
-@PluginDependencies(refs = { LinkManager.class })
+@PluginDependencies(refs = {LinkManager.class})
 public class LatestDirManager implements PluginInterface {
-	private LinkManager _linkmanager;
-	
-	private ArrayList<DirectoryHandle> _links;
-	
-	private HashMap<String, DirectoryHandle> _map;
-	
-	private int _count;
+    private LinkManager _linkmanager;
 
-	@Override
-	public void startPlugin() {
-		AnnotationProcessor.process(this);
-		loadManager();
-	}
+    private ArrayList<DirectoryHandle> _links;
 
-	@Override
-	public void stopPlugin(String reason) {
-		AnnotationProcessor.unprocess(this);
-	}
-	
+    private HashMap<String, DirectoryHandle> _map;
+
+    private int _count;
+
+    @Override
+    public void startPlugin() {
+        AnnotationProcessor.process(this);
+        loadManager();
+    }
+
+    @Override
+    public void stopPlugin(String reason) {
+        AnnotationProcessor.unprocess(this);
+    }
+
     @EventSubscriber
-	public void onReloadEvent(ReloadEvent event) {
-    	loadManager();
+    public void onReloadEvent(ReloadEvent event) {
+        loadManager();
     }
-	
-    private void loadManager() {
-    	_linkmanager = LinkManager.getLinkManager();
-		_links = new ArrayList<>();
-		_map = new HashMap<>();
-		Properties props = ConfigLoader.loadPluginConfig("latestdir.conf", ConfigType.MASTER);
-		_count = Integer.parseInt(PropertyHelper.getProperty(props, "maxcount","10"));
-		for (LinkType link : _linkmanager.getLinks()) {
-			if (link.getEventType().equals("latestdir")) {
-				DirectoryHandle dir = new DirectoryHandle(link.getDirName(null));
-				try {
-					for(LinkHandle linkH : dir.getSortedLinksUnchecked())
-					{
-						_links.add(linkH.getTargetDirectoryUnchecked());
-						_map.put(linkH.getTargetDirectoryUnchecked().getPath(), linkH.getTargetDirectoryUnchecked());
-					}
-					
-					while(_links.size() > _count)
-					{
-						link.doDeleteLink(_links.get(0));
-						_map.remove(_links.get(0).getPath());
-						_links.remove(0);
-					}
-				} catch (Exception e) {}
-			}
-		}
-    }
-    
-	/*
-	* Handle the MKD command to make links
-	*/
-	@EventSubscriber
-	public void onDirectoryFtpEvent(DirectoryFtpEvent event)
-	{
-		if(!event.getCommand().equalsIgnoreCase("MKD"))
-			return;
-		
-		String rls = event.getDirectory().getPath().replaceAll(".*/(.*)", "$1");
 
-		for (LinkType link : _linkmanager.getLinks()) {
-			if (link.getEventType().equals("latestdir")) {
-				if(!rls.matches(link.getExclude()))
-				{
-					if(_map.get(event.getDirectory().getPath()) == null)
-					{
-						link.doCreateLink(event.getDirectory());
-						_links.add(event.getDirectory());
-						_map.put(event.getDirectory().getPath(), event.getDirectory());
-					}
-					if(_links.size() > _count)
-					{
-						link.doDeleteLink(_links.get(0));
-						_links.remove(0);
-						_map.remove(event.getDirectory().getPath());
-					}
-				}
-			}
-		}
-	}
+    private void loadManager() {
+        _linkmanager = LinkManager.getLinkManager();
+        _links = new ArrayList<>();
+        _map = new HashMap<>();
+        Properties props = ConfigLoader.loadPluginConfig("latestdir.conf");
+        _count = Integer.parseInt(PropertyHelper.getProperty(props, "maxcount", "10"));
+        for (LinkType link : _linkmanager.getLinks()) {
+            if (link.getEventType().equals("latestdir")) {
+                DirectoryHandle dir = new DirectoryHandle(link.getDirName(null));
+                try {
+                    for (LinkHandle linkH : dir.getSortedLinksUnchecked()) {
+                        _links.add(linkH.getTargetDirectoryUnchecked());
+                        _map.put(linkH.getTargetDirectoryUnchecked().getPath(), linkH.getTargetDirectoryUnchecked());
+                    }
+
+                    while (_links.size() > _count) {
+                        link.doDeleteLink(_links.get(0));
+                        _map.remove(_links.get(0).getPath());
+                        _links.remove(0);
+                    }
+                } catch (Exception e) {}
+            }
+        }
+    }
+
+    /*
+     * Handle the MKD command to make links
+     */
+    @EventSubscriber
+    public void onDirectoryFtpEvent(DirectoryFtpEvent event) {
+        if (!event.getCommand().equalsIgnoreCase("MKD"))
+            return;
+
+        String rls = event.getDirectory().getPath().replaceAll(".*/(.*)", "$1");
+
+        for (LinkType link : _linkmanager.getLinks()) {
+            if (link.getEventType().equals("latestdir")) {
+                if (!rls.matches(link.getExclude())) {
+                    if (_map.get(event.getDirectory().getPath()) == null) {
+                        link.doCreateLink(event.getDirectory());
+                        _links.add(event.getDirectory());
+                        _map.put(event.getDirectory().getPath(), event.getDirectory());
+                    }
+                    if (_links.size() > _count) {
+                        link.doDeleteLink(_links.get(0));
+                        _links.remove(0);
+                        _map.remove(event.getDirectory().getPath());
+                    }
+                }
+            }
+        }
+    }
 }

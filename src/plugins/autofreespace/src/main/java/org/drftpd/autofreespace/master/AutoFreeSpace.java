@@ -1,25 +1,23 @@
 package org.drftpd.autofreespace.master;
 
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
+import org.apache.logging.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
-import org.drftpd.common.util.ConfigLoader;
-import org.drftpd.common.util.ConfigType;
-import org.drftpd.master.GlobalContext;
+import org.drftpd.autofreespace.master.event.AFSEvent;
 import org.drftpd.common.extensibility.PluginInterface;
 import org.drftpd.common.util.Bytes;
+import org.drftpd.common.util.ConfigLoader;
 import org.drftpd.common.util.PropertyHelper;
+import org.drftpd.master.GlobalContext;
 import org.drftpd.master.event.ReloadEvent;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.exceptions.SlaveUnavailableException;
-import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.master.sections.SectionInterface;
+import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.master.vfs.InodeHandle;
-import org.drftpd.autofreespace.master.event.AFSEvent;
 
 import java.io.FileNotFoundException;
 import java.util.*;
@@ -67,7 +65,7 @@ public class AutoFreeSpace implements PluginInterface {
 
     private void reload() {
         logger.info("AUTODELETE: Reloading {}", AutoFreeSpace.class.getName());
-        Properties p = ConfigLoader.loadPluginConfig("autofreespace.conf", ConfigType.MASTER);
+        Properties p = ConfigLoader.loadPluginConfig("autofreespace.conf");
         if (_timer == null) {
             _timer = new Timer();
         } else {

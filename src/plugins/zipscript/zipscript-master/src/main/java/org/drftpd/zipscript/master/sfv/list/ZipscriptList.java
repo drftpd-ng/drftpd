@@ -19,21 +19,20 @@ package org.drftpd.zipscript.master.sfv.list;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
+import org.drftpd.common.slave.LightRemoteInode;
+import org.drftpd.common.util.Bytes;
 import org.drftpd.common.util.ConfigLoader;
-import org.drftpd.common.util.ConfigType;
 import org.drftpd.master.commands.list.AddListElementsInterface;
 import org.drftpd.master.commands.list.ListElementsContainer;
-import org.drftpd.zipscript.common.sfv.SFVInfo;
-import org.drftpd.zipscript.common.sfv.SFVStatus;
-import org.drftpd.zipscript.master.sfv.SFVTools;
-import org.drftpd.zipscript.master.sfv.ZipscriptVFSDataSFV;
-import org.drftpd.common.util.Bytes;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.exceptions.SlaveUnavailableException;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.master.vfs.VirtualFileSystem;
-import org.drftpd.common.slave.LightRemoteInode;
+import org.drftpd.zipscript.common.sfv.SFVInfo;
+import org.drftpd.zipscript.common.sfv.SFVStatus;
+import org.drftpd.zipscript.master.sfv.SFVTools;
+import org.drftpd.zipscript.master.sfv.ZipscriptVFSDataSFV;
 import org.reflections.Reflections;
 
 import java.io.FileNotFoundException;
@@ -58,8 +57,8 @@ public class ZipscriptList extends SFVTools implements AddListElementsInterface 
             Set<Class<? extends ZipscriptListStatusBarInterface>> bars = new Reflections("org.drftpd")
                     .getSubTypesOf(ZipscriptListStatusBarInterface.class);
             for (Class<? extends ZipscriptListStatusBarInterface> sbAddon : bars) {
-				ZipscriptListStatusBarInterface barInterface = sbAddon.getConstructor().newInstance();
-				_statusBarProviders.add(barInterface);
+                ZipscriptListStatusBarInterface barInterface = sbAddon.getConstructor().newInstance();
+                _statusBarProviders.add(barInterface);
             }
         } catch (Exception e) {
             logger.error("Failed to load plugins for org.drftpd.master.commands.zipscript extension point 'ListStatusBarProvider'" +
@@ -70,7 +69,7 @@ public class ZipscriptList extends SFVTools implements AddListElementsInterface 
     public ListElementsContainer addElements(DirectoryHandle dir, ListElementsContainer container) {
         ResourceBundle bundle = container.getCommandManager().getResourceBundle();
         // Check config
-        Properties cfg = ConfigLoader.loadPluginConfig("zipscript.conf", ConfigType.MASTER);
+        Properties cfg = ConfigLoader.loadPluginConfig("zipscript.conf");
         boolean statusBarEnabled = cfg.getProperty("statusbar.enabled", "false").equalsIgnoreCase("true");
         boolean missingFilesEnabled = cfg.getProperty("files.missing.enabled", "false").equalsIgnoreCase("true");
         if (statusBarEnabled || missingFilesEnabled) {

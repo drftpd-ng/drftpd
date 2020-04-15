@@ -17,17 +17,15 @@
  */
 package org.drftpd.master.sitebot.config;
 
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
+import org.apache.logging.log4j.Logger;
 import org.drftpd.common.util.ConfigLoader;
-import org.drftpd.common.util.ConfigType;
-import org.drftpd.master.sitebot.SiteBot;
-import org.drftpd.master.vfs.DirectoryHandle;
-import org.drftpd.master.vfs.InodeHandle;
 import org.drftpd.master.sitebot.AnnounceWriter;
 import org.drftpd.master.sitebot.NullOutputWriter;
 import org.drftpd.master.sitebot.OutputWriter;
+import org.drftpd.master.sitebot.SiteBot;
+import org.drftpd.master.vfs.DirectoryHandle;
+import org.drftpd.master.vfs.InodeHandle;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -53,7 +51,7 @@ public class AnnounceConfig {
         _confDir = confDir;
         _eventTypes = eventTypes;
         _bot = bot;
-        Properties cfg = ConfigLoader.loadPluginConfig(confDir + "irc.announce.conf", ConfigType.MASTER);
+        Properties cfg = ConfigLoader.loadPluginConfig(confDir + "irc.announce.conf");
         loadConfig(cfg);
     }
 
@@ -203,7 +201,7 @@ public class AnnounceConfig {
     }
 
     public void reload() {
-        Properties cfg = ConfigLoader.loadPluginConfig(_confDir + "irc.announce.conf", ConfigType.MASTER);
+        Properties cfg = ConfigLoader.loadPluginConfig(_confDir + "irc.announce.conf");
         loadConfig(cfg);
     }
 

@@ -17,11 +17,10 @@
  */
 package org.drftpd.master.sitebot;
 
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-import org.drftpd.common.util.ConfigLoader;
-import org.drftpd.common.util.ConfigType;
+import org.apache.logging.log4j.Logger;
 import org.drftpd.common.extensibility.PluginInterface;
+import org.drftpd.common.util.ConfigLoader;
 
 import java.util.ArrayList;
 import java.util.Properties;
@@ -33,40 +32,40 @@ import java.util.StringTokenizer;
  */
 public class SiteBotWrapper implements PluginInterface {
 
-	private static final Logger logger = LogManager.getLogger(SiteBotWrapper.class);
-	
-	private ArrayList<SiteBot> _bots = new ArrayList<>();
+    private static final Logger logger = LogManager.getLogger(SiteBotWrapper.class);
 
-	public void startPlugin() {
-		Properties cfg = ConfigLoader.loadPluginConfig("irc.conf", ConfigType.MASTER);
-		if (cfg.isEmpty()) {
-			logger.debug("No configuration found for the SiteBot, skipping initialization");
-			return;
-		}
+    private ArrayList<SiteBot> _bots = new ArrayList<>();
 
-		boolean isActivated = cfg.getProperty("activated").equalsIgnoreCase("true");
-		if (!isActivated) return;
+    public void startPlugin() {
+        Properties cfg = ConfigLoader.loadPluginConfig("irc.conf");
+        if (cfg.isEmpty()) {
+            logger.debug("No configuration found for the SiteBot, skipping initialization");
+            return;
+        }
 
-		SiteBot bot = new SiteBot("");
-		new Thread(bot).start();
-		_bots.add(bot);
-		if (cfg.getProperty("bot.multiple.enable").equalsIgnoreCase("true")) {
-			StringTokenizer st = new StringTokenizer(cfg.getProperty("bot.multiple.directories"));
-			while (st.hasMoreTokens()) {
-				bot = new SiteBot(st.nextToken());
-				new Thread(bot).start();
-				_bots.add(bot);
-			}
-		}
-	}
+        boolean isActivated = cfg.getProperty("activated").equalsIgnoreCase("true");
+        if (!isActivated) return;
 
-	public void stopPlugin(String reason) {
-		for (SiteBot bot : _bots) {
-			bot.terminate(reason);
-		}
-	}
+        SiteBot bot = new SiteBot("");
+        new Thread(bot).start();
+        _bots.add(bot);
+        if (cfg.getProperty("bot.multiple.enable").equalsIgnoreCase("true")) {
+            StringTokenizer st = new StringTokenizer(cfg.getProperty("bot.multiple.directories"));
+            while (st.hasMoreTokens()) {
+                bot = new SiteBot(st.nextToken());
+                new Thread(bot).start();
+                _bots.add(bot);
+            }
+        }
+    }
 
-	public ArrayList<SiteBot> getBots() {
-		return _bots;
-	}
+    public void stopPlugin(String reason) {
+        for (SiteBot bot : _bots) {
+            bot.terminate(reason);
+        }
+    }
+
+    public ArrayList<SiteBot> getBots() {
+        return _bots;
+    }
 }

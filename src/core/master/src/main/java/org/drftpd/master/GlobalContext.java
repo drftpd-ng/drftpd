@@ -26,18 +26,18 @@ import org.drftpd.common.extensibility.CommandHook;
 import org.drftpd.common.extensibility.PluginDependencies;
 import org.drftpd.common.extensibility.PluginInterface;
 import org.drftpd.common.network.SSLGetContext;
-import org.drftpd.common.util.ConfigType;
+import org.drftpd.common.util.PortRange;
 import org.drftpd.common.util.PropertyHelper;
 import org.drftpd.master.commands.CommandManagerInterface;
-import org.drftpd.common.util.PortRange;
+import org.drftpd.master.config.ConfigInterface;
 import org.drftpd.master.config.ConfigManager;
+import org.drftpd.master.cron.TimeEventInterface;
+import org.drftpd.master.cron.TimeManager;
 import org.drftpd.master.event.AsyncThreadSafeEventService;
 import org.drftpd.master.event.MessageEvent;
 import org.drftpd.master.exceptions.FatalException;
 import org.drftpd.master.exceptions.SlaveFileException;
-import org.drftpd.master.config.ConfigInterface;
-import org.drftpd.master.cron.TimeEventInterface;
-import org.drftpd.master.cron.TimeManager;
+import org.drftpd.master.indexation.IndexEngineInterface;
 import org.drftpd.master.sections.SectionManagerInterface;
 import org.drftpd.master.slavemanagement.SlaveManager;
 import org.drftpd.master.slaveselection.SlaveSelectionManagerInterface;
@@ -46,7 +46,6 @@ import org.drftpd.master.usermanager.UserManager;
 import org.drftpd.master.vfs.CommitManager;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.VirtualFileSystem;
-import org.drftpd.master.indexation.IndexEngineInterface;
 import org.reflections.Reflections;
 import org.reflections.scanners.MethodAnnotationsScanner;
 import org.reflections.util.ClasspathHelper;
@@ -58,12 +57,13 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.lang.reflect.Method;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static org.drftpd.common.util.ConfigLoader.configPath;
 
 /**
  * @author mog
@@ -207,7 +207,7 @@ public class GlobalContext {
         List<String> alreadyResolved = new ArrayList<>();
         try {
             boolean allResolve = false;
-            while(!allResolve) {
+            while (!allResolve) {
                 for (Class<? extends PluginInterface> plugin : plugins) {
                     PluginDependencies annotation = plugin.getAnnotation(PluginDependencies.class);
                     List<Class<? extends PluginInterface>> dependencies = annotation != null ?
@@ -273,7 +273,7 @@ public class GlobalContext {
             _usermanager = (AbstractUserManager) aClass.getConstructor().newInstance();
             _usermanager.init();
         } catch (Exception e) {
-            throw new FatalException( "Cannot create instance of usermanager, check 'usermanager' in the configuration file", e);
+            throw new FatalException("Cannot create instance of usermanager, check 'usermanager' in the configuration file", e);
         }
     }
 
@@ -391,14 +391,8 @@ public class GlobalContext {
         return _sslContext;
     }
 
-    public static HashMap<String, Properties> loadCommandConfig(String confDirectory, ConfigType type) {
-        boolean useClassloaderConfig = "true".equals(System.getenv("DRFTPD_USE_CLASSLOADER_CONFIG"));
-        String configurationPath = confDirectory;
-        if (useClassloaderConfig) {
-            String lookIntoDir = "/" + type.label + "/" + confDirectory;
-            URL url = GlobalContext.class.getResource(lookIntoDir);
-            configurationPath = url.getPath();
-        }
+    public static HashMap<String, Properties> loadCommandConfig(String confDirectory) {
+        String configurationPath = configPath(confDirectory);
         HashMap<String, Properties> commandsConfig = new HashMap<>();
         LineNumberReader reader = null;
         try {

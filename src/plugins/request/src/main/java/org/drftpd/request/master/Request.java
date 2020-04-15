@@ -21,9 +21,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
-
 import org.drftpd.common.util.ConfigLoader;
-import org.drftpd.common.util.ConfigType;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.commands.*;
 import org.drftpd.master.event.ReloadEvent;
@@ -78,7 +76,7 @@ public class Request extends CommandInterface {
      * Reads 'conf/plugins/request.conf'
      */
     private void readConfig() {
-        Properties props = ConfigLoader.loadPluginConfig("request.conf", ConfigType.MASTER);
+        Properties props = ConfigLoader.loadPluginConfig("request.conf");
         _requestPath = props.getProperty("request.dirpath", "/REQUESTS/");
         _createRequestPath = Boolean.parseBoolean(props.getProperty("request.createpath", "false"));
 

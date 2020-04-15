@@ -17,14 +17,11 @@
  */
 package org.drftpd.mirror.master;
 
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
+import org.apache.logging.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
-
 import org.drftpd.common.util.ConfigLoader;
-import org.drftpd.common.util.ConfigType;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.commands.*;
 import org.drftpd.master.event.ReloadEvent;
@@ -37,50 +34,49 @@ import java.util.Properties;
  * @author lh
  */
 public class Mirror extends CommandInterface {
-	private static final Logger logger = LogManager.getLogger(Mirror.class);
-	private ArrayList<String> _excludePaths;
+    private static final Logger logger = LogManager.getLogger(Mirror.class);
+    private ArrayList<String> _excludePaths;
 
-	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
-		super.initialize(method, pluginName, cManager);
-		_excludePaths = new ArrayList<>();
-		loadConf();
-		// Subscribe to events
-		AnnotationProcessor.process(this);
-	}
+    public void initialize(String method, String pluginName, StandardCommandManager cManager) {
+        super.initialize(method, pluginName, cManager);
+        _excludePaths = new ArrayList<>();
+        loadConf();
+        // Subscribe to events
+        AnnotationProcessor.process(this);
+    }
 
-	private void loadConf() {
-		Properties cfg = ConfigLoader.loadPluginConfig("mirror.conf", ConfigType.MASTER);
-		_excludePaths.clear();
-		for (int i = 1;; i++) {
-			String excludePath = cfg.getProperty(i + ".unmirrorExclude");
-			if (excludePath == null) break;
-			_excludePaths.add(excludePath);
-		}
-	}
+    private void loadConf() {
+        Properties cfg = ConfigLoader.loadPluginConfig("mirror.conf");
+        _excludePaths.clear();
+        for (int i = 1; ; i++) {
+            String excludePath = cfg.getProperty(i + ".unmirrorExclude");
+            if (excludePath == null) break;
+            _excludePaths.add(excludePath);
+        }
+    }
 
-	public CommandResponse doSITE_UNMIRROR(CommandRequest request) throws ImproperUsageException {
-		if (!request.hasArgument()) {
-			throw new ImproperUsageException();
-		}
-		DirectoryHandle dir;
-		try {
-			dir = GlobalContext.getGlobalContext().getRoot().getDirectory(
-					request.getArgument(), request.getUserObject());
-		} catch (Exception e) {
-			return new CommandResponse(500, "Failed getting requested directory: " + e.getMessage());
-		}
-		try {
-			MirrorUtils.unMirrorDir(dir, request.getUserObject(), _excludePaths);
-		} catch (Exception e) {
-			return new CommandResponse(500, "Unmirror error: " + e.getMessage());
-		}
-		return new CommandResponse(200, "Directory successfully unmirrored!");
-	}
+    public CommandResponse doSITE_UNMIRROR(CommandRequest request) throws ImproperUsageException {
+        if (!request.hasArgument()) {
+            throw new ImproperUsageException();
+        }
+        DirectoryHandle dir;
+        try {
+            dir = GlobalContext.getGlobalContext().getRoot().getDirectory(
+                    request.getArgument(), request.getUserObject());
+        } catch (Exception e) {
+            return new CommandResponse(500, "Failed getting requested directory: " + e.getMessage());
+        }
+        try {
+            MirrorUtils.unMirrorDir(dir, request.getUserObject(), _excludePaths);
+        } catch (Exception e) {
+            return new CommandResponse(500, "Unmirror error: " + e.getMessage());
+        }
+        return new CommandResponse(200, "Directory successfully unmirrored!");
+    }
 
 
-
-	@EventSubscriber
-	public void onReloadEvent(ReloadEvent event) {
-		loadConf();
-	}
+    @EventSubscriber
+    public void onReloadEvent(ReloadEvent event) {
+        loadConf();
+    }
 }

@@ -17,21 +17,17 @@
  */
 package org.drftpd.master.sections.conf;
 
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
-import org.drftpd.common.util.ConfigLoader;
-import org.drftpd.common.util.ConfigType;
-import org.drftpd.master.GlobalContext;
+import org.apache.logging.log4j.Logger;
 import org.drftpd.common.misc.CaseInsensitiveHashMap;
+import org.drftpd.common.util.ConfigLoader;
+import org.drftpd.master.GlobalContext;
 import org.drftpd.master.exceptions.FatalException;
 import org.drftpd.master.sections.SectionInterface;
 import org.drftpd.master.sections.SectionManagerInterface;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.reflections.Reflections;
 
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.util.*;
 
 /**
@@ -39,42 +35,42 @@ import java.util.*;
  * @version $Id$
  */
 public class SectionManager implements SectionManagerInterface {
-	private static final Logger logger = LogManager.getLogger(SectionManager.class);
-	
-	private static final PlainSection EMPTYSECTION = new PlainSection("", GlobalContext.getGlobalContext().getRoot());
+    private static final Logger logger = LogManager.getLogger(SectionManager.class);
 
-	private HashMap<String, SectionInterface> _sections;
+    private static final PlainSection EMPTYSECTION = new PlainSection("", GlobalContext.getGlobalContext().getRoot());
 
-	private boolean _mkdirs = false;
-	
-	private CaseInsensitiveHashMap<String, Class<? extends ConfigurableSectionInterface>> _typesMap;
-	
-	public SectionManager() {
-		logger.debug("Loading conf section manager");
-		reload();
-	}
+    private HashMap<String, SectionInterface> _sections;
 
-	public SectionInterface getSection(String string) {
-		SectionInterface s = _sections.get(string);
+    private boolean _mkdirs = false;
 
-		if (s != null) {
-			return s;
-		}
+    private CaseInsensitiveHashMap<String, Class<? extends ConfigurableSectionInterface>> _typesMap;
 
-		return EMPTYSECTION;
-	}
+    public SectionManager() {
+        logger.debug("Loading conf section manager");
+        reload();
+    }
 
-	public Collection<SectionInterface> getSections() {
-		return Collections.unmodifiableCollection(_sections.values());
-	}
-	
-	public Map<String, SectionInterface> getSectionsMap() {
-		return Collections.unmodifiableMap(_sections);
-	}
+    public SectionInterface getSection(String string) {
+        SectionInterface s = _sections.get(string);
 
-	private SectionInterface lookup(String string) {
-		int matchlen = 0;
-		SectionInterface match = EMPTYSECTION;
+        if (s != null) {
+            return s;
+        }
+
+        return EMPTYSECTION;
+    }
+
+    public Collection<SectionInterface> getSections() {
+        return Collections.unmodifiableCollection(_sections.values());
+    }
+
+    public Map<String, SectionInterface> getSectionsMap() {
+        return Collections.unmodifiableMap(_sections);
+    }
+
+    private SectionInterface lookup(String string) {
+        int matchlen = 0;
+        SectionInterface match = EMPTYSECTION;
 
         for (SectionInterface section : _sections.values()) {
             if (string.startsWith(section.getBaseDirectory().getPath())
@@ -83,65 +79,65 @@ public class SectionManager implements SectionManagerInterface {
                 matchlen = section.getCurrentDirectory().getPath().length();
             }
         }
-		return match;
-	}
-	
-	/*
-	 * Load the different Section Types specified in plugin.xml
-	 */
-	private void initTypes() {
-		CaseInsensitiveHashMap<String, Class<? extends ConfigurableSectionInterface>> typesMap = new CaseInsensitiveHashMap<>();
+        return match;
+    }
 
-		// TODO [DONE] @k2r Load section types
-		Set<Class<? extends ConfigurableSectionInterface>> sectionsConf = new Reflections("org.drftpd")
-				.getSubTypesOf(ConfigurableSectionInterface.class);
-		for (Class<? extends ConfigurableSectionInterface> aClass : sectionsConf) {
-			String sectionName = aClass.getSimpleName().replace("Section", "");
-			typesMap.put(sectionName, aClass);
-		}
-		_typesMap = typesMap;
-	}
-	
-	
-	public void reload() {
-		initTypes();
-		Properties p = ConfigLoader.loadConfig("sections.conf", ConfigType.MASTER);
-		HashMap<String, SectionInterface> sections = new HashMap<>();
-		_mkdirs = p.getProperty("make.section.dirs", "false").equals("true");
+    /*
+     * Load the different Section Types specified in plugin.xml
+     */
+    private void initTypes() {
+        CaseInsensitiveHashMap<String, Class<? extends ConfigurableSectionInterface>> typesMap = new CaseInsensitiveHashMap<>();
 
-		for (int i = 1;; i++) {
-			String name = p.getProperty(i + ".name");
-			if (name == null)
-				break;
-			String type = p.getProperty(i + ".type", "plain").trim();
+        // TODO [DONE] @k2r Load section types
+        Set<Class<? extends ConfigurableSectionInterface>> sectionsConf = new Reflections("org.drftpd")
+                .getSubTypesOf(ConfigurableSectionInterface.class);
+        for (Class<? extends ConfigurableSectionInterface> aClass : sectionsConf) {
+            String sectionName = aClass.getSimpleName().replace("Section", "");
+            typesMap.put(sectionName, aClass);
+        }
+        _typesMap = typesMap;
+    }
 
-			Class<?>[] SIG = { int.class, Properties.class };
-			boolean notloaded = false;
-			if (!_typesMap.containsKey(type)) {
-				// Section Type does not exist
+
+    public void reload() {
+        initTypes();
+        Properties p = ConfigLoader.loadConfig("sections.conf");
+        HashMap<String, SectionInterface> sections = new HashMap<>();
+        _mkdirs = p.getProperty("make.section.dirs", "false").equals("true");
+
+        for (int i = 1; ; i++) {
+            String name = p.getProperty(i + ".name");
+            if (name == null)
+                break;
+            String type = p.getProperty(i + ".type", "plain").trim();
+
+            Class<?>[] SIG = {int.class, Properties.class};
+            boolean notloaded = false;
+            if (!_typesMap.containsKey(type)) {
+                // Section Type does not exist
                 logger.error("Section Type: {} wasn't loaded.", type);
-				notloaded = true;
-			} else {
-				try {
-					Class<? extends ConfigurableSectionInterface> clazz = _typesMap.get(type);
-					ConfigurableSectionInterface section = clazz.getConstructor(SIG).newInstance(i, p);
-					sections.put(name, section);
-					if (_mkdirs) {
-						section.createSectionDir();
-					}
-				} catch (Exception e) {
-					throw new FatalException("Unable To Load Section type: " + i + ".type = " + type);
-				}		
-			}
-			
-			if (notloaded) {
-				throw new FatalException("Unknown section type: " + i + ".type = " + type);
-			}
-		}
-	_sections = sections;
-	}
+                notloaded = true;
+            } else {
+                try {
+                    Class<? extends ConfigurableSectionInterface> clazz = _typesMap.get(type);
+                    ConfigurableSectionInterface section = clazz.getConstructor(SIG).newInstance(i, p);
+                    sections.put(name, section);
+                    if (_mkdirs) {
+                        section.createSectionDir();
+                    }
+                } catch (Exception e) {
+                    throw new FatalException("Unable To Load Section type: " + i + ".type = " + type);
+                }
+            }
 
-	public SectionInterface lookup(DirectoryHandle directory) {
-		return lookup(directory.getPath());
-	}
+            if (notloaded) {
+                throw new FatalException("Unknown section type: " + i + ".type = " + type);
+            }
+        }
+        _sections = sections;
+    }
+
+    public SectionInterface lookup(DirectoryHandle directory) {
+        return lookup(directory.getPath());
+    }
 }

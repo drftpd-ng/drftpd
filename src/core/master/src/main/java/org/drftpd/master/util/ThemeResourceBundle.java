@@ -3,19 +3,18 @@ package org.drftpd.master.util;
 import org.apache.commons.collections4.IteratorUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.drftpd.master.GlobalContext;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static org.drftpd.common.util.ConfigLoader.configPath;
 
 class ThemeBundle {
     private Path path;
@@ -42,17 +41,10 @@ public class ThemeResourceBundle extends ResourceBundle {
 
     private void loadProperties() {
         try {
-            boolean useClassloaderConfig = "true".equals(System.getenv("DRFTPD_USE_CLASSLOADER_CONFIG"));
-            String configurationPath = _confDirectory;
-            if (useClassloaderConfig) {
-                String lookIntoDir = "/master/" + _confDirectory;
-                URL url = GlobalContext.class.getResource(lookIntoDir);
-                configurationPath = url.getPath();
-            }
+            String configurationPath = configPath(_confDirectory);
             Path targetPath = new File(configurationPath).toPath();
             Stream<Path> pathStream = Files.walk(targetPath);
-            List<Path> themeFiles = pathStream
-                    .filter(f -> f.getFileName().toString().endsWith(".theme.default"))
+            List<Path> themeFiles = pathStream.filter(f -> f.getFileName().toString().endsWith(".theme.default"))
                     .collect(Collectors.toList());
             for (Path themeFile : themeFiles) {
                 FileInputStream theme = new FileInputStream(themeFile.toFile());

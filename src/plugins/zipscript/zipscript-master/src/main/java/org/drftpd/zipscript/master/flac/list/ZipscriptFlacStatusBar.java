@@ -16,51 +16,50 @@
  */
 package org.drftpd.zipscript.master.flac.list;
 
-import java.io.IOException;
-import java.util.*;
-
 import org.drftpd.common.util.ConfigLoader;
-import org.drftpd.common.util.ConfigType;
 import org.drftpd.master.commands.list.ListElementsContainer;
+import org.drftpd.master.exceptions.NoAvailableSlaveException;
+import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.zipscript.common.flac.FlacInfo;
 import org.drftpd.zipscript.common.flac.VorbisTag;
 import org.drftpd.zipscript.master.flac.vfs.ZipscriptVFSDataFlac;
 import org.drftpd.zipscript.master.sfv.list.NoEntryAvailableException;
 import org.drftpd.zipscript.master.sfv.list.ZipscriptListStatusBarInterface;
-import org.drftpd.master.exceptions.NoAvailableSlaveException;
-import org.drftpd.master.vfs.DirectoryHandle;
+
+import java.io.IOException;
+import java.util.*;
 
 /**
  * @author norox
  */
 public class ZipscriptFlacStatusBar implements ZipscriptListStatusBarInterface {
 
-	public ArrayList<String> getStatusBarEntry(DirectoryHandle dir, ListElementsContainer container) throws NoEntryAvailableException {
-		ResourceBundle bundle = container.getCommandManager().getResourceBundle();
-		// Check config
-		Properties cfg = ConfigLoader.loadPluginConfig("zipscript.conf", ConfigType.MASTER);
-		boolean statusBarEnabled = cfg.getProperty("statusbar.enabled", "false").equalsIgnoreCase("true");
-		if (statusBarEnabled) {
-			try {
-				ArrayList<String> statusBarEntries = new ArrayList<>();
-				ZipscriptVFSDataFlac flacData = new ZipscriptVFSDataFlac(dir);
-				FlacInfo flacInfo = flacData.getFlacInfo();
-				Map<String, Object> env = new HashMap<>();
-				VorbisTag vorbistag = flacInfo.getVorbisTag();
-				if (vorbistag != null) {
-					env.put("artist", vorbistag.getArtist());
-					env.put("genre", vorbistag.getGenre());
-					env.put("album", vorbistag.getAlbum());
-					env.put("year", vorbistag.getYear());
-				} else {
-					throw new NoEntryAvailableException();
-				}
-				statusBarEntries.add(container.getSession().jprintf(bundle, "statusbar.vorbistag", env, container.getUser()));
-				return statusBarEntries;
-			} catch (IOException | NoAvailableSlaveException e) {
-				// Error fetching flac info, ignore
-			}
-		}
-		throw new NoEntryAvailableException();
-	}
+    public ArrayList<String> getStatusBarEntry(DirectoryHandle dir, ListElementsContainer container) throws NoEntryAvailableException {
+        ResourceBundle bundle = container.getCommandManager().getResourceBundle();
+        // Check config
+        Properties cfg = ConfigLoader.loadPluginConfig("zipscript.conf");
+        boolean statusBarEnabled = cfg.getProperty("statusbar.enabled", "false").equalsIgnoreCase("true");
+        if (statusBarEnabled) {
+            try {
+                ArrayList<String> statusBarEntries = new ArrayList<>();
+                ZipscriptVFSDataFlac flacData = new ZipscriptVFSDataFlac(dir);
+                FlacInfo flacInfo = flacData.getFlacInfo();
+                Map<String, Object> env = new HashMap<>();
+                VorbisTag vorbistag = flacInfo.getVorbisTag();
+                if (vorbistag != null) {
+                    env.put("artist", vorbistag.getArtist());
+                    env.put("genre", vorbistag.getGenre());
+                    env.put("album", vorbistag.getAlbum());
+                    env.put("year", vorbistag.getYear());
+                } else {
+                    throw new NoEntryAvailableException();
+                }
+                statusBarEntries.add(container.getSession().jprintf(bundle, "statusbar.vorbistag", env, container.getUser()));
+                return statusBarEntries;
+            } catch (IOException | NoAvailableSlaveException e) {
+                // Error fetching flac info, ignore
+            }
+        }
+        throw new NoEntryAvailableException();
+    }
 }

@@ -25,25 +25,23 @@
 
 package org.drftpd.master.commands.usermanagement.ipsecurity;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.bushe.swing.event.annotation.AnnotationProcessor;
+import org.bushe.swing.event.annotation.EventSubscriber;
+import org.drftpd.common.extensibility.PluginInterface;
+import org.drftpd.common.util.ConfigLoader;
+import org.drftpd.master.GlobalContext;
+import org.drftpd.master.event.ReloadEvent;
+import org.drftpd.master.permissions.Permission;
+import org.drftpd.master.usermanager.User;
+
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
-
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
-
-import org.bushe.swing.event.annotation.AnnotationProcessor;
-import org.bushe.swing.event.annotation.EventSubscriber;
-import org.drftpd.common.util.ConfigLoader;
-import org.drftpd.common.util.ConfigType;
-import org.drftpd.master.GlobalContext;
-import org.drftpd.common.extensibility.PluginInterface;
-import org.drftpd.master.event.ReloadEvent;
-import org.drftpd.master.permissions.Permission;
-import org.drftpd.master.usermanager.User;
 
 /**
  * @author : CyBeR
@@ -101,7 +99,7 @@ public class IpSecurityManager implements PluginInterface {
         LineNumberReader inRead = null;
 
         try {
-            File file = ConfigLoader.loadConfigFile("ipsecurity.conf", ConfigType.MASTER, false);
+            File file = ConfigLoader.loadConfigFile("ipsecurity.conf", false);
             inRead = new LineNumberReader(new FileReader(file));
 
             String line;

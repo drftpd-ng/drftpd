@@ -13,9 +13,23 @@ Just a test around moving to maven and removing jpf.
 
 Partial stuff, partial support, not for everyone :D
 
-For dev:
+## For dev
 Checkout the project
+Open pom.xml with intellij
+Compile and mvn package
+Create starter for master and slave
 
+### Master 
+Use org.drftpd.master.Master
+
+Start with env var: DRFTPD_CONFIG_PATH=$PROJECT_DIR$/runtime/master
+
+### Slave 
+Use org.drftpd.slave.Slave
+
+Start with env var: DRFTPD_CONFIG_PATH=$PROJECT_DIR$/runtime/slave
+
+## For early users
 mvn install
 
 Check generated runtime directory

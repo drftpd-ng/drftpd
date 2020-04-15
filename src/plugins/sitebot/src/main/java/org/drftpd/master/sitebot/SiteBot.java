@@ -24,7 +24,6 @@ import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.common.misc.CaseInsensitiveConcurrentHashMap;
 import org.drftpd.common.misc.CaseInsensitiveHashMap;
 import org.drftpd.common.util.ConfigLoader;
-import org.drftpd.common.util.ConfigType;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.commands.CommandManagerInterface;
 import org.drftpd.master.commands.CommandRequestInterface;
@@ -141,7 +140,7 @@ public class SiteBot implements ReplyConstants, Runnable {
     }
 
     public void run() {
-        Properties cfg = ConfigLoader.loadPluginConfig(_confDir + "irc.conf", ConfigType.MASTER);
+        Properties cfg = ConfigLoader.loadPluginConfig(_confDir + "irc.conf");
         _config = new SiteBotConfig(cfg);
 
         // set a default mode/prefix for the users in case the server doesn't have it defined properly
@@ -179,7 +178,7 @@ public class SiteBot implements ReplyConstants, Runnable {
         // Initialise the thread pool for executing commands
         int maxCommands = _config.getCommandsMax();
         if (_config.getCommandsQueue()) {
-            _pool = new ThreadPoolExecutor(maxCommands, maxCommands,60L, TimeUnit.SECONDS, new LinkedBlockingQueue<>(), new CommandThreadFactory(), new ThreadPoolExecutor.AbortPolicy());
+            _pool = new ThreadPoolExecutor(maxCommands, maxCommands, 60L, TimeUnit.SECONDS, new LinkedBlockingQueue<>(), new CommandThreadFactory(), new ThreadPoolExecutor.AbortPolicy());
         } else if (_config.getCommandsBlock()) {
             _pool = new ThreadPoolExecutor(maxCommands, maxCommands, 60L, TimeUnit.SECONDS, new SynchronousQueue<>(), new CommandThreadFactory(), new ThreadPoolExecutor.AbortPolicy());
         } else {
@@ -236,7 +235,7 @@ public class SiteBot implements ReplyConstants, Runnable {
             if (factory == null) {
                 factory = SocketFactory.getDefault();
             }
-            logger.debug("Connecting to ["+_server+":"+_port+"]");
+            logger.debug("Connecting to [" + _server + ":" + _port + "]");
             if (bindAddress == null || bindAddress.equals("")) {
                 socket = factory.createSocket(_server, _port);
             } else {
@@ -246,7 +245,7 @@ public class SiteBot implements ReplyConstants, Runnable {
             if (sslProtocols != null && sslProtocols.length > 0) {
                 ((SSLSocket) socket).setEnabledProtocols(GlobalContext.getConfig().getSSLProtocols());
             }
-            logger.info("*** Connected to server ["+_server+":"+_port+"]");
+            logger.info("*** Connected to server [" + _server + ":" + _port + "]");
         } catch (IOException e) {
             // Something failed during connecting, call reconnect() to try another server
             logger.warn("Connection to {}:{} failed, retrying or trying next server if one is available", _server, _port);
@@ -742,7 +741,7 @@ public class SiteBot implements ReplyConstants, Runnable {
         if (line.length() == 0) {
             return;
         }
-        logger.debug("[RAW INPUT]: "+line);
+        logger.debug("[RAW INPUT]: " + line);
 
         // Check for server pings.
         if (line.startsWith("PING ")) {
@@ -2610,7 +2609,7 @@ public class SiteBot implements ReplyConstants, Runnable {
      * After that it read the file and create a list of the existing commands.
      */
     private void loadCommands() {
-        _cmds = GlobalContext.loadCommandConfig("config/commands/irc/" + _confDir, ConfigType.MASTER);
+        _cmds = GlobalContext.loadCommandConfig("config/commands/irc/" + _confDir);
     }
 
     /**
@@ -2820,7 +2819,7 @@ public class SiteBot implements ReplyConstants, Runnable {
         logger.info("Reloading conf/plugins/{}/irccommands.conf, origin {}", _confDir, event.getOrigin());
         loadCommands();
         _commandManager.initialize(getCommands(), themeDir);
-        Properties cfg = ConfigLoader.loadPluginConfig(_confDir + "irc.conf", ConfigType.MASTER);
+        Properties cfg = ConfigLoader.loadPluginConfig(_confDir + "irc.conf");
         _config = new SiteBotConfig(cfg);
         // Just call joinChannels() , this will join us to any new channels and update details
         // held on any existing ones

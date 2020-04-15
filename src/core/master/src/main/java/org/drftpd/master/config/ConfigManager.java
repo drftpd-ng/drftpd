@@ -22,7 +22,6 @@ import org.apache.logging.log4j.Logger;
 import org.drftpd.common.dynamicdata.Key;
 import org.drftpd.common.dynamicdata.KeyedMap;
 import org.drftpd.common.util.ConfigLoader;
-import org.drftpd.common.util.ConfigType;
 import org.drftpd.common.util.PortRange;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.permissions.ExtendedPermissions;
@@ -54,7 +53,7 @@ import java.util.*;
  */
 public class ConfigManager implements ConfigInterface {
     private static final Logger logger = LogManager.getLogger(ConfigManager.class);
-    private static final File permsFile = ConfigLoader.loadConfigFile("perms.conf", ConfigType.MASTER, false);
+    private static final File permsFile = ConfigLoader.loadConfigFile("perms.conf", false);
     private static final String masterConfigFile = "master.conf";
 
     private static final Key<Hashtable<String, ArrayList<PathPermission>>> PATHPERMS
@@ -155,7 +154,7 @@ public class ConfigManager implements ConfigInterface {
      * @see #getMainProperties()
      */
     private void loadMainProperties() {
-        _mainCfg = ConfigLoader.loadConfig(masterConfigFile, ConfigType.MASTER);
+        _mainCfg = ConfigLoader.loadConfig(masterConfigFile);
     }
 
     private void parseCipherSuites() {

@@ -21,7 +21,6 @@ import org.apache.logging.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.drftpd.common.slave.LightRemoteInode;
 import org.drftpd.common.util.ConfigLoader;
-import org.drftpd.common.util.ConfigType;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.commands.list.AddListElementsInterface;
 import org.drftpd.master.commands.list.ListElementsContainer;
@@ -54,7 +53,7 @@ public class MediaInfoList implements AddListElementsInterface {
     }
 
     private void loadConf() {
-        Properties cfg = ConfigLoader.loadPluginConfig("mediainfo.conf", ConfigType.MASTER);
+        Properties cfg = ConfigLoader.loadPluginConfig("mediainfo.conf");
         _exclSections.clear();
         _extensions.clear();
         for (String section : cfg.getProperty("sections.exclude", "").split(" ")) {
