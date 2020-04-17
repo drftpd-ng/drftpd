@@ -1,0 +1,7 @@
+# $Id$
+addjob.success=Job ${job} was added to the list
+listjobwaiting=${count,7}. ${job}
+listjobrunning=${count,7}. ${job} speed=${speed} progress=${progress}/${total} ${srcslave} --> ${destslave}
+sizeofjobs=Total # of jobs is ${total}
+removejob.fail=Unable to remove a job with filename ${filename}
+removejob.success=Removed job ${job}

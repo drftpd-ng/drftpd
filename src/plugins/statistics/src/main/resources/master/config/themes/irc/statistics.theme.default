@@ -1,0 +1,25 @@
+# $Id$
+alup=[${pos,2}] ${user,-12} ${tagline,-24} ${upfiles,5} ${upbytes,11} ${uprate,8}
+aldn=[${pos,2}] ${user,-12} ${tagline,-24} ${dnfiles,5} ${dnbytes,11} ${dnrate,8}
+monthup=[${pos,2}] ${user,-12} ${tagline,-24} ${upfilesmonth,5} ${upbytesmonth,11} ${upratemonth,8}
+monthdn=[${pos,2}] ${user,-12} ${tagline,-24} ${dnfilesmonth,5} ${dnbytesmonth,11} ${dnratemonth,8}
+wkup=[${pos,2}] ${user,-12} ${tagline,-24} ${upfilesweek,5} ${upbytesweek,11} ${uprateweek,8}
+wkdn=[${pos,2}] ${user,-12} ${tagline,-24} ${dnfilesweek,5} ${dnbytesweek,11} ${dnrateweek,8}
+dayup=[${pos,2}] ${user,-12} ${tagline,-24} ${upfilesday,5} ${upbytesday,11} ${uprateday,8}
+daydn=[${pos,2}] ${user,-12} ${tagline,-24} ${dnfilesday,5} ${dnbytesday,11} ${dnrateday,8}
+alup.header=
+alup.footer=
+aldn.header=
+aldn.footer=
+monthup.header=
+monthup.footer=
+monthdn.header=
+monthdn.footer=
+wkup.header=
+wkup.footer=
+wkdn.header=
+wkdn.footer=
+dayup.header=
+dayup.footer=
+daydn.header=
+daydn.footer=

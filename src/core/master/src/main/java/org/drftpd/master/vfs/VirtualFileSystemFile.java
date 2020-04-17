@@ -34,14 +34,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class VirtualFileSystemFile extends VirtualFileSystemInode implements StatsInterface {
 
     public static final Key<Long> CRC = new Key<>(VirtualFileSystemFile.class, "checksum");
-
-    public static final Key<Long> MD5 = new Key<>(VirtualFileSystemFile.class, "md5");
-
     public static final Key<Long> XFERTIME = new Key<>(VirtualFileSystemFile.class, "xfertime");
-    public static final Key<Integer> DOWNLOADEDTIMES = new Key<>(VirtualFileSystemFile.class,
-            "dltimes");
-    public static final Key<Long> DOWNLOADDURATION = new Key<>(VirtualFileSystemFile.class,
-            "dlduration");
+    public static final Key<Integer> DOWNLOADEDTIMES = new Key<>(VirtualFileSystemFile.class, "dltimes");
+    public static final Key<Long> DOWNLOADDURATION = new Key<>(VirtualFileSystemFile.class, "dlduration");
     protected Set<String> _slaves;
     private final transient Queue<RemoteTransfer> _uploads = new ConcurrentLinkedQueue<>();
 
@@ -49,10 +44,8 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
 
     private long _size;
 
-    public VirtualFileSystemFile(String username, String group, long size,
-                                 String initialSlave) {
-        this(username, group, size, new HashSet<>(Arrays
-                .asList(initialSlave)));
+    public VirtualFileSystemFile(String username, String group, long size, String initialSlave) {
+        this(username, group, size, new HashSet<>(Arrays.asList(initialSlave)));
     }
 
     public VirtualFileSystemFile(String username, String group, long size,

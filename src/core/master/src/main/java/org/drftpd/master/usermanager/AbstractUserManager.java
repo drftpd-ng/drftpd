@@ -248,16 +248,6 @@ public abstract class AbstractUserManager implements UserManager {
         return getGroupByNameUnchecked(groupname);
     }
 
-    /**
-     * Return a user given their ident (xxx!xxx@xxx) for a given botname This uses a
-     * regular expression to match the IRCIDENT user property
-     *
-     * @param ident   ident for user to match
-     * @param botName the name of the IRC bot
-     * @return the user, if found
-     * @throws NoSuchUserException if the user wasn't found
-     */
-
     public User getUserByIdent(String ident, String botName) throws NoSuchUserException {
         for (User user : getAllUsers()) {
             try {
@@ -410,13 +400,5 @@ public abstract class AbstractUserManager implements UserManager {
     //TODO @k2r Decide what to do with abstract user manager
     private void loadResetHooks() {
         // Load hooks to be run before the reset
-    }
-
-    @EventSubscriber
-    public synchronized void onUnloadPluginEvent(Object event) {
-    }
-
-    @EventSubscriber
-    public synchronized void onLoadPluginEvent(Object event) {
     }
 }

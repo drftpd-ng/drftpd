@@ -80,7 +80,6 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
     private transient long _lastUploadReceiving = 0;
     private transient long _lastResponseReceived = System.currentTimeMillis();
     private transient long _lastCommandSent = System.currentTimeMillis();
-    private transient int _maxPath;
     private final String _name;
     private transient DiskStatus _status;
     private HostMaskCollection _ipMasks;
@@ -350,10 +349,6 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
         commit();
         processQueue();
 
-        // checking 'maxpath'
-        String maxPathIndex = SlaveManager.getBasicIssuer().issueMaxPathToSlave(this);
-        _maxPath = fetchMaxPathFromIndex(maxPathIndex);
-
         // checking ssl availability
         String checkSSLIndex = SlaveManager.getBasicIssuer().issueCheckSSL(this);
         getTransientKeyedMap().setObject(SSL, fetchCheckSSLFromIndex(checkSSLIndex));
@@ -370,7 +365,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
         } else {
             if (remergeMode.equalsIgnoreCase("connect")) {
                 try {
-                    skipAgeCutoff = Long.valueOf(getProperty("lastConnect"));
+                    skipAgeCutoff = Long.parseLong(getProperty("lastConnect"));
                     partialRemerge = true;
                 } catch (NumberFormatException e) {
                     logger.warn("Slave partial remerge mode set to \"off\" as lastConnect time is undefined, this may " +
@@ -971,7 +966,6 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
             _indexWithCommands.clear();
         if (_transfers != null)
             _transfers.clear();
-        _maxPath = 0;
         _status = null;
 
         if (_isAvailable) {

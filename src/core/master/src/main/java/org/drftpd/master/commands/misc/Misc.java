@@ -210,14 +210,12 @@ public class Misc extends CommandInterface {
             String helpString = cmd.getValue().getProperty("help");
             if (helpString == null) {
                 if (!noHelpCommands.contains(cmd.getKey())) {
-                    helpString = cmd.getKey()
-                            + " does not have any help, bug your siteop";
+                    helpString = cmd.getKey() + " does not have any help, bug your siteop";
                 }
             }
             try {
                 if (helpString != null) {
-                    helpInfo.put(cmd.getKey(), pad.substring(cmd.getKey().length())
-                            + cmd.getKey() + " : " + helpString);
+                    helpInfo.put(cmd.getKey(), pad.substring(cmd.getKey().length()) + cmd.getKey() + " : " + helpString);
                 }
             } catch (StringIndexOutOfBoundsException e) {
                 /* This really should not happen anymore but will leave

@@ -1,0 +1,17 @@
+# $Id$
+request.exists=${color}15${bold}REQUEST${bold}${coloroff} -> ${bold}${request.name}${bold} has already been requested
+request.error=${color}15${bold}REQUEST${bold}${coloroff} -> Error while creating request directory inside ${bold}${request.root}${bold}, check your logs
+
+reqfilled.error=${color}15${bold}REQFILLED${bold}${coloroff} -> An error occurred while filling ${bold}${request.name}${bold}, check your logs
+reqfilled.exists=${color}15${bold}REQFILLED${bold}${coloroff} -> ${bold}${request.name}${bold} is already filled for ${bold}${user}${bold}, duplicate request detected
+reqfilled.notfound=${color}15${bold}REQUEST${bold}${coloroff} -> Can't fill an unexisting request - ${bold}${request.name}${bold}
+reqfilled.root.notfound=${color}15${bold}REQUEST${bold}${coloroff} -> ${bold}${request.root}${bold} doesn't exist, unable to fill request
+
+requests.header=${color}15${bold}REQUESTS${bold}${coloroff}:
+requests.list=${color}15[${coloroff}${num}${color}15]${coloroff} ${request.name} by ${bold}${request.user}${bold}
+requests.footer=${color}15${bold}REQUESTS${bold}${coloroff}: Use !reqfilled <name> after you fill a request.
+
+reqdel.notfound=${color}15${bold}REQDEL${bold}${coloroff} -> ${bold}${request.name}${bold} was not found.
+reqdel.notowner=${color}15${bold}REQDEL${bold}${coloroff} -> You are not owner of ${bold}${request.name}${bold}
+reqdel.root.notfound=${color}15${bold}REQDEL${bold}${coloroff} -> ${bold}${request.root}${bold} doesn't exist, unable to delete request
+reqdel.error=${color}15${bold}REQUEST${bold}${coloroff} -> Error while deleting request inside ${bold}${request.root}${bold}

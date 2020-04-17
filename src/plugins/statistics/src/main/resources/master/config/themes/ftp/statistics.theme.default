@@ -1,0 +1,16 @@
+# $Id$
+alup=[${pos,2}] ${user,-12} ${tagline,-24} ${upfiles,5} ${upbytes,11} ${uprate,8}
+aldn=[${pos,2}] ${user,-12} ${tagline,-24} ${dnfiles,5} ${dnbytes,11} ${dnrate,8}
+monthup=[${pos,2}] ${user,-12} ${tagline,-24} ${upfilesmonth,5} ${upbytesmonth,11} ${upratemonth,8}
+monthdn=[${pos,2}] ${user,-12} ${tagline,-24} ${dnfilesmonth,5} ${dnbytesmonth,11} ${dnratemonth,8}
+wkup=[${pos,2}] ${user,-12} ${tagline,-24} ${upfilesweek,5} ${upbytesweek,11} ${uprateweek,8}
+wkdn=[${pos,2}] ${user,-12} ${tagline,-24} ${dnfilesweek,5} ${dnbytesweek,11} ${dnrateweek,8}
+dayup=[${pos,2}] ${user,-12} ${tagline,-24} ${upfilesday,5} ${upbytesday,11} ${uprateday,8}
+daydn=[${pos,2}] ${user,-12} ${tagline,-24} ${dnfilesday,5} ${dnbytesday,11} ${dnrateday,8}
+
+stats=Created: ${created}\n\
+------------FILES-------SIZE--RANK\n\
+ALUP ${alupfiles,12} ${alupbytes,10} ${aluprank,5}\nALDN ${aldnfiles,12} ${aldnbytes,10} ${aldnrank,5}\n\
+MNUP ${mnupfiles,12} ${mnupbytes,10} ${mnuprank,5}\nMNDN ${mndnfiles,12} ${mndnbytes,10} ${mndnrank,5}\n\
+WKUP ${wkupfiles,12} ${wkupbytes,10} ${wkuprank,5}\nWKDN ${wkdnfiles,12} ${wkdnbytes,10} ${wkdnrank,5}\n\
+DAYUP ${dayupfiles,11} ${dayupbytes,10} ${dayuprank,5}\nDAYDN ${daydnfiles,11} ${daydnbytes,10} ${daydnrank,5}
