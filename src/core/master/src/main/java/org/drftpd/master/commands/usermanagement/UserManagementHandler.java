@@ -1414,7 +1414,8 @@ public class UserManagementHandler extends CommandInterface {
                 return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
             }
 
-            response.addComment(request.getSession().jprintf(_bundle, "user", requestedUser.getName()));
+            String userData = request.getSession().jprintf(_bundle, "user", requestedUser.getName());
+            response.addComment(userData);
 
         } catch (NoSuchUserException ex) {
             // Only global admins get the real error

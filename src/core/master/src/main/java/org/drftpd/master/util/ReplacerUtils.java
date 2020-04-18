@@ -35,7 +35,7 @@ import java.util.regex.Pattern;
 public class ReplacerUtils {
 
     private static final Logger logger = LogManager.getLogger(ReplacerUtils.class);
-    private static final Pattern pattern = Pattern.compile("\\$\\{([a-zA-Z0-9\\.,-]+)\\}");
+    private static final Pattern pattern = Pattern.compile("\\$\\{([a-zA-Z0-9@\\.,-]+)\\}");
 
     private ReplacerUtils() {
         super();
@@ -50,7 +50,8 @@ public class ReplacerUtils {
             if (variable.contains(",")) {
                 String[] varSplitter = variable.split(",");
                 String varName = varSplitter[0];
-                String currentValue = envVars.get(varName).toString();
+                Object currentData = envVars.get(varName);
+                String currentValue = currentData != null ? currentData.toString() : "-";
                 String options = varSplitter.length == 2 ? varSplitter[1] : null;
                 if (options != null) {
                     boolean alignLeft = options.startsWith("-");
@@ -71,8 +72,13 @@ public class ReplacerUtils {
                     }
                 }
                 envVars.put(variable, currentValue);
+            } else {
+                Object currentData = envVars.get(variable);
+                String currentValue = currentData != null ? currentData.toString() : "-";
+                envVars.put(variable, currentValue);
             }
         }
+
         StringSubstitutor sub = new StringSubstitutor(envVars);
         return sub.replace(template);
     }
