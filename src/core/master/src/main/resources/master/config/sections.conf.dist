@@ -3,7 +3,7 @@
 # org.drftpd.master.sections.conf.SectionManager
 
 # If this directive's value is true DrFTPd will automatically
-# create the section dirs, if needed of cource.
+# create the section dirs, if needed of course.
 make.section.dirs=true
 
 1.path=/APPS
