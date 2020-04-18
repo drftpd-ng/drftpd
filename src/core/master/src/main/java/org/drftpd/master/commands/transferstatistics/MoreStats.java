@@ -203,7 +203,7 @@ public class MoreStats extends CommandInterface {
         try {
             response.addComment(ConfigLoader.loadTextFile("g" + type.toLowerCase() + "_header.txt"));
         } catch (IOException ioe) {
-            logger.warn("Error reading userdata/text/g{}_header.txt", type.toLowerCase());
+            logger.warn("Error reading g{}_header.txt", type.toLowerCase());
         }
 
         int i = 0;
@@ -237,7 +237,7 @@ public class MoreStats extends CommandInterface {
         try {
             response.addComment(ConfigLoader.loadTextFile("g" + type.toLowerCase() + "_footer.txt"));
         } catch (IOException ioe) {
-            logger.warn("Error reading userdata/text/{}_footer.txt", type.toLowerCase());
+            logger.warn("Error reading {}_footer.txt", type.toLowerCase());
         }
 
         return response;
@@ -330,7 +330,7 @@ public class MoreStats extends CommandInterface {
         try {
             response.addComment(ConfigLoader.loadTextFile("traffic_header.txt"));
         } catch (IOException ioe) {
-            logger.warn("Error reading userdata/text/traffic_header - {}", ioe.getMessage());
+            logger.warn("Error reading traffic_header - {}", ioe.getMessage());
         }
 
         addTrafficComment("Total Uploads", TotalUpAvrage, TotalUp, TotalFilesUp, response);
@@ -345,7 +345,7 @@ public class MoreStats extends CommandInterface {
         try {
             response.addComment(ConfigLoader.loadTextFile("traffic_footer.txt"));
         } catch (IOException ioe) {
-            logger.warn("Error reading userdata/text/traffic_footer - {}", ioe.getMessage());
+            logger.warn("Error reading traffic_footer - {}", ioe.getMessage());
         }
 
         return response;
