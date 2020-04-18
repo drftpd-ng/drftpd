@@ -21,6 +21,7 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.drftpd.common.util.Bytes;
+import org.drftpd.common.util.ConfigLoader;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.commands.CommandInterface;
 import org.drftpd.master.commands.CommandRequest;
@@ -266,7 +267,7 @@ public class TransferStatistics extends CommandInterface {
                 request.getUser());
         if (headerText.equals(headerBundleKey)) {
             try {
-                addTextToResponse(response, "userdata/text/" + type + "_header.txt");
+                response.addComment(ConfigLoader.loadTextFile(type + "_header.txt"));
             } catch (IOException ioe) {
                 logger.warn("Error reading userdata/text/{}_header.txt", type, ioe);
             }
@@ -314,14 +315,7 @@ public class TransferStatistics extends CommandInterface {
             env.put("dnfiles", "" + user.getDownloadedFiles());
             env.put("dnrate", getDownRate(user, PERIOD_ALL));
 
-            response.addComment(request.getSession().jprintf(_bundle, type, env,
-                    user.getName()));
-
-            //			response.addComment(
-            //	user.getUsername()
-            //		+ " "
-            //		+ Bytes.formatBytes(
-            //			getStats(command.substring("SITE ".length()), user)));
+            response.addComment(request.getSession().jprintf(_bundle, type, env, user.getName()));
         }
 
         String footerBundleKey = type + ".footer";
@@ -329,7 +323,7 @@ public class TransferStatistics extends CommandInterface {
                 request.getUser());
         if (footerText.equals(footerBundleKey)) {
             try {
-                addTextToResponse(response, "userdata/text/" + type + "_footer.txt");
+                response.addComment(ConfigLoader.loadTextFile(type + "_footer.txt"));
             } catch (IOException ioe) {
                 logger.warn("Error reading userdata/text/{}_footer.txt", type, ioe);
             }

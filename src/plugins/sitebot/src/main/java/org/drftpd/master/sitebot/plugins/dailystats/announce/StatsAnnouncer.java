@@ -38,9 +38,7 @@ import java.util.ResourceBundle;
 public class StatsAnnouncer extends AbstractAnnouncer {
 
     private AnnounceConfig _config;
-
     private ResourceBundle _bundle;
-
 
     public void initialise(AnnounceConfig config, ResourceBundle bundle) {
         _config = config;
@@ -56,9 +54,8 @@ public class StatsAnnouncer extends AbstractAnnouncer {
     }
 
     public String[] getEventTypes() {
-        String[] types = {"dailystats.daydn", "dailystats.dayup", "dailystats.wkdn",
+        return new String[]{"dailystats.daydn", "dailystats.dayup", "dailystats.wkdn",
                 "dailystats.wkup", "dailystats.monthdn", "dailystats.monthup"};
-        return types;
     }
 
     public void setResourceBundle(ResourceBundle bundle) {
@@ -82,18 +79,19 @@ public class StatsAnnouncer extends AbstractAnnouncer {
         if (writer != null) {
             Collection<UserStats> outputStats = event.getOutputStats();
             Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
-            sayOutput(ReplacerUtils.jprintf(statsType, env, _bundle), writer);
+            String announceKey = "dailystats." + statsType;
+            sayOutput(ReplacerUtils.jprintf(announceKey, env, _bundle), writer);
             int count = 1;
             for (UserStats line : outputStats) {
                 env.put("num", count);
                 env.put("name", line.getName());
                 env.put("files", line.getFiles());
                 env.put("bytes", line.getBytes());
-                sayOutput(ReplacerUtils.jprintf(statsType + ".item", env, _bundle), writer);
+                sayOutput(ReplacerUtils.jprintf(announceKey + ".item", env, _bundle), writer);
                 count++;
             }
             if (count == 1) {
-                sayOutput(ReplacerUtils.jprintf(statsType + ".none", env, _bundle), writer);
+                sayOutput(ReplacerUtils.jprintf(announceKey + ".none", env, _bundle), writer);
             }
         }
     }

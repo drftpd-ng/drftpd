@@ -20,6 +20,7 @@ package org.drftpd.master.commands.transferstatistics;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.drftpd.common.util.Bytes;
+import org.drftpd.common.util.ConfigLoader;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.commands.CommandInterface;
 import org.drftpd.master.commands.CommandRequest;
@@ -200,7 +201,7 @@ public class MoreStats extends CommandInterface {
 
         //morestats.grpstats=| ${grp,-15} |${grpname,7} |${files,8} | ${megs,9} | ${members,9} |
         try {
-            addTextToResponse(response, "userdata/text/g" + type.toLowerCase() + "_header.txt");
+            response.addComment(ConfigLoader.loadTextFile("g" + type.toLowerCase() + "_header.txt"));
         } catch (IOException ioe) {
             logger.warn("Error reading userdata/text/g{}_header.txt", type.toLowerCase());
         }
@@ -234,7 +235,7 @@ public class MoreStats extends CommandInterface {
         }
 
         try {
-            addTextToResponse(response, "userdata/text/g" + type.toLowerCase() + "_footer.txt");
+            response.addComment(ConfigLoader.loadTextFile("g" + type.toLowerCase() + "_footer.txt"));
         } catch (IOException ioe) {
             logger.warn("Error reading userdata/text/{}_footer.txt", type.toLowerCase());
         }
@@ -327,7 +328,7 @@ public class MoreStats extends CommandInterface {
         }
 
         try {
-            addTextToResponse(response, "userdata/text/traffic_header.txt");
+            response.addComment(ConfigLoader.loadTextFile("traffic_header.txt"));
         } catch (IOException ioe) {
             logger.warn("Error reading userdata/text/traffic_header - {}", ioe.getMessage());
         }
@@ -342,7 +343,7 @@ public class MoreStats extends CommandInterface {
         addTrafficComment("Day Downloads", DayDnAvrage, DayDn, DayFilesDn, response);
 
         try {
-            addTextToResponse(response, "userdata/text/traffic_footer.txt");
+            response.addComment(ConfigLoader.loadTextFile("traffic_footer.txt"));
         } catch (IOException ioe) {
             logger.warn("Error reading userdata/text/traffic_footer - {}", ioe.getMessage());
         }

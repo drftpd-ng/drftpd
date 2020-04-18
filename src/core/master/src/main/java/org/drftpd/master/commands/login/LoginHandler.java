@@ -19,6 +19,7 @@ package org.drftpd.master.commands.login;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.drftpd.common.util.ConfigLoader;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.commands.CommandInterface;
 import org.drftpd.master.commands.CommandRequest;
@@ -132,7 +133,7 @@ public class LoginHandler extends CommandInterface {
             CommandResponse response = new CommandResponse(230, conn.jprintf(_bundle, "pass.success", conn.getUsername()));
 
             try {
-                addTextToResponse(response, "userdata/text/welcome.txt");
+                response.addComment(ConfigLoader.loadTextFile("welcome.txt"));
             } catch (IOException e) {
                 // Not mandatory to have a welcome text, so if it is not present silently ignore
             }

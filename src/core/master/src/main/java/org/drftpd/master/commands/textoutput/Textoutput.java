@@ -17,6 +17,7 @@
  */
 package org.drftpd.master.commands.textoutput;
 
+import org.drftpd.common.util.ConfigLoader;
 import org.drftpd.master.commands.CommandInterface;
 import org.drftpd.master.commands.CommandRequest;
 import org.drftpd.master.commands.CommandResponse;
@@ -38,8 +39,8 @@ public class Textoutput extends CommandInterface {
 
         try {
             CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-            addTextToResponse(response, request.getProperties().getProperty("file"));
-
+            String fileToDisplay = request.getProperties().getProperty("file");
+            response.addComment(ConfigLoader.loadTextFile(fileToDisplay));
             return response;
         } catch (IOException e) {
             return new CommandResponse(200, "IO Error: " + e.getMessage());

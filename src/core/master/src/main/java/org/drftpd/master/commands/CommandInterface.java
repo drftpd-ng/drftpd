@@ -24,6 +24,7 @@ import org.apache.logging.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.drftpd.common.extensibility.CommandHook;
 import org.drftpd.common.extensibility.HookType;
+import org.drftpd.common.util.ConfigLoader;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.permissions.Permission;
 import org.drftpd.master.usermanager.NoSuchUserException;
@@ -126,32 +127,7 @@ public abstract class CommandInterface {
         return _featReplies;
     }
 
-    public void addTextToResponse(CommandResponse response, String file) throws IOException {
-        BufferedReader reader = null;
-        try {
-            reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), StandardCharsets.ISO_8859_1));
-            response.addComment(reader);
-            reader.close();
-        } finally {
-            if (reader != null)
-                reader.close();
-        }
-    }
-
-    protected boolean checkCustomPermissionWithPrimaryGroup(User targetUser, CommandRequest request, String permissionName, String defaultPermission) {
-        if (checkCustomPermission(request, permissionName, defaultPermission)) {
-            return false;
-        }
-        try {
-            return targetUser.getGroup().equals(request.getUserObject().getGroup());
-        } catch (NoSuchUserException | UserFileException e) {
-            logger.warn("", e);
-            return false;
-        }
-    }
-
-    protected boolean checkCustomPermission(CommandRequest request, String permissionName,
-                                            String defaultPermission) {
+    protected boolean checkCustomPermission(CommandRequest request, String permissionName, String defaultPermission) {
         String permissionString = request.getProperties().getProperty(permissionName, defaultPermission);
         User user;
         try {
