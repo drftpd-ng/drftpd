@@ -100,9 +100,6 @@ public class CommandRequest extends KeyedMap<Key<?>, Object> implements CommandR
             return new Permission(Collections.singletonList("=siteop"));
         }
         String perms = p.getProperty("perms");
-        if (perms == null) {
-            return new Permission(Collections.singletonList("=siteop"));
-        }
         StringTokenizer st = new StringTokenizer(perms);
         if (!st.hasMoreTokens()) {
             return new Permission(Collections.singletonList("=siteop"));
