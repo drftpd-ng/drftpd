@@ -17,22 +17,25 @@
  */
 package org.drftpd.common;
 
-import junit.framework.TestCase;
 import org.drftpd.common.util.PortRange;
-import org.junit.Assert;
+import org.junit.jupiter.api.Test;
 
 import javax.net.ServerSocketFactory;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.ArrayList;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 
 /**
  * @author zubov
  * @version $Id$
  */
-public class PortRangeTest extends TestCase {
+public class PortRangeTest {
 
+    @Test
     public void testGetPort() throws IOException {
         PortRange pr = new PortRange(45300, 45310, 0);
         ArrayList<Integer> ports = new ArrayList<>();
@@ -42,27 +45,27 @@ public class PortRangeTest extends TestCase {
             ports.add(x);
         }
 
-        Assert.assertEquals(11, ports.size());
+        assertEquals(11, ports.size());
 
         ServerSocket ss = new ServerSocket(45305);
         sockets.add(ss);
         ports.remove(Integer.valueOf(ss.getLocalPort()));
-        Assert.assertEquals(10, ports.size());
+        assertEquals(10, ports.size());
 
         for (int x = 0; x < 10; x++) {
             ServerSocket socket = pr.getPort(ServerSocketFactory.getDefault(), null);
             sockets.add(socket);
             ports.remove(Integer.valueOf(socket.getLocalPort()));
-            Assert.assertEquals(9 - x, ports.size());
+            assertEquals(9 - x, ports.size());
         }
 
-        Assert.assertEquals(0, ports.size());
+        assertEquals(0, ports.size());
 
         try {
             pr.getPort(ServerSocketFactory.getDefault(), null);
             throw new RuntimeException("PortRange should be exhausted!");
         } catch (RuntimeException e) {
-            Assert.assertTrue(e.getMessage().equals("PortRange exhausted"));
+            assertTrue(e.getMessage().equals("PortRange exhausted"));
         }
 
         ss.close();

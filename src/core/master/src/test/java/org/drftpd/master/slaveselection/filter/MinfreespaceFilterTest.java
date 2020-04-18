@@ -17,8 +17,6 @@
  */
 package org.drftpd.master.slaveselection.filter;
 
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
 import org.drftpd.common.slave.DiskStatus;
 import org.drftpd.common.util.Bytes;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
@@ -27,29 +25,24 @@ import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.master.slavemanagement.SlaveStatus;
 import org.drftpd.slave.exceptions.ObjectNotFoundException;
 import org.drftpd.slave.network.Transfer;
-import org.junit.Assert;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Properties;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 
 /**
  * @author mog
  * @version $Id$
  */
-public class MinfreespaceFilterTest extends TestCase {
-    public MinfreespaceFilterTest(String fName) {
-        super(fName);
-    }
+public class MinfreespaceFilterTest {
 
-    public static TestSuite suite() {
-        return new TestSuite(MinfreespaceFilterTest.class);
-    }
-
-    public void testSimple()
-            throws ObjectNotFoundException, NoAvailableSlaveException {
+    @Test
+    public void testSimple() throws ObjectNotFoundException, NoAvailableSlaveException {
         Properties p = new Properties();
         p.put("1.multiplier", "1");
         p.put("1.minfreespace", "100MB");
@@ -64,8 +57,7 @@ public class MinfreespaceFilterTest extends TestCase {
         Filter f = new MinfreespaceFilter(1, p);
         f.process(sc, null, null, Transfer.TRANSFER_SENDING_DOWNLOAD, null, null);
 
-        Assert.assertEquals(Bytes.parseBytes("-50MB"),
-                sc.getScoreForSlave(rslaves[0]).getScore());
+        assertEquals(Bytes.parseBytes("-50MB"), sc.getScoreForSlave(rslaves[0]).getScore());
     }
 
     public static class RemoteSlaveTesting extends DummyRemoteSlave {

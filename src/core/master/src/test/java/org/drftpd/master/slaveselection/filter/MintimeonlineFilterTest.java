@@ -17,27 +17,26 @@
  */
 package org.drftpd.master.slaveselection.filter;
 
-import junit.framework.TestCase;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.slavemanagement.DummyRemoteSlave;
 import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.master.util.Time;
 import org.drftpd.slave.network.Transfer;
-import org.junit.Assert;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.Properties;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 /**
  * @author mog
  * @version $Id$
  */
-public class MintimeonlineFilterTest extends TestCase {
-    public MintimeonlineFilterTest(String name) {
-        super(name);
-    }
+public class MintimeonlineFilterTest {
 
+    @Test
     public void testSimple() throws NoAvailableSlaveException {
         Properties p = new Properties();
         p.put("1.multiplier", "1");
@@ -48,7 +47,7 @@ public class MintimeonlineFilterTest extends TestCase {
         ScoreChart sc = new ScoreChart(Arrays.asList(rslaves));
         MintimeonlineFilter f = new MintimeonlineFilter(1, p);
         f.process(sc, null, null, Transfer.TRANSFER_UNKNOWN, null, time);
-        Assert.assertEquals(-Time.parseTime("1m"), sc.getBestSlaveScore().getScore());
+        assertEquals(-Time.parseTime("1m"), sc.getBestSlaveScore().getScore());
     }
 
     public static class RS extends DummyRemoteSlave {

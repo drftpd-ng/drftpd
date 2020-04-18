@@ -17,8 +17,6 @@
  */
 package org.drftpd.master.slaveselection.filter;
 
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.slavemanagement.DummyRemoteSlave;
 import org.drftpd.master.slavemanagement.RemoteSlave;
@@ -27,39 +25,36 @@ import org.drftpd.master.tests.DummySlaveManager;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.slave.exceptions.ObjectNotFoundException;
 import org.drftpd.slave.network.Transfer;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.Properties;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 /**
  * @author scitz0
  * @version $Id$
  */
-public class MatchdirExFilterTest extends TestCase {
+public class MatchdirExFilterTest {
     RemoteSlave[] rslaves = {
             new DummyRemoteSlave("slave1"),
             new DummyRemoteSlave("slave2"),
             new DummyRemoteSlave("slave3")
     };
 
-    public MatchdirExFilterTest(String fName) {
-        super(fName);
-    }
-
-    public static TestSuite suite() {
-        return new TestSuite(MatchdirExFilterTest.class);
-    }
-
-    public void setUp() {
+    @BeforeAll
+    static void setUp() {
         AssignSlave.setGlobalContext(new DummyGlobalContext());
         DummyGlobalContext dgctx = (DummyGlobalContext) AssignSlave.getGlobalContext();
         dgctx.setSlaveManager(new DummySlaveManager());
     }
 
-    public void testSimple()
-            throws ObjectNotFoundException, NoAvailableSlaveException {
+    @Test
+    public void testSimple() throws ObjectNotFoundException, NoAvailableSlaveException {
         Properties p = new Properties();
         p.put("1.assign", "slave1+100, slave2-100");
         p.put("1.match", "/path1/.*");
@@ -68,23 +63,23 @@ public class MatchdirExFilterTest extends TestCase {
         ScoreChart sc = new ScoreChart(Arrays.asList(rslaves));
 
         f.process(sc, null, null, Transfer.TRANSFER_SENDING_DOWNLOAD, new DirectoryHandle("/path2/dir/file.txt"), null);
-        Assert.assertEquals(0, sc.getScoreForSlave(rslaves[0]).getScore());
-        Assert.assertEquals(0, sc.getScoreForSlave(rslaves[1]).getScore());
-        Assert.assertEquals(0, sc.getScoreForSlave(rslaves[2]).getScore());
+        assertEquals(0, sc.getScoreForSlave(rslaves[0]).getScore());
+        assertEquals(0, sc.getScoreForSlave(rslaves[1]).getScore());
+        assertEquals(0, sc.getScoreForSlave(rslaves[2]).getScore());
 
         f.process(sc, null, null, Transfer.TRANSFER_SENDING_DOWNLOAD, new DirectoryHandle("/"), null);
-        Assert.assertEquals(0, sc.getScoreForSlave(rslaves[0]).getScore());
-        Assert.assertEquals(0, sc.getScoreForSlave(rslaves[1]).getScore());
-        Assert.assertEquals(0, sc.getScoreForSlave(rslaves[2]).getScore());
+        assertEquals(0, sc.getScoreForSlave(rslaves[0]).getScore());
+        assertEquals(0, sc.getScoreForSlave(rslaves[1]).getScore());
+        assertEquals(0, sc.getScoreForSlave(rslaves[2]).getScore());
 
         f.process(sc, null, null, Transfer.TRANSFER_SENDING_DOWNLOAD, new DirectoryHandle("/path1/dir/file.txt"), null);
-        Assert.assertEquals(100, sc.getScoreForSlave(rslaves[0]).getScore());
-        Assert.assertEquals(-100, sc.getScoreForSlave(rslaves[1]).getScore());
-        Assert.assertEquals(0, sc.getScoreForSlave(rslaves[2]).getScore());
+        assertEquals(100, sc.getScoreForSlave(rslaves[0]).getScore());
+        assertEquals(-100, sc.getScoreForSlave(rslaves[1]).getScore());
+        assertEquals(0, sc.getScoreForSlave(rslaves[2]).getScore());
     }
 
-    public void testAll()
-            throws ObjectNotFoundException, NoAvailableSlaveException {
+    @Test
+    public void testAll() throws ObjectNotFoundException, NoAvailableSlaveException {
         Properties p = new Properties();
         p.put("1.assign", "ALL+100");
         p.put("1.match", "/path2/.*");
@@ -93,18 +88,18 @@ public class MatchdirExFilterTest extends TestCase {
         ScoreChart sc = new ScoreChart(Arrays.asList(rslaves));
 
         f.process(sc, null, null, Transfer.TRANSFER_SENDING_DOWNLOAD, new DirectoryHandle("/path1/dir/file.txt"), null);
-        Assert.assertEquals(0, sc.getScoreForSlave(rslaves[0]).getScore());
-        Assert.assertEquals(0, sc.getScoreForSlave(rslaves[1]).getScore());
-        Assert.assertEquals(0, sc.getScoreForSlave(rslaves[2]).getScore());
+        assertEquals(0, sc.getScoreForSlave(rslaves[0]).getScore());
+        assertEquals(0, sc.getScoreForSlave(rslaves[1]).getScore());
+        assertEquals(0, sc.getScoreForSlave(rslaves[2]).getScore());
 
         f.process(sc, null, null, Transfer.TRANSFER_SENDING_DOWNLOAD, new DirectoryHandle("/path2/dir/file.txt"), null);
-        Assert.assertEquals(100, sc.getScoreForSlave(rslaves[0]).getScore());
-        Assert.assertEquals(100, sc.getScoreForSlave(rslaves[1]).getScore());
-        Assert.assertEquals(100, sc.getScoreForSlave(rslaves[2]).getScore());
+        assertEquals(100, sc.getScoreForSlave(rslaves[0]).getScore());
+        assertEquals(100, sc.getScoreForSlave(rslaves[1]).getScore());
+        assertEquals(100, sc.getScoreForSlave(rslaves[2]).getScore());
     }
 
-    public void testRemove()
-            throws NoAvailableSlaveException, ObjectNotFoundException {
+    @Test
+    public void testRemove() throws NoAvailableSlaveException, ObjectNotFoundException {
         Properties p = new Properties();
         p.put("1.assign", "slave2-remove");
         p.put("1.match", "/path1/.*");
@@ -114,12 +109,12 @@ public class MatchdirExFilterTest extends TestCase {
         Filter f = new MatchdirExFilter(1, p);
         f.process(sc, null, null, Transfer.TRANSFER_SENDING_DOWNLOAD, new DirectoryHandle("/path1/dir/file.txt"), null);
 
-        Assert.assertEquals(0, sc.getScoreForSlave(rslaves[0]).getScore());
-        Assert.assertEquals(0, sc.getScoreForSlave(rslaves[2]).getScore());
+        assertEquals(0, sc.getScoreForSlave(rslaves[0]).getScore());
+        assertEquals(0, sc.getScoreForSlave(rslaves[2]).getScore());
 
         try {
             sc.getScoreForSlave(rslaves[1]);
-            Assert.fail();
+            Assertions.fail("should not be called");
         } catch (ObjectNotFoundException success) {
             //success
         }

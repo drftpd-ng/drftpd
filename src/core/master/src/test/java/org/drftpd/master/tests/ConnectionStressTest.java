@@ -17,17 +17,19 @@
  */
 package org.drftpd.master.tests;
 
-import junit.framework.TestCase;
 import org.apache.commons.net.ftp.FTPClientConfig;
 import org.apache.commons.net.ftp.FTPReply;
 import org.apache.commons.net.ftp.FTPSClient;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.Assert;
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Collections;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * This a Stress TestCase for the ConnectionManager ThreadPool.<br>
@@ -38,8 +40,7 @@ import java.util.Collections;
  * @author fr0w
  * @version $Id$
  */
-@Ignore
-public class ConnectionStressTest extends TestCase {
+public class ConnectionStressTest {
 
     private static final Logger logger = LogManager.getLogger(ConnectionStressTest.class);
 
@@ -49,10 +50,8 @@ public class ConnectionStressTest extends TestCase {
 
     private final ArrayList<Thread> list = new ArrayList<>();
 
-    public ConnectionStressTest(String fName) {
-        super(fName);
-    }
-
+    @Test
+    @Disabled("Need integration test")
     public void testStress() {
         int i = 0;
         for (; i < 200; i++) {
@@ -78,7 +77,7 @@ public class ConnectionStressTest extends TestCase {
             logger.fatal(e, e);
         }
 
-        Assert.assertTrue(success == i); // means that every attemp was successful when connecting
+        assertEquals(success, i); // means that every attemp was successful when connecting
 
         Collections.reverse(list); // must reverse the order in order to iterate thru the first client firstly.
 
@@ -90,7 +89,7 @@ public class ConnectionStressTest extends TestCase {
             dead += 1;
         }
 
-        Assert.assertTrue(dead == success); // all threads were finalized.
+        assertEquals(dead, success); // all threads were finalized.
     }
 
     public void addFailure() {

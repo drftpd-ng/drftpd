@@ -16,21 +16,23 @@
  */
 package org.drftpd.master.master.cron;
 
-import junit.framework.TestCase;
 import org.drftpd.master.cron.TimeEventInterface;
 import org.drftpd.master.cron.TimeManager;
-import org.junit.Assert;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 /**
  * @author zubov
  * @version $Id$
  */
-public class TimeManagerTest extends TestCase {
+public class TimeManagerTest {
 
     TimeManager _tm = null;
     int _lastReset = 0;
@@ -41,21 +43,14 @@ public class TimeManagerTest extends TestCase {
     int _yearsReset = 0;
     int _weeksReset = 0;
 
-    public TimeManagerTest(String arg0) {
-        super(arg0);
-    }
-
-    protected void setUp() throws Exception {
-        super.setUp();
+    @BeforeEach
+    void setUp() {
         _tm = new TimeManager(Calendar.getInstance());
         _tm.addTimeEvent(new TimeTester());
         _tm.addTimeEvent(new TimeTesterAdder());
     }
 
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
-
+    @Test
     public void testDoReset() throws ParseException {
         Calendar cal = Calendar.getInstance();
         SimpleDateFormat df = new SimpleDateFormat("MM/dd/yy HH:mm");
@@ -69,8 +64,8 @@ public class TimeManagerTest extends TestCase {
         System.out.println("Testing date - " + date);
         cal.setTime(date);
         _tm.doReset(cal);
-        Assert.assertTrue(_lastReset == Calendar.YEAR);
-        Assert.assertTrue(!_resetWeek);
+        assertEquals(_lastReset, Calendar.YEAR);
+        assertFalse(_resetWeek);
 
         // test month & week
         _resetWeek = false;
@@ -79,8 +74,8 @@ public class TimeManagerTest extends TestCase {
         System.out.println("Testing date - " + date);
         cal.setTime(date);
         _tm.doReset(cal);
-        Assert.assertTrue(_lastReset == Calendar.MONTH);
-        Assert.assertTrue(!_resetWeek);
+        assertEquals(_lastReset, Calendar.MONTH);
+        assertFalse(_resetWeek);
 
         // test day & week
         _resetWeek = false;
@@ -89,8 +84,8 @@ public class TimeManagerTest extends TestCase {
         System.out.println("Testing date - " + date);
         cal.setTime(date);
         _tm.doReset(cal);
-        Assert.assertTrue(_lastReset == Calendar.DAY_OF_MONTH);
-        Assert.assertTrue(!_resetWeek);
+        assertEquals(_lastReset, Calendar.DAY_OF_MONTH);
+        assertFalse(_resetWeek);
 
         // test hour & week
         _resetWeek = false;
@@ -99,21 +94,22 @@ public class TimeManagerTest extends TestCase {
         System.out.println("Testing date - " + date);
         cal.setTime(date);
         _tm.doReset(cal);
-        Assert.assertTrue(_lastReset == Calendar.HOUR);
-        Assert.assertTrue(!_resetWeek);
+        assertEquals(_lastReset, Calendar.HOUR);
+        assertFalse(_resetWeek);
 
     }
 
+    @Test
     public void testProcessTimeEventsSinceDate() throws ParseException {
         SimpleDateFormat df = new SimpleDateFormat("MM/dd/yy HH:mm");
         Date oldDate = df.parse("12/25/06 3:00");
         Date newDate = df.parse("2/17/07 19:00");
         _tm.processTimeEventsBetweenDates(oldDate, newDate);
-        Assert.assertTrue(_yearsReset == 1);
-        Assert.assertTrue(_monthsReset == 2);
-        Assert.assertTrue(_weeksReset == 7);
-        Assert.assertTrue(_daysReset == 54);
-        Assert.assertTrue(_hoursReset == 1313);
+        assertEquals(1, _yearsReset);
+        assertEquals(2, _monthsReset);
+        assertEquals(7, _weeksReset);
+        assertEquals(54, _daysReset);
+        assertEquals(1313, _hoursReset);
     }
 
     public class TimeTester implements TimeEventInterface {
@@ -164,5 +160,4 @@ public class TimeManagerTest extends TestCase {
             resetMonth(d);
         }
     }
-
 }

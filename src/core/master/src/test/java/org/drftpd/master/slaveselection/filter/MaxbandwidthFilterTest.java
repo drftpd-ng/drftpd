@@ -17,7 +17,6 @@
  */
 package org.drftpd.master.slaveselection.filter;
 
-import junit.framework.TestCase;
 import org.drftpd.common.slave.DiskStatus;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.slavemanagement.DummyRemoteSlave;
@@ -25,37 +24,27 @@ import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.master.slavemanagement.SlaveStatus;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.slave.network.Transfer;
-import org.junit.Assert;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Properties;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 
 /**
  * @author zubov
  * @version $Id$
  */
-public class MaxbandwidthFilterTest extends TestCase {
+public class MaxbandwidthFilterTest {
     RemoteSlave[] rslaves = {
             new RS("slave1", Collections.emptyList()),
             new RS("slave2", Collections.emptyList())
     };
 
-    /**
-     * Constructor for MaxbandwidthFilterTest.
-     *
-     * @param arg0
-     */
-    public MaxbandwidthFilterTest(String arg0) {
-        super(arg0);
-    }
-
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(MaxbandwidthFilterTest.class);
-    }
-
+    @Test
     public void testSimple() throws NoAvailableSlaveException {
         Properties p = new Properties();
         p.put("1.maxbandwidth", "800kb");
@@ -64,7 +53,7 @@ public class MaxbandwidthFilterTest extends TestCase {
         ScoreChart sc = new ScoreChart(Arrays.asList(rslaves));
 
         f.process(sc, null, null, Transfer.TRANSFER_SENDING_DOWNLOAD, new DirectoryHandle("/"), null);
-        Assert.assertEquals(sc.getBestSlave(), rslaves[1]);
+        assertEquals(sc.getBestSlave(), rslaves[1]);
     }
 
     static class RS extends DummyRemoteSlave {

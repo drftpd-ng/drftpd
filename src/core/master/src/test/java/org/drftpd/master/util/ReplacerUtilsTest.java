@@ -1,14 +1,16 @@
 package org.drftpd.master.util;
 
-import junit.framework.TestCase;
-import org.junit.Assert;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import static org.drftpd.master.util.ReplacerUtils.jprintf;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class ReplacerUtilsTest extends TestCase {
+public class ReplacerUtilsTest {
+
+    @Test
     public void testVarReplacement() {
         Map<String, Object> env = new HashMap<>();
         env.put("position", 3);
@@ -20,9 +22,9 @@ public class ReplacerUtilsTest extends TestCase {
         env.put("percent", "45");
         // Complex template
         String template = "#${position,3.3} ${user,-13} @ ${group,-11} - ${files,7}F - ${bytes,7} - ${speed,10} - ${percent,6}";
-        Assert.assertEquals("# 3 test      @ sysop  -    11F - 10To - 27.4MB/s -   45", jprintf(template, env));
+        assertEquals("# 3 test      @ sysop  -    11F - 10To - 27.4MB/s -   45", jprintf(template, env));
         // Simple template
         template = "#${position} ${user} @ ${group} - ${files}F - ${bytes} - ${speed} - ${percent}";
-        Assert.assertEquals("#3 test @ sysop - 11F - 10To - 27.4MB/s - 45", jprintf(template, env));
+        assertEquals("#3 test @ sysop - 11F - 10To - 27.4MB/s - 45", jprintf(template, env));
     }
 }

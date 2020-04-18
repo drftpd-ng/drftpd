@@ -17,8 +17,6 @@
  */
 package org.drftpd.master.master;
 
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
 import org.drftpd.common.network.AsyncResponse;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.event.Event;
@@ -28,25 +26,21 @@ import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.master.slavemanagement.SlaveManager;
 import org.drftpd.master.tests.DummySlaveManager;
 import org.drftpd.master.vfs.DirectoryHandle;
-import org.junit.Assert;
+import org.junit.jupiter.api.Test;
 
 import java.net.SocketException;
 import java.util.HashSet;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 
 /**
  * @author mog
  * @version $Id$
  */
-public class RemoteSlaveTest extends TestCase {
-    public RemoteSlaveTest(String fName) {
-        super(fName);
-    }
+public class RemoteSlaveTest {
 
-    public static TestSuite suite() {
-        return new TestSuite(RemoteSlaveTest.class);
-    }
-
+    @Test
     public void testEquals() {
         DummySlaveManager sm = new DummySlaveManager();
         GlobalContext gc = new GC();
@@ -57,9 +51,9 @@ public class RemoteSlaveTest extends TestCase {
         RemoteSlave rslave1 = new DummyRemoteSlave("test1");
         RemoteSlave rslave2 = new DummyRemoteSlave("test1");
         RemoteSlave rslave3 = new DummyRemoteSlave("test2");
-        Assert.assertTrue(rslave1.equals(rslave1));
-        Assert.assertTrue(rslave1.equals(rslave2));
-        Assert.assertFalse(rslave1.equals(rslave3));
+        assertEquals(rslave1, rslave1);
+        assertEquals(rslave1, rslave2);
+        assertNotEquals(rslave1, rslave3);
     }
 
     public void testAddNetworkError()
@@ -75,11 +69,11 @@ public class RemoteSlaveTest extends TestCase {
         rslave.setProperty("maxerrors", "2");
         rslave.fakeConnect();
         rslave.setAvailable(true);
-        Assert.assertTrue(rslave.isAvailable());
+        assertTrue(rslave.isAvailable());
         rslave.addNetworkError(new SocketException());
-        Assert.assertTrue(rslave.isAvailable());
+        assertTrue(rslave.isAvailable());
         rslave.addNetworkError(new SocketException());
-        Assert.assertTrue(rslave.isAvailable());
+        assertTrue(rslave.isAvailable());
     }
 
     public static class GC extends GlobalContext {

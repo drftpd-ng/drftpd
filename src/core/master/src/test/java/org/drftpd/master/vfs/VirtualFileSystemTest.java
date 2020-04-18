@@ -17,90 +17,78 @@
  */
 package org.drftpd.master.vfs;
 
-import junit.framework.TestCase;
 import org.apache.commons.io.FileUtils;
 import org.drftpd.slave.exceptions.FileExistsException;
-import org.junit.Assert;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 
-public class VirtualFileSystemTest extends TestCase {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+public class VirtualFileSystemTest {
 
     public static VirtualFileSystem vfs = null;
 
-    public VirtualFileSystemTest(String arg0) {
-        super(arg0);
-    }
-
-    protected void setUp() {
+    @BeforeAll
+    static void setUp() {
         vfs = VirtualFileSystem.getVirtualFileSystem();
         try {
             vfs.getRoot().createDirectory("Test", "drftpd", "drftpd");
-        } catch (FileExistsException e) {
+        } catch (FileExistsException ignored) {
         }
         try {
             vfs.getRoot().createFile("testFile", "drftpd", "drftpd", "testSlave");
-        } catch (FileExistsException e) {
+        } catch (FileExistsException ignored) {
         }
     }
 
-    protected void tearDown() throws Exception {
+    @AfterAll
+    static void tearDown() throws Exception {
         for (String file : vfs.getRoot().getInodeNames()) {
             vfs.getRoot().getInodeByName(file).delete();
         }
         FileUtils.deleteDirectory(new File("userdata"));
     }
 
-    /*
-     * Test method for 'org.drftpd.master.vfs.VirtualFileSystem.getLast(String)'
-     */
+    @Test
     public void testGetLast() {
-        Assert.assertEquals(VirtualFileSystem.getLast("/full/path/to/file"), "file");
-        Assert.assertEquals(VirtualFileSystem.getLast("/full/path/to"), "to");
+        assertEquals(VirtualFileSystem.getLast("/full/path/to/file"), "file");
+        assertEquals(VirtualFileSystem.getLast("/full/path/to"), "to");
     }
 
-    /*
-     * Test method for 'org.drftpd.master.vfs.VirtualFileSystem.loadInode(String)'
-     */
-    public void testLoadInode() {
-
-    }
-
+    @Test
     public void testMemory() {
-        System.out
-                .println("Stress test, we can scale now with lots of small files");
+        System.out.println("Stress test, we can scale now with lots of small files");
         for (int x = 0; x < 3; x++) {
-            VirtualFileSystemDirectory walker1 = null;
+            VirtualFileSystemDirectory walker1;
             try {
-                vfs.getRoot()
-                        .createDirectory(String.valueOf(x), "test", "test");
-            } catch (FileExistsException e) {
+                vfs.getRoot().createDirectory(String.valueOf(x), "test", "test");
+            } catch (FileExistsException ignored) {
             }
             try {
-                walker1 = (VirtualFileSystemDirectory) vfs.getRoot()
-                        .getInodeByName(String.valueOf(x));
+                walker1 = (VirtualFileSystemDirectory) vfs.getRoot().getInodeByName(String.valueOf(x));
             } catch (FileNotFoundException e) {
                 throw new RuntimeException("this can't be good1");
             }
             for (int y = 0; y < 3; y++) {
-                VirtualFileSystemDirectory walker2 = null;
+                VirtualFileSystemDirectory walker2;
                 try {
-                    walker1
-                            .createDirectory(String.valueOf(y), "test2",
-                                    "test2");
-                } catch (FileExistsException e) {
+                    walker1.createDirectory(String.valueOf(y), "test2", "test2");
+                } catch (FileExistsException ignored) {
                 }
                 try {
-                    walker2 = (VirtualFileSystemDirectory) walker1
-                            .getInodeByName(String.valueOf(y));
+                    walker2 = (VirtualFileSystemDirectory) walker1.getInodeByName(String.valueOf(y));
                 } catch (FileNotFoundException e) {
                     throw new RuntimeException("this can't be good2");
                 }
                 for (int z = 0; z < 3; z++) {
                     try {
                         walker2.createFile(String.valueOf(z), "test3", "test3", "testSlave");
-                    } catch (FileExistsException e) {
+                    } catch (FileExistsException ignored) {
                     }
                 }
             }
@@ -108,25 +96,20 @@ public class VirtualFileSystemTest extends TestCase {
         System.out.println("Done testing memory");
     }
 
-    /*
-     * Test method for 'org.drftpd.master.vfs.VirtualFileSystemInode.rename(String)'
-     */
+    @Test
     public void testRename() throws FileNotFoundException, FileExistsException {
         //vfs.getRoot().createDirectory("Test", "drftpd", "drftpd");
         VirtualFileSystemInode inode = vfs.getInodeByPath("/Test");
         ((VirtualFileSystemDirectory) inode).createFile("testme", "drftpd", "drftpd", "testSlave");
-        Assert.assertEquals("/Test", inode.getPath());
+        assertEquals("/Test", inode.getPath());
         inode.rename("/Test2");
-        Assert.assertEquals("/Test2", inode.getPath());
-        Assert.assertNotNull(((VirtualFileSystemDirectory) inode).getInodeByName("testme"));
+        assertEquals("/Test2", inode.getPath());
+        assertNotNull(((VirtualFileSystemDirectory) inode).getInodeByName("testme"));
     }
 
-    /*
-     * Test method for 'org.drftpd.master.vfs.VirtualFileSystem.stripLast(String)'
-     */
+    @Test
     public void testStripLast() {
-        Assert.assertEquals(VirtualFileSystem.stripLast("/full/path/to/file"), "/full/path/to");
-        Assert.assertEquals(VirtualFileSystem.stripLast("/full/path/to"), "/full/path");
+        assertEquals(VirtualFileSystem.stripLast("/full/path/to/file"), "/full/path/to");
+        assertEquals(VirtualFileSystem.stripLast("/full/path/to"), "/full/path");
     }
-
 }

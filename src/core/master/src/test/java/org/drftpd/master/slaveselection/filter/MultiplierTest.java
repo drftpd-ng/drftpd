@@ -1,34 +1,38 @@
 package org.drftpd.master.slaveselection.filter;
 
-import junit.framework.TestCase;
-import org.junit.Assert;
+import org.junit.jupiter.api.Test;
 
-public class MultiplierTest extends TestCase {
-    public MultiplierTest(String fName) {
-        super(fName);
-    }
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
+public class MultiplierTest {
+
+    @Test
     public void testDivide() {
-        Assert.assertEquals(10F, BandwidthFilter.parseMultiplier("/0.1"), 0F);
+        assertEquals(10F, BandwidthFilter.parseMultiplier("/0.1"));
     }
 
+    @Test
     public void testDivideMultiplyMultiply() {
-        Assert.assertEquals(0.1F, BandwidthFilter.parseMultiplier("/10*10/10"), 0F);
+        assertEquals(0.1F, BandwidthFilter.parseMultiplier("/10*10/10"));
     }
 
+    @Test
     public void testMultiply() {
-        Assert.assertEquals(100F, BandwidthFilter.parseMultiplier("*100"), 0F);
+        assertEquals(100F, BandwidthFilter.parseMultiplier("*100"));
     }
 
+    @Test
     public void testMultiplyDivide() {
-        Assert.assertEquals(1F, BandwidthFilter.parseMultiplier("/10*10"), 0F);
+        assertEquals(1F, BandwidthFilter.parseMultiplier("/10*10"));
     }
 
+    @Test
     public void testMultiplyMultiplyDivide() {
-        Assert.assertEquals(10F, BandwidthFilter.parseMultiplier("10*10/10"), 0F);
+        assertEquals(10F, BandwidthFilter.parseMultiplier("10*10/10"));
     }
 
+    @Test
     public void testSimple() {
-        Assert.assertEquals(100F, BandwidthFilter.parseMultiplier("100"), 0F);
+        assertEquals(100F, BandwidthFilter.parseMultiplier("100"));
     }
 }

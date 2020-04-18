@@ -17,51 +17,54 @@
  */
 package org.drftpd.common;
 
-import junit.framework.TestCase;
 import org.drftpd.common.util.HostMask;
-import org.junit.Assert;
+import org.junit.jupiter.api.Test;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.regex.PatternSyntaxException;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 
 /**
  * @author zubov
  * @version $Id$
  */
-public class HostMaskTest extends TestCase {
+public class HostMaskTest {
 
-    public void testMatchesHost()
-            throws UnknownHostException, PatternSyntaxException {
+    @Test
+    public void testMatchesHost() throws UnknownHostException, PatternSyntaxException {
         HostMask h = new HostMask("*@1.1.1.1");
-        Assert.assertTrue(h.matchesHost(InetAddress.getByName("1.1.1.1")));
-        Assert.assertFalse(h.matchesHost(InetAddress.getByName("1.1.1.2")));
+        assertTrue(h.matchesHost(InetAddress.getByName("1.1.1.1")));
+        assertFalse(h.matchesHost(InetAddress.getByName("1.1.1.2")));
         h = new HostMask("1.*.*.*");
-        Assert.assertTrue(h.matchesHost(InetAddress.getByName("1.2.3.4")));
-        Assert.assertFalse(h.matchesHost(InetAddress.getByName("2.2.3.4")));
+        assertTrue(h.matchesHost(InetAddress.getByName("1.2.3.4")));
+        assertFalse(h.matchesHost(InetAddress.getByName("2.2.3.4")));
     }
 
+    @Test
     public void testMatchesIdent() throws PatternSyntaxException {
         HostMask h = new HostMask("*@1.1.1.1");
-        Assert.assertTrue(h.matchesIdent(null));
-        Assert.assertTrue(h.matchesIdent("anything"));
+        assertTrue(h.matchesIdent(null));
+        assertTrue(h.matchesIdent("anything"));
         h = new HostMask("anything@1.1.1.1");
-        Assert.assertFalse(h.matchesIdent(null));
-        Assert.assertTrue(h.matchesIdent("anything"));
-        Assert.assertFalse(h.matchesIdent("nothing"));
+        assertFalse(h.matchesIdent(null));
+        assertTrue(h.matchesIdent("anything"));
+        assertFalse(h.matchesIdent("nothing"));
     }
 
+    @Test
     public void testEquals() {
         HostMask a = new HostMask("test@1.1.1.1");
         HostMask b = new HostMask("test@1.1.1.1");
-        Assert.assertEquals(a, b);
+        assertEquals(a, b);
         a = new HostMask("*@1.1.1.*");
         b = new HostMask("1.1.1.*");
-        Assert.assertEquals(a, b);
+        assertEquals(a, b);
         a = new HostMask("@1.1.1.*");
-        Assert.assertEquals(a, b);
+        assertEquals(a, b);
         a = new HostMask("notequal@4.2.3.4");
-        Assert.assertFalse(a.equals(b));
+        assertFalse(a.equals(b));
     }
 }

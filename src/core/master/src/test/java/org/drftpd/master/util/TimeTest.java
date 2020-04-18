@@ -17,38 +17,35 @@
  */
 package org.drftpd.master.util;
 
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-import org.junit.Assert;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 /**
  * @author mog
  * @version $Id$
  */
-public class TimeTest extends TestCase {
-    public TimeTest(String name) {
-        super(name);
-    }
+public class TimeTest {
 
-    public static TestSuite suite() {
-        return new TestSuite(TimeTest.class);
-    }
-
+    @Test
     public void testParseSeconds() {
-        Assert.assertEquals(1000, Time.parseTime("1s"));
-        Assert.assertEquals(1000, Time.parseTime("1S"));
+        assertEquals(1000, Time.parseTime("1s"));
+        assertEquals(1000, Time.parseTime("1S"));
     }
 
+    @Test
     public void testParseMillis() {
-        Assert.assertEquals(1, Time.parseTime("1ms"));
+        assertEquals(1, Time.parseTime("1ms"));
     }
 
+    @Test
     public void testParse() {
-        Assert.assertEquals(1, Time.parseTime("1"));
+        assertEquals(1, Time.parseTime("1"));
     }
 
+    @Test
     public void testParseMinutes() {
-        Assert.assertEquals(60000, Time.parseTime("1m"));
+        assertEquals(60000, Time.parseTime("1m"));
     }
 }

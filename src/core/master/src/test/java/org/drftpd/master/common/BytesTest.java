@@ -17,114 +17,114 @@
  */
 package org.drftpd.master.common;
 
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
 import org.drftpd.common.util.Bytes;
-import org.junit.Assert;
+import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * @author mog
  * @version $Id$
  */
-public class BytesTest extends TestCase {
-    public BytesTest() {
-        super();
-    }
+public class BytesTest {
 
-    public BytesTest(String fName) {
-        super(fName);
-    }
-
-    public static TestSuite suite() {
-        return new TestSuite(BytesTest.class);
-    }
-
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
-
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
-
+    @Test
     public void testFormat50KB() {
-        Assert.assertEquals("50.0KB", Bytes.formatBytes(Bytes.KILO * 50, false));
+        assertEquals("50.0KB", Bytes.formatBytes(Bytes.KILO * 50, false));
     }
 
+    @Test
     public void testFormat50KiB() {
-        Assert.assertEquals("50.0KiB", Bytes.formatBytes(Bytes.KIBI * 50, true));
+        assertEquals("50.0KiB", Bytes.formatBytes(Bytes.KIBI * 50, true));
     }
 
+    @Test
     public void testFormatByte() {
-        Assert.assertEquals("123B", Bytes.formatBytes(123, false));
+        assertEquals("123B", Bytes.formatBytes(123, false));
     }
 
+    @Test
     public void testFormatGB() {
-        Assert.assertEquals("1.0GB", Bytes.formatBytes(Bytes.GIGA, false));
+        assertEquals("1.0GB", Bytes.formatBytes(Bytes.GIGA, false));
     }
 
+    @Test
     public void testFormatGiB() {
-        Assert.assertEquals("1.0GiB", Bytes.formatBytes(Bytes.GIBI, true));
+        assertEquals("1.0GiB", Bytes.formatBytes(Bytes.GIBI, true));
     }
 
+    @Test
     public void testFormatKB() {
-        Assert.assertEquals("1.0KB", Bytes.formatBytes(Bytes.KILO, false));
+        assertEquals("1.0KB", Bytes.formatBytes(Bytes.KILO, false));
     }
 
+    @Test
     public void testFormatKiB() {
-        Assert.assertEquals("1.0KiB", Bytes.formatBytes(Bytes.KIBI, true));
+        assertEquals("1.0KiB", Bytes.formatBytes(Bytes.KIBI, true));
     }
 
+    @Test
     public void testFormatMB() {
-        Assert.assertEquals("1.0MB", Bytes.formatBytes(Bytes.MEGA, false));
+        assertEquals("1.0MB", Bytes.formatBytes(Bytes.MEGA, false));
     }
 
+    @Test
     public void testFormatMib() {
-        Assert.assertEquals("1.0MiB", Bytes.formatBytes(Bytes.MEBI, true));
+        assertEquals("1.0MiB", Bytes.formatBytes(Bytes.MEBI, true));
     }
 
+    @Test
     public void testFormatTB() {
-        Assert.assertEquals("1.0TB", Bytes.formatBytes(Bytes.TERRA, false));
+        assertEquals("1.0TB", Bytes.formatBytes(Bytes.TERRA, false));
     }
 
+    @Test
     public void testFormatTiB() {
-        Assert.assertEquals("1.0TiB", Bytes.formatBytes(Bytes.TEBI, true));
+        assertEquals("1.0TiB", Bytes.formatBytes(Bytes.TEBI, true));
     }
 
+    @Test
     public void testParse1GB() {
-        Assert.assertEquals(Bytes.GIGA, Bytes.parseBytes("1GB"));
+        assertEquals(Bytes.GIGA, Bytes.parseBytes("1GB"));
     }
 
+    @Test
     public void testParse1GiB() {
-        Assert.assertEquals(Bytes.GIBI, Bytes.parseBytes("1GiB"));
+        assertEquals(Bytes.GIBI, Bytes.parseBytes("1GiB"));
     }
 
+    @Test
     public void testParse1KB() {
-        Assert.assertEquals(Bytes.KILO, Bytes.parseBytes("1KB"));
+        assertEquals(Bytes.KILO, Bytes.parseBytes("1KB"));
     }
 
+    @Test
     public void testParse1KiB() {
-        Assert.assertEquals(Bytes.KIBI, Bytes.parseBytes("1KiB"));
+        assertEquals(Bytes.KIBI, Bytes.parseBytes("1KiB"));
     }
 
+    @Test
     public void testParse1MB() {
-        Assert.assertEquals(Bytes.MEGA, Bytes.parseBytes("1MB"));
+        assertEquals(Bytes.MEGA, Bytes.parseBytes("1MB"));
     }
 
+    @Test
     public void testParse1MiB() {
-        Assert.assertEquals(Bytes.MEBI, Bytes.parseBytes("1MiB"));
+        assertEquals(Bytes.MEBI, Bytes.parseBytes("1MiB"));
     }
 
+    @Test
     public void testParse1TB() {
-        Assert.assertEquals(Bytes.TERRA, Bytes.parseBytes("1TB"));
+        assertEquals(Bytes.TERRA, Bytes.parseBytes("1TB"));
     }
 
+    @Test
     public void testParse1TiB() {
-        Assert.assertEquals(Bytes.TEBI, Bytes.parseBytes("1TiB"));
+        assertEquals(Bytes.TEBI, Bytes.parseBytes("1TiB"));
     }
 
+    @Test
     public void testParseByte() {
-        Assert.assertEquals(123, Bytes.parseBytes("123"));
+        assertEquals(123, Bytes.parseBytes("123"));
     }
 }

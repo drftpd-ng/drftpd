@@ -17,37 +17,26 @@
  */
 package org.drftpd.master.slaveselection.filter;
 
-import junit.framework.TestCase;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.slavemanagement.DummyRemoteSlave;
 import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.slave.exceptions.ObjectNotFoundException;
 import org.drftpd.slave.network.Transfer;
-import org.junit.Assert;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 /**
  * @author zubov
  * @version $Id$
  */
-public class CycleFilterTest extends TestCase {
-    /**
-     * Constructor for CycleFilterTest.
-     *
-     * @param arg0
-     */
-    public CycleFilterTest(String arg0) {
-        super(arg0);
-    }
+public class CycleFilterTest {
 
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(CycleFilterTest.class);
-    }
-
-    public void testProcess()
-            throws NoAvailableSlaveException, ObjectNotFoundException {
+    @Test
+    public void testProcess() throws NoAvailableSlaveException, ObjectNotFoundException {
         RemoteSlave[] rslaves = {
                 new DummyRemoteSlave("slave1"),
                 new DummyRemoteSlave("slave2"),
@@ -56,8 +45,8 @@ public class CycleFilterTest extends TestCase {
         ScoreChart sc = new ScoreChart(Arrays.asList(rslaves));
         Filter f = new CycleFilter(0, null);
         f.process(sc, null, null, Transfer.TRANSFER_SENDING_DOWNLOAD, null, null);
-        Assert.assertEquals(1, sc.getScoreForSlave(rslaves[0]).getScore());
-        Assert.assertEquals(0, sc.getScoreForSlave(rslaves[1]).getScore());
-        Assert.assertEquals(0, sc.getScoreForSlave(rslaves[2]).getScore());
+        assertEquals(1, sc.getScoreForSlave(rslaves[0]).getScore());
+        assertEquals(0, sc.getScoreForSlave(rslaves[1]).getScore());
+        assertEquals(0, sc.getScoreForSlave(rslaves[2]).getScore());
     }
 }
