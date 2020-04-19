@@ -23,15 +23,14 @@ public class DummyGroup extends AbstractGroup {
 
     public DummyGroup(String name, long time) {
         this(name);
-        getKeyedMap().setObject(UserManagement.CREATED, new Date(time));
+        setCreated(new Date(time));
     }
 
     public boolean checkPassword(String password) {
         return true;
     }
 
-    public void commit() {
-    }
+    public void commit() {}
 
     public void purge() {
         throw new UnsupportedOperationException();
@@ -49,9 +48,7 @@ public class DummyGroup extends AbstractGroup {
         return _userManager;
     }
 
-    public void writeToDisk() throws IOException {
-
-    }
+    public void writeToDisk() throws IOException { }
 
     public String descriptiveName() {
         return getName();

@@ -86,11 +86,11 @@ public class GroupManagementHandler extends CommandInterface {
 
             Group newGroup = GlobalContext.getGlobalContext().getUserManager().createGroup(newGroupname);
 
-            newGroup.getKeyedMap().setObject(GroupManagement.CREATED, new Date());
-            newGroup.getKeyedMap().setObject(GroupManagement.GROUPSLOTS, 0);
-            newGroup.getKeyedMap().setObject(GroupManagement.LEECHSLOTS, 0);
-            newGroup.getKeyedMap().setObject(GroupManagement.MINRATIO, minratioVal);
-            newGroup.getKeyedMap().setObject(GroupManagement.MAXRATIO, maxratioVal);
+            newGroup.setCreated(new Date());
+            newGroup.setGroupSlots(0);
+            newGroup.setLeechSlots(0);
+            newGroup.setMinRatio(minratioVal);
+            newGroup.setMaxRatio(maxratioVal);
 
             logger.info("'{}' added group '{}'", request.getUser(), newGroup.getName());
 
@@ -366,9 +366,9 @@ public class GroupManagementHandler extends CommandInterface {
 
                         int groupSlots = Short.parseShort(commandArguments[0]);
 
-                        logger.info("'{}' changed group slots for '{}' from '{}' to '{}'", currentUser.getName(), groupToChange.getName(), groupToChange.getKeyedMap().getObjectInteger(GroupManagement.GROUPSLOTS), groupSlots);
-                        groupToChange.getKeyedMap().setObject(GroupManagement.GROUPSLOTS, groupSlots);
-                        env.put("groupslots", "" + groupToChange.getKeyedMap().getObjectInteger(GroupManagement.GROUPSLOTS));
+                        logger.info("'{}' changed group slots for '{}' from '{}' to '{}'", currentUser.getName(), groupToChange.getName(), groupToChange.getGroupSlots(), groupSlots);
+                        groupToChange.setGroupSlots(groupSlots);
+                        env.put("groupslots", "" + groupToChange.getGroupSlots());
                         response.addComment(session.jprintf(_bundle, "changegroup.slots.success", env, request.getUser()));
                     } catch (NumberFormatException ex) {
                         return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
@@ -382,9 +382,9 @@ public class GroupManagementHandler extends CommandInterface {
 
                         int leechSlots = Short.parseShort(commandArguments[0]);
 
-                        logger.info("'{}' changed group leech slots for '{}' from '{}' to '{}'", currentUser.getName(), groupToChange.getName(), groupToChange.getKeyedMap().getObjectInteger(GroupManagement.LEECHSLOTS), leechSlots);
-                        groupToChange.getKeyedMap().setObject(GroupManagement.LEECHSLOTS, leechSlots);
-                        env.put("leechslots", "" + groupToChange.getKeyedMap().getObjectInteger(GroupManagement.LEECHSLOTS));
+                        logger.info("'{}' changed group leech slots for '{}' from '{}' to '{}'", currentUser.getName(), groupToChange.getName(), groupToChange.getLeechSlots(), leechSlots);
+                        groupToChange.setLeechSlots(leechSlots);
+                        env.put("leechslots", "" + groupToChange.getLeechSlots());
                         response.addComment(session.jprintf(_bundle, "changegroup.leechslots.success", env, request.getUser()));
                     } catch (NumberFormatException ex) {
                         return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
@@ -405,8 +405,8 @@ public class GroupManagementHandler extends CommandInterface {
                         myDate = new Date();
                     }
 
-                    logger.info("'{}' changed created for group '{}' from '{}' to '{}'", currentUser.getName(), groupToChange.getName(), groupToChange.getKeyedMap().getObject(GroupManagement.CREATED, new Date(0)), myDate);
-                    groupToChange.getKeyedMap().setObject(GroupManagement.CREATED, myDate);
+                    logger.info("'{}' changed created for group '{}' from '{}' to '{}'", currentUser.getName(), groupToChange.getName(), groupToChange.getCreated(), myDate);
+                    groupToChange.setCreated(myDate);
 
                     response = new CommandResponse(200, session.jprintf(_bundle, "changegroup.created.success", env, request.getUser()));
                     break;
@@ -592,10 +592,10 @@ public class GroupManagementHandler extends CommandInterface {
         env.put("allmbup", Bytes.formatBytes(allmbup));
         env.put("allfdn", "" + allfdn);
         env.put("allmbdn", Bytes.formatBytes(allmbdn));
-        env.put("slotstotal", g.getKeyedMap().getObjectInteger(GroupManagement.GROUPSLOTS));
-        env.put("slotsfree", g.getKeyedMap().getObjectInteger(GroupManagement.GROUPSLOTS) - numUsers);
-        env.put("leechtotal", g.getKeyedMap().getObjectInteger(GroupManagement.LEECHSLOTS));
-        env.put("leechfree", g.getKeyedMap().getObjectInteger(GroupManagement.LEECHSLOTS) - numLeechUsers);
+        env.put("slotstotal", g.getGroupSlots());
+        env.put("slotsfree", g.getGroupSlots() - numUsers);
+        env.put("leechtotal", g.getLeechSlots());
+        env.put("leechfree", g.getLeechSlots() - numLeechUsers);
 
         String tail = _bundle.getString("ginfo.tail");
         try {
@@ -609,7 +609,9 @@ public class GroupManagementHandler extends CommandInterface {
     }
 
     public CommandResponse doSITE_GROUPS(CommandRequest request) {
-        Collection<Group> groups = GlobalContext.getGlobalContext().getUserManager().getAllGroups();
+
+        ArrayList<Group> groups = new ArrayList<>(GlobalContext.getGlobalContext().getUserManager().getAllGroups());
+        groups.sort(GroupManagementHandler.GROUP_CASE_INSENSITIVE_COMPARATOR);
 
         CommandResponse response = new CommandResponse(200);
         response.addComment("All groups:");

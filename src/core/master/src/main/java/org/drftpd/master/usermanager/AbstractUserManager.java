@@ -64,8 +64,8 @@ public abstract class AbstractUserManager implements UserManager {
 
     protected void createSiteopUser() {
         Group group = createGroupImpl("drftpd");
-        group.getKeyedMap().setObject(GroupManagement.GROUPSLOTS, 0);
-        group.getKeyedMap().setObject(GroupManagement.LEECHSLOTS, 0);
+        group.setGroupSlots(0);
+        group.setLeechSlots(0);
         group.commit();
         User user = createUserImpl("drftpd");
         user.setGroup(group);
@@ -94,8 +94,8 @@ public abstract class AbstractUserManager implements UserManager {
 
         try {
             Group g = createGroupImpl("siteop");
-            g.getKeyedMap().setObject(GroupManagement.GROUPSLOTS, 0);
-            g.getKeyedMap().setObject(GroupManagement.LEECHSLOTS, 0);
+            g.setGroupSlots(0);
+            g.setLeechSlots(0);
             g.commit();
             user.addSecondaryGroup(g);
         } catch (DuplicateElementException ignored) {

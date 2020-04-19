@@ -20,6 +20,7 @@ import org.drftpd.common.dynamicdata.Key;
 import org.drftpd.common.dynamicdata.KeyedMap;
 import org.drftpd.common.exceptions.DuplicateElementException;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -29,7 +30,7 @@ import java.util.List;
 public abstract class Group implements Entity {
     public abstract UserManager getUserManager();
 
-    public abstract KeyedMap<Key<?>, Object> getKeyedMap();
+    protected abstract KeyedMap<Key<?>, Object> getKeyedMap();
 
     /**
      * Commit changes.
@@ -62,5 +63,17 @@ public abstract class Group implements Entity {
     public abstract float getMaxRatio();
 
     public abstract void setMaxRatio(float MaxRatio);
+
+    public abstract int getGroupSlots();
+
+    public abstract void setGroupSlots(int slots);
+
+    public abstract int getLeechSlots();
+
+    public abstract void setLeechSlots(int leechslots);
+
+    public abstract Date getCreated();
+
+    public abstract void setCreated(Date created);
 
 }

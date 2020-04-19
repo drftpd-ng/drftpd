@@ -146,4 +146,16 @@ public abstract class AbstractGroup extends Group implements Commitable {
         getKeyedMap().setObject(GroupManagement.MAXRATIO, maxRatio);
     }
 
+    public int getGroupSlots() { return getKeyedMap().getObject(GroupManagement.GROUPSLOTS, 0); }
+
+    public void setGroupSlots(int groupslots) { getKeyedMap().setObject(GroupManagement.GROUPSLOTS, groupslots); }
+
+    public int getLeechSlots() { return getKeyedMap().getObject(GroupManagement.LEECHSLOTS, 0); }
+
+    public void setLeechSlots(int leechslots) { getKeyedMap().setObject(GroupManagement.LEECHSLOTS, leechslots); }
+
+    public Date getCreated() { return getKeyedMap().getObject(GroupManagement.CREATED, new Date()); }
+
+    public void setCreated(Date created) { getKeyedMap().setObject(GroupManagement.CREATED, created); }
+
 }

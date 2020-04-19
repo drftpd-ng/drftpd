@@ -190,7 +190,7 @@ public class UserManagementHandler extends CommandInterface {
             Collection<User> groupUsers = GlobalContext.getGlobalContext().getUserManager().getAllUsersByGroup(g);
             int users = groupUsers.size();
             logger.debug("Group: [" + g.getName() + "], users[" + users + "]: [" + groupUsers + "]");
-            if (users >= g.getKeyedMap().getObjectInteger(GroupManagement.GROUPSLOTS)) {
+            if (users >= g.getGroupSlots()) {
                 return new CommandResponse(452, session.jprintf(_bundle, "adduser.noslots", request.getUser()));
             }
         }
@@ -508,7 +508,7 @@ public class UserManagementHandler extends CommandInterface {
                                 }
                             }
 
-                            if (usedleechslots >= g.getKeyedMap().getObjectInteger(GroupManagement.LEECHSLOTS)) {
+                            if (usedleechslots >= g.getLeechSlots()) {
                                 return new CommandResponse(452, session.jprintf(_bundle, "changeratio.nomoreslots", request.getUser()));
                             }
                         } else if (ratio < g.getMinRatio() || ratio > g.getMaxRatio()) {
