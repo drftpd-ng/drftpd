@@ -312,7 +312,6 @@ public class SiteBot implements ReplyConstants, Runnable {
 
         // Find what the server considers our hostmask to be
         OutputThread.sendRawLine(this, bwriter, "WHOIS " + nick);
-        line = null;
         String hostMask = "";
         while ((line = breader.readLine()) != null) {
 
@@ -1204,6 +1203,7 @@ public class SiteBot implements ReplyConstants, Runnable {
                     logger.error("Received encrypted message in channel {} but no Blowfish key is set for the channel!", channel);
                     return;
                 }
+                logger.debug("Encrypted message: {}", message);
                 message = chanCipher.decrypt(message);
                 logger.debug("Decrypted message: {}", message);
             } else {
