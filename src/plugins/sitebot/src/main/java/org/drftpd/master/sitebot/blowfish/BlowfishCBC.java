@@ -68,8 +68,9 @@ public class BlowfishCBC extends Blowfish {
 
         //2- decrypt the string
         IvParameterSpec oIV = new IvParameterSpec(INIT_IV);
-        getCipher().init(Cipher.DECRYPT_MODE, getSecretKeySpec(), oIV);
-        byte[] lDecoded = getCipher().doFinal(base64Decoded);
+        Cipher cipher = initCipher();
+        cipher.init(Cipher.DECRYPT_MODE, getSecretKeySpec(), oIV);
+        byte[] lDecoded = cipher.doFinal(base64Decoded);
 
         //3- Find the last 0x0 value in the decrypted string
         int lFinalIndex = findLast0byte(lDecoded) - 8;
@@ -97,8 +98,9 @@ public class BlowfishCBC extends Blowfish {
 
         //3- Generate a vector (IV) and crypt the string
         IvParameterSpec oIV = generateIV();
-        getCipher().init(Cipher.ENCRYPT_MODE, getSecretKeySpec(), oIV);
-        byte[] lEncoded = getCipher().doFinal(lFinalToDecrypt);
+        Cipher cipher = initCipher();
+        cipher.init(Cipher.ENCRYPT_MODE, getSecretKeySpec(), oIV);
+        byte[] lEncoded = cipher.doFinal(lFinalToDecrypt);
 
         //4- Encode with BASE64 encoder
         String base64Encoded = Base64.getEncoder().encodeToString(lEncoded);

@@ -50,7 +50,8 @@ public class BlowfishECB extends Blowfish {
 
     public String encrypt(String textToEncrypt) throws Exception {
         // Mode cypher in encrypt mode
-        getCipher().init(Cipher.ENCRYPT_MODE, getSecretKeySpec());
+        Cipher cipher = initCipher();
+        cipher.init(Cipher.ENCRYPT_MODE, getSecretKeySpec());
 
         byte[] BEncrypt = textToEncrypt.getBytes();
         int encryptSize = BEncrypt.length;
@@ -63,7 +64,7 @@ public class BlowfishECB extends Blowfish {
         }
 
         // encrypt the padding string
-        byte[] encrypted = getCipher().doFinal(buff);
+        byte[] encrypted = cipher.doFinal(buff);
         // B64 custom encryption
         String REncrypt = byteToB64(encrypted);
         REncrypt = ECB_STANDARD_PREFIX.concat(REncrypt);
@@ -83,8 +84,9 @@ public class BlowfishECB extends Blowfish {
         // B64 custom decrypt
         byte[] Again = B64ToByte(textToDecrypt);
         // Mode cypher in decrypt mode
-        getCipher().init(Cipher.DECRYPT_MODE, getSecretKeySpec());
-        byte[] decrypted = getCipher().doFinal(Again);
+        Cipher cipher = initCipher();
+        cipher.init(Cipher.DECRYPT_MODE, getSecretKeySpec());
+        byte[] decrypted = cipher.doFinal(Again);
 
         // Get exact length
         int length = 0;

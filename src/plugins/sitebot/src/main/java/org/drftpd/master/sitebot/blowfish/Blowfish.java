@@ -25,15 +25,12 @@ import javax.crypto.spec.SecretKeySpec;
  */
 public abstract class Blowfish {
 
-    /**
-     * Crypto cipher
-     */
-    private final Cipher cipher;
 
     /**
      * secretKeySpec for crypto
      */
     private final SecretKeySpec secretKeySpec;
+    private final String mode;
 
     /**
      * Constructor
@@ -43,11 +40,7 @@ public abstract class Blowfish {
      */
     protected Blowfish(String key, String mode) {
         secretKeySpec = new SecretKeySpec(key.getBytes(), "Blowfish");
-        try {
-            cipher = Cipher.getInstance(mode);
-        } catch (Exception e) {
-            throw new RuntimeException("Blowfish initialization error", e);
-        }
+        this.mode = mode;
     }
 
     /**
@@ -82,7 +75,11 @@ public abstract class Blowfish {
      *
      * @return Cipher
      */
-    Cipher getCipher() {
-        return cipher;
+    Cipher initCipher() {
+        try {
+            return Cipher.getInstance(mode);
+        } catch (Exception e) {
+            throw new RuntimeException("Blowfish initialization error", e);
+        }
     }
 }
