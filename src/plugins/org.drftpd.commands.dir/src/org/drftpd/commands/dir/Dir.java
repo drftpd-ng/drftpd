@@ -102,18 +102,25 @@ public class Dir extends CommandInterface {
 		DirectoryHandle newCurrentDirectory;
 		User user = request.getSession().getUserNull(request.getUser());
 
-		try {
-			newCurrentDirectory = request.getCurrentDirectory().getDirectory(request.getArgument(), user);
-		} catch (FileNotFoundException ex) {
-			return new CommandResponse(550, ex.getMessage());
-		} catch (ObjectNotValidException e) {
-			return new CommandResponse(550, request.getArgument() + ": is not a directory");
-		}
+        try {
+            DirectoryHandle currentDirectory = request.getCurrentDirectory();
+            if (currentDirectory.exists()) {
+                // If the current directory exist, proceed as usual
+                newCurrentDirectory = currentDirectory.getDirectory(request.getArgument(), user);
+            } else {
+                // If directly no longer exists (wipe, nuke), try to change from root
+                newCurrentDirectory = new DirectoryHandle("/").getDirectory(request.getArgument(), user);
+            }
+        } catch (FileNotFoundException ex) {
+            return new CommandResponse(550, ex.getMessage());
+        } catch (ObjectNotValidException e) {
+            return new CommandResponse(550, request.getArgument() + ": is not a directory");
+        }
 
-		return new CommandResponse(250,
-				"Directory changed to " + newCurrentDirectory.getPath(),
-				newCurrentDirectory, request.getUser());
-	}
+        return new CommandResponse(250,
+                "Directory changed to " + newCurrentDirectory.getPath(),
+                newCurrentDirectory, request.getUser());
+    }
 
 	private void addVictimInformationToResponse(InodeHandle victim,
 			CommandResponse response) throws FileNotFoundException {
