@@ -21,15 +21,4 @@ package org.drftpd.master.event;
  * @author djb61
  * @version $Id$
  */
-public class ReloadEvent {
-
-    private final String _origin;
-
-    public ReloadEvent(String origin) {
-        _origin = origin;
-    }
-
-    public String getOrigin() {
-        return _origin;
-    }
-}
+public class ReloadEvent {}

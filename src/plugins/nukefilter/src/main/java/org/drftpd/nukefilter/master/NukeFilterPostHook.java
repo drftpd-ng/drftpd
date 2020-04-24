@@ -128,29 +128,21 @@ public class NukeFilterPostHook {
      * <b>FALSE</b> if dir passed the checks (doesn't get nuked)
      */
     private boolean doSectionCheck(DirectoryHandle dir, String sectionName) {
-        if (doFilterStringCheck(dir,
-                _nfs.getSectionConfig(sectionName).getFilterStringList(), "section"))
+        if (doFilterStringCheck(dir, _nfs.getSectionConfig(sectionName).getFilterStringList(), "section"))
             return true;
-        if (doEnforceStringCheck(dir,
-                _nfs.getSectionConfig(sectionName).getEnforceStringList(), "section"))
+        if (doEnforceStringCheck(dir, _nfs.getSectionConfig(sectionName).getEnforceStringList(), "section"))
             return true;
-        if (doFilterRegexCheck(dir,
-                _nfs.getSectionConfig(sectionName).getFilterRegexList(), "section"))
+        if (doFilterRegexCheck(dir, _nfs.getSectionConfig(sectionName).getFilterRegexList(), "section"))
             return true;
-        if (doEnforceRegexCheck(dir,
-                _nfs.getSectionConfig(sectionName).getEnforceRegexList(), "section"))
+        if (doEnforceRegexCheck(dir, _nfs.getSectionConfig(sectionName).getEnforceRegexList(), "section"))
             return true;
-        if (doFilterYearCheck(dir,
-                _nfs.getSectionConfig(sectionName).getFilterYearList(), "section"))
+        if (doFilterYearCheck(dir, _nfs.getSectionConfig(sectionName).getFilterYearList(), "section"))
             return true;
-        if (doEnforceYearCheck(dir,
-                _nfs.getSectionConfig(sectionName).getEnforceYearList(), "section"))
+        if (doEnforceYearCheck(dir, _nfs.getSectionConfig(sectionName).getEnforceYearList(), "section"))
             return true;
-        if (doFilterGroupCheck(dir,
-                _nfs.getSectionConfig(sectionName).getFilterGroupList(), "section"))
+        if (doFilterGroupCheck(dir, _nfs.getSectionConfig(sectionName).getFilterGroupList(), "section"))
             return true;
-        return doEnforceGroupCheck(dir,
-                _nfs.getSectionConfig(sectionName).getEnforceGroupList(), "section");
+        return doEnforceGroupCheck(dir, _nfs.getSectionConfig(sectionName).getEnforceGroupList(), "section");
     }
 
     /**

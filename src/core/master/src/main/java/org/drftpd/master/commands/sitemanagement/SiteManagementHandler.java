@@ -25,6 +25,7 @@ import org.drftpd.master.commands.CommandInterface;
 import org.drftpd.master.commands.CommandRequest;
 import org.drftpd.master.commands.CommandResponse;
 import org.drftpd.master.commands.StandardCommandManager;
+import org.drftpd.master.event.ReloadEvent;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.InodeHandle;
@@ -87,17 +88,14 @@ public class SiteManagementHandler extends CommandInterface {
     }
 
     public CommandResponse doSITE_RELOAD(CommandRequest request) {
-
         try {
             GlobalContext.getGlobalContext().getSectionManager().reload();
             GlobalContext.getGlobalContext().reloadFtpConfig();
             GlobalContext.getGlobalContext().getSlaveSelectionManager().reload();
-
-            // GlobalContext.getEventService().publish(new ReloadEvent(CommonPluginUtils.getPluginIdForObject(this)));
-
+            // Send event to every plugins
+            GlobalContext.getEventService().publish(new ReloadEvent());
         } catch (IOException e) {
             logger.log(Level.FATAL, "Error reloading config", e);
-
             return new CommandResponse(200, e.getMessage());
         }
 

@@ -306,7 +306,7 @@ public class Master {
 
     @EventSubscriber
     public void onReloadEvent(ReloadEvent event) {
-        logger.info("Reloading " + cmdConf + ", origin {}", event.getOrigin());
+        logger.info("Reloading " + cmdConf);
         loadCommands();
         _commandManager.initialize(getCommands(), themeDir);
         for (BaseFtpConnection conn : getConnections()) {

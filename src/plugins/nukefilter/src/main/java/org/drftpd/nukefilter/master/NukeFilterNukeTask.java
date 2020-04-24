@@ -45,10 +45,7 @@ public class NukeFilterNukeTask extends TimerTask {
         try {
             nuker = GlobalContext.getGlobalContext().getUserManager().getUserByNameUnchecked(
                     NukeFilterManager.getNukeFilterManager().getNukeFilterSettings().getNuker());
-        } catch (NoSuchUserException e) {
-            logger.error("error loading nuker: {}", e.getMessage());
-            return;
-        } catch (UserFileException e) {
+        } catch (NoSuchUserException | UserFileException e) {
             logger.error("error loading nuker: {}", e.getMessage());
             return;
         }
