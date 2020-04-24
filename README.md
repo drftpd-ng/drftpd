@@ -16,7 +16,7 @@ What is unique with DrFTPD is that it works with existing FTP client software, y
 The only exception to DrFTPD is with passive (PASV) mode. For this the client needs to support the PRET command. PRET is already supported in several of the most widely used FTP clients.
 You can often do without PASV mode unless you are behind a firewall which you don't have access to or you need to FXP with another DrFTPD server or a server which doesn't support PASV.
 
-If you merge 10 100mbit sites, you don't get a 1gbit site but you get a 10x100mbit site. What this means is that the aggregate bandwidth is 1000 mbit but a single transfer will never go above 100mbit.
+If you merge 10*100mbit sites, you don't get a 1gbit site but you get a 10x100mbit site. What this means is that the aggregate bandwidth is 1000 mbit but a single transfer will never go above 100mbit.
 
 DrFTPD's approach to the file system and file transfers is what makes it unique. Each file can, and will, end up on a different transfer slave.
 
@@ -48,14 +48,14 @@ On the master you will need to:
 On the slaves you will need to:
 - Install Java SE or OpenJDK 14 
 - Add needed deps that are not present :
-  MediaInfo (CLI): https://mediaarea.net/fr/MediaInfo
-  mkvalidator tool: https://www.matroska.org/downloads/mkvalidator.html
+  - MediaInfo (CLI): https://mediaarea.net/fr/MediaInfo
+  - mkvalidator tool: https://www.matroska.org/downloads/mkvalidator.html
 
-### For dev
+### For dev (unstable)
 Checkout the project from https://github.com/drftpd-ng/drftpd.git 
-Open pom.xml with intellij
-Compile and mvn package
-Create starter for master and slave
+- Open pom.xml with intellij
+- Compile and mvn package
+- Create starter for master and slave
 
 #### Master 
 Use `org.drftpd.master.Master`
@@ -67,8 +67,8 @@ Use `org.drftpd.slave.Slave`
 
 - Start with env var: `DRFTPD_CONFIG_PATH=$PROJECT_DIR$/runtime/slave`
 
-### For early users
-Download xxx
+### For early users (stable)
+Download the release from https://github.com/drftpd-ng/drftpd/releases
 
 - Run `mvn validate`
 - Run `mvn install`
@@ -76,15 +76,13 @@ Download xxx
 Check generated runtime directory
 
 #### Master
-- Generate key
-- Copy .dist to .conf files and configure
-- Run `master.sh` or `master.bat`
+- Copy .dist files to .conf only if you change the settings
+- Run `./master.sh` for Linux or `master.bat` for Windows
 - Connect to `127.0.0.1:2121` with `drftpd:drftpd`
 
 #### Slave
-- Copy key from Master
-- Copy .dist to .conf files and configure
-- Run `slave.sh` or `slave.bat'
+- Copy .dist files to .conf only if you change the settings
+- Run `./slave.sh` for Linux or `slave.bat` for Windows
 
 ## Documentation
 You can find the documention online at: https://github.com/drftpd-ng/drftpd/wiki
