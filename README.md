@@ -7,8 +7,7 @@
   <a href="https://github.com/drftpd-ng/drftpd3/wiki/Documentation" alt="Documentation"><img src="https://img.shields.io/badge/Documentation-RTFM-orange.svg" /></a>
 </p>
 
-# Introduction
-
+## About DrFTPD
 DrFTPD is a Distributed FTP server written in Java, it's unique because it doesn't handle transfers like normal FTP servers.
 DrFTPD is set up with a master and a collection of file transfer slaves that handle the file transfers, you can have as many file transfer slaves as you like.
 Some names that could be used to describe this is ftp site merger, ftp cluster, ftp grid or multi site bnc, but the only accurate term is "distributed ftp daemon."
@@ -18,8 +17,6 @@ The only exception to DrFTPD is with passive (PASV) mode. For this the client ne
 You can often do without PASV mode unless you are behind a firewall which you don't have access to or you need to FXP with another DrFTPD server or a server which doesn't support PASV.
 
 If you merge 10 100mbit sites, you don't get a 1gbit site but you get a 10x100mbit site. What this means is that the aggregate bandwidth is 1000 mbit but a single transfer will never go above 100mbit.
-
-## Filesystem
 
 DrFTPD's approach to the file system and file transfers is what makes it unique. Each file can, and will, end up on a different transfer slave.
 
@@ -39,8 +36,9 @@ The slave does however require exclusive write access to the storage area, other
 The slave is kept thin/dumb and isn't told anything about users. It simply processes the instructions that are given to the master and knows nothing about the ftp protocol.
 This is an advantage as it simplifies administration of the slaves.
 
-## Requirements
+## How to get started
 
+### Requirements
 DrFTPD 4.0.0-beta1 installation requires a number of steps before you can utilize the software to its full extend.
 To give an overview of the installation process the different steps are listed below in this section.
 
@@ -53,44 +51,44 @@ On the slaves you will need to:
   MediaInfo (CLI): https://mediaarea.net/fr/MediaInfo
   mkvalidator tool: https://www.matroska.org/downloads/mkvalidator.html
 
-## For dev
-
+### For dev
 Checkout the project from https://github.com/drftpd-ng/drftpd.git 
 Open pom.xml with intellij
 Compile and mvn package
 Create starter for master and slave
 
-### Master 
+#### Master 
+Use `org.drftpd.master.Master`
 
-Use org.drftpd.master.Master
+- Start with env var: `DRFTPD_CONFIG_PATH=$PROJECT_DIR$/runtime/master`
 
-Start with env var: DRFTPD_CONFIG_PATH=$PROJECT_DIR$/runtime/master
+#### Slave 
+Use `org.drftpd.slave.Slave`
 
-### Slave 
+- Start with env var: `DRFTPD_CONFIG_PATH=$PROJECT_DIR$/runtime/slave`
 
-Use org.drftpd.slave.Slave
-
-Start with env var: DRFTPD_CONFIG_PATH=$PROJECT_DIR$/runtime/slave
-
-## For early users
-
+### For early users
 Download xxx
 
-- mvn validate
-- mvn install
+- Run `mvn validate`
+- Run `mvn install`
 
 Check generated runtime directory
 
-### Master
-
+#### Master
 - Generate key
 - Copy .dist to .conf files and configure
-- master.bat|sh
-- Connect to 127.0.0.1:2121 with drftpd:drftpd
+- Run `master.sh` or `master.bat`
+- Connect to `127.0.0.1:2121` with `drftpd:drftpd`
 
-### Slave
-
+#### Slave
 - Copy key from Master
 - Copy .dist to .conf files and configure
-- slave.bat|sh
+- Run `slave.sh` or `slave.bat'
 
+## Documentation
+You can find the documention online at: https://github.com/drftpd-ng/drftpd/wiki
+
+## Support & Bug tracker
+- ircs://irc.efnet.org:6697/drftpd - IRC support
+- https://github.com/drftpd-ng/drftpd/issues - Bug tracker
