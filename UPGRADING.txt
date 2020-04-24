@@ -1,32 +1,26 @@
-UPGRADING
+## UPGRADING
 
-To upgrade from 1.1.4 to 4.0.0-beta1 you will need install 2.x first and utilize
-bin/xstream2beans.sh to convert userfiles from 1.1.4 to 2.x format.
-Next follow the steps below.
-
-To upgrade from 2.x to 4.0.0-beta1 you will not be able to keep the virtual file system
+To upgrade from 3.x to 4.0.0-beta1 you will not be able to keep the virtual file system
 or slave files. Userfiles will be converted correctly if password is not encrypted.
 
-Follow the installation documentation and do now install into the version 2.x:
-  https://github.com/drftpd-ng/drftpd/blob/master/README.md
+Follow the installation documentation and do now install into the version 4.x:
 
-run ./build.sh to get your new version compiled and setup. Next if you have user
-files that predate 4.0.0-beta1, they need to be converted. There is a script in "TODO"
+https://github.com/drftpd-ng/drftpd/blob/master/README.md
+
+Next if you have user files that predate 4.0.0-beta1, they need to be converted. There is a script in "TODO"
 that is called "TODO: Migrate-v3-to-v4.sh". Next start the master and readd slaves.
 Themes and all .conf files have to be rebuild in 4.0.0-beta1. Copying over the files will
 give you alot of problems. The virtual file system will be built when slaves are
 merged for the first time.
 
-To upgrade from 3.x to the latest:
+## To upgrade from 4.x to the latest:
 
 Before performing a upgrade of drftpd, make sure to delete the following folders:
-- .jpf_shadow
-- bin
-- build
-- core
-- extsources
-- lib
-- plugins
 - src
+
+### Compile
+- Run mvn clean
+- Run mvn validate
+- Run mvn install
 
 Regarding the configuration files, check that you are using the new ones once the build is done.
