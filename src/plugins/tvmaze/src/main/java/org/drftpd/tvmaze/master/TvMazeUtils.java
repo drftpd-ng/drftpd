@@ -400,15 +400,10 @@ public class TvMazeUtils {
         TvMazeVFSData tvmazeData = new TvMazeVFSData(dir);
         try {
             return tvmazeData.getTvMazeInfo();
-        } catch (FileNotFoundException e) {
-            // Thats strange...
-            logger.error("", e);
         } catch (IOException e) {
-            // To bad...
+            // Thats strange and to bad ...
             logger.error("", e);
-        } catch (NoAvailableSlaveException e) {
-            // Not much to do...
-        } catch (SlaveUnavailableException e) {
+        } catch (NoAvailableSlaveException | SlaveUnavailableException e) {
             // Not much to do...
         }
         return null;
@@ -446,4 +441,5 @@ public class TvMazeUtils {
         }
         return containsSection;
     }
+
 }

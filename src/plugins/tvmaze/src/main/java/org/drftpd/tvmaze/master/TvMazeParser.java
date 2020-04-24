@@ -35,8 +35,10 @@ import java.util.regex.Pattern;
 public class TvMazeParser {
     private static final Logger logger = LogManager.getLogger(TvMazeParser.class);
 
+    // TODO: make these configurable?
     private static final String _searchUrl = "http://api.tvmaze.com/search/shows?q=";
     private static final String _showUrl = "http://api.tvmaze.com/shows/";
+
     // For Info / Dir
     private TvMazeInfo _TvShow;
     private String _error = "";
@@ -143,4 +145,5 @@ public class TvMazeParser {
         }
         return null;
     }
+
 }

@@ -166,7 +166,7 @@ public class TvMaze extends CommandInterface {
         env.put("dirpath", dir.getPath());
         ArrayList<DirectoryHandle> dirsToCheck = getDirsToCheck(request, dir);
         if (dirsToCheck.isEmpty()) {
-            return new CommandResponse(500, "Not a valid section, aborting");
+            return new CommandResponse(500, "Unable to find any directories within your current working directory that is configured for TV processing. Aborting");
         }
         request.getSession().printOutput(200, request.getSession().jprintf(_bundle, "createtvmaze.start", env, request.getUser()));
         for (DirectoryHandle dirToCheck : dirsToCheck) {
@@ -222,9 +222,7 @@ public class TvMaze extends CommandInterface {
             }
         } catch (FileNotFoundException e) {
             // Just continue
-        } catch (NoSuchUserException e) {
-            logger.error("", e);
-        } catch (UserFileException e) {
+        } catch (NoSuchUserException | UserFileException e) {
             logger.error("", e);
         }
     }
@@ -233,8 +231,7 @@ public class TvMaze extends CommandInterface {
         DirectoryHandle dir = request.getCurrentDirectory();
         if (request.hasArgument()) {
             try {
-                dir = GlobalContext.getGlobalContext().getRoot().
-                        getDirectory(request.getArgument(), request.getUserObject());
+                dir = GlobalContext.getGlobalContext().getRoot().getDirectory(request.getArgument(), request.getUserObject());
             } catch (Exception e) {
                 return new CommandResponse(500, "Failed getting path, invalid or no permission!");
             }
@@ -244,7 +241,7 @@ public class TvMaze extends CommandInterface {
         env.put("dirpath", dir.getPath());
         ArrayList<DirectoryHandle> dirsToCheck = getDirsToCheck(request, dir);
         if (dirsToCheck.isEmpty()) {
-            return new CommandResponse(500, "Not a valid section, aborting");
+            return new CommandResponse(500, "Unable to find any directories within your current working directory that is configured for TV processing. Aborting");
         }
         request.getSession().printOutput(200, request.getSession().jprintf(_bundle, "removetvmaze.start", env, request.getUser()));
         for (DirectoryHandle dirToCheck : dirsToCheck) {
@@ -280,9 +277,7 @@ public class TvMaze extends CommandInterface {
             }
         } catch (FileNotFoundException e) {
             // Just continue
-        } catch (NoSuchUserException e) {
-            logger.error("", e);
-        } catch (UserFileException e) {
+        } catch (NoSuchUserException | UserFileException e) {
             logger.error("", e);
         }
     }
@@ -323,12 +318,4 @@ public class TvMaze extends CommandInterface {
         return new CommandResponse(200, request.getSession().jprintf(_bundle, "tv.queue", env, request.getUser()));
     }
 
-	/*
-	@EventSubscriber
-	@Override
-	public synchronized void onUnloadPluginEvent(UnloadPluginEvent event) {
-		super.onUnloadPluginEvent(event);
-		TvMazeConfig.getInstance().getTvMazeThread().interrupt();
-	}
-	 */
 }

@@ -176,7 +176,7 @@ public class TvMazeConfig {
      * while getting the info from TvMaze.
      * Depends on {@link VirtualFileSystemInodeCreatedEvent} <code>type</code> property.
      *
-     * @param event
+     * @param event The event
      */
     @EventSubscriber
     public void inodeCreated(VirtualFileSystemInodeCreatedEvent event) {

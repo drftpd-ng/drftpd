@@ -27,6 +27,8 @@ import org.drftpd.master.vfs.InodeHandle;
 import org.drftpd.tvmaze.master.metadata.TvMazeInfo;
 import org.drftpd.tvmaze.master.vfs.TvMazeVFSData;
 
+import java.util.Arrays;
+
 /**
  * @author scitz0
  * @version $Id: NukeAction.java 2482 2011-06-28 10:20:44Z scitz0 $
@@ -52,7 +54,7 @@ public class TvMazeAction implements ActionInterface {
             StringBuilder sb = new StringBuilder();
             sb.append("#########################################").append(")\n");
             sb.append("# Title # - ").append(tvmazeInfo.getName()).append("\n");
-            sb.append("# Genre # - ").append(StringUtils.join(tvmazeInfo.getGenres().toString(), ", ")).append("\n");
+            sb.append("# Genre # - ").append(StringUtils.join(Arrays.toString(tvmazeInfo.getGenres()), ", ")).append("\n");
             sb.append("# URL # - ").append(tvmazeInfo.getURL()).append("\n");
             sb.append("# Plot #\n").append(WordUtils.wrap(tvmazeInfo.getSummary(), 70));
             return sb.toString();

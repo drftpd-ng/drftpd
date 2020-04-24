@@ -72,5 +72,4 @@ public class TvMazeList implements AddListElementsInterface {
         AnnotationProcessor.unprocess(this);
     }
 
-
 }
