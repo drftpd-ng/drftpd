@@ -34,8 +34,8 @@ import java.util.regex.Pattern;
 public class IMDBParser {
     private static final Logger logger = LogManager.getLogger(IMDBParser.class);
 
-    private static final String _baseUrl = "http://akas.imdb.com";
-    private static final String _searchUrl = "http://akas.imdb.com/find?s=all&q=";
+    private static final String _baseUrl = "https://imdb.com";
+    private static final String _searchUrl = "https://imdb.com/find?s=all&q=";
 
     private String _title;
     private Integer _year;

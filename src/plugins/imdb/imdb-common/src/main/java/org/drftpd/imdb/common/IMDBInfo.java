@@ -63,7 +63,7 @@ public class IMDBInfo implements Serializable {
                 }
                 line = line.toLowerCase();
                 if (line.contains("/title/tt")) {
-                    url = "http://akas.imdb.com/title/" + line.replaceAll(".*/title/(tt\\d+).*", "$1");
+                    url = "https://imdb.com/title/" + line.replaceAll(".*/title/(tt\\d+).*", "$1");
                     break;
                 }
             }
