@@ -39,21 +39,4 @@ public class StatusSubscriber {
             keyedMap.remove(ServerStatus.CONNECTTIME);
         }
     }
-
-    @EventSubscriber
-    public void onUnloadPluginEvent(Object event) {
-        // TODO @k2r onUnloadPluginEvent
-		/*
-		String currentPlugin = CommonPluginUtils.getPluginIdForObject(this);
-		for (String pluginExtension : event.getParentPlugins()) {
-			int pointIndex = pluginExtension.lastIndexOf("@");
-			String pluginName = pluginExtension.substring(0, pointIndex);
-			if (pluginName.equals(currentPlugin)) {
-				AnnotationProcessor.unprocess(this);
-				nullify();
-				return;
-			}
-		}
-		*/
-    }
 }

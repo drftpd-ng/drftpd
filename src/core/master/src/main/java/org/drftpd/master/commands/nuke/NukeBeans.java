@@ -280,26 +280,12 @@ public class NukeBeans {
         _nukeBeans.setLRUMap(nukees);
     }
 
-	/*
-	private void saveClassLoader() {
-		_prevCL = Thread.currentThread().getContextClassLoader();
-	}
-
-	private void switchClassLoaders() {
-		Thread.currentThread().setContextClassLoader(CommonPluginUtils.getClassLoaderForObject(this));
-	}
-
-	private void setPreviousClassLoader() {
-		Thread.currentThread().setContextClassLoader(_prevCL);
-	}*/
-
     /**
      * Legacy XML loader
      * Deserializes the Nukelog Map.
      */
     @SuppressWarnings("unchecked")
     private void loadXMLLRUMap(Map<String, NukeData> nukees) {
-        //saveClassLoader();
         // de-serializing the Hashtable.
         try (XMLDecoder xd = new XMLDecoder(new FileInputStream(
                 _nukebeansPath + VirtualFileSystem.separator + "nukebeans.xml"))) {
@@ -309,6 +295,5 @@ public class NukeBeans {
         } catch (FileNotFoundException e) {
             // nukelog does not exists yet.
         }
-        //setPreviousClassLoader();
     }
 }

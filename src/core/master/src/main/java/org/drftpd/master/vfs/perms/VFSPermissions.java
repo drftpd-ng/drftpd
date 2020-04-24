@@ -58,7 +58,6 @@ public class VFSPermissions {
         _directiveToType = new HashMap<>();
         _priorities = new HashMap<>();
 
-        //TODO [DONE] @k2r Load extensions
         Set<Class<? extends VFSPermHandler>> vfsHandlers = new Reflections("org.drftpd")
                 .getSubTypesOf(VFSPermHandler.class);
         List<Class<? extends VFSPermHandler>> vfsProtocols = vfsHandlers.stream()
@@ -97,46 +96,6 @@ public class VFSPermissions {
             logger.error("Failed to load plugins for master extension point 'VFSPerm', possibly the master"
                     + " extension point definition has changed in the plugin.xml", e);
         }
-		/*
-		try {
-			List<PluginObjectContainer<VFSPermHandler>> loadedHandlers =
-				CommonPluginUtils.getPluginObjectsInContainer(this, "master", "VFSPerm", "Class", "Method",
-						new Class[] { String.class, StringTokenizer.class });
-			for (PluginObjectContainer<VFSPermHandler> container : loadedHandlers) {
-				String directive = container.getPluginExtension().getParameter("Directive").valueAsString();
-
-				if (_handlersMap.containsKey(directive)) {
-                    logger.debug("A handler for '{}' already loaded, check your plugin.xml's", directive);
-					continue;
-				}
-
-				String type = container.getPluginExtension().getParameter("Type").valueAsString().toLowerCase();
-
-				if (!verifyType(type)) {
-                    logger.debug("Invalid VFS permission type ({}) for directive '{}'.", type, directive);
-					continue;
-				}
-				PermissionWrapper pw = new PermissionWrapper(container.getPluginObject(), container.getPluginMethod());				
-				_handlersMap.put(directive, pw);
-				_directiveToType.put(directive, type);
-				
-				// building execution order.
-				int priority = container.getPluginExtension().getParameter("Priority").valueAsNumber().intValue();
-                TreeMap<Integer, String> order = _priorities.computeIfAbsent(type, k -> new TreeMap<>());
-                while (true) {
-					if (order.containsKey(priority)) {
-                        logger.debug("The slot that {} is trying to use is already allocated, check the xmls, allocating the next available slot", directive);
-						priority++;
-					} else {
-						order.put(priority, directive);
-						break;
-					}
-				}
-			}
-		} catch (IllegalArgumentException e) {
-			logger.error("Failed to load plugins for master extension point 'VFSPerm', possibly the master"
-					+" extension point definition has changed in the plugin.xml",e);
-		}*/
     }
 
     private boolean verifyType(String type) {

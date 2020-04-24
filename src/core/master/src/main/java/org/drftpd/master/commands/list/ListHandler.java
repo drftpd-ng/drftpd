@@ -79,12 +79,10 @@ public class ListHandler extends CommandInterface {
         };
         _bundle = cManager.getResourceBundle();
 
-
         // Subscribe to events
         AnnotationProcessor.process(this);
 
         // Load any additional element providers from plugins
-        // @TODO JRI [DONE] Add addons
         try {
             Set<Class<? extends AddListElementsInterface>> addListElements = new Reflections("org.drftpd")
                     .getSubTypesOf(AddListElementsInterface.class);
@@ -97,19 +95,6 @@ public class ListHandler extends CommandInterface {
             logger.error("Failed to load plugins for org.drftpd.master.commands.list extension point 'AddElements', possibly the " +
                     "org.drftpd.master.commands.list extension point definition has changed in the plugin.xml", e);
         }
-
-		/*
-		try {
-			List<AddListElementsInterface> loadedListAddons =
-				CommonPluginUtils.getPluginObjects(this, "org.drftpd.master.commands.list", "AddElements", "Class");
-			for (AddListElementsInterface listAddon : loadedListAddons) {
-				listAddon.initialize();
-				_listAddons.add(listAddon);
-			}
-		} catch (IllegalArgumentException e) {
-			logger.error("Failed to load plugins for org.drftpd.master.commands.list extension point 'AddElements', possibly the "+
-					"org.drftpd.master.commands.list extension point definition has changed in the plugin.xml",e);
-		}*/
     }
 
     public CommandResponse doLIST(CommandRequest request) throws ImproperUsageException {
@@ -510,51 +495,6 @@ public class ListHandler extends CommandInterface {
 
         return PADDING.substring(0, length - value.length()) + value;
     }
-
-    // TODO @k2r onUnloadPluginEvent
-	/*
-	@EventSubscriber @Override
-	public synchronized void onUnloadPluginEvent(UnloadPluginEvent event) {
-		super.onUnloadPluginEvent(event);
-		Set<AddListElementsInterface> unloadedListAddons =
-			MasterPluginUtils.getUnloadedExtensionObjects(this, "AddElements", event, _listAddons);
-		if (!unloadedListAddons.isEmpty()) {
-			ArrayList<AddListElementsInterface> clonedListAddons = new ArrayList<>(_listAddons);
-			boolean addonRemoved = false;
-			for (Iterator<AddListElementsInterface> iter = clonedListAddons.iterator(); iter.hasNext();) {
-				AddListElementsInterface listAddon = iter.next();
-				if (unloadedListAddons.contains(listAddon)) {
-					listAddon.unload();
-                    logger.debug("Unloading list element addon provided by plugin {}", CommonPluginUtils.getPluginIdForObject(listAddon));
-					iter.remove();
-					addonRemoved = true;
-				}
-			}
-			if (addonRemoved) {
-				_listAddons = clonedListAddons;
-			}
-		}
-	}
-
-	@EventSubscriber
-	public synchronized void onLoadPluginEvent(LoadPluginEvent event) {
-		try {
-			List<AddListElementsInterface> loadedListAddons =
-				MasterPluginUtils.getLoadedExtensionObjects(this, "org.drftpd.master.commands.list", "AddElements", "Class", event);
-			if (!loadedListAddons.isEmpty()) {
-				ArrayList<AddListElementsInterface> clonedListAddons = new ArrayList<>(_listAddons);
-				for (AddListElementsInterface listAddon : loadedListAddons) {
-					listAddon.initialize();
-					clonedListAddons.add(listAddon);
-				}
-				_listAddons = clonedListAddons;
-			}
-		} catch (IllegalArgumentException e) {
-			logger.error("Failed to load plugins for a loadplugin event for org.drftpd.master.commands.list extension point 'AddElements'"+
-					", possibly the org.drftpd.master.commands.list extension point definition has changed in the plugin.xml",e);
-		}
-	}
-	*/
 
     /*
      * Returning a copy of listAddons, so we can't change them.

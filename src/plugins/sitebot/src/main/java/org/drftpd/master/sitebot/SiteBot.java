@@ -111,7 +111,7 @@ public class SiteBot implements ReplyConstants, Runnable {
     private List<ListenerInterface> _listeners = new ArrayList<>();
 
     // Default settings for the PircBot.
-    private String _version;
+    private final String _version = "3.4.2";
     private String _nick = null;
     private String _ctcpVersion = "DrFTPD SiteBot ";
     private String _finger = "You ought to be arrested for fingering a bot!";
@@ -137,10 +137,6 @@ public class SiteBot implements ReplyConstants, Runnable {
         // default to PREFIX=(ov)@+
         _userPrefixes.put("o", "@");
         _userPrefixes.put("v", "+");
-
-        // Set version to current plugin version
-        _version = "@k2r"; // CommonPluginUtils.getPluginVersionForObject(this);
-        // TODO @k2r sitebot version?
 
         // Set CTCP responses if defined in config
         String finger = _config.getCTCPFinger();
@@ -2870,75 +2866,6 @@ public class SiteBot implements ReplyConstants, Runnable {
             userDets.getOutputWriter().reload();
         }
     }
-
-    // TODO @k2r onUnloadPluginEvent
-	/*
-	@EventSubscriber
-	public synchronized void onUnloadPluginEvent(UnloadPluginEvent event) {
-		Set<AbstractAnnouncer> unloadedAnnouncers =
-			MasterPluginUtils.getUnloadedExtensionObjects(this, "Announce", event, _announcers);
-		if (!unloadedAnnouncers.isEmpty()) {
-			boolean typeRemoved = false;
-			for (Iterator<AbstractAnnouncer> iter = _announcers.iterator(); iter.hasNext();) {
-				AbstractAnnouncer announcer = iter.next();
-				if (unloadedAnnouncers.contains(announcer)) {
-					for (String type : announcer.getEventTypes()) {
-						if (_eventTypes.remove(type)) {
-							typeRemoved = true;
-						}
-					}
-					announcer.stop();
-                    logger.debug("Unloading sitebot announcer provided by plugin {}", CommonPluginUtils.getPluginIdForObject(announcer));
-					iter.remove();
-				}
-			}
-			if (typeRemoved) {
-				_announceConfig.reload();
-			}
-		}
-
-		// Remove unloaded listeneres
-		Set<ListenerInterface> unloadedListeners = MasterPluginUtils.getUnloadedExtensionObjects(this, "Listener", event, _listeners);
-		if (!unloadedListeners.isEmpty()) {
-            _listeners.removeIf(unloadedListeners::contains);
-		}
-	}
-
-	@EventSubscriber
-	public synchronized void onLoadPluginEvent(LoadPluginEvent event) {
-		try {
-			boolean typeAdded = false;
-			List<AbstractAnnouncer> loadedAnnouncers =
-				MasterPluginUtils.getLoadedExtensionObjects(this, "org.drftpd.master.plugins.sitebot", "Announce", "Class", event);
-			for (AbstractAnnouncer announcer : loadedAnnouncers) {
-                logger.debug("Loading sitebot announcer provided by plugin {}", CommonPluginUtils.getPluginIdForObject(announcer));
-				announcer.setConfDir(_confDir);
-				announcer.initialise(_announceConfig,_commandManager.getResourceBundle());
-				_announcers.add(announcer);
-				for (String type : announcer.getEventTypes()) {
-					_eventTypes.add(type);
-					typeAdded = true;
-				}
-			}
-			if (typeAdded) {
-				_announceConfig.reload();
-			}
-		} catch (IllegalArgumentException e) {
-			logger.error("Failed to load plugins for a loadplugin event for org.drftpd.master.plugins.sitebot extension point 'Announce'"+
-					", possibly the org.drftpd.master.plugins.sitebot extension point definition has changed in the plugin.xml",e);
-		}
-
-		// Activate new Loaded Listeners
-		try {
-			List<ListenerInterface> loadedListeners = MasterPluginUtils.getLoadedExtensionObjects(this, "org.drftpd.master.plugins.sitebot", "Listener", "Class", event);
-			for (ListenerInterface listener : loadedListeners) {
-                logger.debug("Loading sitebot announcer provided by plugin {}", CommonPluginUtils.getPluginIdForObject(listener));
-				_listeners.add(listener);
-			}
-		} catch (IllegalArgumentException e) {
-			logger.error("Failed to load plugins for a loadplugin event for org.drftpd.master.plugins.sitebot extension point 'Listener', possibly the org.drftpd.master.plugins.sitebot extension point definition has changed in the plugin.xml",e);
-		}
-	}*/
 
     @EventSubscriber
     public void onInviteEvent(InviteEvent event) {

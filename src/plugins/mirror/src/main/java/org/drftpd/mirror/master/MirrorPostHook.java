@@ -214,19 +214,4 @@ public class MirrorPostHook {
     public void onReloadEvent(ReloadEvent event) {
         loadConf();
     }
-
-	/*
-	@EventSubscriber
-	public void onUnloadPluginEvent(UnloadPluginEvent event) {
-		String currentPlugin = CommonPluginUtils.getPluginIdForObject(this);
-		for (String pluginExtension : event.getParentPlugins()) {
-			int pointIndex = pluginExtension.lastIndexOf("@");
-			String pluginName = pluginExtension.substring(0, pointIndex);
-			if (pluginName.equals(currentPlugin)) {
-				AnnotationProcessor.unprocess(this);
-				return;
-			}
-		}
-	}
-	 */
 }
