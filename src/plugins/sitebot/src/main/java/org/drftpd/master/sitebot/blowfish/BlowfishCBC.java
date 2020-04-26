@@ -42,10 +42,12 @@ public class BlowfishCBC extends Blowfish {
      * Default charset for encoding
      */
     private static final String ENCODED_CHARSET = "ISO_8859_1";
+
     /**
      * CBC irc prefix
      */
     private static final String CBC_PREFIX = "+OK *";
+
     /**
      * Initial Vector
      */
@@ -56,12 +58,6 @@ public class BlowfishCBC extends Blowfish {
     }
 
     public String decrypt(String textToDecrypt) throws Exception {
-        if (textToDecrypt.startsWith(CBC_PREFIX)) {
-            textToDecrypt = textToDecrypt.substring(CBC_PREFIX.length());
-        } else {
-            //Not correct encrypted string, return the source string
-            return textToDecrypt;
-        }
 
         //1- decrypt with BASE64 decoder
         byte[] base64Decoded = Base64.getDecoder().decode(textToDecrypt);
@@ -154,4 +150,5 @@ public class BlowfishCBC extends Blowfish {
         }
         return lIndex;
     }
+
 }

@@ -6,30 +6,48 @@ import org.drftpd.master.sitebot.blowfish.Blowfish;
 import org.drftpd.master.sitebot.blowfish.BlowfishCBC;
 import org.drftpd.master.sitebot.blowfish.BlowfishECB;
 
+import java.util.HashMap;
+import java.util.Map;
+
 class BlowfishManager {
+
+    private static final Logger logger = LogManager.getLogger(Blowfish.class);
 
     static final String CBC = "cbc";
     static final String ECB = "ecb";
-    private static final Logger logger = LogManager.getLogger(Blowfish.class);
+
     private static final String ENCRYPTION_ERROR_MESSAGE = "An error occurred in encryption process. Check your logs";
     private static final String DECRYPTION_ERROR_MESSAGE = "An error occurred in decryption process. Check your logs";
-    private final Blowfish blowfish;
+
+    /**
+     * standard prefix
+     */
+    private static final String STANDARD_PREFIX = "+OK ";
+
+    /**
+     * MCPS prefix
+     */
+    private static final String MCPS_PREFIX = "mcps ";
+
+    // In the future more blowfish encryption are expected
+    private final Map<String, Blowfish> blowfish;
+
+    private final String encryptMode;
 
     /*
      * Constructor of BlowfishManager class Key param
      */
     BlowfishManager(String key, String mode) {
-        if (CBC.equals(mode.toLowerCase())) {
-            blowfish = new BlowfishCBC(key);
-        } else {
-            blowfish = new BlowfishECB(key);
-        }
+        encryptMode = mode.toLowerCase();
+        blowfish = new HashMap<>();
+        blowfish.put(CBC, new BlowfishCBC(key));
+        blowfish.put(ECB, new BlowfishECB(key));
     }
 
     /* encrypt function	 */
     String encrypt(String toEncrypt) {
         try {
-            return blowfish.encrypt(toEncrypt);
+            return blowfish.get(encryptMode).encrypt(toEncrypt);
         } catch (Exception e) {
             logger.error("Error encrypting", e);
             return ENCRYPTION_ERROR_MESSAGE;
@@ -38,11 +56,31 @@ class BlowfishManager {
 
     /* decrypt function */
     String decrypt(String toDecrypt) {
-        try {
-            return blowfish.decrypt(toDecrypt);
-        } catch (Exception e) {
-            logger.error("Error decrypting", e);
+        String line;
+        if (toDecrypt.startsWith(STANDARD_PREFIX)) {
+            line = toDecrypt.substring(STANDARD_PREFIX.length());
+        } else if (toDecrypt.startsWith(MCPS_PREFIX)) {
+            line = toDecrypt.substring(MCPS_PREFIX.length());
+        } else {
+            logger.warn("Incorrect start of string to decrypt");
             return DECRYPTION_ERROR_MESSAGE;
         }
+        if (line.contains(STANDARD_PREFIX) || line.contains(MCPS_PREFIX)) {
+            logger.warn("Found another start of an encrypted string within the same string");
+            return DECRYPTION_ERROR_MESSAGE;
+        }
+        // We default to cbc mode
+        String mode = "cbc";
+        if (!line.startsWith("*")) {
+            mode = "ecb";
+        } else {
+            line = line.substring(1);
+        }
+        try {
+            return blowfish.get(mode).decrypt(line);
+        } catch (Exception e) {
+            logger.error("Error decrypting", e);
+        }
+        return DECRYPTION_ERROR_MESSAGE;
     }
 }

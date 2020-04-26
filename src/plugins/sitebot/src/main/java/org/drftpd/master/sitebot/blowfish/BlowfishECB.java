@@ -39,11 +39,6 @@ public class BlowfishECB extends Blowfish {
      */
     private static final String ECB_STANDARD_PREFIX = "+OK ";
 
-    /**
-     * ECB MCPS prefix
-     */
-    private static final String ECB_MCPS_PREFIX = "mcps ";
-
     public BlowfishECB(String key) {
         super(key, "Blowfish/ECB/NoPadding");
     }
@@ -72,14 +67,6 @@ public class BlowfishECB extends Blowfish {
     }
 
     public String decrypt(String textToDecrypt) throws Exception {
-        if (textToDecrypt.startsWith(ECB_STANDARD_PREFIX)) {
-            textToDecrypt = textToDecrypt.substring(ECB_STANDARD_PREFIX.length());
-        } else if (textToDecrypt.startsWith(ECB_MCPS_PREFIX)) {
-            textToDecrypt = textToDecrypt.substring(ECB_MCPS_PREFIX.length());
-        } else {
-            //Not correct encrypted string, return the source string
-            return textToDecrypt;
-        }
 
         // B64 custom decrypt
         byte[] Again = B64ToByte(textToDecrypt);
