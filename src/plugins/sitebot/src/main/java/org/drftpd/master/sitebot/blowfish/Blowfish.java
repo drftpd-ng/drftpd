@@ -77,16 +77,10 @@ public abstract class Blowfish {
      */
     Cipher initCipher() {
         try {
-            return Cipher.getInstance(getMode());
+            return Cipher.getInstance(mode);
         } catch (Exception e) {
             throw new RuntimeException("Blowfish initialization error", e);
         }
     }
 
-    /**
-     * mode getter
-     *
-     * @return mode
-     */
-    String getMode() { return mode; }
 }
