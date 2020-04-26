@@ -71,10 +71,12 @@ class BlowfishManager {
         }
         // We default to cbc mode
         String mode = "cbc";
-        if (!line.startsWith("*")) {
-            mode = "ecb";
-        } else {
+        if (line.startsWith("*")) {
             line = line.substring(1);
+
+        } else {
+            // Fallback for compatability
+            mode = "ecb";
         }
         try {
             return blowfish.get(mode).decrypt(line);
