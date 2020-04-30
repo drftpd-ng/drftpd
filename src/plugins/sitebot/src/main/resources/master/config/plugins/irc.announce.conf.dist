@@ -133,3 +133,114 @@
 default.section.1=*
 default.section.1.destination=public
 default.destination=public
+
+# To specify where the prebw announces will appear rather than just using your
+# default channels, uncomment the next line and set them there.
+#prebw.path.1=/path/subpath/*
+#prebw.path.1.destination=public
+#prebw.section.1=*
+#prebw.section.1.destination=public
+
+# To specify where the archive announces will appear rather than just using your
+# default channels, uncomment the next lines and set them there.
+#archive_start.path.1=/path/subpath/*
+#archive_start.path.1.destination=public
+#archive_start.section.1=*
+#archive_start.section.1.destination=public
+#archive_finish.path.1=/path/subpath/*
+#archive_finish.path.1.destination=public
+#archive_finish.section.1=*
+#archive_finish.section.1.destination=public
+#archive_failed.path.1=/path/subpath/*
+#archive_failed.path.1.destination=public
+#archive_failed.section.1=*
+#archive_failed.section.1.destination=public
+
+# To specify where the nuke/unnuke announces will appear rather than just using your
+# default channels, uncomment the next lines and set them there.
+#nuke.path.1=/path/subpath/*
+#nuke.path.1.destination=public
+#nuke.section.1=*
+#nuke.section.1.destination=public
+#unnuke.path.1=/path/subpath/*
+#unnuke.path.1.destination=public
+#unnuke.section.1=*
+#unnuke.section.1.destination=public
+
+# To specify where the pre announces will appear rather than just using your
+# default channels, uncomment the next lines and set them there.
+#pre.path.1=/path/subpath/*
+#pre.path.1.destination=public
+#pre.section.1=*
+#pre.section.1.destination=public
+
+# To specify where the request, reqfilled and reqdel announces will appear rather than just using your
+# default channels, uncomment the next line and set them there.
+#request.destination=public
+#reqfilled.destination=public
+#reqdel.destination=public
+
+# Announce file upload and where the announce will appear.
+# Path is case insensitive.
+# NFO:
+store.path.1=^.+\\.nfo$
+store.path.1.destination=public
+store.path.1.regex=true
+
+# To specify where the daily stats announces will appear rather than just using your
+# default channels, uncomment the next line and set them there.
+# Redirect output to null to disable announce
+#dailystats.dayup.destination=public
+#dailystats.daydn.destination=public
+#dailystats.wkup.destination=public
+#dailystats.wkdn.destination=public
+#dailystats.monthup.destination=public
+#dailystats.monthdn.destination=public
+
+# To specify where the login and site command action announces will appear rather than
+# just using your default channels, uncomment the next line and set them there.
+#sysop.destination=public
+
+# To specify where the speedtest announces will appear rather than just using your
+# default channels, uncomment the next line and set them there.
+#speedtest.destination=public
+
+# To specify where the tvmaze announces for MKD and PRE will appear rather than just using your
+# default channels, uncomment the next line and set them there.
+#tvmaze.path.1=/path/subpath/*
+#tvmaze.path.1.destination=public
+#tvmaze.section.1=*
+#tvmaze.section.1.destination=public
+
+# To specify where the trafficmanager announces will appear rather than just using your
+# default channels, uncomment the next line and set them there.
+#trafficmanager.def.destination=public
+#trafficmanager.ban.destination=public
+#trafficmanager.kick.destination=public
+#trialmanager.grouptop.destination=public
+#trialmanager.toptrial.destination=public
+
+# To specify where the imdb announces for NFO upload will appear rather than just using your
+# default channels, uncomment the next line and set them there.
+#imdb.path.1=/path/subpath/*
+#imdb.path.1.destination=public
+#imdb.section.1=*
+#imdb.section.1.destination=public
+
+# To specify where the mediainfo for media file announces will appear rather than just using your
+# default channels, uncomment the next lines and set them there.
+#mediainfo.path.1=/path/subpath/*
+#mediainfo.path.1.destination=public
+#mediainfo.section.1=*
+#mediainfo.section.1.destination=public
+
+# To specify where the autonuke announces will appear rather than just using your
+# default channels, uncomment the next lines and set them there.
+#autonuke.path.1=/path/subpath/*
+#autonuke.path.1.destination=public
+#autonuke.section.1=*
+#autonuke.section.1.destination=public
+
+# To specify where the autofreespace announces will appear rather than just using your
+# default channels, uncomment the next line and set them there.
+#autofreespace.destination=public
