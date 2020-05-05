@@ -67,6 +67,7 @@ cipher.blacklist.1=.*_(NULL|EXPORT|DES|RC4|3DES|MD5|PSK|anon|SCSV)_.*
 # Enabled protocols
 # If left empty, default set will be used
 protocol.1=TLSv1.2
+protocol.2=TLSv1.3
 
 # Slave remerge throttling thresholds, do not modify these
 # unless you know what you are doing
