@@ -55,7 +55,7 @@ public class SSLGetContext {
         if (ctx != null)
             return ctx; // reuse previous SSLContext
 
-        ctx = SSLContext.getInstance("TLSv1.2");
+        ctx = SSLContext.getInstance("TLSv1.3");
 
         KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
 

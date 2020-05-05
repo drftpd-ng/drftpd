@@ -39,7 +39,7 @@ public class SiteBotSSLSocketFactory extends SSLSocketFactory {
 
     public SiteBotSSLSocketFactory(TrustManager trustManager) {
         try {
-            SSLContext sslcontext = SSLContext.getInstance("TLSv1.2");
+            SSLContext sslcontext = SSLContext.getInstance("TLS");
             sslcontext.init(null, new TrustManager[]{trustManager}, null);
             _factory = sslcontext.getSocketFactory();
         } catch (Exception e) {
