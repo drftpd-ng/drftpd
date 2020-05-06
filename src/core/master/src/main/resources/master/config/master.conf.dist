@@ -37,7 +37,7 @@ commandmanager=org.drftpd.master.commands.StandardCommandManager
 
 # The name of the SlaveSelection's plugin.
 # Default is: org.drftpd.master.slaveselection.filter
-# More info check conf/slaveselection-*.conf
+# More info check config/slaveselection-*.conf
 slaveselection=org.drftpd.master.slaveselection.filter.SlaveSelectionManager
 
 # There are 2 SectionManagers.

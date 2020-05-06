@@ -72,7 +72,7 @@ public class Request extends CommandInterface {
     }
 
     /**
-     * Reads 'conf/plugins/request.conf'
+     * Reads 'config/plugins/request.conf'
      */
     private void readConfig() {
         Properties props = ConfigLoader.loadPluginConfig("request.conf");
@@ -111,7 +111,7 @@ public class Request extends CommandInterface {
 
     /**
      * If the commands has a 'request.dirpath' set we will use this one
-     * otherwise we will use the fallback/default path set in 'conf/plugins/request.conf'
+     * otherwise we will use the fallback/default path set in 'config/plugins/request.conf'
      * <p>
      * This allows multiple request dirs.
      *

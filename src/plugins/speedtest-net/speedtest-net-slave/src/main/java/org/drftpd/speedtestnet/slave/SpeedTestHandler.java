@@ -70,7 +70,7 @@ public class SpeedTestHandler extends AbstractHandler {
         try {
             readConf();
         } catch (Exception e) {
-            logger.error("Error loading conf/plugins/speedtest.net.slave.conf :: {}", e.getMessage());
+            logger.error("Error loading config/plugins/speedtest.net.slave.conf :: {}", e.getMessage());
         }
     }
 
@@ -80,7 +80,7 @@ public class SpeedTestHandler extends AbstractHandler {
     }
 
     /**
-     * Load conf/plugins/speedtest.net.slave.conf
+     * Load config/plugins/speedtest.net.slave.conf
      *
      * @throws Exception
      */

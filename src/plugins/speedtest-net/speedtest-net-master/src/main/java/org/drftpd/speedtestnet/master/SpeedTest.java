@@ -54,7 +54,7 @@ public class SpeedTest extends CommandInterface {
     }
 
     /**
-     * Reads 'conf/plugins/speedtest.net.conf'
+     * Reads 'config/plugins/speedtest.net.conf'
      */
     private void readConfig() {
         Properties props = ConfigLoader.loadPluginConfig("speedtest.net.conf");

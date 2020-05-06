@@ -133,7 +133,7 @@ public class LuceneEngine implements IndexEngineInterface {
      * Creates all the needed resources for the Index to work.
      * <ul>
      * <li>IndexSearcher / IndexWriter</li>
-     * <li>Reads <i>conf/plugins/lucene.conf</i> to grab some tweaking
+     * <li>Reads <i>config/indexation.conf</i> to grab some tweaking
      * settings, if this file is not found, a default values are loaded.</li>
      * <li>Adds a Shutdown Hook to save the index while closing DrFTPd</li>
      * <li>Creates the Maintenance thread.(takes cares of updating the search
@@ -219,7 +219,7 @@ public class LuceneEngine implements IndexEngineInterface {
     }
 
     /**
-     * Reads all tweak settings from <i>conf/plugins/lucene.conf</i> if found,
+     * Reads all tweak settings from <i>config/indexation.conf</i> if found,
      * otherwise use default values.
      */
     private void reload() {

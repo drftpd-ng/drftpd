@@ -91,7 +91,7 @@ public class ZipscriptPreHook {
                                     .makeUsers(new StringTokenizer("*", " "))));
                 }
             } catch (PatternSyntaxException e) {
-                logger.warn("Exception when reading conf/plugins/zipscript.conf", e);
+                logger.warn("Exception when reading config/plugins/zipscript.conf", e);
             }
         }
     }

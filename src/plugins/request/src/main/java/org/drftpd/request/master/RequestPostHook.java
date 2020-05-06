@@ -80,7 +80,7 @@ public class RequestPostHook {
     }
 
     /**
-     * Reads 'conf/plugins/request.conf'
+     * Reads 'config/plugins/request.conf'
      */
     private void readConfig() {
         Properties props = ConfigLoader.loadPluginConfig("request.conf");

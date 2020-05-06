@@ -168,7 +168,7 @@ line.length.max=512
 # for a private ircd without adding the risk of not checking the certificate
 # authenticity.
 # To use this feature with self signed certificates you need to add a copy of the
-# certificate in a conf/plugins/irc/certs directory. The certificates should be
+# certificate in a config/plugins/irc/certs directory. The certificates should be
 # in base64 encoded PEM format and contain nothing more than the base64 data block
 # delimited by -----BEGIN CERTIFICATE----- and -----END CERTIFICATE-----
 ssl.strictTrust=false
@@ -195,7 +195,7 @@ bot.name=DrFTPD-Bot
 bot.multiple.enable=false
 
 # A space separated list of directories to look for additional bot config files in,
-# these are expected to be subdirectories of conf/plugins/irc and must contain a
+# these are expected to be subdirectories of config/plugins/irc and must contain a
 # copy of all config files the sitebot plugin and any of its plugins require, this
 # option is only relevant if the previous option is enabled
 bot.multiple.directories=additional1 additional2

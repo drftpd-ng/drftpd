@@ -43,7 +43,7 @@ import java.net.InetAddress;
 import java.util.*;
 
 /**
- * Handles the loading of 'master.conf' and 'conf/perms.conf'<br>
+ * Handles the loading of 'config/master.conf' and 'config/perms.conf'<br>
  * The directives that are going to be handled by this class are loaded during
  * the startup process and *MUST* be an extension of the master extension-point "ConfigHandler".<br>
  * No hard coding is needed to handle new directives, simply create a new extension.
@@ -258,7 +258,7 @@ public class ConfigManager implements ConfigInterface {
     }
 
     /**
-     * Reads 'conf/perms.conf' handling what can be handled, ignoring what's does not have an available handler.
+     * Reads 'config/perms.conf' handling what can be handled, ignoring what's does not have an available handler.
      */
     private void readConf() {
         LineNumberReader in = null;
