@@ -1,4 +1,4 @@
-URL: http://drftpd.mog.se/wiki/wiki.phtml?title=Command_reference
+URL: https://github.com/drftpd-ng/drftpd/wiki
 
 SITE ADDUSER
 USAGE: site adduser <user> <password> [<ident@ip#1> ... <ident@ip#5>]

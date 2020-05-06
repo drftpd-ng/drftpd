@@ -1,4 +1,4 @@
-URL: http://drftpd.mog.se/wiki/wiki.phtml?title=IRC
+URL: https://github.com/drftpd-ng/drftpd/wiki
 
 To enable IRC announcements you need to set irc.enabled=true in drftpd.conf
 

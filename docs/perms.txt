@@ -1,4 +1,4 @@
-URL: http://drftpd.mog.se/wiki/wiki.phtml?title=Perms.conf
+URL: https://github.com/drftpd-ng/drftpd/wiki
 
 Perms.conf
 
