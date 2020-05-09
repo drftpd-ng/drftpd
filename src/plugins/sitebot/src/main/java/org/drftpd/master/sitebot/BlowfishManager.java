@@ -69,17 +69,25 @@ class BlowfishManager {
             logger.warn("Found another start of an encrypted string within the same string");
             return DECRYPTION_ERROR_MESSAGE;
         }
+
         // We default to cbc mode
-        String mode = "cbc";
+        String detectedMode = CBC;
         if (line.startsWith("*")) {
             line = line.substring(1);
-
         } else {
             // Fallback for compatability
-            mode = "ecb";
+            detectedMode = ECB;
         }
+
+        // Guard that we do not introduce a security issue
+        // If it is indeed ECB the decryption will fail below
+        if (encryptMode.equals(CBC) && !detectedMode.equals(encryptMode)) {
+            logger.warn("We detected " + detectedMode + ", but we do not allow lesser security as our encryption method is " + encryptMode);
+            detectedMode = encryptMode;
+        }
+
         try {
-            return blowfish.get(mode).decrypt(line);
+            return blowfish.get(detectedMode).decrypt(line);
         } catch (Exception e) {
             logger.error("Error decrypting", e);
         }
