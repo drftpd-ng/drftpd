@@ -206,16 +206,16 @@ public class DataConnectionHandler extends CommandInterface {
                     try {
                         slave = conn.getGlobalContext().getSlaveSelectionManager().getASlave(conn,
                                 Transfer.TRANSFER_SENDING_DOWNLOAD, ts.getTransferFile());
-                        logger.debug("PASV Download slave selected " + slave.getName());
+                        logger.debug("PASV Download slave selected {}", slave.getName());
                         String index = SlaveManager.getBasicIssuer().issueListenToSlave(slave,
                                 ts.getSendFilesEncrypted(), ts.getSSLHandshakeClientMode());
-                        logger.debug("PASV Download index calculated " + index);
+                        logger.debug("PASV Download index calculated {}", index);
                         ci = slave.fetchTransferResponseFromIndex(index);
-                        logger.debug("PASV Download fetch connection info " + ci.toString());
+                        logger.debug("PASV Download fetch connection info {}", ci.toString());
                         ts.setTransfer(slave.getTransfer(ci.getTransferIndex()));
                         logger.debug("PASV Download transfer set to index");
                         address = new InetSocketAddress(slave.getPASVIP(), ts.getAddress().getPort());
-                        logger.debug("PASV Download address selected " + address.getHostString());
+                        logger.debug("PASV Download address selected {}", address.getHostString());
                     } catch (NoAvailableSlaveException e) {
                         logger.error("PASV Download NoAvailableSlaveException", e);
                         reset(conn);
@@ -240,16 +240,16 @@ public class DataConnectionHandler extends CommandInterface {
                     try {
                         slave = conn.getGlobalContext().getSlaveSelectionManager().getASlave(
                                 conn, Transfer.TRANSFER_RECEIVING_UPLOAD, ts.getTransferFile());
-                        logger.debug("PASV Upload slave selected " + slave.getName());
+                        logger.debug("PASV Upload slave selected {}", slave.getName());
                         String index = SlaveManager.getBasicIssuer().issueListenToSlave(slave,
                                 ts.getSendFilesEncrypted(), ts.getSSLHandshakeClientMode());
-                        logger.debug("PASV Upload index calculated " + index);
+                        logger.debug("PASV Upload index calculated {}", index);
                         ci = slave.fetchTransferResponseFromIndex(index);
-                        logger.debug("PASV Upload fetch connection info " + ci.toString());
+                        logger.debug("PASV Upload fetch connection info {}", ci.toString());
                         ts.setTransfer(slave.getTransfer(ci.getTransferIndex()));
                         logger.debug("PASV Upload transfer set to index");
                         address = new InetSocketAddress(slave.getPASVIP(), ts.getAddress().getPort());
-                        logger.debug("PASV Upload address selected " + address.getHostString());
+                        logger.debug("PASV Upload address selected {}", address.getHostString());
                     } catch (NoAvailableSlaveException e) {
                         logger.error("PASV Upload NoAvailableSlaveException", e);
                         reset(conn);
@@ -271,13 +271,13 @@ public class DataConnectionHandler extends CommandInterface {
             } else {
                 return StandardCommandManager.genericResponse("RESPONSE_502_COMMAND_NOT_IMPLEMENTED");
             }
-            logger.debug("PASV setTransferSlave " + slave.getName());
+            logger.debug("PASV setTransferSlave {}", slave.getName());
             ts.setTransferSlave(slave);
         }
 
         logger.debug("PASV getting remote slave");
         RemoteSlave transferSlave = ts.getTransferSlave();
-        logger.debug("PASV/CPSV finding " + (ts.isLocalPreTransfer() ? "master" : transferSlave.getName()));
+        logger.debug("PASV/CPSV finding {}", ts.isLocalPreTransfer() ? "master" : transferSlave.getName());
         if (conn.getRequest().getCommand().equals("CPSV")) {
             // can only reset it if the transfer was setup with CPSV
             ts.setSSLHandshakeClientMode(false);

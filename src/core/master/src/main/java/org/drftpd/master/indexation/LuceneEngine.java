@@ -716,7 +716,7 @@ public class LuceneEngine implements IndexEngineInterface {
                 queryExtension.addQueryTerms(query, params);
             }
 
-            logger.debug(caller + " query: {}", query);
+            logger.debug("{} query: {}", caller, query);
 
             iReader = IndexReader.open(_iWriter, true);
             iSearcher = new IndexSearcher(iReader);

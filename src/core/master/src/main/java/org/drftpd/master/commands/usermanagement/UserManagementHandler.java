@@ -189,7 +189,7 @@ public class UserManagementHandler extends CommandInterface {
             }
             Collection<User> groupUsers = GlobalContext.getGlobalContext().getUserManager().getAllUsersByGroup(g);
             int users = groupUsers.size();
-            logger.debug("Group: [" + g.getName() + "], users[" + users + "]: [" + groupUsers + "]");
+            logger.debug("Group: [{}], users[{}]: [{}]", g.getName(), users, groupUsers);
             if (users >= g.getGroupSlots()) {
                 return new CommandResponse(452, session.jprintf(_bundle, "adduser.noslots", request.getUser()));
             }

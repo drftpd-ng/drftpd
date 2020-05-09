@@ -102,7 +102,7 @@ public abstract class AbstractUser extends User implements Commitable {
         try {
             g = getUserManager().getGroupByName(_group);
         } catch (NoSuchGroupException | GroupFileException e) {
-            logger.error("Unable to get group entity for group name " + _group);
+            logger.error("Unable to get group entity for group name {}", _group);
         }
         return g;
     }
@@ -117,7 +117,7 @@ public abstract class AbstractUser extends User implements Commitable {
             try {
                 groups.add(getUserManager().getGroupByName(group));
             } catch (NoSuchGroupException | GroupFileException e) {
-                logger.error("Unable to get group entity for group name " + group);
+                logger.error("Unable to get group entity for group name {}", group);
             }
         }
         return groups;

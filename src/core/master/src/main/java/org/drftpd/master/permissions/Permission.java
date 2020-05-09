@@ -76,7 +76,7 @@ public class Permission {
         boolean allow = false;
 
         for (String aclUser : _users) {
-            logger.debug("[Permission::check] aclUser: [" + aclUser + "]");
+            logger.debug("[Permission::check] aclUser: [{}]", aclUser);
             allow = true;
             if (aclUser.charAt(0) == '!') {
                 allow = false;
@@ -114,7 +114,7 @@ public class Permission {
                 }
             } else {
                 // FLAG, we don't have flags
-                logger.error("Incorrect usage of perms string '" + aclUser + "' is unsupported");
+                logger.error("Incorrect usage of perms string '{}' is unsupported", aclUser);
             }
         }
 

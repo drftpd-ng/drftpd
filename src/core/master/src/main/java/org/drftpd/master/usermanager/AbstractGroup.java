@@ -71,7 +71,7 @@ public abstract class AbstractGroup extends Group implements Commitable {
             try {
                 admins.add(getUserManager().getUserByName(user));
             } catch (NoSuchUserException | UserFileException e) {
-                logger.error("Unable to get user entity for user name " + user);
+                logger.error("Unable to get user entity for user name {}", user);
             }
         }
         return admins;

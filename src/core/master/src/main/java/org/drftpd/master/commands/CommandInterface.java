@@ -65,7 +65,7 @@ public abstract class CommandInterface {
         Multimap<Integer, HookContainer> preHooks = MultimapBuilder.treeKeys().linkedListValues().build();
         Set<Method> hooksMethods = GlobalContext.getHooksMethods();
         // TODO [DONE] @k2r Plug hooks
-        logger.debug("[" + pluginName + ":" + method + "] Looking for hooks to attach here");
+        logger.debug("[{}:{}] Looking for hooks to attach here", pluginName, method);
         try {
             for (Method annotatedMethod : hooksMethods) {
                 Class<?> declaringClass = annotatedMethod.getDeclaringClass();
@@ -88,7 +88,7 @@ public abstract class CommandInterface {
         } catch (Exception e) {
             logger.error("Failed to load plugins for {} extension point 'PreHook', possibly the {} extension point definition has changed in the plugin.xml", pluginName, pluginName, e);
         }
-        logger.debug("[" + pluginName + ":" + method + "] Loaded [" + preHooks.size() + "] prehooks and [" + postHooks.size() + "] posthooks");
+        logger.debug("[{}:{}] Loaded [{}] prehooks and [{}] posthooks", pluginName, method, preHooks.size(), postHooks.size());
         _preHooks = preHooks;
         _postHooks = postHooks;
     }

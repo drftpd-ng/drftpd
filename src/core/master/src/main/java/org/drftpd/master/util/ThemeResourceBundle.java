@@ -78,8 +78,7 @@ public class ThemeResourceBundle extends ResourceBundle {
         for (String key : keys) {
             ThemeBundle existBundle = combined.get(key);
             if (existBundle != null) {
-                logger.error("Theme key collision for key " + key
-                        + " [" + existBundle.getPath().toString() + " and " + themeFile.toString() + "]");
+                logger.error("Theme key collision for key {} [{} and {}]", key, existBundle.getPath().toString(), themeFile.toString());
             }
             combined.put(key, new ThemeBundle(themeFile, bundle));
         }
@@ -92,7 +91,7 @@ public class ThemeResourceBundle extends ResourceBundle {
         }
         ThemeBundle bundle = combined.get(key);
         if (bundle == null) {
-            logger.error("No theme file available for key " + key);
+            logger.error("No theme file available for key {}", key);
             return "No theme available";
         }
         return bundle.getBundle().handleGetObject(key);

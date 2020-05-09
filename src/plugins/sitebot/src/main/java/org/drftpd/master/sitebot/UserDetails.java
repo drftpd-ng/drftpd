@@ -152,7 +152,7 @@ public class UserDetails {
                     }
                 } catch (KeyNotFoundException e1) {
                     // Means this user has never set a blowfish key, is safe to proceed
-                    logger.debug("Blowfish key has never been set for " + _ftpUser);
+                    logger.debug("Blowfish key has never been set for {}", _ftpUser);
                 }
             }
         } catch (NoSuchUserException e) {
@@ -168,7 +168,7 @@ public class UserDetails {
             userKeysString = user.getKeyedMap().getObject(BLOWKEY);
         } catch (KeyNotFoundException e1) {
             // Means this user has never set a blowfish key, is safe to proceed
-            logger.debug("Blowfish key has never been set for " + _ftpUser);
+            logger.debug("Blowfish key has never been set for {}", _ftpUser);
         }
         String[] userKeys = userKeysString.split(",");
         boolean foundOld = false;

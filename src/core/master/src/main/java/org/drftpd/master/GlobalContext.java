@@ -101,7 +101,7 @@ public class GlobalContext {
                 .setScanners(new MethodAnnotationsScanner()));
 
         hooksMethods = reflections.getMethodsAnnotatedWith(CommandHook.class);
-        logger.debug("We have annotated (found) [" + hooksMethods.size() + "] hook methods");
+        logger.debug("We have annotated (found) [{}] hook methods", hooksMethods.size());
     }
 
     public static Set<Method> getHooksMethods() {

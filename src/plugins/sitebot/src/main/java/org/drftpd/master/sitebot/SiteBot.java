@@ -222,7 +222,7 @@ public class SiteBot implements ReplyConstants, Runnable {
             if (factory == null) {
                 factory = SocketFactory.getDefault();
             }
-            logger.debug("Connecting to [" + _server + ":" + _port + "]");
+            logger.debug("Connecting to [{}:{}]", _server, _port);
             if (bindAddress == null || bindAddress.equals("")) {
                 socket = factory.createSocket(_server, _port);
             } else {
@@ -232,7 +232,7 @@ public class SiteBot implements ReplyConstants, Runnable {
             if (isSSL && sslProtocols != null && sslProtocols.length > 0) {
                 ((SSLSocket) socket).setEnabledProtocols(GlobalContext.getConfig().getSSLProtocols());
             }
-            logger.info("*** Connected to server [" + _server + ":" + _port + "]");
+            logger.info("*** Connected to server [{}:{}]", _server, _port);
         } catch (IOException e) {
             // Something failed during connecting, call reconnect() to try another server
             logger.warn("Connection to {}:{} failed, retrying or trying next server if one is available", _server, _port);
@@ -750,7 +750,7 @@ public class SiteBot implements ReplyConstants, Runnable {
         if (line.length() == 0) {
             return;
         }
-        logger.debug("[RAW INPUT]: " + line);
+        logger.debug("[RAW INPUT]: {}", line);
 
         // Check for server pings.
         if (line.startsWith("PING ")) {
@@ -2641,7 +2641,7 @@ public class SiteBot implements ReplyConstants, Runnable {
         Properties cmd = _cmds.get(request.getCommand());
         // Check if we know of this command, if not just return
         if (cmd == null) {
-            logger.debug("Found line starting with correct command trigger " + _config.getCommandTrigger() + ", but no matching command found");
+            logger.debug("Found line starting with correct command trigger {}, but no matching command found", _config.getCommandTrigger());
             return;
         }
         String inputs = cmd.getProperty("input", "");
@@ -2666,7 +2666,7 @@ public class SiteBot implements ReplyConstants, Runnable {
 
         // If we have not found valid inputs, bail out
         if (!proceed) {
-            logger.debug("No valid input combination found for command " + request.getCommand());
+            logger.debug("No valid input combination found for command {}", request.getCommand());
             return;
         }
 
@@ -2695,7 +2695,7 @@ public class SiteBot implements ReplyConstants, Runnable {
 
         // If we have not found valid outputs, bail out
         if (cmdOutputs.isEmpty()) {
-            logger.debug("No valid output combination found for command " + request.getCommand());
+            logger.debug("No valid output combination found for command {}", request.getCommand());
             return;
         }
 

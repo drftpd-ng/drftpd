@@ -226,7 +226,7 @@ public abstract class AbstractUserManager implements UserManager {
         if (groups_admin.size() == 1) {
             return groups_admin.get(0);
         }
-        logger.debug("[getGroupByGroupAdminOfUser] We were unable to find a match between [user:" + requestedUser.getName() + "]'s groups and [user:" + groupadminUser.getName() + "] as group admin. Groups found are: [" + groups_admin.size() + "]");
+        logger.debug("[getGroupByGroupAdminOfUser] We were unable to find a match between [user:{}]'s groups and [user:{}] as group admin. Groups found are: [{}]", requestedUser.getName(), groupadminUser.getName(), groups_admin.size());
         return null;
     }
 
