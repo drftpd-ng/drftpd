@@ -41,7 +41,10 @@ class BlowfishManager {
         encryptMode = mode.toLowerCase();
         blowfish = new HashMap<>();
         blowfish.put(CBC, new BlowfishCBC(key));
-        blowfish.put(ECB, new BlowfishECB(key));
+        // We only intialize this if we are actually doing ECB
+        if (encryptMode.equals(ECB)) {
+            blowfish.put(ECB, new BlowfishECB(key));
+        }
     }
 
     /* encrypt function	 */
