@@ -6,4 +6,4 @@ JVM_OPTS="-Xmx1G -XX:+UseG1GC"
 OPTIONS="-Dlog4j.configurationFile=config/log4j2-slave.xml"
 PROGRAM="org.drftpd.slave.Slave"
 
-java ${JVM_OPTS} -classpath ${JVM_OPTS} ${OPTIONS} ${PROGRAM}
+java ${JVM_OPTS} -classpath ${CLASSPATH} ${JVM_OPTS} ${OPTIONS} ${PROGRAM}

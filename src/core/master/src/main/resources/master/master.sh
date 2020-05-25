@@ -6,4 +6,4 @@ JVM_OPTS="-Xmx3G -XX:+UseG1GC"
 OPTIONS="-Dlog4j.configurationFile=config/log4j2-master.xml"
 PROGRAM="org.drftpd.master.Master"
 
-java ${JVM_OPTS} -classpath ${JVM_OPTS} ${OPTIONS} ${PROGRAM}
+java ${JVM_OPTS} -classpath ${CLASSPATH} ${JVM_OPTS} ${OPTIONS} ${PROGRAM}
