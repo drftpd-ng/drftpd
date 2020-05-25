@@ -33,7 +33,7 @@ public class ZipscriptFlacIssuer extends AbstractIssuer {
 
     public String issueFlacFileToSlave(RemoteSlave rslave, String path) throws SlaveUnavailableException {
         String index = rslave.fetchIndex();
-        AsyncCommandArgument ac = new AsyncCommandArgument(index, "flacfile", path);
+        AsyncCommandArgument ac = new AsyncCommandArgument(index, "flacFile", path);
         rslave.sendCommand(ac);
 
         return index;
