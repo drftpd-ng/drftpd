@@ -35,7 +35,7 @@ public class ZipscriptMP3Issuer extends AbstractIssuer {
 
     public String issueMP3FileToSlave(RemoteSlave rslave, String path) throws SlaveUnavailableException {
         String index = rslave.fetchIndex();
-        AsyncCommandArgument ac = new AsyncCommandArgument(index, "mp3file", path);
+        AsyncCommandArgument ac = new AsyncCommandArgument(index, "mP3File", path);
         rslave.sendCommand(ac);
 
         return index;
