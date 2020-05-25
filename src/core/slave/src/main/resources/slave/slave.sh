@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 
 CLASSPATH="lib/*;build/*"
 # Add JVM Options here however you see fit and please check if the max memory Xmx is good enough for your master
