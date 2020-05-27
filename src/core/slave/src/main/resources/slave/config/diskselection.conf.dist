@@ -1,11 +1,15 @@
+############################
+## DiskSelection Settings ##
+####################################################################################################
+
 # This Chain of filters help you to keep your roots organized.
 # WARN: This filters MUST work in a synchronized way with SlaveSelection.
-#		Better explanation in:
-# 		https://opensvn.csie.org/traccgi/drftpd/trac.cgi/ticket/85;
+#  Better explanation in:
+#  https://opensvn.csie.org/traccgi/drftpd/trac.cgi/ticket/85;
 
 # Simple filter combined w/ the 'assign=all' property.
 # The 'assign=all' property saves the admin sometime as it automatically
-# adds the existing roots to the ScoreChart chain.
+#  adds the existing roots to the ScoreChart chain.
 1.filter=minfreespace
 1.minfreespace=5GB
 1.assign=all
@@ -17,37 +21,37 @@
 2.filter=cycle
 
 # If you have multiple roots and you want to assign a separate filter to them, use as following:
-#  x.filter=minfreespace
-#  x.minfreespace=5GB
-#  x.assign=2
-#  x.multiplier=1
+# x.filter=minfreespace
+# x.minfreespace=5GB
+# x.assign=2
+# x.multiplier=1
 
 # Matchdir(Glob)/MatchdirEx(Regex) is used to distribute certain files to certain roots.
 # Always remember that ".match=" is a valid path according to master VFS.
 # So it does not work like, /mnt/site*.
 # Using the 'assign=all' property here makes the filter useless.
-#  x.filter=matchdir
-#  x.match=/PHOTOS*
-#  x.assign=1+100 2+remove
-#  x.assume.remove=false (if true removes all roots not mentioned in assign)
-#  x.negate.expression=false (if true negates match)
+# x.filter=matchdir
+# x.match=/PHOTOS*
+# x.assign=1+100 2+remove
+# x.assume.remove=false (if true removes all roots not mentioned in assign).
+# x.negate.expression=false (if true negates match).
 #
-#  x.filter=matchdirex
-#  x.match=^/VIDEOS.*
-#  x.assign=1+remove 2+100
-#  x.assume.remove=false (if true removes all roots not mentioned in assign)
-#  x.negate.expression=false (if true negates match)
+# x.filter=matchdirex
+# x.match=^/VIDEOS.*
+# x.assign=1+remove 2+100
+# x.assume.remove=false (if true removes all roots not mentioned in assign).
+# x.negate.expression=false (if true negates match).
 
 # Randomspread filter grabs a random root and adds 1 (one) point
-# to it on the ScoreChart. Usefull to make files spread all over.
+#  to it on the ScoreChart. Usefull to make files spread all over.
 # This filter does not requires a 'assign=' property.
-#  x.filter=randomspread
+# x.filter=randomspread
 
 # This filter might look foolish, but it just have the hole
-# of letting you choose which root will be filled first.
+#  of letting you choose which root will be filled first.
 # Using this filter (depeding on the way, of course) you prolly
-# make 'randomspread' and 'cycle' useless.
+#  make 'randomspread' and 'cycle' useless.
 # Using the 'assign=all' property here makes the filter useless.
-#  x.filter=priority
-#  x.assign=1+100 2+200
+# x.filter=priority
+# x.assign=1+100 2+200
 

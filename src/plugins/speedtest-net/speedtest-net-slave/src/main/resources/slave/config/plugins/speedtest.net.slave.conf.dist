@@ -1,9 +1,10 @@
-## Slave configuration for speedtest.net plugin ##
-##################################################
+############################################
+# Slave settings for SpeedTest.net plugin ##
+###################################################################################################
 
 # If you dont know what you are doing leave values at their default setting.
 
-# Thread sleep time between runs (ms)
+# Thread sleep time between runs (ms).
 sleep=100
 
 ## Upload settings ##

@@ -1,3 +1,7 @@
+######################################
+## SlaveSelection Job Down Settings ##
+####################################################################################################
+
 1.filter=maxtransfers
 1.maxtransfers=2
 
@@ -9,10 +13,9 @@
 
 4.filter=cycle
 
-#MaxtransfersPerslave (This will allow 10 transfers on slave1 and 5 on slave2)
+# MaxtransfersPerslave (This will allow 10 transfers on slave1 and 5 on slave2).
 #.filter=MaxtransfersPerslave
 #.assign=slave1+10 slave2+5
 #.match=^/section/.*$
 #.negate.expression=false
-
 

@@ -1,39 +1,35 @@
-# TvMaze Configuration #
-########################
+####################
+# TVMaze Settings ##
+####################################################################################################
 
-# Sections plugin should announce TvMAze info on races/pre
-# race.section.x=SECTION
-race.section.1=TV-SD
-race.section.2=TV-HD
+# Sections plugin should announce TvMAze info on races/pre.
+#race.section.x=SECTION
 
-# Search for release on site on tvmaze search
-search.release=true
-# search.hd.section.x=SECTION-HD
-search.hd.section.1=TV-HD
-# search.sd.section.x=SECTION-SD
-search.sd.section.1=TV-SD
+# Search for release on site on tvmaze search.
+search.release=false
+#search.hd.section.x=SECTION-HD
+#search.sd.section.x=SECTION-SD
 
-# Dirs to exclude. (regex)
+# Dirs to exclude (regex).
 # Only dirs matching "(\w+\.){3,}\w+-\w+" pattern will pass so only add dirs to exclude that also matchi this pattern.
 exclude=
 
-# Remove these words from search string (regex)
-# filter.x=regex.string
+# Remove these words from search string (regex).
+#filter.x=regex.string
 
-# Date and time format for show info
+# Date and time format for show info.
 date.show=yyyy-MM-dd
 time.show=EEEE, HH:mm
 
-# Timezone to use for all dates and times
+# Timezone to use for all dates and times.
 timezone=-05:00
 
-# Random delay interval between tvmaze parses
+# Random delay interval between tvmaze parses.
 delay.start=0
 delay.end=5
 
-# Enable TvMaze bar?
-tvmazebar.enabled=true
-# TvMaze bar as directory(true) or file(false)?
+# Enable TVMaze bar?
+tvmazebar.enabled=false
+# TvMaze bar as directory (true) or file (false)?
 tvmazebar.directory=true
-
 

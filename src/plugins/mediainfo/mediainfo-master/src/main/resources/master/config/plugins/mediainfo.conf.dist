@@ -1,12 +1,18 @@
-# Sections to exclude this plugin from, separate with space
+########################
+## MediaInfo Settings ##
+####################################################################################################
+
+# Sections to exclude this plugin from, separate with space.
 sections.exclude=PRE
 
 # Media bar as directory(true) or file(false)?
+# Default [true]
 mediabar.directory=true
 
 # Enable media bar?
-mediabar.enabled=true
+# Default: [false]
+mediabar.enabled=false
 
-# Extensions to listen for on STOR, separate with space
+# Extensions to listen for on STOR, separate with space.
 extensions=avi mkv mp4
 

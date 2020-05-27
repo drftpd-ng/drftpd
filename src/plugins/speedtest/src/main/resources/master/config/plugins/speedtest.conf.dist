@@ -1,4 +1,7 @@
+#######################
+# SpeedTest Settings ##
+###################################################################################################
+
 # Specify paths for speedtest, all subdirs of this path is considered a SPEEDTEST dir.
-# Example:
-# path.1=/REQUESTS/SPEEDTEST
+#path.1=/REQUESTS/SPEEDTEST
 

@@ -1,44 +1,48 @@
-# Only used if you are using 
-# org.drftpd.master.slaveselection.filter.SlaveSelectionManager in drftpd.conf
+##################################
+## SlaveSelection Down Settings ##
+####################################################################################################
+#                                                                                                  #
+# Only used if you are using                                                                       #
+# [org.drftpd.master.slaveselection.filter.SlaveSelectionManager] in "master.conf"                 #
+#                                                                                                  #
+# The slave that is selected will be an available slave and will have more                         #
+# points (given from the filters) than the other available slaves.                                 #
+#                                                                                                  #
+# Examples:                                                                                        #
+#                                                                                                  #
+# Bandwidth (SlaveScore - (multiplier * current bw usage of slave)).                               #
+# x.filter=bandwidth                                                                               #
+# x.multiplier=5                                                                                   #
+#                                                                                                  #
+# Cycle (If there is a tie in SlaveScore's,                                                        #
+#  Cycle adds one point to the last used slave(in the tie)).                                       #
+# x.filter=cycle                                                                                   #
+#                                                                                                  #
+# MatchDir (Sets appropriate settings from "assign" on transfers inside "path").                   #
+# x.filter=matchdir                                                                                #
+# x.match=/section/*                                                                               #
+# x.assign=slave1+500 slave2-500 slave3+remove                                                     #
+# x.assume.remove=false (if true removes all slaves not mentioned in assign).                      #
+# x.negate.expression=false (if true negates the glob set in match).                               #
+#                                                                                                  #
+# MatchDirEx (Same as MatchDir but uses regular expression instead of globs).                      #
+# x.filter=matchdirex                                                                              #
+# x.match=^/section/.*$                                                                            #
+# x.assign=slave1+500 slave2-500 slave3+remove                                                     #
+# x.assume.remove=false (if true removes all slaves not mentioned in assign).                      #
+# x.negate.expression=false (if true negates the glob set in match).                               #
+#                                                                                                  #
+# MaxtransfersPerslave (This will allow 10 transfers on slave1 and 5 on slave2).                   #
+# x.filter=MaxtransfersPerslave                                                                    #
+# x.assign=slave1+10 slave2+5                                                                      #
+# x.match=^/section/.*$                                                                            #
+# x.negate.expression=false                                                                        #
+#                                                                                                  #
+####################################################################################################
 
-# the slave that is selected will be an available slave and will have more 
-# points(given from the filters) than the other available slaves
-
-# **** Default Config **** (suggested for ultimate bandwidth usage)
-
+# **** Default Config **** (suggested for ultimate bandwidth usage).
 1.filter=bandwidth
 1.multiplier=1
 
 2.filter=cycle
-
-# **** Sample Config ****
-
-#Bandwidth (SlaveScore - (multiplier * current bw usage of slave))
-#.filter=bandwidth
-#.multiplier=5
-
-#Cycle (If there is a tie in SlaveScore's, Cycle adds one point to the last used slave(in the tie))
-#.filter=cycle
-
-#MatchDir (Sets appropriate settings from "assign" on transfers inside "path")
-#.filter=matchdir
-#.match=/section/*
-#.assign=slave1+500 slave2-500 slave3+remove
-#.assume.remove=false (if true removes all slaves not mentioned in assign)
-#.negate.expression=false (if true negates the glob set in match)
-
-#MatchDirEx (Same as MatchDir but uses regular expression instead of globs)
-#.filter=matchdirex
-#.match=^/section/.*$
-#.assign=slave1+500 slave2-500 slave3+remove
-#.assume.remove=false (if true removes all slaves not mentioned in assign)
-#.negate.expression=false (if true negates the glob set in match)
-
-
-#MaxtransfersPerslave (This will allow 10 transfers on slave1 and 5 on slave2)
-#.filter=MaxtransfersPerslave
-#.assign=slave1+10 slave2+5
-#.match=^/section/.*$
-#.negate.expression=false
-
 
