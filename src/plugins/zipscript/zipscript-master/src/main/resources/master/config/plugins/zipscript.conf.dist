@@ -1,75 +1,99 @@
-# Show status bar in dir listings [true/false]
+########################
+## ZIPScript Settings ##
+####################################################################################################
+
+# Show status bar in dir listings
+# Default: [true]
 statusbar.enabled=true
 
-# Type of status bar, if true then status bar will appear as a directory, if false it will appear as a file [true/false]
+# Type of status bar, if true then status bar will appear as a directory,
+#  if false it will appear as a file.
+# Default: [true]
 statusbar.directory=true
 
-# Showing missing files [true/false]
+# Showing missing files
+# Default: [true]
 files.missing.enabled=true
 
-# Set the following line to enable/disable id3tag info [true/false]
+# Set the following line to enable/disable id3tag info.
+# Default: [true]
 cwd.id3info.enabled=true
 
-# Enable race stats [true/false]
+# Enable race stats.
+# Default: [true]
 cwd.racestats.enabled=true
 stor.racestats.enabled=true
 
-# Only allow files found in the sfv file [true/false]
+# Only allow files found in the sfv file.
+# Default: [true]
 sfv.restrict.files=true
 
-# Set the following line to enable/disable file_id.diz info [true/false]
+# Set the following line to enable/disable file_id.diz info.
+# Default: [true]
 cwd.dizinfo.enabled=true
 
-# Disallow files before sfv [true/false]
+# Disallow files before sfv.
+# Default: [true]
 sfvfirst.required=true
 
-# Allow files w/o extensions even if sfvfirst.required=true [true/false]
+# Allow files w/o extensions even if "sfvfirst.required=true".
+# Default: [true]
 sfvfirst.allownoext=true
 
-# Allow these file extensions even if not in an sfv file
-allowedexts=nfo txt jpg diz vob m2ts mkv mp4 zip m3u
+# Allow these file extensions even if not in an sfv file.
+allowedexts=nfo txt jpg diz avi vob m2ts mkv mp4 zip m3u
 
-# Check paths for sfv first enforcement
+# Check paths for sfv first enforcement.
+# Default: [*]
 sfvfirst.pathcheck=*
 
-# Ignore paths for sfv first enforcement
-sfvfirst.pathignore=/PRE/* /REQUESTS/* */Subs/ */Cover/ */Covers/
+# Ignore paths for sfv first enforcement.
+sfvfirst.pathignore=/PRE/* /REQUESTS/* */Subs/ */Cover/ */Covers/ /SPEEDTEST/*
 
-# Who has their restricted by the sfv-first system ?
-#if you wanted siteop group to be exempt, put: !=siteop *
+# Who has their restricted by the sfv-first system?
+# If you wanted siteop group to be exempt, put: !=siteop *
 sfvfirst.users=*
 
-# Disallows .sfv to be uploaded if subdir of (sfvdeny.subdir.include) exists [true/false]
+# Disallows .sfv to be uploaded if subdir of (sfvdeny.subdir.include) exists.
+# Default: [false]
 sfvdeny.subdir=false
 
-# List of the subdirs to include when searching to deny sfv upload (regex)
+# List of the subdirs to include when searching to deny sfv upload (regex).
 sfvdeny.subdir.include=.*(?i)(cd[1-9]|dvd[1-9]|dis(c|k)[1-9]).*
 
-# List of sections/dirs to exclude when searching for deny sfv upload (regex)
-sfvdeny.subdir.exclude=.*(?i)(SPEEDTEST|REQUESTS|STAFF|PRE|GROUPS).*
+# List of sections/dirs to exclude when searching for deny sfv upload (regex).
+sfvdeny.subdir.exclude=.*(?i)(SPEEDTEST|REQUESTS|STAFF|PRE).*
 
-# Check integrity of .zip files on upload [true/false]
+# Check integrity of .zip files on upload.
+# Default: [true]
 stor.zip.integrity.check.enabled=true
 
-# Show diz text on CWD [true/false]
+# Show diz text on CWD.
+# Default: [true]
 cwd.diz.info.enabled=true
 
-# Enable race stats [true/false]
+# Enable race stats.
+# Default: [true][true]
 cwd.zip.racestats.enabled=true
 stor.zip.racestats.enabled=true
 
-# Maximum number of users/groups to include in race complete announce
+# Maximum number of users/groups to include in race complete announce.
+# Default [10][10]
 irc.sfv.maxusers=10
 irc.sfv.maxgroups=10
 
-# Enable MP3 info [true/false]
+# Enable MP3 info.
+# Default: [true][true]
 cwd.mp3info.enabled=true
 stor.mp3info.enabled=true
 
-# Maximum number of users/groups to include in race complete announce
+# Maximum number of users/groups to include in race complete announce.
+# Default: [10][10]
 irc.zip.maxusers=10
 irc.zip.maxgroups=10
 
-# Enable Flac info [true/false]
+# Enable Flac info
+# Default: [true][true]
 cwd.flacinfo.enabled=true
 stor.flacinfo.enabled=true
+

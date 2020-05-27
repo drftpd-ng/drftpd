@@ -1,11 +1,14 @@
-################################################################################
-#   This display's Daily/Weekly/Monthy Reports to IRC
-#
-#	showzero = Show users with 0 bytes (true/false)
-#	outputnum = Number of users to output per display
-#	exempt = users/groups to exempt
-#
-################################################################################
+##########################
+## Daily Stats Settings ##
+####################################################################################################
+#                                                                                                  #
+# This display's Daily/Weekly/Monthy Reports to IRC.                                               #
+#                                                                                                  #
+# showzero = Show users with 0 bytes (true/false).                                                 #
+# outputnum = Number of users to output per display.                                               #
+# exempt = users/groups to exempt.                                                                 #
+#                                                                                                  #
+####################################################################################################
 
 showzero=true
 outputnum=5

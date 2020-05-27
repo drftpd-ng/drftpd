@@ -1,43 +1,44 @@
-################################################################################
-#	Trial Manager
-#
-#	This will load and configure the types specified in this configuration file
-#	All Trial Types have the following attributes:
-#
-#	x.type = The type of Trial Manager you want to run (Name of the Plugin) (Required)
-#	x.name = The of the specific type (usually used for output) (Required) 
-#	x.pass = What to do when user passes (setgrp/chgrp/delete/purge) (Might be type dependent) (Optional)
-#	x.fail = What to do when user fails (setgrp/chgrp/delete/purge) (Might be type dependent) (Optional)
-#	x.period = Period of which trial to use (3 = daily | 2 = weekly | 1 = monthly) (Required)
-#	x.perms = Users which to include/exclude in this Trial type (Optional)
-#
-################################################################################
-
-################################################################################
-#   Top Trial
-#
-#   x.type=toptrial
-#
-#   These attributes are for the Top Trial Type:
-#
-#   x.list = Default number of users to list in !top/!cut (Default = 10)
-#   x.keep = Maximum users to keep in this period (Default = 10)
-#   x.min = Minimum amount in GB that user has to pass (Optional)
-#   x.percent = Dynamic quota, adds % amount of top uploader to quota (Optional, value is number. eg. 5 for 5%)
-#
-################################################################################
-
-################################################################################
-#   Group Top
-#
-#   x.type=grouptop
-#
-#   These attributes are for the Group Top Type:
-#
-#   x.list = Default number of users to list in !top/!cut (Default = 10)
-#   x.keep = Maximum users to keep in this period (Default = 10)
-#   x.min = Minimum amount in GB that user has to pass (Optional)
-#   x.percent = Dynamic quota, adds % amount of top uploader to quota (Optional, value is number. eg. 5 for 5%)
-#
-################################################################################
+######################
+## Traffic Settings ##
+####################################################################################################
+#                                                                                                  #
+# Trial Manager:                                                                                   #
+#                                                                                                  #
+# This will load and configure the types specified in this configuration file.                     #
+# All Trial Types have the following attributes:                                                   #
+#                                                                                                  #
+# x.type = The type of Trial Manager you want to run (Name of the Plugin) (Required).              #
+# x.name = The of the specific type (usually used for output) (Required).                          #
+# x.pass = What to do when user passes (setgrp/chgrp/delete/purge).                                #
+#          (Might be type dependent) (Optional).                                                   #
+# x.fail = What to do when user fails (setgrp/chgrp/delete/purge).                                 #
+#         (Might be type dependent) (Optional).                                                    #
+# x.period = Period of which trial to use (3 = daily | 2 = weekly | 1 = monthly) (Required).       #
+# x.perms = Users which to include/exclude in this Trial type (Optional).                          #
+#                                                                                                  #
+# Top Trial:                                                                                       #
+#                                                                                                  #
+# x.type=toptrial                                                                                  #
+#                                                                                                  #
+# These attributes are for the Top Trial Type:                                                     #
+#                                                                                                  #
+# x.list = Default number of users to list in !top/!cut (Default = 10).                            #
+# x.keep = Maximum users to keep in this period (Default = 10).                                    #
+# x.min = Minimum amount in GB that user has to pass (Optional).                                   #
+# x.percent = Dynamic quota, adds % amount of top uploader to quota.                               #
+#             (Optional, value is number. eg. 5 for 5%).                                           #
+#                                                                                                  #
+# Group Top:                                                                                       #
+#                                                                                                  #
+# x.type=grouptop                                                                                  #
+#                                                                                                  #
+# These attributes are for the Group Top Type:                                                     #
+#                                                                                                  #
+# x.list = Default number of users to list in !top/!cut (Default = 10).                            #
+# x.keep = Maximum users to keep in this period (Default = 10).                                    #
+# x.min = Minimum amount in GB that user has to pass (Optional).                                   #
+# x.percent = Dynamic quota, adds % amount of top uploader to quota.                               #
+#             (Optional, value is number. eg. 5 for 5%).                                           #
+#                                                                                                  #
+####################################################################################################
 

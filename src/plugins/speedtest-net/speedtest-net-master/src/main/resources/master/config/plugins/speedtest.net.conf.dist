@@ -1,6 +1,8 @@
-# speedtest.net #
-#################
+############################
+## SpeedTest.net Settings ##
+####################################################################################################
 
-# Valid options: K(km, default), N(nautical mile), M(mile)
+# Valid options: K(km), N(nautical mile), M(mile).
+# Default: [K]
 distance.unit=K
 

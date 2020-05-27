@@ -1,15 +1,21 @@
+####################
+## SysOp Settings ##
+####################################################################################################
+
 # 0/1/2/3
-# 0 = show both successful and failed
-# 1 = don't show anything
-# 2 = show only successful
-# 3 = show only failed
+# 0 = show both successful and failed.
+# 1 = don't show anything.
+# 2 = show only successful.
+# 3 = show only failed.
 
 # Login hooks #
+# Default: [0]
 PASS=0
 IDNT=0
 USER=0
 
 # Site hooks #
+# Default: [0]
 ADDIP=0
 ADDUSER=0
 BAN=0

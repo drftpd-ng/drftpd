@@ -1,7 +1,6 @@
-# $Id: slave.conf.dist 2041 2010-04-11 18:36:43Z djb61 $
-######################
-### Slave settings ###
-######################
+####################
+## Slave Settings ##
+####################################################################################################
 
 # What you set the name as with "site addslave <slavename>" on the master.
 slave.name=drftpd
@@ -9,7 +8,7 @@ slave.name=drftpd
 # Root to serve contents from, is automatically created.
 slave.root.1=site
 # You can use several roots for striping files across
-# several harddrives without using RAID or similar.
+#  several harddrives without using RAID or similar.
 #slave.root.2=d:/
 
 # Master host/ip
@@ -17,66 +16,74 @@ master.host=localhost
 # Port to connect to the master
 master.bindport=1099
 # Set the master to use SSL for slave connections as well
-slave.masterSSL=false
+# (You must have a valid 'drftpd.key' in config folder).
+# Default: [true]
+slave.masterSSL=true
 
-# Pasv port range
+# PASV port range.
 #slave.portfrom=30000
 #slave.portto=33000
 
 # BIND IP - This will bind SLAVE ip to this address.
 #bind.ip=xxx.xxx.xxx.xxx
 
-# Enable checksums for uploads
-# [ true | false ]
+# Enable checksums for uploads.
+# Default: [true]
 enableuploadchecksums=true
 
-# Enable checksums for downloads
-# [ true | false ]
+# Enable checksums for downloads.
+# Default: [true]
 enabledownloadchecksums=true
 
-# BufferSize set at 0 lets the kernel handle the buffer sizes
+# BufferSize set at 0 lets the kernel handle the buffer sizes.
+# Default: [0]
 bufferSize=0
 
 # This is the maximum the slave will wait for the master.
 # Timeout on the slave (on the master side) should be equal.
-# "site slave <slavename> set timeout <value>
+# "site slave <slavename> set timeout <value>".
 # 60000 = one minute
+# Default: [60000]
 slave.timeout=60000
 
 # DiskSelection plugin.
 # If doesn't know what that means, do NOT change this.
+# Default: [org.drftpd.slave.diskselection.filter.DiskSelectionFilter]
 diskselection=org.drftpd.slave.diskselection.filter.DiskSelectionFilter
 
-# Enabled cipher suites
+# Enabled cipher suites.
 # If left empty, default set will be used.
 # Use whitelist to add specific chiphers to use.
 # All supported ciphers not included in whitelist will be removed.
 # Use blacklist to exclude ciphers.
 # Blacklist can be combined with whitelist, if no whitelist rule(s) are
-# specified blacklist will exclude from default set.
+#  specified blacklist will exclude from default set.
 # Blacklist has precedence over whitelist.
 # Both blacklist and whitelist use regular expression pattern.
 # Multiple whitelist/blacklist rules are supported.
 cipher.whitelist.1=.*_(POLY1305_SHA256|GCM_SHA384|GCM_SHA256).*
 
-# Enabled protocols
-# If left empty, default set will be used
+# Enabled protocols.
+# If left empty, default set will be used.
 protocol.1=TLSv1.2
 protocol.2=TLSv1.3
 
 # Setting this to true will make this slave perform
-# a full remerge when connecting to a master irrespective
-# of any partial remerge settings on the master
+#  a full remerge when connecting to a master irrespective
+#  of any partial remerge settings on the master
+# Default: [false]
 ignore.partialremerge=false
 
 # Settings this to true will make remerge go faster
-# by threading the remerge process.
+#  by threading the remerge process.
+# Default: [true]
 threadedremerge=true
 
 # Setting this to true will list the slave roots concurrently
-# during remerge. This should only be set if the slave has more than
-# one root and more than one CPU otherwise it will likely be slower
-# than leaving it disabled. The speed increase from enabling this will
-# likely increase with more roots and CPUs.
+#  during remerge. This should only be set if the slave has more than
+#  one root and more than one CPU otherwise it will likely be slower
+#  than leaving it disabled. The speed increase from enabling this will
+#  likely increase with more roots and CPUs.
+# Default: [false]
 concurrent.root.iteration=false
 

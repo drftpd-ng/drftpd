@@ -1,42 +1,45 @@
-# $Id$
-#######################
-### Master settings ###
-#######################
+#####################
+## Master Settings ##
+####################################################################################################
 
 # The port where master will listen for slave connections.
-# Default: 1099
+# Default: [1099]
 master.bindport=1099
 
 # The IP and Port where master will listen for FTP connections.
 # If you want to listen on all interfaces, leave the 'master.ip' field commented,
-# otherwise enter a VALID IP ADDRESS!
+#  otherwise enter a VALID IP ADDRESS!
+# Default: [2121]
 #master.ip=xxx.xxx.xxx.xxx
 master.port=2121
 
 # If you want master to establish a secure connection with the slaves
-# set this option to 'true'. (You must have a valid 'drftpd.key' in userdata folder).
-# Default: true
-master.slaveSSL=false
+#  set this option to 'true'. 
+# (You must have a valid 'drftpd.key' in config folder).
+# Default: [true]
+master.slaveSSL=true
 
-# Show offline files? [true/false]
+# Show offline files?
+# Default: [true]
 files.offline.enabled=true
 
-# Delete collision files? [true/false]
+# Delete collision files?
+# Default: [false]
 delete.collision.files=false
 
 # Advanced settings. #
 # Do not touch it if you don't know what you are doing. #
 
 # The name of the UserManager's plugin.
-# Default is: org.drftpd.master.usermanager.encryptedjavabeans
+# Default: [org.drftpd.master.usermanager.encryptedjavabeans.EncryptedBeanUserManager]
 usermanager=org.drftpd.master.usermanager.encryptedjavabeans.EncryptedBeanUserManager
 
 # The name of the CommandManager's plugin.
-# Default is: org.drftpd.master.commandmanager
+# Default: [org.drftpd.master.commands.StandardCommandManager]
 commandmanager=org.drftpd.master.commands.StandardCommandManager
 
 # The name of the SlaveSelection's plugin.
-# Default is: org.drftpd.master.slaveselection.filter
+# Default: [org.drftpd.master.slaveselection.filter.SlaveSelectionManager]
 # More info check config/slaveselection-*.conf
 slaveselection=org.drftpd.master.slaveselection.filter.SlaveSelectionManager
 
@@ -46,12 +49,13 @@ slaveselection=org.drftpd.master.slaveselection.filter.SlaveSelectionManager
 #    All dirs on the root directory will be defined as a section.
 # 2. org.drftpd.master.sections.conf.SectionManager
 #  * Check config/sections.conf for more info.
-sectionmanager=org.drftpd.master.sections.conf.SectionManager
+# Default: [org.drftpd.master.sections.def.SectionManager]
+sectionmanager=org.drftpd.master.sections.def.SectionManager
 
-# Index engine
+# Index engine.
 indexingengine=org.drftpd.master.indexation.LuceneEngine
 
-# Enabled cipher suites
+# Enabled cipher suites.
 # If left empty, default set will be used.
 # Use whitelist to add specific chiphers to use.
 # All supported ciphers not included in whitelist will be removed.
@@ -63,51 +67,54 @@ indexingengine=org.drftpd.master.indexation.LuceneEngine
 # Multiple whitelist/blacklist rules are supported.
 cipher.whitelist.1=.*_(POLY1305_SHA256|GCM_SHA384|GCM_SHA256).*
 
-# Enabled protocols
-# If left empty, default set will be used
+# Enabled protocols.
+# If left empty, default set will be used.
 protocol.1=TLSv1.2
 protocol.2=TLSv1.3
 
 # Slave remerge throttling thresholds, do not modify these
-# unless you know what you are doing
+#  unless you know what you are doing.
 remerge.pause.threshold=250
 remerge.resume.threshold=50
 
 # Enable checksums on remerge
-# Gets checksum from slave for remerged files missing checksum in VFS
-# [ true | false ]
+# Gets checksum from slave for remerged files missing checksum in VFS.
+# Default: [false]
 enableremergechecksums=false
 
-# Slave partial remerge functionality
+# Slave partial remerge functionality.
 # There are three possible settings for this mode:
-# off - a full remerge will be performed on connect
-# connect - any files newer than the last connect remerge for
-#           the slave will be remerged
-# disconnect - any files newer than the last time the Slave
-#              disconnected will be remerged (CURRENTLY BROKEN)
-# instant - throws slaves online instant and makes full remerge in background
-#				Disclaimer. It's stable, but under development
+# * off - a full remerge will be performed on connect
+# * connect - any files newer than the last connect remerge for
+#           the slave will be remerged.
+# * disconnect - any files newer than the last time the Slave
+#              disconnected will be remerged (CURRENTLY BROKEN).
+# * instant - throws slaves online instant and makes full remerge in background
+# Default: [off]
 partial.remerge.mode=off
 
 # Sets whether a partially uploaded file is deleted on the
-# slave if the upload is aborted. Having this set to false
-# does not preclude any post hooks running on the transfer
-# command from deleting the file anyway.
+#  slave if the upload is aborted. Having this set to false
+#  does not preclude any post hooks running on the transfer
+#  command from deleting the file anyway.
+# Default: [false]
 delete.upload.on.abort=false
 
 # This sets the first day of the week for reset days.
 # true = Monday for the first day of the week
 # false = Sunday for the first day of the week
+# Default: [false]
 european.cal=false
 
-# Time in milliseconds (ms)
+# Time in milliseconds (ms).
 # Suggested values:
-#   Higher values reduce disk I/O but at the penalty of latency in commits.
-#   Standard SATA HD = 10000 (default)
-#   SSD = 1000 (higher values should help in a longer SSD Lifespan
-#   RAMDISK = 500
-#disk.commit.delay=10000
+#  Higher values reduce disk I/O but at the penalty of latency in commits.
+#  Standard SATA HD = 10000
+#  SSD = 1000 (higher values should help in a longer SSD Lifespan.
+#  RAMDISK = 500
+# Default: [10000]
+disk.commit.delay=10000
 
-# This can filter you 'site slaves' or '!slaves' output
+# This can filter you "site slaves" or "!slaves" output.
 # Filter matches from the first characters .startsWith()
 #default.slave.output=race

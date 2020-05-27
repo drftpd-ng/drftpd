@@ -1,31 +1,28 @@
-# IMDB Configuration #
-######################
+###################
+## IMDB Settings ##
+####################################################################################################
 
-# Sections plugin should announce IMDB info on races/pre
-# race.section.x=SECTION
-race.section.1=MOVIE-SD
-race.section.2=MOVIE-HD
+# Sections plugin should announce IMDB info on races/pre.
+#race.section.x=SECTION
 
-# Search for release on site on IMDB search
-search.release=true
-# search.hd.section.x=SECTION-HD
-search.hd.section.1=MOVIE-HD
-# search.sd.section.x=SECTION-SD
-search.sd.section.1=MOVIE-SD
+# Search for release on site on IMDB search.
+search.release=false
+#search.hd.section.x=SECTION-HD
+#search.sd.section.x=SECTION-SD
 
-# Random delay interval between IMDB parses
+# Random delay interval between IMDB parses.
 delay.start=2
 delay.end=5
 
 # Enable IMDB bar?
-imdbbar.enabled=true
+imdbbar.enabled=false
 # IMDB bar as directory(true) or file(false)?
 imdbbar.directory=true
 
-# Remove these words from search string (regex)
-# filter.x=regex.string
+# Remove these words from search string (regex).
+#filter.x=regex.string
 
-# Dirs to exclude. (regex)
+# Dirs to exclude (regex).
 # Only dirs matching "(\w+\.){3,}\w+-\w+" pattern will pass so only add dirs to exclude that also match this pattern.
 exclude=
 

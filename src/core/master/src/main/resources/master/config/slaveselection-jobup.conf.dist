@@ -1,3 +1,7 @@
+####################################
+## SlaveSelection Job Up Settings ##
+####################################################################################################
+
 1.filter=maxtransfers
 1.maxtransfers=2
 
@@ -18,19 +22,18 @@
 6.filter=cycle
 
 # Gives <assign> points for each JobTransfer where it is a destination slave
-#       in the directory being Archive'd
+#  in the directory being Archive'd.
 #.filter=jobpoints
 #.assign=50000
 
 # Takes <assign> points if the slave does not have enough space for the directory
-#       being Archive'd
+#  being Archive'd.
 #.filter=directoryspace
 #.assign=1000000
 
-#MaxtransfersPerslave (This will allow 10 transfers on slave1 and 5 on slave2)
+# MaxtransfersPerslave (This will allow 10 transfers on slave1 and 5 on slave2).
 #.filter=MaxtransfersPerslave
 #.assign=slave1+10 slave2+5
 #.match=^/section/.*$
 #.negate.expression=false
-
 

@@ -1,11 +1,18 @@
-# this module is only used by the Archive plugin
+###################
+## Jobs Settings ##
+####################################################################################################
 
-# use CRC checks after transfers to make sure files arrived correctly
+# This module is only used by the Archive plugin.
+
+# Use CRC checks after transfers to make sure files arrived correctly.
+# Default: [true]
 useCRC=true
 
-# sleep for this amount of seconds between searching for new transfers
+# Sleep for this amount of seconds between searching for new transfers.
+# Default: [10]
 sleepSeconds=10
 
-# use SSL transfer
+# Use SSL transfer.
+# Default [true]
 useSSLTransfers=true
 
