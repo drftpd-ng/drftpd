@@ -7,9 +7,11 @@
 # 43200 = 1 month
 
 # Smallest number of time in between cycles.
+# Default: [10080]
 cycleTime=10080
 
 # AutoFreeSpace will try to keep each slave above this number.
+# Default: [100GB]
 keepFree=100GB
 
 # Do not delete files with this following names (regex).
@@ -19,12 +21,15 @@ keepFree=100GB
 #excluded.slaves=SLAVE1
 
 # Only announce, no delete.
+# Default: [true]
 announce.only=true
 
 # Only one option can be set to true.
 # Delete files only based on time rather then time+keepFree.
+# Default: [false]
 delete.on.date=false
 # Delete files only based on space rather than time+keepFree.
+# Default: [false]
 delete.on.space=false
 
 # Do not delete releases younger than X minutes.

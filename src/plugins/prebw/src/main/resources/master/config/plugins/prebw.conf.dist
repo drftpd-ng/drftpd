@@ -26,7 +26,7 @@
 # Sections it should show pre info for (comma separated or * for all sections).
 sections=*
 
-# Pre's to exclude from info fetching (Regex).
+# Pre's to exclude from info fetching (regex).
 exclude=(?i).+\.(iNTERNAL|iNT)[-_.].+
 
 # If true it will check each transfer to see if its download from the pre dir and

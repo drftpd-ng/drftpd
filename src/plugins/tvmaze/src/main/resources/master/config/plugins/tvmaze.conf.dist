@@ -1,17 +1,19 @@
-####################
-# TVMaze Settings ##
+#####################
+## TVmaze Settings ##
 ####################################################################################################
 
-# Sections plugin should announce TvMAze info on races/pre.
+# Sections plugin should announce TVmaze info on races/pre.
 #race.section.x=SECTION
 
 # Search for release on site on tvmaze search.
+# Default: [false]
 search.release=false
 #search.hd.section.x=SECTION-HD
 #search.sd.section.x=SECTION-SD
 
 # Dirs to exclude (regex).
-# Only dirs matching "(\w+\.){3,}\w+-\w+" pattern will pass so only add dirs to exclude that also matchi this pattern.
+# Only dirs matching "(\w+\.){3,}\w+-\w+" pattern will pass,
+#  so only add dirs to exclude that also matchi this pattern.
 exclude=
 
 # Remove these words from search string (regex).
@@ -28,7 +30,8 @@ timezone=-05:00
 delay.start=0
 delay.end=5
 
-# Enable TVMaze bar?
+# Enable TVmaze bar?
+# Default: [false]
 tvmazebar.enabled=false
 # TvMaze bar as directory (true) or file (false)?
 tvmazebar.directory=true

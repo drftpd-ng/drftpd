@@ -9,11 +9,13 @@
 # 3 = show only failed.
 
 # Login hooks #
+# Default: [0]
 PASS=0
 IDNT=0
 USER=0
 
 # Site hooks #
+# Default: [0]
 ADDIP=0
 ADDUSER=0
 BAN=0

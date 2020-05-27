@@ -1,5 +1,5 @@
-##########################
-# IRC Announce Settings ##
+###########################
+## IRC Announce Settings ##
 ####################################################################################################
 #                                                                                                  #
 # This file controls where events will be announced on irc (if anywhere).                          #
@@ -10,9 +10,10 @@
 # First looking at the events with a path associated.                                              #
 # They have two basic types of configuration parameters, with a couple of                          #
 #  settings for each, these are:                                                                   #
+#                                                                                                  #
 # type.path.1=/path/subpath/*                                                                      #
 # type.path.1.destination=#channel1 #channel2                                                      #
-# type.path.1.displayname=PSUEDOSECTION                                                            #
+# type.path.1.displayname=PSEUDOSECTION                                                            #
 # type.path.1.regex=false                                                                          #
 #                                                                                                  #
 # type.section.1=SECTION_NAME                                                                      #
@@ -42,7 +43,9 @@
 #  the regex string if you want to exclude parts of the path in the announce.                      #
 # The former to exclude this part from the announce and the                                        #
 #  latter to specificaly include only this part in the annonce.                                    #
-# Example:                                                                                         #
+#                                                                                                  #
+#                                                                                                  #
+# EXAMPLE:                                                                                         #
 # default.path.1=^(?<truncate>/SECTION1/\\d{4}/).+                                                 #
 # default.path.1.destination=#irc-channel                                                          #
 # default.path.1.displayname=SECTION1                                                              #
@@ -65,6 +68,7 @@
 #                                                                                                  #
 # The default type is configured identically to any other type, simply with                        #
 #  the name of default, like this:                                                                 #
+#                                                                                                  #
 # default.path.1=/path/subpath/*                                                                   #
 # default.path.1.destination=#channel1 #channel2                                                   #
 # default.path.1.displayname=PSUEDOSECTION                                                         #
@@ -74,7 +78,7 @@
 # default.section.1.destination=#channel1 #channel2                                                #
 #                                                                                                  #
 #                                                                                                  #
-# Example:                                                                                         #
+# EXAMPLE:                                                                                         #
 # mkdir.path.1=/incoming/*                                                                         #
 # mkdir.path.1.destination=#newstuff                                                               #
 # mkdir.path.2=/specialdir/*                                                                       #
@@ -99,13 +103,15 @@
 #  type and announced in #mainchannel with a section name of DEFAULT.                              #
 #                                                                                                  #
 # TYPES WITHOUT PATH:                                                                              #
+#                                                                                                  #
 # The configuration for events without a path is simpler, there is only one setting                #
 #  per type and again a default type for any event types not explicitly set, this is:              #
 #                                                                                                  #
 # type.destination=#channel1 #channel2                                                             #
 # default.destination=#channel1 #channel2                                                          #
 #                                                                                                  #
-# Example:                                                                                         #
+#                                                                                                  #
+# EXAMPLE:                                                                                         #
 # invite.destination=#siteopchannel                                                                #
 # default.destination=#mainchannel                                                                 #
 #                                                                                                  #
@@ -118,7 +124,8 @@
 # Default in v3+ it would include the dated dirs subfolder in the announcement.                    #
 # To avoid this use the example below.                                                             #
 #                                                                                                  #
-# Example:                                                                                         #
+#                                                                                                  #
+# EXAMPLE:                                                                                         #
 # default.path.1=/SECTION1/****/*                                                                  #
 # default.path.1.destination=#irc-channel                                                          #
 # default.path.1.displayname=SECTION1                                                              #
@@ -179,7 +186,7 @@ default.destination=public
 #pre.section.1=*
 #pre.section.1.destination=public
 
-# To specify where the request, reqfilled and reqdel announces will appear rather than just using your
+# To specify where the request/reqfilled/reqdel announces will appear rather than just using your
 #  default channels, uncomment the next line and set them there.
 #request.destination=public
 #reqfilled.destination=public

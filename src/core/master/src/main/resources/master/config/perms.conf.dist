@@ -10,10 +10,11 @@
 #                                                                                                 #
 # Max number of connections.                                                                      #
 #                                                                                                 #
-# Examples:                                                                                       #
+# EXAMPLES:                                                                                       #
 #  max_users      <max_logins>   <max_exempted>                                                   #
 #  max_users      100   10                                                                        #
 #  exempt         =siteop                                                                         #
+#                                                                                                 #
 # Above would allow normal users to connect until there are 100 concurrent users.                 #
 # siteop's would be able to connect until there are 110 concurrent users.                         #
 #                                                                                                 #
@@ -28,7 +29,7 @@ exempt         =siteop
 # * = only wildcard recognized                                                                     #
 # = denotes group, - denotes user                                                                  #
 #                                                                                                  #
-# Examples:                                                                                        #
+# EXAMPLES:                                                                                        #
 # upload        *   =siteop                                                                        #
 # download      *   -user1                                                                         #
 # makedir       /usercanmakedir/*   -user1 -user2 =group1                                          #
@@ -57,7 +58,6 @@ hideinwho      /hidden_path/*   *
 #msgpath      /incoming/   ftp-data/incoming.txt
 
 # Choose who can connect and who can't.
-# Example:
 # allow_connections      * => everyone can connect.
 # allow_connections      =siteop => only users from the siteop group can connect.
 # Default: [*]
@@ -112,8 +112,7 @@ pre	/pre/* =siteop
 #                                                                                                  #
 # This is to deny Download's of files currently being uploaded.                                    #
 #                                                                                                  #
-# Examples:                                                                                        #
-#                                                                                                  #
+# EXAMPLES:                                                                                        #
 # denydownload /PATH* =group -user                                                                 #
 # denydownload /PATH* *                                                                            #
 #                                                                                                  #
@@ -130,8 +129,7 @@ pre	/pre/* =siteop
 #                                                                                                  #
 # DupeCheck Options located in "dupecheck.conf"                                                    #
 #                                                                                                  #
-# Examples:                                                                                        #
-#                                                                                                  #
+# EXAMPLES:                                                                                        #
 # dupecheck /PATH* =group -user                                                                    #
 # dupecheck /PATH* *                                                                               #
 #                                                                                                  #
@@ -150,8 +148,7 @@ pre	/pre/* =siteop
 # renameownex - Rename Own Permission                                                              #
 # privpathex  - Private Path Permission                                                            #
 #                                                                                                  #
-# Examples:                                                                                        #
-#                                                                                                  #
+# EXAMPLES:                                                                                        #
 # makedirex      ^/SECTION1/.*(sectionkeyword1|sectionkeyword2).*$   !*                            #
 # uploadex       ^.*(sitekeyword1|sitekeyword2).*$   !*                                            #
 #                                                                                                  #

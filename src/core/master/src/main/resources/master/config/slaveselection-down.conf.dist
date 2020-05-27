@@ -8,8 +8,7 @@
 # The slave that is selected will be an available slave and will have more                         #
 # points (given from the filters) than the other available slaves.                                 #
 #                                                                                                  #
-# Examples:                                                                                        #
-#                                                                                                  #
+# EXAMPLES:                                                                                       #
 # Bandwidth (SlaveScore - (multiplier * current bw usage of slave)).                               #
 # x.filter=bandwidth                                                                               #
 # x.multiplier=5                                                                                   #
@@ -40,7 +39,7 @@
 #                                                                                                  #
 ####################################################################################################
 
-# **** Default Config **** (suggested for ultimate bandwidth usage).
+## Default Config (suggested for ultimate bandwidth usage).
 1.filter=bandwidth
 1.multiplier=1
 

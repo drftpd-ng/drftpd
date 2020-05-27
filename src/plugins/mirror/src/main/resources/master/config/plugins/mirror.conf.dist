@@ -7,7 +7,7 @@
 # Example (unmirror all files but sfv/nfo):                                                        #
 # 1.unmirrorExclude=(?i).*\.(nfo|sfv)$                                                             #
 #                                                                                                  #
-# Configuration                                                                                    #
+# Configuration:                                                                                   #
 #                                                                                                  #
 # Number of slaves file should be mirrored on, must be a value > 2.                                #
 # x.nbrOfMirrors                                                                                   #
@@ -33,7 +33,7 @@
 # x.excludeSlaves (optional) (space separated)                                                     #
 #                                                                                                  #
 #                                                                                                  #
-# Example:                                                                                         #
+# EXAMPLE:                                                                                         #
 # 1.nbrOfMirrors=2                                                                                 #
 # 1.path.1=/GROUPS/FIRSTGROUP/.*                                                                   #
 # 1.path.2=/GROUPS/SECONDGROUP/.*                                                                  #

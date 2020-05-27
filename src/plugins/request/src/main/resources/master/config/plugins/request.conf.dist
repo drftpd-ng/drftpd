@@ -1,17 +1,21 @@
 ######################
 ## Request Settings ##
 ####################################################################################################
+
 # Request path.
 request.dirpath=/REQUESTS
 
 # Creates 'request.dirpath' if it does not exist.
+# Default: [true]
 request.createpath=true
 
 # Max allowed requests/week (0=unlimited).
+# Default: [2]
 request.weekmax=2
 # Users exempt from the weekmax rule.
 request.weekexempt=
 # Decrease the usage of the weekly allotment when reqdel.
+# Default: [false]
 request.weekdecrease=false
 
 # Regex pattern to deny unwanted chars in request name.

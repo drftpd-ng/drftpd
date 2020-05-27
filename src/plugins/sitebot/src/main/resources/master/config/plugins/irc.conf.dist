@@ -152,10 +152,10 @@ commands.full=queue
 #  either a hostname or an IP address, using a hostname is not advised if the
 #  DNS entry for it points to multiple IPs. A blank or undefined entry here
 #  causes the sitebot to bind to the primary IP.
-bind.host=
+#bind.host=
 
 # Character set to use when sending to the irc server.
-# Default: [false]
+# Default: [UTF-8]
 charset=UTF-8
 
 # Maximum length of lines to use when sending messages to the server, this is the
@@ -181,7 +181,7 @@ ssl.strictTrust=false
 #  this setting unless you have explicitly altered the keystore password for this file
 #  after installing the java environment. This setting is only used when strictTrust
 #  is enabled.
-ssl.keystore.password=changeit
+#ssl.keystore.password=
 
 # Internal bot name, there is no need to change this unless you use the multiple bots
 #  option, in that case only this name will be used to identify a bot in things like
@@ -202,5 +202,5 @@ bot.multiple.enable=false
 #  these are expected to be subdirectories of config/plugins/irc and must contain a
 #  copy of all config files the sitebot plugin and any of its plugins require, this
 #  option is only relevant if the previous option is enabled
-bot.multiple.directories=additional1 additional2
+#bot.multiple.directories=additional1 additional2
 

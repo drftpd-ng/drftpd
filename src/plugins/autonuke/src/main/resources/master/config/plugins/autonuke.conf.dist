@@ -3,15 +3,17 @@
 ####################################################################################################
 
 # Nuke user (User account to use when nuking dir).
+# Default: [drftpd]
 user=drftpd
 
 # Debug mode: No nuking, output to drftpd.log instead
 #  but still sends info to IRC. Reloading the site in debug mode will clear
-#  any autonukes in memory. 
+#  any autonukes in memory.
+# Default: [true] 
 debug=true
 
 # Exclude sections (comma separated).
-exclude.sections=PRE,REQUESTS,ARCHIVE
+exclude.sections=PRE,REQUESTS,ARCHIVE,SPEEDTEST
 
 # Exclude release directories (regex).
 exclude.dirs=^(?i)((\\[NUKED\\]).*|SORTED|SINGLES)$

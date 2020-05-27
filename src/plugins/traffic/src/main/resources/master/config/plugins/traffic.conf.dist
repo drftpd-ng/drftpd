@@ -1,8 +1,8 @@
-#####################
-# Traffic Settings ##
+######################
+## Traffic Settings ##
 ####################################################################################################
 #                                                                                                  #
-# Traffic Manager                                                                                  #
+# Traffic Manager:                                                                                 #
 #                                                                                                  #
 # This will allow you to specify Min/Max speed for users/paths.                                    #
 #                                                                                                  #
@@ -19,17 +19,17 @@
 # x.up = Use this type for Upload (True/False).                                                    #
 # x.dn = Use this type for Download (True/False).                                                  #
 #                                                                                                  #
-# Default                                                                                          #
+# - Default:                                                                                       #
 #                                                                                                  #
 # This will just stop/throttle the transfer.                                                       #
 #                                                                                                  #
-# Kick                                                                                             #
+# - Kick:                                                                                          #
 #                                                                                                  #
 # This will kick the user for a slow transfer.                                                     #
 #                                                                                                  #
 # x.reason = Kick reason.                                                                          #
 #                                                                                                  #
-# Ban                                                                                              #
+# - Ban:                                                                                           #
 #                                                                                                  #
 # This will ban the user for a slow transfer.                                                      #
 #                                                                                                  #

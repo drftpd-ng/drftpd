@@ -48,21 +48,21 @@ allowedexts=nfo txt jpg diz avi vob m2ts mkv mp4 zip m3u
 sfvfirst.pathcheck=*
 
 # Ignore paths for sfv first enforcement.
-sfvfirst.pathignore=/PRE/* /REQUESTS/* */Subs/ */Cover/ */Covers/
+sfvfirst.pathignore=/PRE/* /REQUESTS/* */Subs/ */Cover/ */Covers/ /SPEEDTEST/*
 
 # Who has their restricted by the sfv-first system?
 # If you wanted siteop group to be exempt, put: !=siteop *
 sfvfirst.users=*
 
 # Disallows .sfv to be uploaded if subdir of (sfvdeny.subdir.include) exists.
-# Default: [true]
+# Default: [false]
 sfvdeny.subdir=false
 
 # List of the subdirs to include when searching to deny sfv upload (regex).
 sfvdeny.subdir.include=.*(?i)(cd[1-9]|dvd[1-9]|dis(c|k)[1-9]).*
 
 # List of sections/dirs to exclude when searching for deny sfv upload (regex).
-sfvdeny.subdir.exclude=.*(?i)(SPEEDTEST|REQUESTS|STAFF|PRE|GROUPS).*
+sfvdeny.subdir.exclude=.*(?i)(SPEEDTEST|REQUESTS|STAFF|PRE).*
 
 # Check integrity of .zip files on upload.
 # Default: [true]
@@ -73,27 +73,27 @@ stor.zip.integrity.check.enabled=true
 cwd.diz.info.enabled=true
 
 # Enable race stats.
-# Default: [true]
+# Default: [true][true]
 cwd.zip.racestats.enabled=true
 stor.zip.racestats.enabled=true
 
 # Maximum number of users/groups to include in race complete announce.
-# Default [10]
+# Default [10][10]
 irc.sfv.maxusers=10
 irc.sfv.maxgroups=10
 
 # Enable MP3 info.
-# Default: [true]
+# Default: [true][true]
 cwd.mp3info.enabled=true
 stor.mp3info.enabled=true
 
 # Maximum number of users/groups to include in race complete announce.
-# Default: [10]
+# Default: [10][10]
 irc.zip.maxusers=10
 irc.zip.maxgroups=10
 
 # Enable Flac info
-# Default: [true]
+# Default: [true][true]
 cwd.flacinfo.enabled=true
 stor.flacinfo.enabled=true
 

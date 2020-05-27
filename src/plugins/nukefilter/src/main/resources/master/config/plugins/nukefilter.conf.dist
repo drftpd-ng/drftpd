@@ -4,16 +4,18 @@
 
 # Nuke user, FTP account to be used for nuking 
 #  directories. This account HAS TO be existant.
+# Default: [drftpd]
 nuke.nuker=drftpd
 
 # Regex pattern to match against the directory name, if
 #  pattern matches the directory name, the directory will 
 #  be EXCLUDED from ALL NukeFilter checks.
 # Can be more than one regex, seperated by semicolon (;).
-nuke.exempt.dirnames.regex=^(?i)(((cd|dvd|dis[ck]|part)[1-9]{1,2})|cover[s]?|sample|subs)$
+nuke.exempt.dirnames.regex=^(?i)(((cd|dvd|dis[ck]|part)[1-9]{1,2})|cover[s]?|sample|subs|proof)$
 
 ####################################################################################################
-# GLOBAL NUKE FILTER SETTINGS                                                                      #
+#                                                                                                  #
+# Global Nuke Filtyer Settings:                                                                    #
 #                                                                                                  #
 # This applies to ALL sections, no matter if there's a                                             #
 #  section specific configuration or not.                                                          #
@@ -28,9 +30,11 @@ nuke.exempt.dirnames.regex=^(?i)(((cd|dvd|dis[ck]|part)[1-9]{1,2})|cover[s]?|sam
 #  a nukex for each single string by appending ~<mult> to                                          #
 #  it. If no nukex is specified, default nukex (3x) will                                           #
 #  be used.                                                                                        #
+#                                                                                                  #
 # global.filter.string=                                                                            #
 #                                                                                                  #
-# Example:                                                                                         #
+#                                                                                                  #
+# EXAMPLE:                                                                                         #
 # global.filter.string=bannedstr~7;unsexy;pretest~5                                                #
 #                                                                                                  #
 #                                                                                                  #
@@ -41,9 +45,11 @@ nuke.exempt.dirnames.regex=^(?i)(((cd|dvd|dis[ck]|part)[1-9]{1,2})|cover[s]?|sam
 #  a nukex for each single string by appending ~<mult> to                                          #
 #  it. If no nukex is specified, default nukex (3x) will                                           #
 #  be used.                                                                                        #
+#                                                                                                  #
 # global.enforce.string=                                                                           #
 #                                                                                                  #
-# Example:                                                                                         #
+#                                                                                                  #
+# EXAMPLE:                                                                                         #
 # global.enforce.string=coolest~2;even.cooler~5                                                    #
 #                                                                                                  #
 #                                                                                                  #
@@ -56,9 +62,11 @@ nuke.exempt.dirnames.regex=^(?i)(((cd|dvd|dis[ck]|part)[1-9]{1,2})|cover[s]?|sam
 #  matching. You can specify a nukex for each single regex                                         #
 #  by appending ~<mult> to it. If no nukex is specified,                                           #
 #  default nukex (3x) will be used.                                                                #
+#                                                                                                  #
 # global.filter.regex=                                                                             #
 #                                                                                                  #
 # NOTE: escaping of \ required, ie. \d -> \\d, \s -> \\s                                           #
+#                                                                                                  #
 #                                                                                                  #
 # EXAMPLE:                                                                                         #
 # global.filter.regex=^.+REGEX\\d.+$~10;^.+TESTPRE.+$                                              #
@@ -73,9 +81,11 @@ nuke.exempt.dirnames.regex=^(?i)(((cd|dvd|dis[ck]|part)[1-9]{1,2})|cover[s]?|sam
 #  flag (?i) for case-insensitive matching. You can specify                                        #
 #  a nukex for each single regex by appending ~<mult> to it.                                       #
 # If no nukex is given, default nukex (3x) will be used.                                           #
+#                                                                                                  #
 #  global.enforce.regex=                                                                           #
 #                                                                                                  #
 # NOTE: escaping of \ required, ie. \d -> \\d, \s -> \\s                                           #
+#                                                                                                  #
 #                                                                                                  #
 # EXAMPLE:                                                                                         #
 # global.enforce.regex=^.+[0-9]{4}.+$;^COOL-.+$~15                                                 #
@@ -91,16 +101,17 @@ nuke.exempt.dirnames.regex=^(?i)(((cd|dvd|dis[ck]|part)[1-9]{1,2})|cover[s]?|sam
 #  year ranges are to be seperated by semicolon (;). You                                           #
 #  can specify a nukex for each year(range) by appending                                           #
 #  ~<mult> to it.                                                                                  #
+#                                                                                                  #
 # global.filter.year=                                                                              #
 #                                                                                                  #
 # NOTE: Might schedule false-postivies for nuking in                                               #
 #  certain cases.                                                                                  #
 #                                                                                                  #
+#                                                                                                  #
 # EXAMPLE:                                                                                         #
 # global.filter.year=2004-2008;2003-2000~2;1999~10                                                 #
 #                                                                                                  #
 #                                                                                                  #
-# FURTHERMORE:                                                                                     #
 # If the extracted year is in format \d\d\dx, ie.                                                  #
 #  199x, NukeFilter will process it like following:                                                #
 #  1990 filtered? no -> proceed                                                                    #
@@ -114,10 +125,12 @@ nuke.exempt.dirnames.regex=^(?i)(((cd|dvd|dis[ck]|part)[1-9]{1,2})|cover[s]?|sam
 #  otherwise the directory is going to be nuked.                                                   #
 # You can specify different year ranges and/or years                                               #
 #  seperating them by semicolon (;).                                                               #
+#                                                                                                  #
 # global.enforce.year=                                                                             #
 #                                                                                                  #
 # NOTE: You CAN NOT specify a nukex for each single                                                #
 # enforced year. DO NOT append ~<mult>.                                                            #
+#                                                                                                  #
 #                                                                                                  #
 # EXAMPLE:                                                                                         #
 # global.enforce.year=1999-2001;2008;2003-2005                                                     #
@@ -126,7 +139,9 @@ nuke.exempt.dirnames.regex=^(?i)(((cd|dvd|dis[ck]|part)[1-9]{1,2})|cover[s]?|sam
 # Sets the nukex for directories failing the                                                       #
 #  global.enforced.year check. If no nukex is specified,                                           #
 #  nukex will be defaulted to 3x.                                                                  #
+#                                                                                                  #
 # global.enforce.year.nukex=                                                                       #
+#                                                                                                  #
 #                                                                                                  #
 # EXAMPLE:                                                                                         #
 # global.enforce.year.nukex=5                                                                      #
@@ -138,7 +153,9 @@ nuke.exempt.dirnames.regex=^(?i)(((cd|dvd|dis[ck]|part)[1-9]{1,2})|cover[s]?|sam
 #  specified groups, the directory is scheduled to be nuked.                                       #
 # Groups are matched case-insensitive. You can specify a                                           #
 #  nukex for each single group by appending ~<mult> to it.                                         #
+#                                                                                                  #
 # global.filter.group=                                                                             #
+#                                                                                                  #
 #                                                                                                  #
 # EXAMPLE:                                                                                         #
 # global.filter.group=GRP1~5;GROUP_iNT~10;GROUPY                                                   #
@@ -149,10 +166,12 @@ nuke.exempt.dirnames.regex=^(?i)(((cd|dvd|dis[ck]|part)[1-9]{1,2})|cover[s]?|sam
 #  the directory is going to be nuked.                                                             #
 # You can specify multiple groups, seperating them by semi-                                        #
 #  colon (;).                                                                                      #
+#                                                                                                  #
 # global.enforce.group=                                                                            #
 #                                                                                                  #
 # NOTE: You can NOT specify a nukex for each single                                                #
 # enforced group. DO NOT append ~<mult>.                                                           #
+#                                                                                                  #
 #                                                                                                  #
 # EXAMPLE:                                                                                         #
 # global.enforce.group=COOLGRP;COOLGRP_iNT;NICEGRP                                                 #
@@ -163,6 +182,7 @@ nuke.exempt.dirnames.regex=^(?i)(((cd|dvd|dis[ck]|part)[1-9]{1,2})|cover[s]?|sam
 #  nukex will be defaulted to 3x.                                                                  #
 # global.enforce.group.nukex=                                                                      #
 #                                                                                                  #
+#                                                                                                  #
 # EXAMPLE:                                                                                         #
 # global.enforce.group.nukex=5                                                                     #
 #                                                                                                  #
@@ -171,7 +191,9 @@ nuke.exempt.dirnames.regex=^(?i)(((cd|dvd|dis[ck]|part)[1-9]{1,2})|cover[s]?|sam
 #  do not set this, its default value 120s will be used.                                           #
 # This is the time the uploader has to remove the crap he                                          #
 #  uploaded before he gets nuked.                                                                  #
-global.nuke.delay=120                                                                              #
+#                                                                                                  #
+# global.nuke.delay=                                                                               #
+#                                                                                                  #
 #                                                                                                  #
 # EXAMPLE:                                                                                         #
 # global.nuke.delay=120                                                                            #
@@ -181,7 +203,9 @@ global.nuke.delay=120                                                           
 # NukeFilter operations. You can specify multiple sections                                         #
 # seperated by semicolon (;). Exempt sections have to be                                           #
 # specified case-sensitive.                                                                        #
+#                                                                                                  #
 # global.exempt.sections=                                                                          #
+#                                                                                                  #
 #                                                                                                  #
 # EXAMPLE:                                                                                         #
 # global.exempt.sections=REQUESTS;ARCHiVE;SPEEDTEST;PRE                                            #
@@ -195,7 +219,7 @@ global.nuke.delay=120                                                           
 #                                                                                                  #
 ####################################################################################################
 
-#global.enabled=true
+global.enabled=true
 #global.filter.string=
 #global.enforce.string=
 #global.filter.regex=
@@ -206,10 +230,10 @@ global.enforce.year.nukex=3
 #global.filter.group=
 #global.enforce.group=
 global.enforce.group.nukex=3
-#global.nuke.delay=
+global.nuke.delay=120
 #global.exempt.sections=
 
-### SECTION SPECIFIC NUKE FILTER SETTINGS
+## Section specific nuke filter settings.
 #x.section=
 #x.filter.string=
 #x.enforce.string=
