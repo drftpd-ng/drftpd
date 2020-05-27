@@ -1,0 +1,1 @@
+javac -cp "lib/*:build/*" contrib/Upgrade.java
