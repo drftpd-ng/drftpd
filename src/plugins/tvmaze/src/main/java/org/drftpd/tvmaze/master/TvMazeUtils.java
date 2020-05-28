@@ -345,7 +345,7 @@ public class TvMazeUtils {
 
         long hours = ChronoUnit.HOURS.between(t1, t2);
         if (hours > 0) {
-            age += hours+" h";
+            age += " "+hours+"h";
             spaceadded = true;
             t2 = t2.minusHours(hours);
         }
