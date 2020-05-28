@@ -87,7 +87,7 @@ denydatauncrypted       *
 # Default: [true]
 hide_ips true
 
-# Hide users or group from shown in stats outputs3
+# Hide users or group from shown in stats outputs
 hideinstats      =deleted =exempt
 
 # Don't update files and bytes on transfers.
