@@ -341,15 +341,18 @@ public class TvMazeUtils {
             age += days+"d";
             t2 = t2.minusDays(days);
         }
+        boolean spaceadded = false;
 
         long hours = ChronoUnit.HOURS.between(t1, t2);
         if (hours > 0) {
-            age += hours+"h";
+            age += hours+" h";
+            spaceadded = true;
             t2 = t2.minusHours(hours);
         }
 
         long minutes = ChronoUnit.MINUTES.between(t1, t2);
         if (minutes > 0) {
+            if (!spaceadded) { age += " ";  }
             age += minutes+"m";
         }
 
