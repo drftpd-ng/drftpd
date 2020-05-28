@@ -49,7 +49,7 @@ public abstract class AbstractGroup extends Group implements Commitable {
 
     public static void checkValidGroupName(String group) {
         if ((group.indexOf(' ') != -1) || (group.indexOf(';') != -1)) {
-            throw new IllegalArgumentException("Groups cannot contain space or other illegal characters");
+            throw new IllegalArgumentException("Groups cannot contain illegal characters");
         }
     }
 
