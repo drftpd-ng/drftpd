@@ -36,8 +36,8 @@ public class TvMazeParser {
     private static final Logger logger = LogManager.getLogger(TvMazeParser.class);
 
     // TODO: make these configurable?
-    private static final String _searchUrl = "http://api.tvmaze.com/search/shows?q=";
-    private static final String _showUrl = "http://api.tvmaze.com/shows/";
+    private static final String _searchUrl = "https://api.tvmaze.com/search/shows?q=";
+    private static final String _showUrl = "https://api.tvmaze.com/shows/";
 
     // For Info / Dir
     private TvMazeInfo _TvShow;
