@@ -52,7 +52,6 @@ public class LoginHandler extends CommandInterface {
     public void initialize(String method, String pluginName, StandardCommandManager cManager) {
         super.initialize(method, pluginName, cManager);
         _bundle = cManager.getResourceBundle();
-
     }
 
     /**
@@ -62,11 +61,11 @@ public class LoginHandler extends CommandInterface {
     public CommandResponse doIDNT(CommandRequest request) {
         BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
         request.getSession().setObject(BaseFtpConnection.FAILEDLOGIN, true);
+
         if (request.getSession().getObject(BaseFtpConnection.ADDRESS, null) != null) {
             logger.error("Multiple IDNT commands");
             request.getSession().setObject(BaseFtpConnection.FAILEDREASON, "IDNT Multiple");
             return new CommandResponse(530, "Multiple IDNT commands");
-
         }
 
         if (!GlobalContext.getConfig().getBouncerIps().contains(conn.getClientAddress())) {
@@ -116,6 +115,7 @@ public class LoginHandler extends CommandInterface {
     public CommandResponse doPASS(CommandRequest request) {
         BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
         request.getSession().setObject(BaseFtpConnection.FAILEDLOGIN, true);
+
         if (conn.getUserNullUnchecked() == null) {
             request.getSession().setObject(BaseFtpConnection.FAILEDREASON, "PASS Bad-Sequence");
             return StandardCommandManager.genericResponse("RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS");
@@ -127,18 +127,36 @@ public class LoginHandler extends CommandInterface {
         // login failure - close connection
         if (conn.getUserNullUnchecked().checkPassword(pass)) {
             conn.setAuthenticated(true);
-            GlobalContext.getEventService().publishAsync(new UserEvent(
-                    conn.getUserNull(), "LOGIN", System.currentTimeMillis()));
+            GlobalContext.getEventService().publishAsync(new UserEvent(conn.getUserNull(), "LOGIN", System.currentTimeMillis()));
 
             CommandResponse response = new CommandResponse(230, conn.jprintf(_bundle, "pass.success", conn.getUsername()));
 
             try {
                 response.addComment(ConfigLoader.loadTextFile("welcome.txt"));
             } catch (IOException e) {
-                // Not mandatory to have a welcome text, so if it is not present silently ignore
+                // Not mandatory to have a welcome text, so if it is not present only show a message in debug mode
+                logger.debug("No welcome.txt found, silently ignoring this");
             }
             request.getSession().setObject(BaseFtpConnection.FAILEDUSERNAME, "");
             request.getSession().setObject(BaseFtpConnection.FAILEDLOGIN, false);
+
+            // Handle killing of ghosts
+            if (request.getSession().getObject(BaseFtpConnection.KILLGHOSTS, false)) {
+                for (BaseFtpConnection conn2 : GlobalContext.getConnectionManager().getConnections()) {
+                    try {
+                        // Do not kill this connection
+                        if (!conn.equals(conn2)) {
+                            if (conn2.getUser().equals(conn.getUser())) {
+                                if ((System.currentTimeMillis() - conn2.getLastActive()) > (30 * 1000)) {
+                                    conn2.stop("Killed on self request by using '!' prefix");
+                                }
+                            }
+                        }
+                    } catch (NoSuchUserException e) {
+                        // The user might have logged of or be deleted, so ignore
+                    }
+                }
+            }
             return response;
         }
 
@@ -187,12 +205,18 @@ public class LoginHandler extends CommandInterface {
             return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
         }
 
-        request.getSession().setObject(BaseFtpConnection.FAILEDUSERNAME, request.getArgument());
+        // Handle killghosts part (the ! in front of the user)
+        String username = request.getArgument();
+        if (username.charAt(0) == '!') {
+            username = username.substring(1);
+            request.getSession().setObject(BaseFtpConnection.KILLGHOSTS, true);
+        }
+        request.getSession().setObject(BaseFtpConnection.FAILEDUSERNAME, username);
 
         User newUser;
 
         try {
-            newUser = conn.getGlobalContext().getUserManager().getUserByNameIncludeDeleted(request.getArgument());
+            newUser = conn.getGlobalContext().getUserManager().getUserByNameIncludeDeleted(username);
         } catch (NoSuchUserException ex) {
             getIP(request);
             request.getSession().setObject(BaseFtpConnection.FAILEDREASON, "USER Non-Existant");
@@ -250,9 +274,7 @@ public class LoginHandler extends CommandInterface {
                 }
 
                 request.getSession().setObject(BaseFtpConnection.FAILEDLOGIN, false);
-                return new CommandResponse(331,
-                        conn.jprintf(_bundle, "user.success", newUser.getName()),
-                        request.getCurrentDirectory(), newUser.getName());
+                return new CommandResponse(331, conn.jprintf(_bundle, "user.success", newUser.getName()), request.getCurrentDirectory(), newUser.getName());
             }
         } catch (PatternSyntaxException e) {
             return new CommandResponse(530, e.getMessage());

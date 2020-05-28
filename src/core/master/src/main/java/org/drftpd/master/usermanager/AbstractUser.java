@@ -56,9 +56,16 @@ public abstract class AbstractUser extends User implements Commitable {
     private String _username;
 
     public AbstractUser(String username) {
+        checkValidUser(username);
         _username = username;
         _data.setObject(UserManagement.CREATED, new Date(System.currentTimeMillis()));
         _data.setObject(UserManagement.TAGLINE, "no tagline");
+    }
+
+    public static void checkValidUser(String user) {
+        if ((user.indexOf(' ') != -1) || (user.indexOf(';') != -1) || user.indexOf('!') != -1) {
+            throw new IllegalArgumentException("Users cannot contain illegal characters");
+        }
     }
 
     public void addAllMasks(HostMaskCollection hostMaskCollection) {
