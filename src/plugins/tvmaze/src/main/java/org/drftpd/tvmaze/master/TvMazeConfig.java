@@ -19,19 +19,22 @@ package org.drftpd.tvmaze.master;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
+
 import org.drftpd.common.util.ConfigLoader;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.event.ReloadEvent;
 import org.drftpd.master.sections.SectionInterface;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.event.VirtualFileSystemInodeCreatedEvent;
-import org.joda.time.DateTimeZone;
 
 import java.util.ArrayList;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentLinkedQueue;
+
+import java.time.ZoneId;
 
 /**
  * @author scitz0
@@ -44,7 +47,7 @@ public class TvMazeConfig {
     private final ArrayList<SectionInterface> _sSDSections = new ArrayList<>();
     private final ArrayList<String> _filters = new ArrayList<>();
     private String _date, _time, _exclude;
-    private DateTimeZone _dtz;
+    private ZoneId _dtz;
     private int _startDelay, _endDelay;
     private boolean _bar_enabled, _bar_directory, _sRelease;
 
@@ -75,7 +78,7 @@ public class TvMazeConfig {
         }
         _date = cfg.getProperty("date.show", "yyyy-MM-dd");
         _time = cfg.getProperty("time.show", "EEEE, HH:mm");
-        _dtz = cfg.getProperty("timezone") == null ? DateTimeZone.getDefault() : DateTimeZone.forID(cfg.getProperty("timezone"));
+        _dtz = cfg.getProperty("timezone") == null ? ZoneId.systemDefault() : ZoneId.of(cfg.getProperty("timezone"));
         _exclude = cfg.getProperty("exclude", "");
         addSectionsFromConf(cfg, "race.section.", _rSections);
         addSectionsFromConf(cfg, "search.sd.section.", _sSDSections);
@@ -132,7 +135,7 @@ public class TvMazeConfig {
         return _time;
     }
 
-    public DateTimeZone getTimezone() {
+    public ZoneId getTimezone() {
         return _dtz;
     }
 

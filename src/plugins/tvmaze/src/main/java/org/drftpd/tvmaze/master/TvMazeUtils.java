@@ -19,9 +19,11 @@ package org.drftpd.tvmaze.master;
 
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 import org.drftpd.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
@@ -40,16 +42,19 @@ import org.drftpd.tvmaze.master.index.TvMazeQueryParams;
 import org.drftpd.tvmaze.master.metadata.TvEpisode;
 import org.drftpd.tvmaze.master.metadata.TvMazeInfo;
 import org.drftpd.tvmaze.master.vfs.TvMazeVFSData;
-import org.joda.time.DateTime;
-import org.joda.time.Period;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.PeriodFormatter;
-import org.joda.time.format.PeriodFormatterBuilder;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+
 import java.security.SecureRandom;
+
+import java.time.OffsetDateTime;
+import java.time.ZonedDateTime;
+
+import java.time.format.DateTimeFormatter;
+
+import java.time.temporal.ChronoUnit;
+
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -68,8 +73,8 @@ public class TvMazeUtils {
 
     public static Map<String, Object> getShowEnv(TvMazeInfo tvShow) {
         Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
-        DateTimeFormatter df = DateTimeFormat.forPattern(TvMazeConfig.getInstance().getDateFormat());
-        DateTimeFormatter tf = DateTimeFormat.forPattern(TvMazeConfig.getInstance().getTimeFormat());
+        DateTimeFormatter df = DateTimeFormatter.ofPattern(TvMazeConfig.getInstance().getDateFormat());
+        DateTimeFormatter tf = DateTimeFormatter.ofPattern(TvMazeConfig.getInstance().getTimeFormat());
 
         env.put("id", tvShow.getID());
         env.put("tvurl", tvShow.getURL());
@@ -79,8 +84,8 @@ public class TvMazeUtils {
         env.put("genres", StringUtils.join(tvShow.getGenres(), " | "));
         env.put("status", tvShow.getStatus());
         env.put("runtime", tvShow.getRuntime());
-        DateTimeFormatter dtf = DateTimeFormat.forPattern("yyyy-MM-dd");
-        env.put("premiered", df.withZone(TvMazeConfig.getInstance().getTimezone()).print(dtf.parseDateTime(tvShow.getPremiered())));
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        env.put("premiered", df.withZone(TvMazeConfig.getInstance().getTimezone()).format(dtf.parse(tvShow.getPremiered())));
         env.put("network", tvShow.getNetwork());
         env.put("country", tvShow.getCountry());
         env.put("summary", StringUtils.abbreviate(tvShow.getSummary(), 250));
@@ -91,11 +96,11 @@ public class TvMazeUtils {
             env.put("prevepname", tvShow.getPreviousEP().getName());
             env.put("prevepseason", tvShow.getPreviousEP().getSeason());
             env.put("prevepnumber", String.format("%02d", tvShow.getPreviousEP().getNumber()));
-            env.put("prevepairdate", df.withZone(TvMazeConfig.getInstance().getTimezone()).print(new DateTime(tvShow.getPreviousEP().getAirDate())));
-            env.put("prevepairtime", tf.withZone(TvMazeConfig.getInstance().getTimezone()).print(new DateTime(tvShow.getPreviousEP().getAirDate())));
+            env.put("prevepairdate", df.withZone(TvMazeConfig.getInstance().getTimezone()).format(OffsetDateTime.parse(tvShow.getPreviousEP().getAirDate())));
+            env.put("prevepairtime", tf.withZone(TvMazeConfig.getInstance().getTimezone()).format(OffsetDateTime.parse(tvShow.getPreviousEP().getAirDate())));
             env.put("prevepruntime", tvShow.getPreviousEP().getRuntime());
             env.put("prevepsummary", StringUtils.abbreviate(tvShow.getPreviousEP().getSummary(), 250));
-            env.put("prevepage", calculateAge(new DateTime(tvShow.getPreviousEP().getAirDate())));
+            env.put("prevepage", calculateAge(ZonedDateTime.parse(tvShow.getPreviousEP().getAirDate())));
         }
         if (tvShow.getNextEP() != null) {
             env.put("nextepid", tvShow.getNextEP().getID());
@@ -103,11 +108,11 @@ public class TvMazeUtils {
             env.put("nextepname", tvShow.getNextEP().getName());
             env.put("nextepseason", tvShow.getNextEP().getSeason());
             env.put("nextepnumber", String.format("%02d", tvShow.getNextEP().getNumber()));
-            env.put("nextepairdate", df.withZone(TvMazeConfig.getInstance().getTimezone()).print(new DateTime(tvShow.getNextEP().getAirDate())));
-            env.put("nextepairtime", tf.withZone(TvMazeConfig.getInstance().getTimezone()).print(new DateTime(tvShow.getNextEP().getAirDate())));
+            env.put("nextepairdate", df.withZone(TvMazeConfig.getInstance().getTimezone()).format(OffsetDateTime.parse(tvShow.getNextEP().getAirDate())));
+            env.put("nextepairtime", tf.withZone(TvMazeConfig.getInstance().getTimezone()).format(OffsetDateTime.parse(tvShow.getNextEP().getAirDate())));
             env.put("nextepruntime", tvShow.getNextEP().getRuntime());
             env.put("nextepsummary", StringUtils.abbreviate(tvShow.getNextEP().getSummary(), 250));
-            env.put("nextepage", calculateAge(new DateTime(tvShow.getNextEP().getAirDate())));
+            env.put("nextepage", calculateAge(ZonedDateTime.parse(tvShow.getNextEP().getAirDate())));
         }
 
         return env;
@@ -115,8 +120,8 @@ public class TvMazeUtils {
 
     public static Map<String, Object> getEPEnv(TvMazeInfo tvShow, TvEpisode tvEP) {
         Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
-        DateTimeFormatter df = DateTimeFormat.forPattern(TvMazeConfig.getInstance().getDateFormat());
-        DateTimeFormatter tf = DateTimeFormat.forPattern(TvMazeConfig.getInstance().getTimeFormat());
+        DateTimeFormatter df = DateTimeFormatter.ofPattern(TvMazeConfig.getInstance().getDateFormat());
+        DateTimeFormatter tf = DateTimeFormatter.ofPattern(TvMazeConfig.getInstance().getTimeFormat());
 
         env.put("id", tvShow.getID());
         env.put("tvurl", tvShow.getURL());
@@ -126,8 +131,8 @@ public class TvMazeUtils {
         env.put("genres", StringUtils.join(tvShow.getGenres(), " | "));
         env.put("status", tvShow.getStatus());
         env.put("runtime", tvShow.getRuntime());
-        DateTimeFormatter dtf = DateTimeFormat.forPattern("yyyy-MM-dd");
-        env.put("premiered", df.withZone(TvMazeConfig.getInstance().getTimezone()).print(dtf.parseDateTime(tvShow.getPremiered())));
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        env.put("premiered", df.withZone(TvMazeConfig.getInstance().getTimezone()).format(dtf.parse(tvShow.getPremiered())));
         env.put("network", tvShow.getNetwork());
         env.put("country", tvShow.getCountry());
         env.put("summary", StringUtils.abbreviate(tvShow.getSummary(), 250));
@@ -137,11 +142,11 @@ public class TvMazeUtils {
         env.put("epname", tvEP.getName());
         env.put("epseason", tvEP.getSeason());
         env.put("epnumber", String.format("%02d", tvEP.getNumber()));
-        env.put("epairdate", df.withZone(TvMazeConfig.getInstance().getTimezone()).print(new DateTime(tvEP.getAirDate())));
-        env.put("epairtime", tf.withZone(TvMazeConfig.getInstance().getTimezone()).print(new DateTime(tvEP.getAirDate())));
+        env.put("epairdate", df.withZone(TvMazeConfig.getInstance().getTimezone()).format(OffsetDateTime.parse(tvEP.getAirDate())));
+        env.put("epairtime", tf.withZone(TvMazeConfig.getInstance().getTimezone()).format(OffsetDateTime.parse(tvEP.getAirDate())));
         env.put("epruntime", tvEP.getRuntime());
         env.put("epsummary", StringUtils.abbreviate(tvEP.getSummary(), 250));
-        env.put("epage", calculateAge(new DateTime(tvEP.getAirDate())));
+        env.put("epage", calculateAge(ZonedDateTime.parse(tvEP.getAirDate())));
 
         return env;
     }
@@ -226,7 +231,7 @@ public class TvMazeUtils {
                 }
             }
         }
-        if (!epList.isEmpty()) tvmazeInfo.setEPList(epList.toArray(new TvEpisode[epList.size()]));
+        if (!epList.isEmpty()) tvmazeInfo.setEPList(epList.toArray(new TvEpisode[0]));
 
         return tvmazeInfo;
     }
@@ -268,10 +273,9 @@ public class TvMazeUtils {
         return null;
     }
 
-    private static HashMap<String, TvEpisode> parseEpisodes(JsonObject embeddedObj) throws Exception {
+    private static HashMap<String, TvEpisode> parseEpisodes(JsonObject embeddedObj) {
         HashMap<String, TvEpisode> episodes = new HashMap<>();
-        ArrayList<JsonElement> episodesElement = new Gson().fromJson(embeddedObj.getAsJsonArray("episodes"), new TypeToken<ArrayList<JsonElement>>() {
-        }.getType());
+        ArrayList<JsonElement> episodesElement = new Gson().fromJson(embeddedObj.getAsJsonArray("episodes"), new TypeToken<ArrayList<JsonElement>>() {}.getType());
         for (JsonElement episode : episodesElement) {
             TvEpisode ep = createTvEpisode(episode.getAsJsonObject());
             episodes.put("s" + ep.getSeason() + "e" + ep.getNumber(), ep);
@@ -285,7 +289,7 @@ public class TvMazeUtils {
         return root.getAsJsonObject();
     }
 
-    public static TvEpisode createTvEpisode(JsonObject jobj) throws Exception {
+    public static TvEpisode createTvEpisode(JsonObject jobj) {
         TvEpisode tvEP = new TvEpisode();
         if (jobj.get("id").isJsonPrimitive()) tvEP.setID(jobj.get("id").getAsInt());
         if (jobj.get("url").isJsonPrimitive()) tvEP.setURL(jobj.get("url").getAsString());
@@ -298,30 +302,63 @@ public class TvMazeUtils {
             tvEP.setAirDate("1900-01-01T01:00:00-04:00");
         }
         if (jobj.get("runtime").isJsonPrimitive()) tvEP.setRuntime(jobj.get("runtime").getAsInt());
-        if (jobj.get("summary").isJsonPrimitive())
-            tvEP.setSummary(HttpUtils.htmlToString(jobj.get("summary").getAsString()));
+        if (jobj.get("summary").isJsonPrimitive()) tvEP.setSummary(HttpUtils.htmlToString(jobj.get("summary").getAsString()));
         return tvEP;
     }
 
-    private static String calculateAge(DateTime epDate) {
+    private static String calculateAge(ZonedDateTime epDate) {
+        // Get now
+        ZonedDateTime now = ZonedDateTime.now();
 
-        Period period;
-        if (epDate.isBefore(new DateTime())) {
-            period = new Period(epDate, new DateTime());
-        } else {
-            period = new Period(new DateTime(), epDate);
+        // Get the (positive) time between now and epData
+        ZonedDateTime t1 = now;
+        ZonedDateTime t2 = epDate;
+        if (epDate.isBefore(now)) {
+            t1 = epDate;
+            t2 = now;
         }
 
-        PeriodFormatter formatter = new PeriodFormatterBuilder()
-                .appendYears().appendSuffix("y")
-                .appendMonths().appendSuffix("m")
-                .appendWeeks().appendSuffix("w")
-                .appendDays().appendSuffix("d ")
-                .appendHours().appendSuffix("h")
-                .appendMinutes().appendSuffix("m")
-                .printZeroNever().toFormatter();
+        String age = "";
+        long years = ChronoUnit.YEARS.between(t1, t2);
+        if (years > 0) {
+            age += years+"y";
+            t2 = t2.minusYears(years);
+        }
 
-        return formatter.print(period);
+        long months = ChronoUnit.MONTHS.between(t1, t2);
+        if (months > 0) {
+            age += months+"m";
+            t2 = t2.minusMonths(months);
+        }
+
+        long weeks = ChronoUnit.WEEKS.between(t1, t2);
+        if (weeks > 0) {
+            age += weeks+"w";
+            t2 = t2.minusWeeks(weeks);
+        }
+
+        long days = ChronoUnit.DAYS.between(t1, t2);
+        if (days > 0) {
+            age += days+"d";
+            t2 = t2.minusDays(days);
+        }
+        boolean spaceadded = false;
+
+        long hours = ChronoUnit.HOURS.between(t1, t2);
+        if (hours > 0) {
+            age += " "+hours+"h";
+            spaceadded = true;
+            t2 = t2.minusHours(hours);
+        }
+
+        long minutes = ChronoUnit.MINUTES.between(t1, t2);
+        if (minutes > 0) {
+            if (!spaceadded) { age += " ";  }
+            age += minutes+"m";
+        }
+        if (age.length() == 0) { age = "0"; }
+
+        return age;
     }
 
     public static String filterTitle(String title) {
