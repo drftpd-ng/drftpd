@@ -321,31 +321,31 @@ public class TvMazeUtils {
         long years = ChronoUnit.YEARS.between(t1, t2);
         if (years > 0) {
             age += years+"y";
-            t2.minusYears(years);
+            t2 = t2.minusYears(years);
         }
 
         long months = ChronoUnit.MONTHS.between(t1, t2);
         if (months > 0) {
             age += months+"m";
-            t2.minusMonths(months);
+            t2 = t2.minusMonths(months);
         }
 
         long weeks = ChronoUnit.WEEKS.between(t1, t2);
         if (weeks > 0) {
             age += weeks+"w";
-            t2.minusWeeks(weeks);
+            t2 = t2.minusWeeks(weeks);
         }
 
         long days = ChronoUnit.DAYS.between(t1, t2);
         if (days > 0) {
             age += days+"d";
-            t2.minusDays(days);
+            t2 = t2.minusDays(days);
         }
 
         long hours = ChronoUnit.HOURS.between(t1, t2);
         if (hours > 0) {
             age += hours+"h";
-            t2.minusHours(hours);
+            t2 = t2.minusHours(hours);
         }
 
         long minutes = ChronoUnit.MINUTES.between(t1, t2);
