@@ -48,6 +48,7 @@ import java.io.IOException;
 
 import java.security.SecureRandom;
 
+import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
 
 import java.time.format.DateTimeFormatter;
@@ -95,8 +96,8 @@ public class TvMazeUtils {
             env.put("prevepname", tvShow.getPreviousEP().getName());
             env.put("prevepseason", tvShow.getPreviousEP().getSeason());
             env.put("prevepnumber", String.format("%02d", tvShow.getPreviousEP().getNumber()));
-            env.put("prevepairdate", df.withZone(TvMazeConfig.getInstance().getTimezone()).format(ZonedDateTime.parse(tvShow.getPreviousEP().getAirDate())));
-            env.put("prevepairtime", tf.withZone(TvMazeConfig.getInstance().getTimezone()).format(ZonedDateTime.parse(tvShow.getPreviousEP().getAirDate())));
+            env.put("prevepairdate", df.withZone(TvMazeConfig.getInstance().getTimezone()).format(OffsetDateTime.parse(tvShow.getPreviousEP().getAirDate())));
+            env.put("prevepairtime", tf.withZone(TvMazeConfig.getInstance().getTimezone()).format(OffsetDateTime.parse(tvShow.getPreviousEP().getAirDate())));
             env.put("prevepruntime", tvShow.getPreviousEP().getRuntime());
             env.put("prevepsummary", StringUtils.abbreviate(tvShow.getPreviousEP().getSummary(), 250));
             env.put("prevepage", calculateAge(ZonedDateTime.parse(tvShow.getPreviousEP().getAirDate())));
@@ -107,8 +108,8 @@ public class TvMazeUtils {
             env.put("nextepname", tvShow.getNextEP().getName());
             env.put("nextepseason", tvShow.getNextEP().getSeason());
             env.put("nextepnumber", String.format("%02d", tvShow.getNextEP().getNumber()));
-            env.put("nextepairdate", df.withZone(TvMazeConfig.getInstance().getTimezone()).format(dtf.parse(tvShow.getNextEP().getAirDate())));
-            env.put("nextepairtime", tf.withZone(TvMazeConfig.getInstance().getTimezone()).format(dtf.parse(tvShow.getNextEP().getAirDate())));
+            env.put("nextepairdate", df.withZone(TvMazeConfig.getInstance().getTimezone()).format(OffsetDateTime.parse(tvShow.getNextEP().getAirDate())));
+            env.put("nextepairtime", tf.withZone(TvMazeConfig.getInstance().getTimezone()).format(OffsetDateTime.parse(tvShow.getNextEP().getAirDate())));
             env.put("nextepruntime", tvShow.getNextEP().getRuntime());
             env.put("nextepsummary", StringUtils.abbreviate(tvShow.getNextEP().getSummary(), 250));
             env.put("nextepage", calculateAge(ZonedDateTime.parse(tvShow.getNextEP().getAirDate())));
@@ -141,8 +142,8 @@ public class TvMazeUtils {
         env.put("epname", tvEP.getName());
         env.put("epseason", tvEP.getSeason());
         env.put("epnumber", String.format("%02d", tvEP.getNumber()));
-        env.put("epairdate", df.withZone(TvMazeConfig.getInstance().getTimezone()).format(ZonedDateTime.parse(tvEP.getAirDate())));
-        env.put("epairtime", tf.withZone(TvMazeConfig.getInstance().getTimezone()).format(ZonedDateTime.parse(tvEP.getAirDate())));
+        env.put("epairdate", df.withZone(TvMazeConfig.getInstance().getTimezone()).format(OffsetDateTime.parse(tvEP.getAirDate())));
+        env.put("epairtime", tf.withZone(TvMazeConfig.getInstance().getTimezone()).format(OffsetDateTime.parse(tvEP.getAirDate())));
         env.put("epruntime", tvEP.getRuntime());
         env.put("epsummary", StringUtils.abbreviate(tvEP.getSummary(), 250));
         env.put("epage", calculateAge(ZonedDateTime.parse(tvEP.getAirDate())));
