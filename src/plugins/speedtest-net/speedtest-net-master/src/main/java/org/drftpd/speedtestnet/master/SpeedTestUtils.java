@@ -139,7 +139,7 @@ public class SpeedTestUtils {
         SlaveLocation slaveLocation = new SlaveLocation();
         try {
             String ip = InetAddress.getByName(rslave.getPASVIP()).getHostAddress();
-            String data = HttpUtils.retrieveHttpAsString("http://ipinfo.io/" + ip + "/json");
+            String data = HttpUtils.retrieveHttpAsString("https://ipinfo.io/" + ip + "/json");
             JsonElement root = JsonParser.parseString(data);
             JsonObject rootobj = root.getAsJsonObject();
             String[] loc = rootobj.get("loc").getAsString().split(",");
