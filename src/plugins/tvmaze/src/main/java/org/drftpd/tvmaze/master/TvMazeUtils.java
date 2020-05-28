@@ -355,6 +355,7 @@ public class TvMazeUtils {
             if (!spaceadded) { age += " ";  }
             age += minutes+"m";
         }
+        if (age.length() == 0) { age = "0"; }
 
         return age;
     }
