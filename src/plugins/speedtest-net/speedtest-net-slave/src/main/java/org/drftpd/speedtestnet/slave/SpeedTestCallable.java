@@ -53,11 +53,15 @@ public class SpeedTestCallable implements Callable<Long> {
     }
 
     public void setHttpPost(HttpPost httpPost) {
+        logger.debug("Setting httpPost");
         _httpPost = httpPost;
+        _httpGet = null;
     }
 
     public void setHttpGet(HttpGet httpGet) {
+        logger.debug("Setting httpGet");
         _httpGet = httpGet;
+        _httpPost = null;
     }
 
     @Override

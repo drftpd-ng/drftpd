@@ -268,6 +268,7 @@ public class SpeedTestHandler extends AbstractHandler {
 
         HttpGet httpGet;
 
+        logger.debug("Initializing " + _downThreads + " speedtest callables");
         SpeedTestCallable[] speedTestCallables = new SpeedTestCallable[_downThreads];
         for (int i = 0; i < _downThreads; i++) {
             speedTestCallables[i] = new SpeedTestCallable();
@@ -282,9 +283,15 @@ public class SpeedTestHandler extends AbstractHandler {
         StopWatch watch = new StopWatch();
 
         for (int size : _sizes) { // Measure dl speed for each size in _sizes
-            if ((System.currentTimeMillis() - startTime) > _downTime) { break; }
+            logger.debug("Testing size [" + size + "] for url [" + url +"]");
+            if ((System.currentTimeMillis() - startTime) > _downTime)
+            {
+                logger.debug("downtime " + _downTime + " reached, stopping");
+                break;
+            }
 
             String tmpURL = url + size + "x" + size + ".jpg";
+            logger.debug("test url: [" + tmpURL + "]");
             try {
                 httpGet = new HttpGet(new URI(tmpURL));
                 httpGet.setConfig(requestConfig);
@@ -300,6 +307,7 @@ public class SpeedTestHandler extends AbstractHandler {
                 callables.add(speedTestCallables[k]);
             }
 
+            logger.debug("iterating from 0 to " + _sizeLoop);
             for (int j = 0; j < _sizeLoop; j++) {
                 try {
                     watch.reset();
@@ -317,16 +325,19 @@ public class SpeedTestHandler extends AbstractHandler {
                     close(executor, callables);
                     return 0;
                 }
-                if ((System.currentTimeMillis() - startTime) > _downTime) { break; }
+                if ((System.currentTimeMillis() - startTime) > _downTime)
+                {
+                    logger.debug("downtime " + _downTime + " reached, stopping");
+                    break;
+                }
             }
         }
 
+        close(executor, callables);
+
         if (totalBytes == 0L || totalTime == 0L) {
-            close(executor, callables);
             return 0;
         }
-
-        close(executor, callables);
 
         return (float) (((totalBytes * 8) / totalTime) * 1000) / 1000000;
     }
