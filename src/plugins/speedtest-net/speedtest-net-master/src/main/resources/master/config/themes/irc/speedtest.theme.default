@@ -7,5 +7,5 @@ speedtest.servers.null=No test servers cached, check log for warn message!
 speedtest.servers.empty=Could not find any speedtest.net servers, refresh list with -refresh
 speedtest.slavename.error=${slave.name} not found, check spelling!
 speedtest.slave.offline=${slave.name} is offline, unable to run speed test
-speedtest.slave.geoip.error=Failed getting ${slave.name} location from ipinfo.io, please set pasv_addr to override
+speedtest.slave.geoip.error=Failed getting ${slave.name} location from ipinfo.io, please use site slave slave_name set pasv_addr public_ip to override
 speedtest.server.id.error=${slave.name}: Server id ${server.id} not valid!
