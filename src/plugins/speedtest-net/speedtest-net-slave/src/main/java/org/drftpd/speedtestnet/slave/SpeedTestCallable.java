@@ -28,6 +28,8 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 
 import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,29 +41,32 @@ import java.util.concurrent.ExecutionException;
  */
 public class SpeedTestCallable implements Callable<Long> {
 
+    private static final Logger logger = LogManager.getLogger(SpeedTestCallable.class);
+
     private CloseableHttpResponse response;
     private final CloseableHttpClient httpClient;
-    private HttpPost httpPost;
-    private HttpGet httpGet;
+    private HttpPost _httpPost;
+    private HttpGet _httpGet;
 
     public SpeedTestCallable() {
         httpClient = HttpClients.createDefault();
     }
 
     public void setHttpPost(HttpPost httpPost) {
-        this.httpPost = httpPost;
+        _httpPost = httpPost;
     }
 
     public void setHttpGet(HttpGet httpGet) {
-        this.httpGet = httpGet;
+        _httpGet = httpGet;
     }
 
     @Override
     public Long call() throws Exception {
+        logger.debug("We were called");
         Long bytes = 0L;
         try {
-            if (httpPost != null) {
-                response = httpClient.execute(httpPost);
+            if (_httpPost != null) {
+                response = httpClient.execute(_httpPost);
                 final int statusCode = response.getCode();
                 if (statusCode != HttpStatus.SC_OK) {
                     throw new Exception("Error code " + statusCode + " while running upload test.");
@@ -74,8 +79,8 @@ public class SpeedTestCallable implements Callable<Long> {
                     throw new Exception("Wrong return result from upload messurement from test server.\nReceived: " + data);
                 }
                 bytes = Long.parseLong(data.replaceAll("\\D", ""));
-            } else if (httpGet != null) {
-                response = httpClient.execute(httpGet);
+            } else if (_httpGet != null) {
+                response = httpClient.execute(_httpGet);
                 final int statusCode = response.getCode();
                 if (statusCode != HttpStatus.SC_OK) {
                     throw new Exception("Error code " + statusCode + " while running upload test.");
@@ -89,8 +94,12 @@ public class SpeedTestCallable implements Callable<Long> {
                     bytes = bytes + len;
                 }
                 EntityUtils.consume(entity);
+            } else
+            {
+                logger.error("Called without httpget or httppost set...");
             }
         } catch (Exception e) {
+            logger.error("Received exception while being called. {}", e.getMessage());
             throw new ExecutionException(e);
         } finally {
             try {
