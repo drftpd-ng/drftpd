@@ -47,4 +47,6 @@ public class SlaveLocation {
     public void setLongitude(double longitude) {
         this.longitude = longitude;
     }
+
+    public String toString() { return "Latitude: " + latitude + ", longitude: " + longitude; }
 }
