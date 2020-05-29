@@ -17,14 +17,17 @@
  */
 package org.drftpd.speedtestnet.slave;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.HttpStatus;
+
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+
+import org.apache.hc.core5.http.io.entity.EntityUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -59,7 +62,7 @@ public class SpeedTestCallable implements Callable<Long> {
         try {
             if (httpPost != null) {
                 response = httpClient.execute(httpPost);
-                final int statusCode = response.getStatusLine().getStatusCode();
+                final int statusCode = response.getCode();
                 if (statusCode != HttpStatus.SC_OK) {
                     throw new Exception("Error code " + statusCode + " while running upload test.");
                 }
@@ -73,7 +76,7 @@ public class SpeedTestCallable implements Callable<Long> {
                 bytes = Long.parseLong(data.replaceAll("\\D", ""));
             } else if (httpGet != null) {
                 response = httpClient.execute(httpGet);
-                final int statusCode = response.getStatusLine().getStatusCode();
+                final int statusCode = response.getCode();
                 if (statusCode != HttpStatus.SC_OK) {
                     throw new Exception("Error code " + statusCode + " while running upload test.");
                 }

@@ -18,18 +18,26 @@ package org.drftpd.speedtestnet.slave;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpStatus;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.util.EntityUtils;
+
+import org.apache.hc.core5.http.io.entity.EntityUtils;
+
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.HttpStatus;
+import org.apache.hc.core5.http.NameValuePair;
+
+import org.apache.hc.core5.http.message.BasicNameValuePair;
+
+import org.apache.hc.client5.http.config.RequestConfig;
+
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+
+import org.apache.hc.client5.http.entity.UrlEncodedFormEntity;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.drftpd.common.network.AsyncCommandArgument;
@@ -81,8 +89,6 @@ public class SpeedTestHandler extends AbstractHandler {
 
     /**
      * Load config/plugins/speedtest.net.slave.conf
-     *
-     * @throws Exception
      */
     private void readConf() {
         logger.info("Loading speedtest.net slave configuration...");
@@ -128,7 +134,6 @@ public class SpeedTestHandler extends AbstractHandler {
 
     public AsyncResponse handleSpeedTest(AsyncCommandArgument ac) {
         return new AsyncResponseSpeedTestInfo(ac.getIndex(), doSpeedTest(ac.getArgs()));
-
     }
 
     private SpeedTestInfo doSpeedTest(String urls) {
@@ -157,9 +162,9 @@ public class SpeedTestHandler extends AbstractHandler {
         long startTime = System.currentTimeMillis();
 
         RequestConfig requestConfig = RequestConfig.custom()
-                .setSocketTimeout(60000)
-                .setConnectTimeout(5000)
-                .setConnectionRequestTimeout(5000)
+                .setResponseTimeout(60000, TimeUnit.MILLISECONDS)
+                .setConnectTimeout(5000, TimeUnit.MILLISECONDS)
+                .setConnectionRequestTimeout(5000, TimeUnit.MILLISECONDS)
                 .build();
 
         HttpPost httpPost = new HttpPost(url);
@@ -186,13 +191,7 @@ public class SpeedTestHandler extends AbstractHandler {
 
             List<NameValuePair> nameValuePairs = new ArrayList<>();
             nameValuePairs.add(new BasicNameValuePair("content1", payload));
-            try {
-                httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
-            } catch (UnsupportedEncodingException e) {
-                logger.error("Unsupported encoding of payload for speedtest upload: {}", e.getMessage());
-                close(executor, callables);
-                return 0;
-            }
+            httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
 
             callables.clear();
             for (int k = 0; k < _upThreads; k++) {
@@ -261,13 +260,12 @@ public class SpeedTestHandler extends AbstractHandler {
         long startTime = System.currentTimeMillis();
 
         RequestConfig requestConfig = RequestConfig.custom()
-                .setSocketTimeout(60000)
-                .setConnectTimeout(5000)
-                .setConnectionRequestTimeout(5000)
+                .setResponseTimeout(60000, TimeUnit.MILLISECONDS)
+                .setConnectTimeout(5000, TimeUnit.MILLISECONDS)
+                .setConnectionRequestTimeout(5000, TimeUnit.MILLISECONDS)
                 .build();
 
-        HttpGet httpGet = new HttpGet();
-        httpGet.setConfig(requestConfig);
+        HttpGet httpGet;
 
         SpeedTestCallable[] speedTestCallables = new SpeedTestCallable[_downThreads];
         for (int i = 0; i < _downThreads; i++) {
@@ -287,7 +285,8 @@ public class SpeedTestHandler extends AbstractHandler {
 
             String tmpURL = url + size + "x" + size + ".jpg";
             try {
-                httpGet.setURI(new URI(tmpURL));
+                httpGet  = new HttpGet(new URI(tmpURL));
+                httpGet.setConfig(requestConfig);
             } catch (URISyntaxException e) {
                 logger.error("URI syntax error for {} :: {}", tmpURL, e.getMessage());
                 close(executor, callables);
@@ -312,11 +311,7 @@ public class SpeedTestHandler extends AbstractHandler {
                     }
                     watch.stop();
                     totalTime += watch.getTime();
-                } catch (InterruptedException e) {
-                    logger.error(e.getMessage());
-                    close(executor, callables);
-                    return 0;
-                } catch (ExecutionException e) {
+                } catch (InterruptedException | ExecutionException e) {
                     logger.error(e.getMessage());
                     close(executor, callables);
                     return 0;
@@ -353,9 +348,9 @@ public class SpeedTestHandler extends AbstractHandler {
 
     private int messureLatency(String url) {
         RequestConfig requestConfig = RequestConfig.custom()
-                .setSocketTimeout(5000)
-                .setConnectTimeout(5000)
-                .setConnectionRequestTimeout(5000)
+                .setResponseTimeout(5000, TimeUnit.MILLISECONDS)
+                .setConnectTimeout(5000, TimeUnit.MILLISECONDS)
+                .setConnectionRequestTimeout(5000, TimeUnit.MILLISECONDS)
                 .build();
         HttpGet httpGet = new HttpGet(url);
         httpGet.setConfig(requestConfig);
@@ -369,7 +364,7 @@ public class SpeedTestHandler extends AbstractHandler {
             try {
                 watch.start();
                 response = httpClient.execute(httpGet);
-                final int statusCode = response.getStatusLine().getStatusCode();
+                final int statusCode = response.getCode();
                 if (statusCode != HttpStatus.SC_OK) {
                     logger.error("Error {} for URL {}", statusCode, url);
                     break;
