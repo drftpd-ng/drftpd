@@ -49,7 +49,6 @@ import org.drftpd.speedtestnet.common.AsyncResponseSpeedTestInfo;
 import org.drftpd.speedtestnet.common.SpeedTestInfo;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
@@ -160,6 +159,7 @@ public class SpeedTestHandler extends AbstractHandler {
         long totalBytes = 0L;
 
         long startTime = System.currentTimeMillis();
+        logger.debug("Getting upload speed for [" + url + "]");
 
         RequestConfig requestConfig = RequestConfig.custom()
                 .setResponseTimeout(60000, TimeUnit.MILLISECONDS)
@@ -258,6 +258,7 @@ public class SpeedTestHandler extends AbstractHandler {
         long totalBytes = 0L;
 
         long startTime = System.currentTimeMillis();
+        logger.debug("Getting download speed for [" + url + "]");
 
         RequestConfig requestConfig = RequestConfig.custom()
                 .setResponseTimeout(60000, TimeUnit.MILLISECONDS)
@@ -285,7 +286,7 @@ public class SpeedTestHandler extends AbstractHandler {
 
             String tmpURL = url + size + "x" + size + ".jpg";
             try {
-                httpGet  = new HttpGet(new URI(tmpURL));
+                httpGet = new HttpGet(new URI(tmpURL));
                 httpGet.setConfig(requestConfig);
             } catch (URISyntaxException e) {
                 logger.error("URI syntax error for {} :: {}", tmpURL, e.getMessage());
