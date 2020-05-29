@@ -63,7 +63,7 @@ import java.util.concurrent.*;
 public class SpeedTestHandler extends AbstractHandler {
     private static final Logger logger = LogManager.getLogger(SpeedTestHandler.class);
 
-    private int[] _sizes = {350, 500, 750, 1000, 1500, 2000, 2500, 3000, 3500, 4000};
+    private int[] _sizes = { 350, 500, 750, 1000, 1500, 2000, 2500, 3000, 3500, 4000 };
     private int _sizeLoop = 4;
     private int _downTime = 10000;
     private int _upTime = 5000;
@@ -142,12 +142,12 @@ public class SpeedTestHandler extends AbstractHandler {
             String[] testServerURLs = urls.split(" ");
             String url = getBestServer(testServerURLs, result);
             if (url == null) {
-                // Was unable to measure latency for server(s), return empty SpeedTestInfo
-                return result;
+                logger.warn("Unable to measure latency for server(s), returning empty speedtest information");
+            } else {
+                result.setURL(url);
+                result.setDown(getDownloadSpeed(url));
+                result.setUp(getUploadSpeed(url));
             }
-            result.setURL(url);
-            result.setDown(getDownloadSpeed(url));
-            result.setUp(getUploadSpeed(url));
         } catch (Exception e) {
             // Catch all errors to not throw slave offline in case something went wrong
             logger.error("Something went horribly wrong speedtesting slave", e);
@@ -347,6 +347,7 @@ public class SpeedTestHandler extends AbstractHandler {
     }
 
     private int messureLatency(String url) {
+        logger.debug("Measuring latency of url [" + url + "]");
         RequestConfig requestConfig = RequestConfig.custom()
                 .setResponseTimeout(5000, TimeUnit.MILLISECONDS)
                 .setConnectTimeout(5000, TimeUnit.MILLISECONDS)
@@ -373,7 +374,7 @@ public class SpeedTestHandler extends AbstractHandler {
                 String data = EntityUtils.toString(entity);
                 EntityUtils.consume(entity);
                 if (!data.startsWith("test=test")) {
-                    logger.error("Wrong return result from latency messurement from test server, {}\nReceived: {}", url, data);
+                    logger.error("Wrong return result from latency measurement from test server, {}\nReceived: {}", url, data);
                     break;
                 }
             } catch (Exception e) {
@@ -390,6 +391,7 @@ public class SpeedTestHandler extends AbstractHandler {
                 }
             }
             int time = (int) watch.getTime();
+            logger.debug("Iteration[" + i + "] bestTime: " + bestTime + ", new time: " + time);
             if (time < bestTime) {
                 bestTime = time;
             }
