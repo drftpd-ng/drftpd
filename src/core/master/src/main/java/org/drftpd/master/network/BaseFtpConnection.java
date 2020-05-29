@@ -60,6 +60,7 @@ public class BaseFtpConnection extends Session implements Runnable {
     public static final Key<Boolean> FAILEDLOGIN = new Key<>(BaseFtpConnection.class, "failedlogin");
     public static final Key<String> FAILEDREASON = new Key<>(BaseFtpConnection.class, "failedreason");
     public static final Key<String> FAILEDUSERNAME = new Key<>(BaseFtpConnection.class, "failedusername");
+    public static final Key<Boolean> KILLGHOSTS = new Key<>(BaseFtpConnection.class, "killghosts");
     public static final String NEWLINE = "\r\n";
     private static final Logger logger = LogManager.getLogger(BaseFtpConnection.class);
     /**

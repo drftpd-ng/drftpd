@@ -268,6 +268,9 @@ public class UserManagementHandler extends CommandInterface {
         } catch (NumberFormatException e) {
             logger.error(e, e);
             return new CommandResponse(501, e.getMessage());
+        } catch (IllegalArgumentException e) {
+            logger.error(e, e);
+            return new CommandResponse(500, e.getMessage());
         }
 
         while (st.hasMoreTokens()) {

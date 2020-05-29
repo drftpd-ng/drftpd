@@ -97,6 +97,8 @@ public class GroupManagementHandler extends CommandInterface {
             newGroup.commit();
             response.addComment(session.jprintf(_bundle, "addgroup.success", env, request.getUser()));
 
+        } catch (IllegalArgumentException e) {
+            return new CommandResponse(500, e.getMessage());
         } catch (FileExistsException e) {
             return new CommandResponse(500, "Group already exists");
         } catch (GroupFileException e) {
