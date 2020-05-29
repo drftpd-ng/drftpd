@@ -43,14 +43,10 @@ public class SpeedTestCallable implements Callable<Long> {
 
     private static final Logger logger = LogManager.getLogger(SpeedTestCallable.class);
 
-    private CloseableHttpResponse response;
-    private final CloseableHttpClient httpClient;
     private HttpPost _httpPost;
     private HttpGet _httpGet;
 
-    public SpeedTestCallable() {
-        httpClient = HttpClients.createDefault();
-    }
+    public SpeedTestCallable() {}
 
     public void setHttpPost(HttpPost httpPost) {
         logger.debug("Setting httpPost");
@@ -68,8 +64,11 @@ public class SpeedTestCallable implements Callable<Long> {
     public Long call() throws Exception {
         logger.debug("We were called");
         Long bytes = 0L;
+        CloseableHttpClient httpClient = HttpClients.createDefault();
+        CloseableHttpResponse response = null;
         try {
             if (_httpPost != null) {
+                logger.debug("executing httpPost");
                 response = httpClient.execute(_httpPost);
                 final int statusCode = response.getCode();
                 if (statusCode != HttpStatus.SC_OK) {
@@ -84,6 +83,7 @@ public class SpeedTestCallable implements Callable<Long> {
                 }
                 bytes = Long.parseLong(data.replaceAll("\\D", ""));
             } else if (_httpGet != null) {
+                logger.debug("executing httpGet");
                 response = httpClient.execute(_httpGet);
                 final int statusCode = response.getCode();
                 if (statusCode != HttpStatus.SC_OK) {
@@ -110,21 +110,14 @@ public class SpeedTestCallable implements Callable<Long> {
                 if (response != null) {
                     response.close();
                 }
-            } catch (IOException e) {
-                // Must already be closed, ignore.
-            }
-        }
-
-        return bytes;
-    }
-
-    public void close() {
-        if (httpClient != null) {
-            try {
                 httpClient.close();
             } catch (IOException e) {
                 // Must already be closed, ignore.
             }
         }
+
+        logger.debug("Returning [" + bytes + "] bytes");
+        return bytes;
     }
+
 }

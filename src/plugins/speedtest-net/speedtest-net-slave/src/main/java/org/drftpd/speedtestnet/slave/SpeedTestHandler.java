@@ -167,14 +167,7 @@ public class SpeedTestHandler extends AbstractHandler {
                 .setConnectionRequestTimeout(5000, TimeUnit.MILLISECONDS)
                 .build();
 
-        HttpPost httpPost = new HttpPost(url);
-        httpPost.setHeader("content-type", "application/x-www-form-urlencoded");
-        httpPost.setConfig(requestConfig);
-
-        String payload = _payload; // Initial payload
-
-        StopWatch watch = new StopWatch();
-
+        logger.debug("Initializing " + _upThreads + " speedtest upload callables");
         SpeedTestCallable[] speedTestCallables = new SpeedTestCallable[_upThreads];
         for (int i = 0; i < _upThreads; i++) {
             speedTestCallables[i] = new SpeedTestCallable();
@@ -184,6 +177,10 @@ public class SpeedTestHandler extends AbstractHandler {
         List<Future<Long>> threadList;
         Set<Callable<Long>> callables = new HashSet<>();
 
+        StopWatch watch = new StopWatch();
+
+        String payload = _payload; // Initial payload
+
         boolean limitReached = false;
 
         int i = 2;
@@ -191,14 +188,18 @@ public class SpeedTestHandler extends AbstractHandler {
 
             List<NameValuePair> nameValuePairs = new ArrayList<>();
             nameValuePairs.add(new BasicNameValuePair("content1", payload));
-            httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
 
             callables.clear();
             for (int k = 0; k < _upThreads; k++) {
+                HttpPost httpPost = new HttpPost(url);
+                httpPost.setHeader("content-type", "application/x-www-form-urlencoded");
+                httpPost.setConfig(requestConfig);
+                httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
                 speedTestCallables[k].setHttpPost(httpPost);
                 callables.add(speedTestCallables[k]);
             }
 
+            logger.debug("iterating from 0 to " + _payloadLoop);
             for (int j = 0; j < _payloadLoop; j++) {
                 try {
                     watch.reset();
@@ -226,6 +227,7 @@ public class SpeedTestHandler extends AbstractHandler {
                     }
                 }
                 if ((System.currentTimeMillis() - startTime) > _upTime) {
+                    logger.debug("uptime " + _upTime + " reached, stopping");
                     break;
                 }
             }
@@ -236,20 +238,16 @@ public class SpeedTestHandler extends AbstractHandler {
             }
         }
 
+        close(executor, callables);
+
         if (totalBytes == 0L || totalTime == 0L) {
-            close(executor, callables);
             return 0;
         }
-
-        close(executor, callables);
 
         return (float) (((totalBytes * 8) / totalTime) * 1000) / 1000000;
     }
 
     private void close(ExecutorService executor, Set<Callable<Long>> callables) {
-        for (Callable<Long> callable : callables) {
-            ((SpeedTestCallable) callable).close();
-        }
         executor.shutdown();
     }
 
@@ -266,9 +264,7 @@ public class SpeedTestHandler extends AbstractHandler {
                 .setConnectionRequestTimeout(5000, TimeUnit.MILLISECONDS)
                 .build();
 
-        HttpGet httpGet;
-
-        logger.debug("Initializing " + _downThreads + " speedtest callables");
+        logger.debug("Initializing " + _downThreads + " speedtest download callables");
         SpeedTestCallable[] speedTestCallables = new SpeedTestCallable[_downThreads];
         for (int i = 0; i < _downThreads; i++) {
             speedTestCallables[i] = new SpeedTestCallable();
@@ -280,6 +276,7 @@ public class SpeedTestHandler extends AbstractHandler {
 
         url = url.substring(0, url.lastIndexOf('/') + 1) + "random";
 
+        URI downloadUrl;
         StopWatch watch = new StopWatch();
 
         for (int size : _sizes) { // Measure dl speed for each size in _sizes
@@ -293,8 +290,7 @@ public class SpeedTestHandler extends AbstractHandler {
             String tmpURL = url + size + "x" + size + ".jpg";
             logger.debug("test url: [" + tmpURL + "]");
             try {
-                httpGet = new HttpGet(new URI(tmpURL));
-                httpGet.setConfig(requestConfig);
+                downloadUrl = new URI(tmpURL);
             } catch (URISyntaxException e) {
                 logger.error("URI syntax error for {} :: {}", tmpURL, e.getMessage());
                 close(executor, callables);
@@ -303,7 +299,9 @@ public class SpeedTestHandler extends AbstractHandler {
 
             callables.clear();
             for (int k = 0; k < _downThreads; k++) {
-                speedTestCallables[k].setHttpGet(httpGet);
+                HttpGet httpget = new HttpGet(downloadUrl);
+                httpget.setConfig(requestConfig);
+                speedTestCallables[k].setHttpGet(httpget);
                 callables.add(speedTestCallables[k]);
             }
 
