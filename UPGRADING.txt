@@ -15,7 +15,7 @@ merged for the first time.
 
 ## To upgrade from 4.x to the latest:
 
-Before performing a upgrade of drftpd, make sure to delete the following folders:
+Before performing a upgrade of DrFTPD, make sure to delete the following folders:
 - src
 
 ### Compile

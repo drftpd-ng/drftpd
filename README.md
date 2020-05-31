@@ -27,7 +27,7 @@ The master has a filelist that keeps track of which slaves have which files and 
 
 When a slave is started, it gathers a filelist and sends the entire list to the master.
 The master merges this list with it's existing file list and makes sure that it's in-sync with it's existing file list by adding and removing files to it's own list.
-Because the master doesn't have any files locally, modifications to the virtual filesystem cannot be done easily from outside of the drftpd application.
+Because the master doesn't have any files locally, modifications to the virtual filesystem cannot be done easily from outside of the DrFTPD application.
 
 Neither the master or the slaves need root privileges. The virtual filesystem contained on the master of which slaves files reside on is the authoritative source for information about the files.
 Items like lastModified, size, user, and group, are all kept on the master.

@@ -135,7 +135,7 @@ public class LuceneEngine implements IndexEngineInterface {
      * <li>IndexSearcher / IndexWriter</li>
      * <li>Reads <i>config/indexation.conf</i> to grab some tweaking
      * settings, if this file is not found, a default values are loaded.</li>
-     * <li>Adds a Shutdown Hook to save the index while closing DrFTPd</li>
+     * <li>Adds a Shutdown Hook to save the index while closing DrFTPD</li>
      * <li>Creates the Maintenance thread.(takes cares of updating the search
      * engine and optimizing)</li>
      * </ul>
@@ -954,7 +954,7 @@ public class LuceneEngine implements IndexEngineInterface {
 
     /**
      * Hook ran by the JVM before shutting down itself completely. This hook
-     * saves the index state to keep it usable the next time you start DrFTPd.
+     * saves the index state to keep it usable the next time you start DrFTPD.
      */
     private final class IndexShutdownHookRunnable implements Runnable {
         public void run() {
