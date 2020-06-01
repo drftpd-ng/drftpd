@@ -18,7 +18,7 @@ package org.drftpd.zipscript.slave.mp3.decoder;
 
 /**
  * This interface describes all error codes that can be thrown
- * in <code>BistreamException</code>s.
+ * in {@code BistreamException}s.
  *
  * @author Originally taken from JLayer - http://www.javazoom.net/javalayer/javalayer.html
  * @version $Id$

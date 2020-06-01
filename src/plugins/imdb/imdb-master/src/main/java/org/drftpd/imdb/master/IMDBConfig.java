@@ -159,7 +159,7 @@ public class IMDBConfig {
      * Method called whenever an inode is created.
      * Spawns a {@link IMDBThread} if all criteria are met to not stall running thread
      * while getting the info from IMDB.
-     * Depends on {@link VirtualFileSystemInodeCreatedEvent} <code>type</code> property.
+     * Depends on {@link VirtualFileSystemInodeCreatedEvent} {@code type} property.
      *
      * @param event
      */

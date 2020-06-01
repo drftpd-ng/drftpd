@@ -20,7 +20,7 @@ import java.io.*;
 
 
 /**
- * The <code>Bistream</code> class is responsible for parsing
+ * The {@code Bistream} class is responsible for parsing
  * an MPEG audio bitstream.
  *
  * <b>REVIEW:</b> much of the parsing currently occurs in the
@@ -69,7 +69,7 @@ public final class Bitstream implements BitstreamErrors {
      */
     private final byte[] frame_bytes = new byte[BUFFER_INT_SIZE * 4];
     /**
-     * Index into <code>framebuffer</code> where the next bits are
+     * Index into {@code framebuffer} where the next bits are
      * retrieved.
      */
     private int wordpointer;

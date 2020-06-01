@@ -501,7 +501,7 @@ public class SiteBot implements ReplyConstants, Runnable {
      *    sendMessage("Paul", "Hi");</pre>
      * <p>
      * You may optionally apply colours, boldness, underlining, etc to
-     * the message by using the <code>Colors</code> class.
+     * the message by using the {@code Colors} class.
      *
      * @param target  The name of the channel or user nick to send to.
      * @param message The message to send.
@@ -534,7 +534,7 @@ public class SiteBot implements ReplyConstants, Runnable {
      * Sends a CTCP command to a channel or user.  (Client to client protocol).
      * Examples of such commands are "PING <number>", "FINGER", "VERSION", etc.
      * For example, if you wish to request the version of a user called "Dave",
-     * then you would call <code>sendCTCPCommand("Dave", "VERSION");</code>.
+     * then you would call {@code sendCTCPCommand("Dave", "VERSION");}.
      * The type of response to such commands is largely dependant on the target
      * client software.
      *
@@ -1125,10 +1125,10 @@ public class SiteBot implements ReplyConstants, Runnable {
      * For example, we can use this method to discover the topic of a
      * channel when we join it.  If we join the channel #test which
      * has a topic of &quot;I am King of Test&quot; then the response
-     * will be &quot;<code>PircBot #test :I Am King of Test</code>&quot;
+     * will be &quot;{@code PircBot #test :I Am King of Test}&quot;
      * with a code of 332 to signify that this is a topic.
      * (This is just an example - note that overriding the
-     * <code>onTopic</code> method is an easier way of finding the
+     * {@code onTopic} method is an easier way of finding the
      * topic for a channel). Check the IRC RFC for the full list of other
      * command response codes.
      * <p>
@@ -2400,13 +2400,13 @@ public class SiteBot implements ReplyConstants, Runnable {
      * multiple server connectivity. The format of
      * this String may change between different versions of PircBot
      * but is currently something of the form
-     * <code>
+     * {@code
      * Version{PircBot x.y.z Java IRC Bot - www.jibble.org}
      * Connected{true}
      * Server{irc.dal.net}
      * Port{6667}
      * Password{}
-     * </code>
+     * }
      *
      * @return a String representation of this object.
      * @since PircBot 0.9.10
@@ -2615,7 +2615,7 @@ public class SiteBot implements ReplyConstants, Runnable {
 
     /**
      * Handles the load of the IRC Commands.
-     * Firstly, it checks if <code>conf/plugins/irc/irccommands.conf</code> exists, if not it halts the daemon.
+     * Firstly, it checks if {@code conf/plugins/irc/irccommands.conf} exists, if not it halts the daemon.
      * After that it read the file and create a list of the existing commands.
      */
     private void loadCommands() {

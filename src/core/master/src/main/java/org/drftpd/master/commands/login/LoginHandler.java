@@ -165,7 +165,7 @@ public class LoginHandler extends CommandInterface {
     }
 
     /**
-     * <code>QUIT &lt;CRLF&gt;</code><br>
+     * {@code QUIT <CRLF>}<br>
      * <p>
      * This command terminates a USER and if file transfer is not
      * in progress, the server closes the control connection.
@@ -184,7 +184,7 @@ public class LoginHandler extends CommandInterface {
     }
 
     /**
-     * <code>USER &lt;SP&gt; &lt;username&gt; &lt;CRLF&gt;</code><br>
+     * {@code USER <SP> <username> <CRLF>}<br>
      * <p>
      * The argument field is a Telnet string identifying the user.
      * The user identification is that which is required by the
