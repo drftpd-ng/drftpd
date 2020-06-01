@@ -90,7 +90,7 @@ public class ZipscriptZipHandler extends AbstractHandler {
         try (FileSystem zipFs = FileSystems.newFileSystem(zipURI, Collections.emptyMap())) {
             AtomicInteger files = new AtomicInteger();
             for (Path root : zipFs.getRootDirectories()) {
-                Files.walkFileTree(root, new SimpleFileVisitor<Path>() {
+                Files.walkFileTree(root, new SimpleFileVisitor<>() {
                     @Override
                     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
                             throws IOException {
@@ -139,7 +139,7 @@ public class ZipscriptZipHandler extends AbstractHandler {
         try (FileSystem zipFs = FileSystems.newFileSystem(zipURI, Collections.emptyMap())) {
             final PathMatcher matcher = FileSystems.getDefault().getPathMatcher("regex:(?i).*file_id.diz");
             for (Path root : zipFs.getRootDirectories()) {
-                Files.walkFileTree(root, new SimpleFileVisitor<Path>() {
+                Files.walkFileTree(root, new SimpleFileVisitor<>() {
                     @Override
                     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
                             throws IOException {
