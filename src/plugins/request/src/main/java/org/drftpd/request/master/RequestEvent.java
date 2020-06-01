@@ -39,9 +39,9 @@ public class RequestEvent extends Event {
     private final String _requestName;
 
     /**
-     * This constructor is useful for REQUEST events since the <code>request owner</code> is equals to <code>command issuer</code>
+     * This constructor is useful for REQUEST events since the {@code request owner} is equals to {@code command issuer}
      *
-     * @param command      the type of the command that generated this event <code>request/reqfilled/reqdelete</code>
+     * @param command      the type of the command that generated this event {@code request/reqfilled/reqdelete}
      * @param requestRoot  the request root (ex: /requests/)
      * @param requestOwner the user who requested
      * @param requestName  what the user requested
@@ -51,9 +51,9 @@ public class RequestEvent extends Event {
     }
 
     /**
-     * This constructor is useful for REQFILLED/REQDELETE events since the <code>request owner</code> is <b>not</b> equals to <code>command issuer</code>
+     * This constructor is useful for REQFILLED/REQDELETE events since the {@code request owner} is <b>not</b> equals to {@code command issuer}
      *
-     * @param command       the type of the command that generated this event <code>request/reqfilled/reqdelete</code>
+     * @param command       the type of the command that generated this event {@code request/reqfilled/reqdelete}
      * @param requestRoot   the request root (ex: /requests/)
      * @param requestOwner  the user who requested
      * @param commandIssuer the user who issued the command that fired this event.

@@ -35,7 +35,7 @@ public interface CommandManagerInterface {
      *
      * @param requiredCmds, a map of commands and corresponding Properties read from the configuration file.
      * @param themeDir      the location relative to drftpd root path of the theme files for the calling frontend
-     * @see <code>org.drftpd.master.config.FtpConfig.getFtpCommandsMap()</code> for more information about the Map.
+     * @see {@code org.drftpd.master.config.FtpConfig.getFtpCommandsMap()} for more information about the Map.
      */
     void initialize(HashMap<String, Properties> requiredCmds, String themeDir);
 

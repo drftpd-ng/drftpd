@@ -34,7 +34,7 @@ public class AddAsciiOutputStream extends OutputStream {
     /**
      * Constructor.
      *
-     * @param os <code>java.io.OutputStream</code> to be filtered.
+     * @param os {@code java.io.OutputStream} to be filtered.
      */
     public AddAsciiOutputStream(OutputStream os) {
         _out = os;

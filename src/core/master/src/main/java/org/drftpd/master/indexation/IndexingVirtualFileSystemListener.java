@@ -146,7 +146,7 @@ public class IndexingVirtualFileSystemListener {
 
     /**
      * Method called whenever an inode is created.
-     * Depends on {@link VirtualFileSystemInodeCreatedEvent} <code>type</code> property.
+     * Depends on {@link VirtualFileSystemInodeCreatedEvent} {@code type} property.
      *
      * @param event
      */

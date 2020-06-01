@@ -21,7 +21,7 @@ import java.io.Serializable;
 
 /**
  * Ftp command request class. We can access command, line and argument using
- * <code>{CMD}, {ARG}</code> within ftp status file. This represents single
+ * {@code {CMD}, {ARG}} within ftp status file. This represents single
  * Ftp request.
  *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
