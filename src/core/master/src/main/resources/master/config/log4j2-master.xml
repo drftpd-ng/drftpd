@@ -11,8 +11,7 @@
             </Policies>
             <DefaultRolloverStrategy max="15"/>
         </RollingFile>
-        <RollingFile name="slave" fileName="logs/remoteslave.log"
-                     filePattern="logs/remoteslave-%d{yyyy-MM-dd}-%i.log.gz">
+        <RollingFile name="slave" fileName="logs/remoteslave.log" filePattern="logs/remoteslave-%d{yyyy-MM-dd}-%i.log.gz">
             <PatternLayout>
                 <Pattern>%p %d{ISO8601} [%t] %c %x - %m%n</Pattern>
             </PatternLayout>
@@ -32,6 +31,96 @@
             </Policies>
             <DefaultRolloverStrategy max="15"/>
         </RollingFile>
+        <RollingFile name="archive" fileName="logs/archive.log" filePattern="logs/archive-%d{yyyy-MM-dd}-%i.log.gz">
+          <PatternLayout>
+            <Pattern>%p %d{ISO8601} [%t] %c %x - %m%n</Pattern>
+          </PatternLayout>
+          <Policies>
+            <TimeBasedTriggeringPolicy />
+            <SizeBasedTriggeringPolicy />
+          </Policies>
+          <DefaultRolloverStrategy max="15"/>
+        </RollingFile>
+        <RollingFile name="jobmanager" fileName="logs/jobmanager.log" filePattern="logs/jobmanager-%d{yyyy-MM-dd}-%i.log.gz">
+          <PatternLayout>
+            <Pattern>%p %d{ISO8601} [%t] %c %x - %m%n</Pattern>
+          </PatternLayout>
+          <Policies>
+            <TimeBasedTriggeringPolicy />
+            <SizeBasedTriggeringPolicy />
+          </Policies>
+          <DefaultRolloverStrategy max="15"/>
+        </RollingFile>
+        <RollingFile name="imdb" fileName="logs/imdb.log" filePattern="logs/imdb-%d{yyyy-MM-dd}-%i.log.gz">
+          <PatternLayout>
+            <Pattern>%p %d{ISO8601} [%t] %c %x - %m%n</Pattern>
+          </PatternLayout>
+          <Policies>
+            <TimeBasedTriggeringPolicy />
+            <SizeBasedTriggeringPolicy />
+          </Policies>
+          <DefaultRolloverStrategy max="15"/>
+        </RollingFile>
+        <RollingFile name="index" fileName="logs/index.log" filePattern="logs/index-%d{yyyy-MM-dd}-%i.log.gz">
+          <PatternLayout>
+            <Pattern>%p %d{ISO8601} [%t] %c %x - %m%n</Pattern>
+          </PatternLayout>
+          <Policies>
+            <TimeBasedTriggeringPolicy />
+            <SizeBasedTriggeringPolicy />
+          </Policies>
+          <DefaultRolloverStrategy max="15"/>
+        </RollingFile>
+        <RollingFile name="root" fileName="logs/master.log" filePattern="logs/master-%d{yyyy-MM-dd}-%i.log.gz">
+          <PatternLayout>
+            <Pattern>%p %d{ISO8601} [%t] %c %x - %m%n</Pattern>
+          </PatternLayout>
+          <Policies>
+            <TimeBasedTriggeringPolicy />
+            <SizeBasedTriggeringPolicy />
+          </Policies>
+          <DefaultRolloverStrategy max="15"/>
+        </RollingFile>
+        <RollingFile name="sitebot" fileName="logs/sitebot.log" filePattern="logs/sitebot-%d{yyyy-MM-dd}-%i.log.gz">
+          <PatternLayout>
+            <Pattern>%p %d{ISO8601} [%t] %c %x - %m%n</Pattern>
+          </PatternLayout>
+          <Policies>
+            <TimeBasedTriggeringPolicy />
+            <SizeBasedTriggeringPolicy />
+          </Policies>
+          <DefaultRolloverStrategy max="15"/>
+        </RollingFile>
+        <RollingFile name="slave" fileName="logs/remoteslave.log" filePattern="logs/remoteslave-%d{yyyy-MM-dd}-%i.log.gz">
+          <PatternLayout>
+            <Pattern>%p %d{ISO8601} [%t] %c %x - %m%n</Pattern>
+          </PatternLayout>
+          <Policies>
+            <TimeBasedTriggeringPolicy />
+            <SizeBasedTriggeringPolicy />
+          </Policies>
+          <DefaultRolloverStrategy max="15"/>
+        </RollingFile>
+        <RollingFile name="sysop" fileName="logs/sysop.log" filePattern="logs/sysop-%d{yyyy-MM-dd}-%i.log.gz">
+          <PatternLayout>
+            <Pattern>%p %d{ISO8601} [%t] %c %x - %m%n</Pattern>
+          </PatternLayout>
+          <Policies>
+            <TimeBasedTriggeringPolicy />
+            <SizeBasedTriggeringPolicy />
+          </Policies>
+          <DefaultRolloverStrategy max="15"/>
+        </RollingFile>
+        <RollingFile name="tvmaze" fileName="logs/tvmaze.log" filePattern="logs/tvmaze-%d{yyyy-MM-dd}-%i.log.gz">
+          <PatternLayout>
+            <Pattern>%p %d{ISO8601} [%t] %c %x - %m%n</Pattern>
+          </PatternLayout>
+          <Policies>
+            <TimeBasedTriggeringPolicy />
+            <SizeBasedTriggeringPolicy />
+          </Policies>
+          <DefaultRolloverStrategy max="15"/>
+        </RollingFile>
     </Appenders>
     <Loggers>
         <Logger name="org.drftpd.master.commands.usermanagement" level="warn" additivity="false">
@@ -42,6 +131,30 @@
         </Logger>
         <Logger name="org.drftpd.master.slavemanagement.SlaveManager" level="warn" additivity="false">
             <AppenderRef ref="slave"/>
+        </Logger>
+        <Logger name="org.drftpd.archive.master" level="warn" additivity="false">
+            <AppenderRef ref="archive"/>
+        </Logger>
+        <Logger name="org.drftpd.jobs.master" level="warn" additivity="false">
+            <AppenderRef ref="jobmanager"/>
+        </Logger>
+        <Logger name="org.drftpd.master.sitebot" level="warn" additivity="false">
+            <AppenderRef ref="sitebot"/>
+        </Logger>
+        <Logger name="org.drftpd.master.indexation" level="warn" additivity="false">
+            <AppenderRef ref="index"/>
+        </Logger>
+        <Logger name="org.drftpd.commands.imdb.master" level="warn" additivity="false">
+            <AppenderRef ref="imdb"/>
+        </Logger>
+        <Logger name="org.drftpd.commands.indexmanager" level="warn" additivity="false">
+            <AppenderRef ref="index"/>
+        </Logger>
+        <Logger name="org.drftpd.commands.tvmaze.master" level="warn" additivity="false">
+            <AppenderRef ref="tvmaze"/>
+        </Logger>
+        <Logger name="org.drftpd.master.network.BaseFtpConnection.service" level="warn" additivity="false">
+            <AppenderRef ref="root"/>
         </Logger>
         <Root level="warn">
             <AppenderRef ref="root"/>
