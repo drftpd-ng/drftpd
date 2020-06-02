@@ -70,7 +70,6 @@ public class SpeedTestHandler extends AbstractHandler {
     private int _payloadLoop = 20;
     private int _upThreads = 3;
     private int _downThreads = 3;
-    private int _sleep = 100;
 
     public SpeedTestHandler(SlaveProtocolCentral central) {
         super(central);
@@ -126,9 +125,6 @@ public class SpeedTestHandler extends AbstractHandler {
         if (p.getProperty("threads.down") != null) {
             _downThreads = Integer.parseInt(p.getProperty("threads.down"));
         }
-        if (p.getProperty("sleep") != null) {
-            _sleep = Integer.parseInt(p.getProperty("sleep"));
-        }
     }
 
     public AsyncResponse handleSpeedTest(AsyncCommandArgument ac) {
@@ -174,10 +170,8 @@ public class SpeedTestHandler extends AbstractHandler {
         }
 
         ExecutorService executor = Executors.newFixedThreadPool(_upThreads);
-        List<Future<Long>> threadList;
-        Set<Callable<Long>> callables = new HashSet<>();
-
-        StopWatch watch = new StopWatch();
+        List<Future<SpeedTestAnswer>> threadList;
+        Set<Callable<SpeedTestAnswer>> callables = new HashSet<>();
 
         String payload = _payload; // Initial payload
 
@@ -202,19 +196,17 @@ public class SpeedTestHandler extends AbstractHandler {
             logger.debug("iterating from 0 to " + _payloadLoop);
             for (int j = 0; j < _payloadLoop; j++) {
                 try {
-                    watch.reset();
-                    Thread.sleep(_sleep);
-                    watch.start();
+                    long time = 0L;
                     threadList = executor.invokeAll(callables);
-                    for (Future<Long> fut : threadList) {
-                        Long bytes = fut.get();
-                        totalBytes += bytes;
+                    for (Future<SpeedTestAnswer> fut : threadList) {
+                        totalBytes += fut.get().getBytes();
+                        time += fut.get().getTime();
                     }
-                    watch.stop();
-                    totalTime += watch.getTime();
+                    // we execute parallel processes in the same time, so we need to divide by the concurrency
+                    totalTime += time / threadList.size();
                 } catch (InterruptedException e) {
                     logger.error(e.getMessage());
-                    close(executor, callables);
+                    close(executor);
                     return 0;
                 } catch (ExecutionException e) {
                     if (e.getMessage().contains("Error code 413")) {
@@ -222,7 +214,7 @@ public class SpeedTestHandler extends AbstractHandler {
                         payload = StringUtils.repeat(_payload, i - 2);
                     } else {
                         logger.error(e.getMessage());
-                        close(executor, callables);
+                        close(executor);
                         return 0;
                     }
                 }
@@ -238,16 +230,21 @@ public class SpeedTestHandler extends AbstractHandler {
             }
         }
 
-        close(executor, callables);
+        close(executor);
 
         if (totalBytes == 0L || totalTime == 0L) {
             return 0;
         }
 
-        return (float) (((totalBytes * 8) / totalTime) * 1000) / 1000000;
+        long totalBits = totalBytes * 8;
+        float totalTimeSec = (float) totalTime / 1000L;
+        float bitsperms = (float) totalBits / totalTimeSec;
+        float mbitspers = bitsperms / 1000000;
+        logger.debug("totalTime (milli): {}, totalTime (sec): {}, totalBytes: {}, totalBits: {}, bitsperms: {}, mbitspers: {}", totalTime, totalTimeSec, totalBytes, totalBits, bitsperms, mbitspers);
+        return mbitspers;
     }
 
-    private void close(ExecutorService executor, Set<Callable<Long>> callables) {
+    private void close(ExecutorService executor) {
         executor.shutdown();
     }
 
@@ -255,7 +252,6 @@ public class SpeedTestHandler extends AbstractHandler {
         long totalTime = 0L;
         long totalBytes = 0L;
 
-        long startTime = System.currentTimeMillis();
         logger.debug("Getting download speed for [" + url + "]");
 
         RequestConfig requestConfig = RequestConfig.custom()
@@ -271,19 +267,20 @@ public class SpeedTestHandler extends AbstractHandler {
         }
 
         ExecutorService executor = Executors.newFixedThreadPool(_downThreads);
-        List<Future<Long>> threadList;
-        Set<Callable<Long>> callables = new HashSet<>();
+        List<Future<SpeedTestAnswer>> threadList;
+        Set<Callable<SpeedTestAnswer>> callables = new HashSet<>();
 
         url = url.substring(0, url.lastIndexOf('/') + 1) + "random";
 
         URI downloadUrl;
-        StopWatch watch = new StopWatch();
 
         for (int size : _sizes) { // Measure dl speed for each size in _sizes
+            // We have _downTime for every size
+            long startTime = System.currentTimeMillis();
             logger.debug("Testing size [" + size + "] for url [" + url +"]");
             if ((System.currentTimeMillis() - startTime) > _downTime)
             {
-                logger.debug("downtime " + _downTime + " reached, stopping");
+                logger.debug("downtime " + _downTime + " reached inside sizes, stopping");
                 break;
             }
 
@@ -293,7 +290,7 @@ public class SpeedTestHandler extends AbstractHandler {
                 downloadUrl = new URI(tmpURL);
             } catch (URISyntaxException e) {
                 logger.error("URI syntax error for {} :: {}", tmpURL, e.getMessage());
-                close(executor, callables);
+                close(executor);
                 return 0;
             }
 
@@ -308,36 +305,40 @@ public class SpeedTestHandler extends AbstractHandler {
             logger.debug("iterating from 0 to " + _sizeLoop);
             for (int j = 0; j < _sizeLoop; j++) {
                 try {
-                    watch.reset();
-                    Thread.sleep(_sleep);
-                    watch.start();
+                    long time = 0L;
                     threadList = executor.invokeAll(callables);
-                    for (Future<Long> fut : threadList) {
-                        Long bytes = fut.get();
-                        totalBytes += bytes;
+                    for (Future<SpeedTestAnswer> fut : threadList) {
+                        totalBytes += fut.get().getBytes();
+                        time += fut.get().getTime();
                     }
-                    watch.stop();
-                    totalTime += watch.getTime();
+                    // we execute parallel processes in the same time, so we need to divide by the concurrency
+                    totalTime += time / threadList.size();
+                    logger.debug("totalTime: {}, time for this run: {}", totalTime, time);
                 } catch (InterruptedException | ExecutionException e) {
                     logger.error(e.getMessage());
-                    close(executor, callables);
+                    close(executor);
                     return 0;
                 }
                 if ((System.currentTimeMillis() - startTime) > _downTime)
                 {
-                    logger.debug("downtime " + _downTime + " reached, stopping");
+                    logger.debug("downtime " + _downTime + " reached inside sizeLoop, stopping");
                     break;
                 }
             }
         }
 
-        close(executor, callables);
+        close(executor);
 
         if (totalBytes == 0L || totalTime == 0L) {
             return 0;
         }
 
-        return (float) (((totalBytes * 8) / totalTime) * 1000) / 1000000;
+        long totalBits = totalBytes * 8;
+        float totalTimeSec = (float) totalTime / 1000L;
+        float bitsperms = (float) totalBits / totalTimeSec;
+        float mbitspers = bitsperms / 1000000;
+        logger.debug("totalTime (milli): {}, totalTime (sec): {}, totalBytes: {}, totalBits: {}, bitsperms: {}, mbitspers: {}", totalTime, totalTimeSec, totalBytes, totalBits, bitsperms, mbitspers);
+        return mbitspers;
     }
 
     private String getBestServer(String[] urls, SpeedTestInfo result) {

@@ -33,13 +33,14 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.Instant;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
 /**
  * @author scitz0
  */
-public class SpeedTestCallable implements Callable<Long> {
+public class SpeedTestCallable implements Callable<SpeedTestAnswer> {
 
     private static final Logger logger = LogManager.getLogger(SpeedTestCallable.class);
 
@@ -61,12 +62,16 @@ public class SpeedTestCallable implements Callable<Long> {
     }
 
     @Override
-    public Long call() throws Exception {
+    public SpeedTestAnswer call() throws Exception {
         logger.debug("We were called");
-        Long bytes = 0L;
+        long bytes = 0L;
+        long timeStart = 0L;
+        long timeStop = 0L;
         CloseableHttpClient httpClient = HttpClients.createDefault();
         CloseableHttpResponse response = null;
         try {
+            timeStart = Instant.now().toEpochMilli();
+            timeStop = timeStart;
             if (_httpPost != null) {
                 logger.debug("executing httpPost");
                 response = httpClient.execute(_httpPost);
@@ -81,6 +86,7 @@ public class SpeedTestCallable implements Callable<Long> {
                 if (!data.startsWith("size=")) {
                     throw new Exception("Wrong return result from upload messurement from test server.\nReceived: " + data);
                 }
+                timeStop = Instant.now().toEpochMilli();
                 bytes = Long.parseLong(data.replaceAll("\\D", ""));
             } else if (_httpGet != null) {
                 logger.debug("executing httpGet");
@@ -98,6 +104,7 @@ public class SpeedTestCallable implements Callable<Long> {
                     bytes = bytes + len;
                 }
                 EntityUtils.consume(entity);
+                timeStop = Instant.now().toEpochMilli();
             } else
             {
                 logger.error("Called without httpget or httppost set...");
@@ -116,8 +123,9 @@ public class SpeedTestCallable implements Callable<Long> {
             }
         }
 
-        logger.debug("Returning [" + bytes + "] bytes");
-        return bytes;
+        long time = timeStop - timeStart;
+        logger.debug("Returning [" + bytes + "] bytes and [" + time + "] time");
+        return new SpeedTestAnswer(bytes, time);
     }
 
 }
