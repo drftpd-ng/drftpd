@@ -15,27 +15,23 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.drftpd.speedtestnet.master.protocol;
+package org.drftpd.speedtestnet.slave;
 
-import org.drftpd.common.network.AsyncCommandArgument;
-import org.drftpd.common.protocol.AbstractIssuer;
-import org.drftpd.master.exceptions.SlaveUnavailableException;
-import org.drftpd.master.slavemanagement.RemoteSlave;
+public class SpeedTestAnswer {
+    private final long _bytes;
+    private final long _time;
 
-/**
- * @author Scitz0
- */
-public class SpeedTestIssuer extends AbstractIssuer {
-
-    @Override
-    public String getProtocolName() {
-        return "SpeedTestProtocol";
+    public SpeedTestAnswer(long bytes, long time) {
+        _bytes = bytes;
+        _time = time;
     }
 
-    public String issueSpeedTestToSlave(RemoteSlave rslave, String urls) throws SlaveUnavailableException {
-        String index = rslave.fetchIndex();
-        AsyncCommandArgument ac = new AsyncCommandArgument(index, "speedTest", urls);
-        rslave.sendCommand(ac);
-        return index;
+    public long getBytes() {
+        return _bytes;
     }
+
+    public long getTime() {
+        return _time;
+    }
+
 }

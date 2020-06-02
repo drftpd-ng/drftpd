@@ -4,10 +4,6 @@
 
 # If you dont know what you are doing leave values at their default setting.
 
-# Thread sleep time between runs (ms).
-# Default: [100]
-sleep=100
-
 ## Upload settings
 # Default: [3]
 threads.up=3

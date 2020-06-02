@@ -743,6 +743,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
     public synchronized String getPASVIP() throws SlaveUnavailableException {
         if (!isOnline())
             throw new SlaveUnavailableException();
+
         return getProperty("pasv_addr", _socket.getInetAddress().getHostAddress());
     }
 

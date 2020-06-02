@@ -1,10 +1,10 @@
 /*
  * This file is part of DrFTPD, Distributed FTP Daemon.
  *
- * DrFTPD is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * DrFTPD is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
  *
  * DrFTPD is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,7 +13,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with DrFTPD; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package org.drftpd.speedtestnet.master;
 
@@ -22,6 +22,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.drftpd.master.exceptions.SlaveUnavailableException;
 import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.master.util.HttpUtils;
 
@@ -34,6 +35,7 @@ import javax.xml.stream.events.XMLEvent;
 import java.io.ByteArrayInputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -49,7 +51,8 @@ public class SpeedTestUtils {
             "http://www.speedtest.net/speedtest-servers-static.php",
             "http://c.speedtest.net/speedtest-servers-static.php",
             "http://www.speedtest.net/speedtest-servers.php",
-            "http://c.speedtest.net/speedtest-servers.php"};
+            "http://c.speedtest.net/speedtest-servers.php",
+    };
 
     /**
      * Determine the 5 closest speedtest.net servers based on geographic distance
@@ -74,12 +77,10 @@ public class SpeedTestUtils {
         return serverList;
     }
 
-    private static HashSet<SpeedTestServer> parseXML(String xmlString)
-            throws UnsupportedEncodingException, XMLStreamException {
+    private static HashSet<SpeedTestServer> parseXML(String xmlString) throws UnsupportedEncodingException, XMLStreamException {
         HashSet<SpeedTestServer> serverList = new HashSet<>();
         XMLInputFactory xmlInputFactory = XMLInputFactory.newInstance();
-        XMLEventReader xmlEventReader = xmlInputFactory.createXMLEventReader(
-                new ByteArrayInputStream(xmlString.getBytes(StandardCharsets.UTF_8)));
+        XMLEventReader xmlEventReader = xmlInputFactory.createXMLEventReader(new ByteArrayInputStream(xmlString.getBytes(StandardCharsets.UTF_8)));
         while (xmlEventReader.hasNext()) {
             //Get next event.
             XMLEvent xmlEvent = xmlEventReader.nextEvent();
@@ -138,13 +139,20 @@ public class SpeedTestUtils {
     public static SlaveLocation getSlaveLocation(RemoteSlave rslave) {
         SlaveLocation slaveLocation = new SlaveLocation();
         try {
-            String ip = InetAddress.getByName(rslave.getPASVIP()).getHostAddress();
-            String data = HttpUtils.retrieveHttpAsString("https://ipinfo.io/" + ip + "/json");
-            JsonElement root = JsonParser.parseString(data);
-            JsonObject rootobj = root.getAsJsonObject();
-            String[] loc = rootobj.get("loc").getAsString().split(",");
-            slaveLocation.setLatitude(Double.parseDouble(loc[0]));
-            slaveLocation.setLongitude(Double.parseDouble(loc[1]));
+            InetAddress slave_ia = InetAddress.getByName(rslave.getPASVIP());
+            // We do not care for RFC1918 and localhost
+            if (!(slave_ia.isSiteLocalAddress() || slave_ia.isLoopbackAddress())) {
+                String data = HttpUtils.retrieveHttpAsString("https://ipinfo.io/" + slave_ia.getHostAddress() + "/json");
+                JsonElement root = JsonParser.parseString(data);
+                JsonObject rootobj = root.getAsJsonObject();
+                String[] loc = rootobj.get("loc").getAsString().split(",");
+                slaveLocation.setLatitude(Double.parseDouble(loc[0]));
+                slaveLocation.setLongitude(Double.parseDouble(loc[1]));
+            }
+        } catch (SlaveUnavailableException e) {
+            logger.debug("Trying to get location of offline slave, Please improve code to check for offline slaves to ensure proper error messages to requester");
+        } catch (UnknownHostException e) {
+            logger.warn("Caught an unexpected exception getting slave location: " + e.getMessage());
         } catch (Exception e) {
             logger.error("Something went wrong getting slave location: {}", e.getMessage());
         }

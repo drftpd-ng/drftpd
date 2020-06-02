@@ -434,7 +434,7 @@ public class SlaveManager implements Runnable, TimeEventInterface {
                 if (socket != null) {
                     try {
                         socket.close();
-                    } catch (IOException e1) {
+                    } catch (IOException ignored) {
                     }
                 }
 
@@ -489,7 +489,7 @@ public class SlaveManager implements Runnable, TimeEventInterface {
      * for a response and handles errors on each slave Use
      * RemoteSlave.simpleDelete(path) if you want to delete files
      *
-     * @param directory
+     * @param directory The directory path to delete
      */
     public void deleteOnAllSlaves(DirectoryHandle directory) {
         HashMap<RemoteSlave, String> slaveMap = new HashMap<>();
