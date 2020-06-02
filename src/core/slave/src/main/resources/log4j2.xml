@@ -8,6 +8,12 @@
         </Console>
     </Appenders>
     <Loggers>
+        <Logger name="org.apache.hc.client5.http" level="WARN">
+            <AppenderRef ref="root"/>
+        </Logger>
+        <Logger name="org.apache.hc.client5.http.wire" level="WARN">
+            <AppenderRef ref="root"/>
+        </Logger>
         <Root level="WARN">
             <AppenderRef ref="A1"/>
         </Root>
