@@ -50,20 +50,17 @@ public class SpeedTestCallable implements Callable<SpeedTestAnswer> {
     public SpeedTestCallable() {}
 
     public void setHttpPost(HttpPost httpPost) {
-        logger.debug("Setting httpPost");
         _httpPost = httpPost;
         _httpGet = null;
     }
 
     public void setHttpGet(HttpGet httpGet) {
-        logger.debug("Setting httpGet");
         _httpGet = httpGet;
         _httpPost = null;
     }
 
     @Override
     public SpeedTestAnswer call() throws Exception {
-        logger.debug("We were called");
         long bytes = 0L;
         long timeStart = 0L;
         long timeStop = 0L;
@@ -73,7 +70,6 @@ public class SpeedTestCallable implements Callable<SpeedTestAnswer> {
             timeStart = Instant.now().toEpochMilli();
             timeStop = timeStart;
             if (_httpPost != null) {
-                logger.debug("executing httpPost");
                 response = httpClient.execute(_httpPost);
                 final int statusCode = response.getCode();
                 if (statusCode != HttpStatus.SC_OK) {
@@ -89,7 +85,6 @@ public class SpeedTestCallable implements Callable<SpeedTestAnswer> {
                 timeStop = Instant.now().toEpochMilli();
                 bytes = Long.parseLong(data.replaceAll("\\D", ""));
             } else if (_httpGet != null) {
-                logger.debug("executing httpGet");
                 response = httpClient.execute(_httpGet);
                 final int statusCode = response.getCode();
                 if (statusCode != HttpStatus.SC_OK) {
@@ -124,7 +119,7 @@ public class SpeedTestCallable implements Callable<SpeedTestAnswer> {
         }
 
         long time = timeStop - timeStart;
-        logger.debug("Returning [" + bytes + "] bytes and [" + time + "] time");
+        logger.debug("Returning [" + bytes + "] bytes and [" + time + "] execution time");
         return new SpeedTestAnswer(bytes, time);
     }
 

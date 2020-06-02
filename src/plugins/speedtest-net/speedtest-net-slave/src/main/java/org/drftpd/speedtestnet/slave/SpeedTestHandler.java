@@ -194,7 +194,6 @@ public class SpeedTestHandler extends AbstractHandler {
                 callables.add(speedTestCallables[k]);
             }
 
-            logger.debug("iterating from 0 to " + _payloadLoop);
             for (int j = 0; j < _payloadLoop; j++) {
                 try {
                     long time = 0L;
@@ -240,7 +239,7 @@ public class SpeedTestHandler extends AbstractHandler {
         long totalBits = totalBytes * 8;
         float totalTimeSec = (float) totalTime / 1000L;
         float bitsperms = (float) totalBits / totalTimeSec;
-        float mbitspers = bitsperms / 1000000;
+        float mbitspers = bitsperms / 1000000L;
         logger.debug("totalTime (milli): {}, totalTime (sec): {}, totalBytes: {}, totalBits: {}, bitsperms: {}, mbitspers: {}", totalTime, totalTimeSec, totalBytes, totalBits, bitsperms, mbitspers);
         return mbitspers;
     }
@@ -286,7 +285,6 @@ public class SpeedTestHandler extends AbstractHandler {
             }
 
             String tmpURL = url + size + "x" + size + ".jpg";
-            logger.debug("test url: [" + tmpURL + "]");
             try {
                 downloadUrl = new URI(tmpURL);
             } catch (URISyntaxException e) {
@@ -303,7 +301,6 @@ public class SpeedTestHandler extends AbstractHandler {
                 callables.add(speedTestCallables[k]);
             }
 
-            logger.debug("iterating from 0 to " + _sizeLoop);
             for (int j = 0; j < _sizeLoop; j++) {
                 try {
                     long time = 0L;
@@ -314,7 +311,6 @@ public class SpeedTestHandler extends AbstractHandler {
                     }
                     // we execute parallel processes in the same time, so we need to divide by the concurrency
                     totalTime += time / threadList.size();
-                    logger.debug("totalTime: {}, time for this run: {}", totalTime, time);
                 } catch (InterruptedException | ExecutionException e) {
                     logger.error(e.getMessage());
                     close(executor);
@@ -337,7 +333,7 @@ public class SpeedTestHandler extends AbstractHandler {
         long totalBits = totalBytes * 8;
         float totalTimeSec = (float) totalTime / 1000L;
         float bitsperms = (float) totalBits / totalTimeSec;
-        float mbitspers = bitsperms / 1000000;
+        float mbitspers = bitsperms / 1000000L;
         logger.debug("totalTime (milli): {}, totalTime (sec): {}, totalBytes: {}, totalBits: {}, bitsperms: {}, mbitspers: {}", totalTime, totalTimeSec, totalBytes, totalBits, bitsperms, mbitspers);
         return mbitspers;
     }
