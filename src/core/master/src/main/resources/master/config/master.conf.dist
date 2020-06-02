@@ -89,7 +89,8 @@ enableremergechecksums=false
 #           the slave will be remerged.
 # * disconnect - any files newer than the last time the Slave
 #              disconnected will be remerged (CURRENTLY BROKEN).
-# * instant - throws slaves online instant and makes full remerge in background
+# * instant - throws slaves online instant and makes full remerge in background.
+#             Disclaimer. It's stable, but under development.
 # Default: [off]
 partial.remerge.mode=off
 
