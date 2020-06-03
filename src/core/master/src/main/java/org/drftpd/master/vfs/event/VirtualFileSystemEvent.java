@@ -38,7 +38,7 @@ public abstract class VirtualFileSystemEvent {
     /**
      * This constructor accepts a {@link VirtualFileSystemInode} but in order
      * to prevent futher access to low level VFS API it uses {@link VFSUtils}
-     * to convert the current <code>realInode</code> to an {@link InodeHandle}
+     * to convert the current {@code realInode} to an {@link InodeHandle}
      *
      * @param realInode
      */

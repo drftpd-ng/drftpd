@@ -61,7 +61,7 @@ public class RootCollection {
             mounts.add(aMountsArr);
         }
 
-        mounts.sort(new Comparator<File>() {
+        mounts.sort(new Comparator<>() {
             public boolean equals(Object obj) {
                 if (obj == null) return false;
                 return obj.getClass() == getClass();

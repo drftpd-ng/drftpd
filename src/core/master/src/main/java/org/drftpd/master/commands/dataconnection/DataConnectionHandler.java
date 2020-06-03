@@ -158,7 +158,7 @@ public class DataConnectionHandler extends CommandInterface {
     }
 
     /**
-     * <code>PASV &lt;CRLF&gt;</code><br>
+     * {@code PASV <CRLF>}<br>
      * <p>
      * This command requests the server-DTP to "listen" on a data port (which is
      * not its default data port) and to wait for a connection rather than
@@ -590,7 +590,7 @@ public class DataConnectionHandler extends CommandInterface {
     }
 
     /**
-     * <code>STRU &lt;SP&gt; &lt;structure-code&gt; &lt;CRLF&gt;</code><br>
+     * {@code STRU <SP> <structure-code> <CRLF>}<br>
      * <p>
      * The argument is a single Telnet character code specifying file structure.
      */
@@ -609,7 +609,7 @@ public class DataConnectionHandler extends CommandInterface {
     }
 
     /**
-     * <code>SYST &lt;CRLF&gt;</code><br>
+     * {@code SYST <CRLF>}<br>
      * <p>
      * This command is used to find out the type of operating system at the
      * server.
@@ -628,7 +628,7 @@ public class DataConnectionHandler extends CommandInterface {
     }
 
     /**
-     * <code>TYPE &lt;SP&gt; &lt;type-code&gt; &lt;CRLF&gt;</code><br>
+     * {@code TYPE <SP> <type-code> <CRLF>}<br>
      * <p>
      * The argument specifies the representation type.
      */
@@ -683,7 +683,7 @@ public class DataConnectionHandler extends CommandInterface {
     }
 
     /**
-     * <code>STOU &lt;CRLF&gt;</code><br>
+     * {@code STOU <CRLF>}<br>
      *
      * This command behaves like STOR except that the resultant file is to be
      * created in the current directory under a name unique to that directory.
@@ -731,7 +731,7 @@ public class DataConnectionHandler extends CommandInterface {
      */
 
     /**
-     * <code>RETR &lt;SP&gt; &lt;pathname&gt; &lt;CRLF&gt;</code><br>
+     * {@code RETR <SP> <pathname> <CRLF>}<br>
      * <p>
      * This command causes the server-DTP to transfer a copy of the file,
      * specified in the pathname, to the server- or user-DTP at the other end of
@@ -740,7 +740,7 @@ public class DataConnectionHandler extends CommandInterface {
      * <p>
      * RETR 125, 150 (110) 226, 250 425, 426, 451 450, 550 500, 501, 421, 530
      * <p>
-     * <code>STOR &lt;SP&gt; &lt;pathname&gt; &lt;CRLF&gt;</code><br>
+     * {@code STOR <SP> <pathname> <CRLF>}<br>
      * <p>
      * This command causes the server-DTP to accept the data transferred via the
      * data connection and to store the data as a file at the server site. If

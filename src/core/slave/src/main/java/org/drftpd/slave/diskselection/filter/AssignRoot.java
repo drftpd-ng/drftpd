@@ -60,8 +60,8 @@ public class AssignRoot {
     }
 
     /**
-     * Checks if <code>root</code> is inside <code>list</code> that must be
-     * a <code>parseAssign()</code> ArrayList.
+     * Checks if {@code root} is inside {@code list} that must be
+     * a {@code parseAssign()} ArrayList.
      *
      * @param root
      * @param list
@@ -81,8 +81,8 @@ public class AssignRoot {
     }
 
     /**
-     * Iterates throught a <code>parseAssign()</code> ArrayList and add the
-     * current assigned scores to the ScoreChart <code>sc</code>
+     * Iterates throught a {@code parseAssign()} ArrayList and add the
+     * current assigned scores to the ScoreChart {@code sc}
      *
      * @param list
      * @param sc

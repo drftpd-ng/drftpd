@@ -48,7 +48,7 @@ public class Misc extends CommandInterface {
     }
 
     /**
-     * <code>ABOR &lt;CRLF&gt;</code><br>
+     * {@code ABOR <CRLF>}<br>
      * <p>
      * This command tells the server to abort the previous FTP
      * service command and any associated transfer of data.

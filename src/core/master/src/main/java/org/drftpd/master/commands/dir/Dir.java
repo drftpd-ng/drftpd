@@ -60,7 +60,7 @@ public class Dir extends CommandInterface {
     private static final Logger logger = LogManager.getLogger(Dir.class);
 
     /**
-     * <code>CDUP &lt;CRLF&gt;</code><br>
+     * {@code CDUP <CRLF>}<br>
      * <p>
      * This command is a special case of CWD, and is included to
      * simplify the implementation of programs for transferring
@@ -81,7 +81,7 @@ public class Dir extends CommandInterface {
     }
 
     /**
-     * <code>CWD  &lt;SP&gt; &lt;pathname&gt; &lt;CRLF&gt;</code><br>
+     * {@code CWD  <SP> <pathname> <CRLF>}<br>
      * <p>
      * This command allows the user to work with a different
      * directory for file storage or retrieval without
@@ -128,7 +128,7 @@ public class Dir extends CommandInterface {
     }
 
     /**
-     * <code>DELE &lt;SP&gt; &lt;pathname&gt; &lt;CRLF&gt;</code><br>
+     * {@code DELE <SP> <pathname> <CRLF>}<br>
      * <p>
      * This command causes the file specified in the pathname to be
      * deleted at the server site.
@@ -192,7 +192,7 @@ public class Dir extends CommandInterface {
 
 
     /**
-     * <code>MDTM &lt;SP&gt; &lt;pathname&gt; &lt;CRLF&gt;</code><br>
+     * {@code MDTM <SP> <pathname> <CRLF>}<br>
      * <p>
      * Returns the date and time of when a file was modified.
      */
@@ -230,7 +230,7 @@ public class Dir extends CommandInterface {
     }
 
     /**
-     * <code>MKD  &lt;SP&gt; &lt;pathname&gt; &lt;CRLF&gt;</code><br>
+     * {@code MKD  <SP> <pathname> <CRLF>}<br>
      * <p>
      * This command causes the directory specified in the pathname
      * to be created as a directory (if the pathname is absolute)
@@ -295,7 +295,7 @@ public class Dir extends CommandInterface {
     }
 
     /**
-     * <code>PWD  &lt;CRLF&gt;</code><br>
+     * {@code PWD  <CRLF>}<br>
      * <p>
      * This command causes the name of the current working
      * directory to be returned in the reply.
@@ -307,7 +307,7 @@ public class Dir extends CommandInterface {
     }
 
     /**
-     * <code>RMD  &lt;SP&gt; &lt;pathname&gt; &lt;CRLF&gt;</code><br>
+     * {@code RMD  <SP> <pathname> <CRLF>}<br>
      * <p>
      * This command causes the directory specified in the pathname
      * to be removed as a directory (if the pathname is absolute)
@@ -319,7 +319,7 @@ public class Dir extends CommandInterface {
     }
 
     /**
-     * <code>RNFR &lt;SP&gt; &lt;pathname&gt; &lt;CRLF&gt;</code><br>
+     * {@code RNFR <SP> <pathname> <CRLF>}<br>
      * <p>
      * This command specifies the old pathname of the file which is
      * to be renamed.  This command must be immediately followed by
@@ -348,7 +348,7 @@ public class Dir extends CommandInterface {
     }
 
     /**
-     * <code>RNTO &lt;SP&gt; &lt;pathname&gt; &lt;CRLF&gt;</code><br>
+     * {@code RNTO <SP> <pathname> <CRLF>}<br>
      * <p>
      * This command specifies the new pathname of the file
      * specified in the immediately preceding "rename from"
@@ -709,7 +709,7 @@ public class Dir extends CommandInterface {
     }
 
     /**
-     * <code>SIZE &lt;SP&gt; &lt;pathname&gt; &lt;CRLF&gt;</code><br>
+     * {@code SIZE <SP> <pathname> <CRLF>}<br>
      * <p>
      * Returns the size of the file in bytes.
      */

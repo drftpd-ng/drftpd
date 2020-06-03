@@ -19,18 +19,26 @@ package org.drftpd.speedtestnet.slave;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpStatus;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.util.EntityUtils;
+
+import org.apache.hc.core5.http.io.entity.EntityUtils;
+
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.HttpStatus;
+import org.apache.hc.core5.http.NameValuePair;
+
+import org.apache.hc.core5.http.message.BasicNameValuePair;
+
+import org.apache.hc.client5.http.config.RequestConfig;
+
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+
+import org.apache.hc.client5.http.entity.UrlEncodedFormEntity;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.drftpd.common.network.AsyncCommandArgument;
@@ -42,7 +50,6 @@ import org.drftpd.speedtestnet.common.AsyncResponseSpeedTestInfo;
 import org.drftpd.speedtestnet.common.SpeedTestInfo;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
@@ -56,7 +63,7 @@ import java.util.concurrent.*;
 public class SpeedTestHandler extends AbstractHandler {
     private static final Logger logger = LogManager.getLogger(SpeedTestHandler.class);
 
-    private int[] _sizes = {350, 500, 750, 1000, 1500, 2000, 2500, 3000, 3500, 4000};
+    private int[] _sizes = { 350, 500, 750, 1000, 1500, 2000, 2500, 3000, 3500, 4000 };
     private int _sizeLoop = 4;
     private int _downTime = 10000;
     private int _upTime = 5000;
@@ -64,7 +71,6 @@ public class SpeedTestHandler extends AbstractHandler {
     private int _payloadLoop = 20;
     private int _upThreads = 3;
     private int _downThreads = 3;
-    private int _sleep = 100;
 
     public SpeedTestHandler(SlaveProtocolCentral central) {
         super(central);
@@ -82,8 +88,6 @@ public class SpeedTestHandler extends AbstractHandler {
 
     /**
      * Load config/plugins/speedtest.net.slave.conf
-     *
-     * @throws Exception
      */
     private void readConf() {
         logger.info("Loading speedtest.net slave configuration...");
@@ -122,14 +126,10 @@ public class SpeedTestHandler extends AbstractHandler {
         if (p.getProperty("threads.down") != null) {
             _downThreads = Integer.parseInt(p.getProperty("threads.down"));
         }
-        if (p.getProperty("sleep") != null) {
-            _sleep = Integer.parseInt(p.getProperty("sleep"));
-        }
     }
 
     public AsyncResponse handleSpeedTest(AsyncCommandArgument ac) {
         return new AsyncResponseSpeedTestInfo(ac.getIndex(), doSpeedTest(ac.getArgs()));
-
     }
 
     private SpeedTestInfo doSpeedTest(String urls) {
@@ -138,12 +138,12 @@ public class SpeedTestHandler extends AbstractHandler {
             String[] testServerURLs = urls.split(" ");
             String url = getBestServer(testServerURLs, result);
             if (url == null) {
-                // Was unable to measure latency for server(s), return empty SpeedTestInfo
-                return result;
+                logger.warn("Unable to measure latency for server(s), returning empty speedtest information");
+            } else {
+                result.setURL(url);
+                result.setDown(getDownloadSpeed(url));
+                result.setUp(getUploadSpeed(url));
             }
-            result.setURL(url);
-            result.setDown(getDownloadSpeed(url));
-            result.setUp(getUploadSpeed(url));
         } catch (Exception e) {
             // Catch all errors to not throw slave offline in case something went wrong
             logger.error("Something went horribly wrong speedtesting slave", e);
@@ -156,29 +156,25 @@ public class SpeedTestHandler extends AbstractHandler {
         long totalBytes = 0L;
 
         long startTime = System.currentTimeMillis();
+        logger.debug("Getting upload speed for [" + url + "]");
 
         RequestConfig requestConfig = RequestConfig.custom()
-                .setSocketTimeout(60000)
-                .setConnectTimeout(5000)
-                .setConnectionRequestTimeout(5000)
+                .setResponseTimeout(60000, TimeUnit.MILLISECONDS)
+                .setConnectTimeout(5000, TimeUnit.MILLISECONDS)
+                .setConnectionRequestTimeout(5000, TimeUnit.MILLISECONDS)
                 .build();
 
-        HttpPost httpPost = new HttpPost(url);
-        httpPost.setHeader("content-type", "application/x-www-form-urlencoded");
-        httpPost.setConfig(requestConfig);
-
-        String payload = _payload; // Initial payload
-
-        StopWatch watch = new StopWatch();
-
+        logger.debug("Initializing " + _upThreads + " speedtest upload callables");
         SpeedTestCallable[] speedTestCallables = new SpeedTestCallable[_upThreads];
         for (int i = 0; i < _upThreads; i++) {
             speedTestCallables[i] = new SpeedTestCallable();
         }
 
         ExecutorService executor = Executors.newFixedThreadPool(_upThreads);
-        List<Future<Long>> threadList;
-        Set<Callable<Long>> callables = new HashSet<>();
+        List<Future<SpeedTestAnswer>> threadList;
+        Set<Callable<SpeedTestAnswer>> callables = new HashSet<>();
+
+        String payload = _payload; // Initial payload
 
         boolean limitReached = false;
 
@@ -187,35 +183,30 @@ public class SpeedTestHandler extends AbstractHandler {
 
             List<NameValuePair> nameValuePairs = new ArrayList<>();
             nameValuePairs.add(new BasicNameValuePair("content1", payload));
-            try {
-                httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
-            } catch (UnsupportedEncodingException e) {
-                logger.error("Unsupported encoding of payload for speedtest upload: {}", e.getMessage());
-                close(executor, callables);
-                return 0;
-            }
 
             callables.clear();
             for (int k = 0; k < _upThreads; k++) {
+                HttpPost httpPost = new HttpPost(url);
+                httpPost.setHeader("content-type", "application/x-www-form-urlencoded");
+                httpPost.setConfig(requestConfig);
+                httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
                 speedTestCallables[k].setHttpPost(httpPost);
                 callables.add(speedTestCallables[k]);
             }
 
             for (int j = 0; j < _payloadLoop; j++) {
                 try {
-                    watch.reset();
-                    Thread.sleep(_sleep);
-                    watch.start();
+                    long time = 0L;
                     threadList = executor.invokeAll(callables);
-                    for (Future<Long> fut : threadList) {
-                        Long bytes = fut.get();
-                        totalBytes += bytes;
+                    for (Future<SpeedTestAnswer> fut : threadList) {
+                        totalBytes += fut.get().getBytes();
+                        time += fut.get().getTime();
                     }
-                    watch.stop();
-                    totalTime += watch.getTime();
+                    // we execute parallel processes in the same time, so we need to divide by the concurrency
+                    totalTime += time / threadList.size();
                 } catch (InterruptedException e) {
                     logger.error(e.getMessage());
-                    close(executor, callables);
+                    close(executor);
                     return 0;
                 } catch (ExecutionException e) {
                     if (e.getMessage().contains("Error code 413")) {
@@ -223,11 +214,12 @@ public class SpeedTestHandler extends AbstractHandler {
                         payload = StringUtils.repeat(_payload, i - 2);
                     } else {
                         logger.error(e.getMessage());
-                        close(executor, callables);
+                        close(executor);
                         return 0;
                     }
                 }
                 if ((System.currentTimeMillis() - startTime) > _upTime) {
+                    logger.debug("uptime " + _upTime + " reached, stopping");
                     break;
                 }
             }
@@ -238,20 +230,21 @@ public class SpeedTestHandler extends AbstractHandler {
             }
         }
 
+        close(executor);
+
         if (totalBytes == 0L || totalTime == 0L) {
-            close(executor, callables);
             return 0;
         }
 
-        close(executor, callables);
-
-        return (float) (((totalBytes * 8) / totalTime) * 1000) / 1000000;
+        long totalBits = totalBytes * 8;
+        float totalTimeSec = (float) totalTime / 1000L;
+        float bitsperms = (float) totalBits / totalTimeSec;
+        float mbitspers = bitsperms / 1000000L;
+        logger.debug("totalTime (milli): {}, totalTime (sec): {}, totalBytes: {}, totalBits: {}, bitsperms: {}, mbitspers: {}", totalTime, totalTimeSec, totalBytes, totalBits, bitsperms, mbitspers);
+        return mbitspers;
     }
 
-    private void close(ExecutorService executor, Set<Callable<Long>> callables) {
-        for (Callable<Long> callable : callables) {
-            ((SpeedTestCallable) callable).close();
-        }
+    private void close(ExecutorService executor) {
         executor.shutdown();
     }
 
@@ -259,81 +252,90 @@ public class SpeedTestHandler extends AbstractHandler {
         long totalTime = 0L;
         long totalBytes = 0L;
 
-        long startTime = System.currentTimeMillis();
+        logger.debug("Getting download speed for [" + url + "]");
 
         RequestConfig requestConfig = RequestConfig.custom()
-                .setSocketTimeout(60000)
-                .setConnectTimeout(5000)
-                .setConnectionRequestTimeout(5000)
+                .setResponseTimeout(60000, TimeUnit.MILLISECONDS)
+                .setConnectTimeout(5000, TimeUnit.MILLISECONDS)
+                .setConnectionRequestTimeout(5000, TimeUnit.MILLISECONDS)
                 .build();
 
-        HttpGet httpGet = new HttpGet();
-        httpGet.setConfig(requestConfig);
-
+        logger.debug("Initializing " + _downThreads + " speedtest download callables");
         SpeedTestCallable[] speedTestCallables = new SpeedTestCallable[_downThreads];
         for (int i = 0; i < _downThreads; i++) {
             speedTestCallables[i] = new SpeedTestCallable();
         }
 
         ExecutorService executor = Executors.newFixedThreadPool(_downThreads);
-        List<Future<Long>> threadList;
-        Set<Callable<Long>> callables = new HashSet<>();
+        List<Future<SpeedTestAnswer>> threadList;
+        Set<Callable<SpeedTestAnswer>> callables = new HashSet<>();
 
         url = url.substring(0, url.lastIndexOf('/') + 1) + "random";
 
-        StopWatch watch = new StopWatch();
+        URI downloadUrl;
 
         for (int size : _sizes) { // Measure dl speed for each size in _sizes
-            if ((System.currentTimeMillis() - startTime) > _downTime) { break; }
+            // We have _downTime for every size
+            long startTime = System.currentTimeMillis();
+            logger.debug("Testing size [" + size + "] for url [" + url +"]");
+            if ((System.currentTimeMillis() - startTime) > _downTime)
+            {
+                logger.debug("downtime " + _downTime + " reached inside sizes, stopping");
+                break;
+            }
 
             String tmpURL = url + size + "x" + size + ".jpg";
             try {
-                httpGet.setURI(new URI(tmpURL));
+                downloadUrl = new URI(tmpURL);
             } catch (URISyntaxException e) {
                 logger.error("URI syntax error for {} :: {}", tmpURL, e.getMessage());
-                close(executor, callables);
+                close(executor);
                 return 0;
             }
 
             callables.clear();
             for (int k = 0; k < _downThreads; k++) {
-                speedTestCallables[k].setHttpGet(httpGet);
+                HttpGet httpget = new HttpGet(downloadUrl);
+                httpget.setConfig(requestConfig);
+                speedTestCallables[k].setHttpGet(httpget);
                 callables.add(speedTestCallables[k]);
             }
 
             for (int j = 0; j < _sizeLoop; j++) {
                 try {
-                    watch.reset();
-                    Thread.sleep(_sleep);
-                    watch.start();
+                    long time = 0L;
                     threadList = executor.invokeAll(callables);
-                    for (Future<Long> fut : threadList) {
-                        Long bytes = fut.get();
-                        totalBytes += bytes;
+                    for (Future<SpeedTestAnswer> fut : threadList) {
+                        totalBytes += fut.get().getBytes();
+                        time += fut.get().getTime();
                     }
-                    watch.stop();
-                    totalTime += watch.getTime();
-                } catch (InterruptedException e) {
+                    // we execute parallel processes in the same time, so we need to divide by the concurrency
+                    totalTime += time / threadList.size();
+                } catch (InterruptedException | ExecutionException e) {
                     logger.error(e.getMessage());
-                    close(executor, callables);
-                    return 0;
-                } catch (ExecutionException e) {
-                    logger.error(e.getMessage());
-                    close(executor, callables);
+                    close(executor);
                     return 0;
                 }
-                if ((System.currentTimeMillis() - startTime) > _downTime) { break; }
+                if ((System.currentTimeMillis() - startTime) > _downTime)
+                {
+                    logger.debug("downtime " + _downTime + " reached inside sizeLoop, stopping");
+                    break;
+                }
             }
         }
 
+        close(executor);
+
         if (totalBytes == 0L || totalTime == 0L) {
-            close(executor, callables);
             return 0;
         }
 
-        close(executor, callables);
-
-        return (float) (((totalBytes * 8) / totalTime) * 1000) / 1000000;
+        long totalBits = totalBytes * 8;
+        float totalTimeSec = (float) totalTime / 1000L;
+        float bitsperms = (float) totalBits / totalTimeSec;
+        float mbitspers = bitsperms / 1000000L;
+        logger.debug("totalTime (milli): {}, totalTime (sec): {}, totalBytes: {}, totalBits: {}, bitsperms: {}, mbitspers: {}", totalTime, totalTimeSec, totalBytes, totalBits, bitsperms, mbitspers);
+        return mbitspers;
     }
 
     private String getBestServer(String[] urls, SpeedTestInfo result) {
@@ -353,10 +355,11 @@ public class SpeedTestHandler extends AbstractHandler {
     }
 
     private int messureLatency(String url) {
+        logger.debug("Measuring latency of url [" + url + "]");
         RequestConfig requestConfig = RequestConfig.custom()
-                .setSocketTimeout(5000)
-                .setConnectTimeout(5000)
-                .setConnectionRequestTimeout(5000)
+                .setResponseTimeout(5000, TimeUnit.MILLISECONDS)
+                .setConnectTimeout(5000, TimeUnit.MILLISECONDS)
+                .setConnectionRequestTimeout(5000, TimeUnit.MILLISECONDS)
                 .build();
         HttpGet httpGet = new HttpGet(url);
         httpGet.setConfig(requestConfig);
@@ -370,7 +373,7 @@ public class SpeedTestHandler extends AbstractHandler {
             try {
                 watch.start();
                 response = httpClient.execute(httpGet);
-                final int statusCode = response.getStatusLine().getStatusCode();
+                final int statusCode = response.getCode();
                 if (statusCode != HttpStatus.SC_OK) {
                     logger.error("Error {} for URL {}", statusCode, url);
                     break;
@@ -379,7 +382,7 @@ public class SpeedTestHandler extends AbstractHandler {
                 String data = EntityUtils.toString(entity);
                 EntityUtils.consume(entity);
                 if (!data.startsWith("test=test")) {
-                    logger.error("Wrong return result from latency messurement from test server, {}\nReceived: {}", url, data);
+                    logger.error("Wrong return result from latency measurement from test server, {}\nReceived: {}", url, data);
                     break;
                 }
             } catch (Exception e) {
@@ -396,6 +399,7 @@ public class SpeedTestHandler extends AbstractHandler {
                 }
             }
             int time = (int) watch.getTime();
+            logger.debug("Iteration[" + i + "] bestTime: " + bestTime + ", new time: " + time);
             if (time < bestTime) {
                 bestTime = time;
             }

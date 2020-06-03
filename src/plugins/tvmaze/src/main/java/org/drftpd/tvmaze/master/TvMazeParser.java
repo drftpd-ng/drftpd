@@ -20,10 +20,14 @@ package org.drftpd.tvmaze.master;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import org.apache.http.HttpException;
+
+import org.apache.hc.core5.http.HttpException;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 import org.drftpd.master.util.HttpUtils;
+
 import org.drftpd.tvmaze.master.metadata.TvMazeInfo;
 
 import java.util.regex.Matcher;

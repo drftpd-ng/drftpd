@@ -13,9 +13,14 @@
         </RollingFile>
     </Appenders>
     <Loggers>
+        <Logger name="org.apache.hc.client5.http" level="warn">
+            <AppenderRef ref="root"/>
+        </Logger>
+        <Logger name="org.apache.hc.client5.http.wire" level="warn">
+            <AppenderRef ref="root"/>
+        </Logger>
         <Root level="warn">
             <AppenderRef ref="root"/>
         </Root>
     </Loggers>
 </Configuration>
-

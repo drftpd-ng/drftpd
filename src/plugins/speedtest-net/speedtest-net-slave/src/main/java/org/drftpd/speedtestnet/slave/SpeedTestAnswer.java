@@ -15,38 +15,23 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.drftpd.speedtestnet.master;
+package org.drftpd.speedtestnet.slave;
 
-/**
- * @author scitz0
- */
-public class SlaveLocation {
+public class SpeedTestAnswer {
+    private final long _bytes;
+    private final long _time;
 
-    double latitude = 0;
-    double longitude = 0;
-
-    public SlaveLocation() {}
-
-    public SlaveLocation(double latitude, double longitude) {
-        this.latitude = latitude;
-        this.longitude = longitude;
+    public SpeedTestAnswer(long bytes, long time) {
+        _bytes = bytes;
+        _time = time;
     }
 
-    public double getLatitude() {
-        return latitude;
+    public long getBytes() {
+        return _bytes;
     }
 
-    public void setLatitude(double latitude) {
-        this.latitude = latitude;
+    public long getTime() {
+        return _time;
     }
 
-    public double getLongitude() {
-        return longitude;
-    }
-
-    public void setLongitude(double longitude) {
-        this.longitude = longitude;
-    }
-
-    public String toString() { return "Latitude: " + latitude + ", longitude: " + longitude; }
 }

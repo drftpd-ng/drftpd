@@ -51,7 +51,7 @@ public class ScoreChart {
 
     /**
      * @param root
-     * @return <code>root</code> score.
+     * @return {@code root} score.
      */
     public long getRootScore(Root root) {
         return getRootScoreObject(root).getScore();
@@ -65,7 +65,7 @@ public class ScoreChart {
     }
 
     /**
-     * Adds <code>score</score> to <code>root</code>.
+     * Adds <code>score</score> to {@code root}.
      *
      * @param root
      * @param score
@@ -75,7 +75,7 @@ public class ScoreChart {
     }
 
     /**
-     * Removes <code>root</code> from the ScoreChart.
+     * Removes {@code root} from the ScoreChart.
      *
      * @param root
      */
@@ -84,7 +84,7 @@ public class ScoreChart {
     }
 
     /**
-     * Iterates thought the ScoreChart and trying to match <code>root</code>
+     * Iterates thought the ScoreChart and trying to match {@code root}
      *
      * @param root
      */

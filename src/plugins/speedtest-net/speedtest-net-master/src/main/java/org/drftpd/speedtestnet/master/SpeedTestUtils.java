@@ -22,6 +22,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.drftpd.master.exceptions.SlaveUnavailableException;
 import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.master.util.HttpUtils;
 
@@ -34,6 +35,7 @@ import javax.xml.stream.events.XMLEvent;
 import java.io.ByteArrayInputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -49,7 +51,8 @@ public class SpeedTestUtils {
             "http://www.speedtest.net/speedtest-servers-static.php",
             "http://c.speedtest.net/speedtest-servers-static.php",
             "http://www.speedtest.net/speedtest-servers.php",
-            "http://c.speedtest.net/speedtest-servers.php"};
+            "http://c.speedtest.net/speedtest-servers.php",
+    };
 
     /**
      * Determine the 5 closest speedtest.net servers based on geographic distance
@@ -74,12 +77,10 @@ public class SpeedTestUtils {
         return serverList;
     }
 
-    private static HashSet<SpeedTestServer> parseXML(String xmlString)
-            throws UnsupportedEncodingException, XMLStreamException {
+    private static HashSet<SpeedTestServer> parseXML(String xmlString) throws UnsupportedEncodingException, XMLStreamException {
         HashSet<SpeedTestServer> serverList = new HashSet<>();
         XMLInputFactory xmlInputFactory = XMLInputFactory.newInstance();
-        XMLEventReader xmlEventReader = xmlInputFactory.createXMLEventReader(
-                new ByteArrayInputStream(xmlString.getBytes(StandardCharsets.UTF_8)));
+        XMLEventReader xmlEventReader = xmlInputFactory.createXMLEventReader(new ByteArrayInputStream(xmlString.getBytes(StandardCharsets.UTF_8)));
         while (xmlEventReader.hasNext()) {
             //Get next event.
             XMLEvent xmlEvent = xmlEventReader.nextEvent();
@@ -138,13 +139,20 @@ public class SpeedTestUtils {
     public static SlaveLocation getSlaveLocation(RemoteSlave rslave) {
         SlaveLocation slaveLocation = new SlaveLocation();
         try {
-            String ip = InetAddress.getByName(rslave.getPASVIP()).getHostAddress();
-            String data = HttpUtils.retrieveHttpAsString("https://ipinfo.io/" + ip + "/json");
-            JsonElement root = JsonParser.parseString(data);
-            JsonObject rootobj = root.getAsJsonObject();
-            String[] loc = rootobj.get("loc").getAsString().split(",");
-            slaveLocation.setLatitude(Double.parseDouble(loc[0]));
-            slaveLocation.setLongitude(Double.parseDouble(loc[1]));
+            InetAddress slave_ia = InetAddress.getByName(rslave.getPASVIP());
+            // We do not care for RFC1918 and localhost
+            if (!(slave_ia.isSiteLocalAddress() || slave_ia.isLoopbackAddress())) {
+                String data = HttpUtils.retrieveHttpAsString("https://ipinfo.io/" + slave_ia.getHostAddress() + "/json");
+                JsonElement root = JsonParser.parseString(data);
+                JsonObject rootobj = root.getAsJsonObject();
+                String[] loc = rootobj.get("loc").getAsString().split(",");
+                slaveLocation.setLatitude(Double.parseDouble(loc[0]));
+                slaveLocation.setLongitude(Double.parseDouble(loc[1]));
+            }
+        } catch (SlaveUnavailableException e) {
+            logger.debug("Trying to get location of offline slave, Please improve code to check for offline slaves to ensure proper error messages to requester");
+        } catch (UnknownHostException e) {
+            logger.warn("Caught an unexpected exception getting slave location: " + e.getMessage());
         } catch (Exception e) {
             logger.error("Something went wrong getting slave location: {}", e.getMessage());
         }

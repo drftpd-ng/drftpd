@@ -17,49 +17,61 @@
  */
 package org.drftpd.speedtestnet.slave;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.HttpStatus;
+
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+
+import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.Instant;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
 /**
  * @author scitz0
  */
-public class SpeedTestCallable implements Callable<Long> {
+public class SpeedTestCallable implements Callable<SpeedTestAnswer> {
 
-    private CloseableHttpResponse response;
-    private final CloseableHttpClient httpClient;
-    private HttpPost httpPost;
-    private HttpGet httpGet;
+    private static final Logger logger = LogManager.getLogger(SpeedTestCallable.class);
 
-    public SpeedTestCallable() {
-        httpClient = HttpClients.createDefault();
-    }
+    private HttpPost _httpPost;
+    private HttpGet _httpGet;
+
+    public SpeedTestCallable() {}
 
     public void setHttpPost(HttpPost httpPost) {
-        this.httpPost = httpPost;
+        _httpPost = httpPost;
+        _httpGet = null;
     }
 
     public void setHttpGet(HttpGet httpGet) {
-        this.httpGet = httpGet;
+        _httpGet = httpGet;
+        _httpPost = null;
     }
 
     @Override
-    public Long call() throws Exception {
-        Long bytes = 0L;
+    public SpeedTestAnswer call() throws Exception {
+        long bytes = 0L;
+        long timeStart = 0L;
+        long timeStop = 0L;
+        CloseableHttpClient httpClient = HttpClients.createDefault();
+        CloseableHttpResponse response = null;
         try {
-            if (httpPost != null) {
-                response = httpClient.execute(httpPost);
-                final int statusCode = response.getStatusLine().getStatusCode();
+            timeStart = Instant.now().toEpochMilli();
+            timeStop = timeStart;
+            if (_httpPost != null) {
+                response = httpClient.execute(_httpPost);
+                final int statusCode = response.getCode();
                 if (statusCode != HttpStatus.SC_OK) {
                     throw new Exception("Error code " + statusCode + " while running upload test.");
                 }
@@ -70,10 +82,11 @@ public class SpeedTestCallable implements Callable<Long> {
                 if (!data.startsWith("size=")) {
                     throw new Exception("Wrong return result from upload messurement from test server.\nReceived: " + data);
                 }
+                timeStop = Instant.now().toEpochMilli();
                 bytes = Long.parseLong(data.replaceAll("\\D", ""));
-            } else if (httpGet != null) {
-                response = httpClient.execute(httpGet);
-                final int statusCode = response.getStatusLine().getStatusCode();
+            } else if (_httpGet != null) {
+                response = httpClient.execute(_httpGet);
+                final int statusCode = response.getCode();
                 if (statusCode != HttpStatus.SC_OK) {
                     throw new Exception("Error code " + statusCode + " while running upload test.");
                 }
@@ -86,29 +99,28 @@ public class SpeedTestCallable implements Callable<Long> {
                     bytes = bytes + len;
                 }
                 EntityUtils.consume(entity);
+                timeStop = Instant.now().toEpochMilli();
+            } else
+            {
+                logger.error("Called without httpget or httppost set...");
             }
         } catch (Exception e) {
+            logger.error("Received exception while being called. {}", e.getMessage());
             throw new ExecutionException(e);
         } finally {
             try {
                 if (response != null) {
                     response.close();
                 }
-            } catch (IOException e) {
-                // Must already be closed, ignore.
-            }
-        }
-
-        return bytes;
-    }
-
-    public void close() {
-        if (httpClient != null) {
-            try {
                 httpClient.close();
             } catch (IOException e) {
                 // Must already be closed, ignore.
             }
         }
+
+        long time = timeStop - timeStart;
+        logger.debug("Returning [" + bytes + "] bytes and [" + time + "] execution time");
+        return new SpeedTestAnswer(bytes, time);
     }
+
 }

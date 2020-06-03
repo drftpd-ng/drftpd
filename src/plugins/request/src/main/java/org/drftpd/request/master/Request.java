@@ -93,7 +93,7 @@ public class Request extends CommandInterface {
     }
 
     /**
-     * Create the request directory if it does not exist and 'request.createpath' is <code>true</code>
+     * Create the request directory if it does not exist and 'request.createpath' is {@code true}
      */
     private void createDirectory() {
         DirectoryHandle requestDir = new DirectoryHandle(_requestPath);
