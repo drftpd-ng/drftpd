@@ -19,10 +19,10 @@ Steps to reproduce the behavior:
 **Expected behavior**
 A clear and concise description of what you expected to happen.
 
-**DrFTPd**
+**DrFTPD**
  - OS: [e.g. Debian, Windows 7, Mac OS X]
  - Java version [e.g. 1.8.191 64 bits]
- - drftpd version [e.g. 3.3]
+ - DrFTPD version [e.g. 3.3]
 
 **FTP Client:**
  - OS: [e.g. Windows 10, Ubuntu]

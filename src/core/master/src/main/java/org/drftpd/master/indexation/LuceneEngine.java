@@ -1,10 +1,10 @@
 /*
  * This file is part of DrFTPD, Distributed FTP Daemon.
  *
- * DrFTPD is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * DrFTPD is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
  *
  * DrFTPD is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,7 +13,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with DrFTPD; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
 package org.drftpd.master.indexation;
@@ -135,7 +135,7 @@ public class LuceneEngine implements IndexEngineInterface {
      * <li>IndexSearcher / IndexWriter</li>
      * <li>Reads <i>config/indexation.conf</i> to grab some tweaking
      * settings, if this file is not found, a default values are loaded.</li>
-     * <li>Adds a Shutdown Hook to save the index while closing DrFTPd</li>
+     * <li>Adds a Shutdown Hook to save the index while closing DrFTPD</li>
      * <li>Creates the Maintenance thread.(takes cares of updating the search
      * engine and optimizing)</li>
      * </ul>
@@ -954,7 +954,7 @@ public class LuceneEngine implements IndexEngineInterface {
 
     /**
      * Hook ran by the JVM before shutting down itself completely. This hook
-     * saves the index state to keep it usable the next time you start DrFTPd.
+     * saves the index state to keep it usable the next time you start DrFTPD.
      */
     private final class IndexShutdownHookRunnable implements Runnable {
         public void run() {

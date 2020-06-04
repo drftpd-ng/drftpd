@@ -120,7 +120,7 @@
 #                                                                                                  #
 #                                                                                                  #
 # REMOVE PARTS OF PATH IN ANNOUNCEMENT:                                                            #
-# The configuration of a DrFTPd v2 similar way of announcing of dated dirs is possible.            #
+# The configuration of a DrFTPD v2 similar way of announcing of dated dirs is possible.            #
 # Default in v3+ it would include the dated dirs subfolder in the announcement.                    #
 # To avoid this use the example below.                                                             #
 #                                                                                                  #
