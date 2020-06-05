@@ -20,17 +20,15 @@ package org.drftpd.master.usermanager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
-import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.common.exceptions.DuplicateElementException;
 import org.drftpd.common.io.PermissionDeniedException;
 import org.drftpd.master.GlobalContext;
-import org.drftpd.master.commands.usermanagement.GroupManagement;
 import org.drftpd.master.commands.usermanagement.UserManagement;
 import org.drftpd.slave.exceptions.FileExistsException;
+import org.reflections.Reflections;
 
 import java.io.File;
-import java.io.IOException;
 import java.lang.ref.SoftReference;
 import java.util.*;
 
@@ -42,14 +40,15 @@ import java.util.*;
  * @version $Id$
  */
 public abstract class AbstractUserManager implements UserManager {
+
     private static final Logger logger = LogManager.getLogger(AbstractUserManager.class);
 
     protected HashMap<String, SoftReference<User>> _users;
     protected HashMap<String, SoftReference<Group>> _groups;
 
-    private final ArrayList<UserResetHookInterface> _preResetHooks = new ArrayList<>();
+    private ArrayList<UserResetPreHookInterface> _preResetHooks = new ArrayList<>();
 
-    private final ArrayList<UserResetHookInterface> _postResetHooks = new ArrayList<>();
+    private ArrayList<UserResetPostHookInterface> _postResetHooks = new ArrayList<>();
 
     public static GlobalContext getGlobalContext() {
         return GlobalContext.getGlobalContext();
@@ -110,9 +109,6 @@ public abstract class AbstractUserManager implements UserManager {
             getUserByName(username);
             // bad, .json file already exists.
             throw new FileExistsException("User " + username + " already exists");
-        } catch (IOException e) {
-            // bad, some I/O error ocurred.
-            throw new UserFileException(e);
         } catch (NoSuchUserException e) {
             // good, no such user was found. create it!
         }
@@ -128,9 +124,6 @@ public abstract class AbstractUserManager implements UserManager {
             getGroupByName(groupname);
             // bad, .json file already exists.
             throw new FileExistsException("Group " + groupname + " already exists");
-        } catch (IOException e) {
-            // bad, some I/O error ocurred.
-            throw new GroupFileException(e);
         } catch (NoSuchGroupException e) {
             // good, no such group was found. create it!
         }
@@ -304,7 +297,7 @@ public abstract class AbstractUserManager implements UserManager {
      */
     public void resetDay(Date d) {
         // Run pre reset hooks
-        for (UserResetHookInterface preHook : _preResetHooks) {
+        for (UserResetPreHookInterface preHook : _preResetHooks) {
             preHook.resetDay(d);
         }
         for (User user : getAllUsers()) {
@@ -312,7 +305,7 @@ public abstract class AbstractUserManager implements UserManager {
             user.commit();
         }
         // Run post reset hooks
-        for (UserResetHookInterface postHook : _postResetHooks) {
+        for (UserResetPostHookInterface postHook : _postResetHooks) {
             postHook.resetDay(d);
         }
     }
@@ -324,7 +317,7 @@ public abstract class AbstractUserManager implements UserManager {
      */
     public void resetHour(Date d) {
         // Run pre reset hooks
-        for (UserResetHookInterface preHook : _preResetHooks) {
+        for (UserResetPreHookInterface preHook : _preResetHooks) {
             preHook.resetHour(d);
         }
         for (User user : getAllUsers()) {
@@ -332,7 +325,7 @@ public abstract class AbstractUserManager implements UserManager {
             user.commit();
         }
         // Run post reset hooks
-        for (UserResetHookInterface postHook : _postResetHooks) {
+        for (UserResetPostHookInterface postHook : _postResetHooks) {
             postHook.resetHour(d);
         }
     }
@@ -344,7 +337,7 @@ public abstract class AbstractUserManager implements UserManager {
      */
     public void resetMonth(Date d) {
         // Run pre reset hooks
-        for (UserResetHookInterface preHook : _preResetHooks) {
+        for (UserResetPreHookInterface preHook : _preResetHooks) {
             preHook.resetMonth(d);
         }
         for (User user : getAllUsers()) {
@@ -352,7 +345,7 @@ public abstract class AbstractUserManager implements UserManager {
             user.commit();
         }
         // Run post reset hooks
-        for (UserResetHookInterface postHook : _postResetHooks) {
+        for (UserResetPostHookInterface postHook : _postResetHooks) {
             postHook.resetMonth(d);
         }
     }
@@ -364,7 +357,7 @@ public abstract class AbstractUserManager implements UserManager {
      */
     public void resetWeek(Date d) {
         // Run pre reset hooks
-        for (UserResetHookInterface preHook : _preResetHooks) {
+        for (UserResetPreHookInterface preHook : _preResetHooks) {
             preHook.resetWeek(d);
         }
         for (User user : getAllUsers()) {
@@ -372,7 +365,7 @@ public abstract class AbstractUserManager implements UserManager {
             user.commit();
         }
         // Run post reset hooks
-        for (UserResetHookInterface postHook : _postResetHooks) {
+        for (UserResetPostHookInterface postHook : _postResetHooks) {
             postHook.resetWeek(d);
         }
 
@@ -385,7 +378,7 @@ public abstract class AbstractUserManager implements UserManager {
      */
     public void resetYear(Date d) {
         // Run pre reset hooks
-        for (UserResetHookInterface preHook : _preResetHooks) {
+        for (UserResetPreHookInterface preHook : _preResetHooks) {
             preHook.resetYear(d);
         }
         for (User user : getAllUsers()) {
@@ -393,13 +386,39 @@ public abstract class AbstractUserManager implements UserManager {
             user.commit();
         }
         // Run post reset hooks
-        for (UserResetHookInterface postHook : _postResetHooks) {
+        for (UserResetPostHookInterface postHook : _postResetHooks) {
             postHook.resetYear(d);
         }
     }
 
-    //TODO @k2r Decide what to do with abstract user manager
     private void loadResetHooks() {
-        // Load hooks to be run before the reset
+        // Deal with prehooks
+        ArrayList<UserResetPreHookInterface> prehooks = new ArrayList<>();
+        Set<Class<? extends UserResetPreHookInterface>> userresetprehooks = new Reflections("org.drftpd").getSubTypesOf(UserResetPreHookInterface.class);
+        try {
+            for (Class<? extends UserResetPreHookInterface> userresetprehook : userresetprehooks) {
+                UserResetPreHookInterface hook = userresetprehook.getConstructor().newInstance();
+                hook.init();
+                prehooks.add(hook);
+            }
+        } catch (Exception e) {
+            logger.error("Failed to load plugins of UserResetPreHookInterface for UserManager", e);
+        }
+        _preResetHooks = prehooks;
+
+        // Deal with posthooks
+        ArrayList<UserResetPostHookInterface> posthooks = new ArrayList<>();
+        Set<Class<? extends UserResetPostHookInterface>> userresetposthooks = new Reflections("org.drftpd").getSubTypesOf(UserResetPostHookInterface.class);
+        try {
+            for (Class<? extends UserResetPostHookInterface> userresetposthook : userresetposthooks) {
+                UserResetPostHookInterface hook = userresetposthook.getConstructor().newInstance();
+                hook.init();
+                posthooks.add(hook);
+            }
+        } catch (Exception e) {
+            logger.error("Failed to load plugins of UserResetPostHookInterface for UserManager", e);
+        }
+        _postResetHooks = posthooks;
     }
+
 }

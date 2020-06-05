@@ -19,7 +19,7 @@ package org.drftpd.request.master;
 
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.usermanager.User;
-import org.drftpd.master.usermanager.UserResetHookInterface;
+import org.drftpd.master.usermanager.UserResetPostHookInterface;
 import org.drftpd.request.master.metadata.RequestUserData;
 
 import java.util.Date;
@@ -28,7 +28,7 @@ import java.util.Date;
  * @author scitz0
  * @version $Id$
  */
-public class RequestUserResetHook implements UserResetHookInterface {
+public class RequestUserResetHook implements UserResetPostHookInterface {
 
     public void init() {
     }

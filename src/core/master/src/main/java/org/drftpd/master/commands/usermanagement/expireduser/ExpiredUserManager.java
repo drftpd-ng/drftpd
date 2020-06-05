@@ -28,7 +28,7 @@ import org.drftpd.master.event.ReloadEvent;
 import org.drftpd.master.usermanager.GroupFileException;
 import org.drftpd.master.usermanager.NoSuchGroupException;
 import org.drftpd.master.usermanager.User;
-import org.drftpd.master.usermanager.UserResetHookInterface;
+import org.drftpd.master.usermanager.UserResetPreHookInterface;
 
 import java.util.Date;
 import java.util.Properties;
@@ -36,7 +36,7 @@ import java.util.Properties;
 /**
  * @author cyber
  */
-public class ExpiredUserManager implements UserResetHookInterface {
+public class ExpiredUserManager implements UserResetPreHookInterface {
 
     private static final Logger logger = LogManager.getLogger(ExpiredUserManager.class);
 

@@ -71,7 +71,6 @@ public class TimeManager {
         int minuteOfHour = cal.get(Calendar.MINUTE);
         int monthOfYear = cal.get(Calendar.MONTH);
 
-
         if (minuteOfHour != 0) {
             throw new IllegalArgumentException("This thread needs to be run within the first minute of the hour, time is - " + cal.getTime());
         }
@@ -98,7 +97,7 @@ public class TimeManager {
     }
 
     private void doMethodOnTimeEvents(String methodName, Date d) {
-        List<TimeEventInterface> tempList = null;
+        List<TimeEventInterface> tempList;
         synchronized (this) {
             tempList = new ArrayList<>(_timedEvents);
         }
@@ -134,7 +133,8 @@ public class TimeManager {
     /**
      * Should be called on startup after the appropriate TimeEventInterfaces have been added
      *
-     * @param oldDate
+     * @param oldDate The start date
+     * @param newDate The end date
      */
     public void processTimeEventsBetweenDates(Date oldDate, Date newDate) {
         Calendar oldCal = Calendar.getInstance();

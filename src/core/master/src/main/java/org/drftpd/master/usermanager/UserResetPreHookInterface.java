@@ -23,7 +23,8 @@ import org.drftpd.master.cron.TimeEventInterface;
  * @author djb61
  * @version $Id$
  */
-public interface UserResetHookInterface extends TimeEventInterface {
+public interface UserResetPreHookInterface extends TimeEventInterface {
 
     void init();
+
 }

@@ -27,7 +27,7 @@ import org.drftpd.master.GlobalContext;
 import org.drftpd.master.event.ReloadEvent;
 import org.drftpd.master.sitebot.plugins.dailystats.event.StatsEvent;
 import org.drftpd.master.usermanager.User;
-import org.drftpd.master.usermanager.UserResetHookInterface;
+import org.drftpd.master.usermanager.UserResetPreHookInterface;
 import org.drftpd.master.usermanager.util.UserComparator;
 
 import java.util.*;
@@ -37,7 +37,7 @@ import java.util.*;
  * @author cyber
  * @version $Id: DailyStats.java 2230 2010-10-27 21:37:13Z scitz0 $
  */
-public class DailyStats implements UserResetHookInterface {
+public class DailyStats implements UserResetPreHookInterface {
 
     private static final Logger logger = LogManager.getLogger(DailyStats.class);
 
@@ -86,42 +86,42 @@ public class DailyStats implements UserResetHookInterface {
 
         for (int i = 0; ((i < _outputnum) && (i < initialUsers.size())); ++i) {
             switch (type) {
-                case "dayup":
+                case "dayup" -> {
                     if ((initialUsers.get(i).getUploadedBytesDay() < 1) && (!_showzero))
                         continue;
                     bytes = Bytes.formatBytes(initialUsers.get(i).getUploadedBytesDay());
                     files = String.valueOf(initialUsers.get(i).getUploadedFilesDay());
-                    break;
-                case "daydn":
+                }
+                case "daydn" -> {
                     if ((initialUsers.get(i).getDownloadedBytesDay() < 1) && (!_showzero))
                         continue;
                     bytes = Bytes.formatBytes(initialUsers.get(i).getDownloadedBytesDay());
                     files = String.valueOf(initialUsers.get(i).getDownloadedFilesDay());
-                    break;
-                case "wkup":
+                }
+                case "wkup" -> {
                     if ((initialUsers.get(i).getUploadedBytesWeek() < 1) && (!_showzero))
                         continue;
                     bytes = Bytes.formatBytes(initialUsers.get(i).getUploadedBytesWeek());
                     files = String.valueOf(initialUsers.get(i).getUploadedFilesWeek());
-                    break;
-                case "wkdn":
+                }
+                case "wkdn" -> {
                     if ((initialUsers.get(i).getDownloadedBytesWeek() < 1) && (!_showzero))
                         continue;
                     bytes = Bytes.formatBytes(initialUsers.get(i).getDownloadedBytesWeek());
                     files = String.valueOf(initialUsers.get(i).getDownloadedFilesWeek());
-                    break;
-                case "monthup":
+                }
+                case "monthup" -> {
                     if ((initialUsers.get(i).getUploadedBytesMonth() < 1) && (!_showzero))
                         continue;
                     bytes = Bytes.formatBytes(initialUsers.get(i).getUploadedBytesMonth());
                     files = String.valueOf(initialUsers.get(i).getUploadedFilesMonth());
-                    break;
-                case "monthdn":
+                }
+                case "monthdn" -> {
                     if ((initialUsers.get(i).getDownloadedBytesMonth() < 1) && (!_showzero))
                         continue;
                     bytes = Bytes.formatBytes(initialUsers.get(i).getDownloadedBytesMonth());
                     files = String.valueOf(initialUsers.get(i).getDownloadedFilesMonth());
-                    break;
+                }
             }
             name = initialUsers.get(i).getName();
             outputUsers.add(new UserStats(name, files, bytes));
