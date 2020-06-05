@@ -33,9 +33,12 @@ import java.util.*;
 public class TimeManager {
 
     private static final Logger logger = LogManager.getLogger(TimeManager.class);
+
     private static final long MINUTE = 60 * 1000L;
     private static final long HOUR = MINUTE * 60;
+
     private final ArrayList<TimeEventInterface> _timedEvents;
+
     TimerTask _processHour = new TimerTask() {
         public void run() {
             doReset(Calendar.getInstance());
@@ -60,6 +63,7 @@ public class TimeManager {
     }
 
     public void doReset(Calendar cal) {
+        logger.debug("doReset called - " + cal.toString());
         // Check if EuropeanCalendar and change if needed
         if (isEuropeanCalendar()) {
             cal.setFirstDayOfWeek(Calendar.MONDAY);
