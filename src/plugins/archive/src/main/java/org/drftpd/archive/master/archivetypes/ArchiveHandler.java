@@ -85,6 +85,9 @@ public class ArchiveHandler extends Thread {
      */
     public void run() {
         // Prevent spawning more than 1 active threads
+        /*
+        // This breaks a lot of manual actions if you do them quickly after another.
+        // This needs to be changed to use en executorservice
         ArrayList<Thread> threadArrayList = getThreadByName(this.getName());
         if (threadArrayList.size() > 1) {
             for (Thread t : threadArrayList) {
@@ -92,13 +95,16 @@ public class ArchiveHandler extends Thread {
                     return; // A thread is already running lets skip this cycle
             }
         }
-
+         */
         long curtime = System.currentTimeMillis();
         for (int i = 0; i < _archiveType.getRepeat(); i++) {
+            /*
+            // We do not care about this if we manually archive it should always do it
             if ((System.currentTimeMillis() - curtime) > _archiveType._parent.getCycleTime()) {
                 //don't want to double archive stuff...so we to check and make sure
                 return;
             }
+            */
             try {
                 synchronized (_archiveType._parent) {
                     if (_archiveType.getDirectory() == null) {
