@@ -296,7 +296,6 @@ public abstract class AbstractUserManager implements UserManager {
      * @see org.drftpd.master.cron.TimeEventInterface#resetDay(java.util.Date)
      */
     public void resetDay(Date d) {
-        logger.debug("in resetDay");
         // Run pre reset hooks
         for (UserResetPreHookInterface preHook : _preResetHooks) {
             preHook.resetDay(d);
@@ -317,7 +316,6 @@ public abstract class AbstractUserManager implements UserManager {
      * @see org.drftpd.master.cron.TimeEventInterface#resetHour(java.util.Date)
      */
     public void resetHour(Date d) {
-        logger.debug("in resetHour");
         // Run pre reset hooks
         for (UserResetPreHookInterface preHook : _preResetHooks) {
             preHook.resetHour(d);
@@ -338,7 +336,6 @@ public abstract class AbstractUserManager implements UserManager {
      * @see org.drftpd.master.cron.TimeEventInterface#resetMonth(java.util.Date)
      */
     public void resetMonth(Date d) {
-        logger.debug("in resetMonth");
         // Run pre reset hooks
         for (UserResetPreHookInterface preHook : _preResetHooks) {
             preHook.resetMonth(d);
@@ -359,7 +356,6 @@ public abstract class AbstractUserManager implements UserManager {
      * @see org.drftpd.master.cron.TimeEventInterface#resetWeek(java.util.Date)
      */
     public void resetWeek(Date d) {
-        logger.debug("in resetWeek");
         // Run pre reset hooks
         for (UserResetPreHookInterface preHook : _preResetHooks) {
             preHook.resetWeek(d);
@@ -381,7 +377,6 @@ public abstract class AbstractUserManager implements UserManager {
      * @see org.drftpd.master.cron.TimeEventInterface#resetYear(java.util.Date)
      */
     public void resetYear(Date d) {
-        logger.debug("in resetYear");
         // Run pre reset hooks
         for (UserResetPreHookInterface preHook : _preResetHooks) {
             preHook.resetYear(d);
@@ -409,7 +404,6 @@ public abstract class AbstractUserManager implements UserManager {
         } catch (Exception e) {
             logger.error("Failed to load plugins of UserResetPreHookInterface for UserManager", e);
         }
-        logger.debug("Loaded [" + prehooks.size() + "] pre hooks for user reset");
         _preResetHooks = prehooks;
 
         // Deal with posthooks
@@ -424,7 +418,6 @@ public abstract class AbstractUserManager implements UserManager {
         } catch (Exception e) {
             logger.error("Failed to load plugins of UserResetPostHookInterface for UserManager", e);
         }
-        logger.debug("Loaded [" + posthooks.size() + "] post hooks for user reset");
         _postResetHooks = posthooks;
     }
 
