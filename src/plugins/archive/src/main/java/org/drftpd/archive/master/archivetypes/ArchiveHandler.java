@@ -76,6 +76,14 @@ public class ArchiveHandler implements Runnable {
         Thread t = Thread.currentThread();
         t.setName("Archive Handler-" + t.getId() + " - " + _archiveType.getClass().getName() + " archiving " + _archiveType.getSection().getName());
         // Prevent spawning more than 1 active threads
+        ArrayList<Thread> threadArrayList = getThreadByName(this.getName());
+        if (threadArrayList.size() > 1) {
+            for (Thread t : threadArrayList) {
+                if (t.isAlive())
+                    return; // A thread is already running lets skip this cycle
+            }
+        }
+
         long curtime = System.currentTimeMillis();
         for (int i = 0; i < _archiveType.getRepeat(); i++) {
             /*
