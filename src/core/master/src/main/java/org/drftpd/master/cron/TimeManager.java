@@ -33,9 +33,12 @@ import java.util.*;
 public class TimeManager {
 
     private static final Logger logger = LogManager.getLogger(TimeManager.class);
+
     private static final long MINUTE = 60 * 1000L;
     private static final long HOUR = MINUTE * 60;
+
     private final ArrayList<TimeEventInterface> _timedEvents;
+
     TimerTask _processHour = new TimerTask() {
         public void run() {
             doReset(Calendar.getInstance());
@@ -60,6 +63,7 @@ public class TimeManager {
     }
 
     public void doReset(Calendar cal) {
+        logger.debug("doReset called - " + cal.toString());
         // Check if EuropeanCalendar and change if needed
         if (isEuropeanCalendar()) {
             cal.setFirstDayOfWeek(Calendar.MONDAY);
@@ -70,7 +74,6 @@ public class TimeManager {
         int hourOfDay = cal.get(Calendar.HOUR_OF_DAY);
         int minuteOfHour = cal.get(Calendar.MINUTE);
         int monthOfYear = cal.get(Calendar.MONTH);
-
 
         if (minuteOfHour != 0) {
             throw new IllegalArgumentException("This thread needs to be run within the first minute of the hour, time is - " + cal.getTime());
@@ -98,7 +101,7 @@ public class TimeManager {
     }
 
     private void doMethodOnTimeEvents(String methodName, Date d) {
-        List<TimeEventInterface> tempList = null;
+        List<TimeEventInterface> tempList;
         synchronized (this) {
             tempList = new ArrayList<>(_timedEvents);
         }
@@ -134,7 +137,8 @@ public class TimeManager {
     /**
      * Should be called on startup after the appropriate TimeEventInterfaces have been added
      *
-     * @param oldDate
+     * @param oldDate The start date
+     * @param newDate The end date
      */
     public void processTimeEventsBetweenDates(Date oldDate, Date newDate) {
         Calendar oldCal = Calendar.getInstance();
