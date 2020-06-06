@@ -1,4 +1,3 @@
-# $Id: StatsAnnouncer.irc.properties 1925 2009-06-15 21:46:05Z tdsoul $
 dailystats.daydn=${color}04${bold}Top Downloaders For The Day:
 dailystats.daydn.item=${color} - ${color}04${bold}[${coloroff}${num}${color}04${bold}]${coloroff} - ${name} - (${files} Files) - (${bytes})${color}04${bold}
 dailystats.daydn.none=${color}04${bold}Nobody Downloaded Anything Today!
