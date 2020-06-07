@@ -246,7 +246,8 @@ public class Archive implements PluginInterface {
         logger.info("Archive plugin unloaded successfully");
     }
 
-    private static class ArchiveHandlerThreadFactory implements ThreadFactory {
+    public static class ArchiveHandlerThreadFactory implements ThreadFactory {
+
         public static String getIdleThreadName(long threadId) {
             return "Archive Handler-" + threadId + " - Waiting for work";
         }

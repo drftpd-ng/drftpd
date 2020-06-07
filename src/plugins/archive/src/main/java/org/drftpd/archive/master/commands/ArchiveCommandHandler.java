@@ -21,6 +21,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.drftpd.archive.master.Archive;
 import org.drftpd.archive.master.DuplicateArchiveException;
+import org.drftpd.archive.master.archivetypes.ArchiveHandler;
 import org.drftpd.archive.master.archivetypes.ArchiveType;
 import org.drftpd.common.extensibility.PluginInterface;
 import org.drftpd.master.GlobalContext;
