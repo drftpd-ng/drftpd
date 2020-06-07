@@ -21,13 +21,12 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.drftpd.archive.master.Archive;
 import org.drftpd.archive.master.DuplicateArchiveException;
-import org.drftpd.archive.master.archivetypes.ArchiveHandler;
 import org.drftpd.archive.master.archivetypes.ArchiveType;
 import org.drftpd.common.extensibility.PluginInterface;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.commands.*;
+import org.drftpd.master.network.Session;
 import org.drftpd.master.sections.SectionInterface;
-import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.ObjectNotValidException;
@@ -36,13 +35,13 @@ import org.drftpd.slave.exceptions.ObjectNotFoundException;
 import java.io.FileNotFoundException;
 import java.util.*;
 
-
 /*
  * @author zubov
  * @version $Id$
  */
 public class ArchiveCommandHandler extends CommandInterface {
-    private static final Logger logger = LogManager.getLogger(ArchiveCommandHandler.class);
+
+    private static final Logger logger = LogManager.getLogger(ArchiveCommandHandler.class.getName());
 
     private ResourceBundle _bundle;
 
@@ -53,11 +52,10 @@ public class ArchiveCommandHandler extends CommandInterface {
     public void initialize(String method, String pluginName, StandardCommandManager cManager) {
         super.initialize(method, pluginName, cManager);
         _bundle = cManager.getResourceBundle();
-
     }
 
     private Archive getArchive() throws ObjectNotFoundException {
-        Archive archive = null;
+        Archive archive;
         List<PluginInterface> pluginList = GlobalContext.getGlobalContext().getPlugins();
         for (PluginInterface pi : pluginList) {
             if (pi instanceof Archive) {
@@ -69,95 +67,90 @@ public class ArchiveCommandHandler extends CommandInterface {
     }
 
     public CommandResponse doARCHIVE(CommandRequest request) throws ImproperUsageException {
-        CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-        Map<String, Object> env = new HashMap<>();
 
+        // Fail fast if we did not receive any arguments
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
         }
 
-        StringTokenizer st = new StringTokenizer(request.getArgument());
-        String dirname = st.nextToken();
-        DirectoryHandle dir;
-        User user = request.getSession().getUserNull(request.getUser());
+        CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
+        Map<String, Object> env = new HashMap<>();
+
+        StringTokenizer args = new StringTokenizer(request.getArgument());
+
+        // We need at least 2 argument (dirname)
+        if (args.countTokens() < 2) {
+            throw new ImproperUsageException();
+        }
+
+        // Get the current session
+        Session session = request.getSession();
+
+        // Get the user requesting the archive
+        User currentUser = session.getUserNull(request.getUser());
+
+        String dirname = args.nextToken();
+        String archiveTypeName = args.nextToken();
+        env.put("dirname", dirname);
+        env.put("archivetypename", archiveTypeName);
+
+        // Extra configuration properties
+        Properties props = new Properties();
+
+        while (args.hasMoreTokens()) {
+            addConfig(props, args.nextToken());
+        }
+
+        // Get our archive Manager instance
+        Archive archiveManager;
 
         try {
-            dir = request.getCurrentDirectory().getDirectory(dirname, user);
-        } catch (FileNotFoundException e1) {
-            env.put("dirname", dirname);
+            archiveManager = getArchive();
+        } catch (ObjectNotFoundException e) {
+            response.addComment(request.getSession().jprintf(_bundle, env, "loadarchive"));
+
+            return response;
+        }
+
+        // Get the requested Directory Handle
+        DirectoryHandle dirHandle;
+
+        try {
+            dirHandle = request.getCurrentDirectory().getDirectory(dirname, currentUser);
+        } catch (FileNotFoundException e) {
             response.addComment(request.getSession().jprintf(_bundle, env, "baddir"));
 
             return response;
         } catch (ObjectNotValidException e) {
             response.addComment("Archive only works on Directories");
+
             return response;
         }
 
-        Archive archive;
+        // Get the section for our directory handle
+        SectionInterface section = GlobalContext.getGlobalContext().getSectionManager().lookup(dirHandle);
 
-        try {
-            archive = getArchive();
-        } catch (ObjectNotFoundException e3) {
-            response.addComment(request.getSession().jprintf(_bundle, env, "loadarchive"));
+        // Get the requested archive Type
+        ArchiveType archiveType = archiveManager.getArchiveType(0, archiveTypeName, section, props);
+
+        if (archiveType == null) {
+            logger.error("User requested ArchiveType {}, which does not exist", archiveTypeName);
+            response.addComment(request.getSession().jprintf(_bundle, env, "incompatible"));
             return response;
         }
 
-        String archiveTypeName = null;
-        ArchiveType archiveType = null;
+        // Configure the archiveType with our directory handle
+        archiveType.setDirectory(dirHandle);
 
-        SectionInterface section = GlobalContext.getGlobalContext().getSectionManager().lookup(dir);
-
-        if (st.hasMoreTokens()) { // load the specific type
-            archiveTypeName = st.nextToken();
-
-            Properties props = new Properties();
-
-            while (st.hasMoreTokens()) {
-                addConfig(props, st.nextToken());
-            }
-
-            archiveType = archive.getArchiveType(0, archiveTypeName, section, props);
-            if (archiveType == null) {
-                logger.error("Serious error, ArchiveType: {} does not exists", archiveTypeName);
-                env.put("archivetypename", archiveTypeName);
-                response.addComment(request.getSession().jprintf(_bundle, env, "incompatible"));
-                return response;
-            }
-        }
-
-        HashSet<RemoteSlave> slaveSet = new HashSet<>();
-
-        while (st.hasMoreTokens()) {
-            String slavename = st.nextToken();
-
-            try {
-                RemoteSlave rslave = GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(slavename);
-                slaveSet.add(rslave);
-            } catch (ObjectNotFoundException e2) {
-                env.put("slavename", slavename);
-                response.addComment(request.getSession().jprintf(_bundle, env, "badslave"));
-            }
-        }
-
-        archiveType.setDirectory(dir);
-
-
+        // Submit the ArchiveType request for execution
         try {
-            archive.checkPathForArchiveStatus(dir.getPath());
+            archiveManager.executeArchiveType(archiveType);
         } catch (DuplicateArchiveException e) {
             env.put("exception", e.getMessage());
             response.addComment(request.getSession().jprintf(_bundle, env, "fail"));
+            return response;
         }
 
-        if (!slaveSet.isEmpty()) {
-            archiveType.setRSlaves(slaveSet);
-        }
-
-        ArchiveHandler archiveHandler = new ArchiveHandler(archiveType);
-
-        archiveHandler.start();
-        env.put("dirname", dir.getPath());
-        env.put("archivetypename", archiveTypeName);
         response.addComment(request.getSession().jprintf(_bundle, env, "success"));
 
         return response;
