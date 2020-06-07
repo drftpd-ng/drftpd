@@ -33,34 +33,48 @@ import org.drftpd.master.sections.SectionInterface;
 import org.reflections.Reflections;
 
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 /**
  * @author CyBeR
  * @version $Id$
  */
 public class Archive implements PluginInterface {
+
     private static final Logger logger = LogManager.getLogger(Archive.class);
 
+    // Representation of the archive.conf
     private Properties _props;
 
+    // At what interval should we check for archive tasks
     private long _cycleTime;
 
+    // All active ArchiveHandlers
     private HashSet<ArchiveHandler> _archiveHandlers = null;
 
+    // The timertask we created based on _cycleTime
     private TimerTask _runHandler = null;
 
+    // A map of archive types (name -> archiveType class)
     private CaseInsensitiveHashMap<String, Class<? extends ArchiveType>> _typesMap;
 
+    // Get our Properties of archive.conf
     public Properties getProperties() {
         return _props;
     }
 
+    // Get the cycle time
     public long getCycleTime() {
         return _cycleTime;
     }
 
+    // Our Executor Service for running archive handlers
+    private ExecutorService _archiveHandlerExecutor;
+
     /*
-     * Returns the archive type corrisponding with the .conf file
+     * Returns the archive type corresponding with the .conf file
      * and which Archive number the loop is on
      */
     public ArchiveType getArchiveType(int count, String type, SectionInterface sec, Properties props) {
@@ -101,8 +115,7 @@ public class Archive implements PluginInterface {
     private void initTypes() {
         CaseInsensitiveHashMap<String, Class<? extends ArchiveType>> typesMap = new CaseInsensitiveHashMap<>();
         // TODO [DONE] @k2r Archive init types
-        Set<Class<? extends ArchiveType>> archiveTypes = new Reflections("org.drftpd")
-                .getSubTypesOf(ArchiveType.class);
+        Set<Class<? extends ArchiveType>> archiveTypes = new Reflections("org.drftpd").getSubTypesOf(ArchiveType.class);
         for (Class<? extends ArchiveType> archiveType : archiveTypes) {
             typesMap.put(archiveType.getSimpleName(), archiveType);
         }
@@ -117,12 +130,22 @@ public class Archive implements PluginInterface {
         initTypes();
         _props = ConfigLoader.loadPluginConfig("archive.conf");
         _cycleTime = 60000 * Long.parseLong(PropertyHelper.getProperty(_props, "cycletime", "30").trim());
+        int maxConcurrentActions = Integer.parseInt(PropertyHelper.getProperty(_props, "maxConcurrentActions", "10").trim());
 
+        int minActions = getTypesMap().size() + 1;
+        if (minActions > maxConcurrentActions) {
+            logger.warn("Setting maxconcurrentActions to [" + minActions + "] to allow for your configured archive statements");
+            maxConcurrentActions = minActions;
+        }
+        _archiveHandlerExecutor = Executors.newFixedThreadPool(maxConcurrentActions, new ArchiveHandlerThreadFactory());
+
+        // First cancel and remove our active TimerTask
         if (_runHandler != null) {
             _runHandler.cancel();
             GlobalContext.getGlobalContext().getTimer().purge();
         }
 
+        // Initialize a new TimerTask
         _runHandler = new TimerTask() {
             public void run() {
 
@@ -134,7 +157,11 @@ public class Archive implements PluginInterface {
                     SectionInterface sec = GlobalContext.getGlobalContext().getSectionManager().getSection(PropertyHelper.getProperty(_props, count + ".section", "").trim());
                     ArchiveType archiveType = getArchiveType(count, type, sec, _props);
                     if (archiveType != null) {
-                        new ArchiveHandler(archiveType).start();
+                        try {
+                            executeArchiveType(archiveType);
+                        } catch(DuplicateArchiveException e) {
+                            logger.warn("Unable to execute archive task", e);
+                        }
                     }
                     count++;
                 }
@@ -143,8 +170,24 @@ public class Archive implements PluginInterface {
         try {
             GlobalContext.getGlobalContext().getTimer().schedule(_runHandler, _cycleTime, _cycleTime);
         } catch (IllegalStateException e) {
-            // Timer Already Canceled
+            logger.warn("Unable to schedule our TimerTask as the GlobalContext Timer is in an illegal state", e);
         }
+    }
+
+    /*
+     * Submit a new archive task to be executed
+     */
+    public synchronized void executeArchiveType(ArchiveType at) throws DuplicateArchiveException {
+
+        // Ensure we are not already archiving this request
+        checkPathForArchiveStatus(at.getDirectory().getPath());
+
+        // Create the Runnable ArchiveHandler
+        ArchiveHandler ah = new ArchiveHandler(at);
+
+        // Register it to our active archive handlers and submit it to our executor
+        _archiveHandlers.add(ah);
+        _archiveHandlerExecutor.submit(ah);
     }
 
     /*
@@ -162,18 +205,10 @@ public class Archive implements PluginInterface {
     }
 
     /*
-     * Adds a specfic ArchiveHandle to the list.  Makes sure directory already isn't added.
-     */
-    public synchronized void addArchiveHandler(ArchiveHandler handler) throws DuplicateArchiveException {
-        checkPathForArchiveStatus(handler.getArchiveType().getDirectory().getPath());
-        _archiveHandlers.add(handler);
-    }
-
-    /*
      * This checks to see if the current directory is already queued to be archived.
-     * Throws DuplicateArchive expcetion if it is.
+     * Throws DuplicateArchive exception if it is.
      */
-    public synchronized void checkPathForArchiveStatus(String handlerPath) throws DuplicateArchiveException {
+    private synchronized void checkPathForArchiveStatus(String handlerPath) throws DuplicateArchiveException {
         for (ArchiveHandler ah : _archiveHandlers) {
             String ahPath = ah.getArchiveType().getDirectory().getPath();
 
@@ -209,5 +244,17 @@ public class Archive implements PluginInterface {
         }
         AnnotationProcessor.unprocess(this);
         logger.info("Archive plugin unloaded successfully");
+    }
+
+    private static class ArchiveHandlerThreadFactory implements ThreadFactory {
+        public static String getIdleThreadName(long threadId) {
+            return "Archive Handler-" + threadId + " - Waiting for work";
+        }
+
+        public Thread newThread(Runnable r) {
+            Thread t = Executors.defaultThreadFactory().newThread(r);
+            t.setName(getIdleThreadName(t.getId()));
+            return t;
+        }
     }
 }
