@@ -52,7 +52,7 @@ public abstract class ArchiveType {
     // Current section directory is in.
     protected SectionInterface _section;
     // Current .conf loop number we are on.  Used for other archive types to grab extra configurations
-    // Any positive number is valid. 0 means manual (ie: site archive) and any number above 1 means it's in archive.conf
+    // Any positive number is valid. 0 means manual (ie: create by site archive) and any number above 1 means it's in archive.conf
     protected int _confNum;
     protected Set<RemoteSlave> _slaveList;
     // Used For: number of slaves to archive too
@@ -98,9 +98,11 @@ public abstract class ArchiveType {
      * @param confNum The number this Archive Type has in the configuration
      */
     public ArchiveType(Archive archive, SectionInterface section, Properties p, int confNum) {
-        if (confNum <= 0) {
+        if (confNum < 0) {
             logger.error("Incorrect Configuration Number found [" + confNum + "], needs to be positive");
         }
+        // Initialize this to 0
+        _numOfSlaves = 0;
         _confNum = confNum;
         _parent = archive;
         _section = section;
