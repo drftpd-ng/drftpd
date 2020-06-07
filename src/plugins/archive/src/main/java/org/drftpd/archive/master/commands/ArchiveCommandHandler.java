@@ -21,6 +21,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.drftpd.archive.master.Archive;
 import org.drftpd.archive.master.DuplicateArchiveException;
+import org.drftpd.archive.master.archivetypes.ArchiveHandler;
 import org.drftpd.archive.master.archivetypes.ArchiveType;
 import org.drftpd.common.extensibility.PluginInterface;
 import org.drftpd.master.GlobalContext;
@@ -191,6 +192,34 @@ public class ArchiveCommandHandler extends CommandInterface {
             String type = iter.next();
             response.addComment(x + ": " + type);
         }
+
+        return response;
+    }
+
+    public CommandResponse doLISTQUEUE(CommandRequest request) {
+        CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
+        int x = 1;
+        Map<String, Object> env = new HashMap<>();
+        Archive archive;
+
+        try {
+            archive = getArchive();
+        } catch (ObjectNotFoundException e) {
+            response.addComment(request.getSession().jprintf(_bundle, env, "loadarchive"));
+            return response;
+        }
+
+        int activeJobs = 0;
+        int totalJobs = 0;
+        for (ArchiveHandler ah : archive.getArchiveHandlers()) {
+            if(ah.getJobs().size() != 0) {
+                activeJobs++;
+            }
+            totalJobs++;
+        }
+        env.put("activejobs", activeJobs);
+        env.put("totaljobs", totalJobs);
+        response.addComment(request.getSession().jprintf(_bundle, env, "archivequeuestats"));
 
         return response;
     }
