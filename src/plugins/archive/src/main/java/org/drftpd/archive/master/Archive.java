@@ -208,7 +208,7 @@ public class Archive implements PluginInterface {
      * This checks to see if the current directory is already queued to be archived.
      * Throws DuplicateArchive exception if it is.
      */
-    public synchronized void checkPathForArchiveStatus(String handlerPath) throws DuplicateArchiveException {
+    private synchronized void checkPathForArchiveStatus(String handlerPath) throws DuplicateArchiveException {
         for (ArchiveHandler ah : _archiveHandlers) {
             String ahPath = ah.getArchiveType().getDirectory().getPath();
 
@@ -246,8 +246,7 @@ public class Archive implements PluginInterface {
         logger.info("Archive plugin unloaded successfully");
     }
 
-    public static class ArchiveHandlerThreadFactory implements ThreadFactory {
-
+    private static class ArchiveHandlerThreadFactory implements ThreadFactory {
         public static String getIdleThreadName(long threadId) {
             return "Archive Handler-" + threadId + " - Waiting for work";
         }
