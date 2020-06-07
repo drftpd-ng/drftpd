@@ -36,15 +36,15 @@ public class MoveReleaseToMostFreeSlaves extends ArchiveType {
     /*
      * Constructor:
      */
-    public MoveReleaseToMostFreeSlaves(Archive archive, SectionInterface section, Properties props, int confnum) {
-        super(archive, section, props, confnum);
+    public MoveReleaseToMostFreeSlaves(Archive archive, SectionInterface section, Properties props, int confNum) {
+        super(archive, section, props, confNum);
 
         if (_slaveList.isEmpty()) {
-            throw new NullPointerException("Cannot continue, 0 destination slaves found for MoveReleaseToMostFreeSlaves for conf number " + confnum);
+            throw new NullPointerException("Cannot continue, 0 destination slaves found for MoveReleaseToMostFreeSlaves for conf number " + confNum);
         }
 
         if (_numOfSlaves < 1) {
-            throw new IllegalArgumentException("numOfSlaves has to be > 0 for conf number " + confnum);
+            throw new IllegalArgumentException("numOfSlaves has to be > 0 for conf number " + confNum);
         }
     }
 
