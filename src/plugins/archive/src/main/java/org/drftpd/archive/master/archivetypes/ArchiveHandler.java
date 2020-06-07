@@ -20,6 +20,7 @@ package org.drftpd.archive.master.archivetypes;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
+import org.drftpd.archive.master.Archive;
 import org.drftpd.archive.master.DuplicateArchiveException;
 import org.drftpd.archive.master.event.ArchiveFailedEvent;
 import org.drftpd.archive.master.event.ArchiveFinishEvent;
@@ -45,7 +46,6 @@ public class ArchiveHandler implements Runnable {
     private ArrayList<Job> _jobs = null;
 
     public ArchiveHandler(ArchiveType archiveType) {
-        //super(archiveType.getClass().getName() + " archiving " + archiveType.getSection().getName()); - TODO
         _archiveType = archiveType;
         AnnotationProcessor.process(this);
     }
@@ -73,6 +73,8 @@ public class ArchiveHandler implements Runnable {
      * This also throws events so they can be caught for sitebot announcing.
      */
     public void run() {
+        Thread t = Thread.currentThread();
+        t.setName("Archive Handler-" + t.getId() + " - " + _archiveType.getClass().getName() + " archiving " + _archiveType.getSection().getName());
         // Prevent spawning more than 1 active threads
         long curtime = System.currentTimeMillis();
         for (int i = 0; i < _archiveType.getRepeat(); i++) {
@@ -124,10 +126,12 @@ public class ArchiveHandler implements Runnable {
                 logger.warn("Caught an unexpected exception while trying to archive", e);
             } finally {
                 if (!_archiveType._parent.removeArchiveHandler(this)) {
-                    logger.warn("We were unable to remove this ArchiveHandler from the registered ArchiveHandlers");
+                    logger.error("We were unable to remove this ArchiveHandler from the registered ArchiveHandlers");
                 }
                 _archiveType.setDirectory(null);
             }
         }
+        // Give the thread a correct name (Waiting for archive)
+        t.setName(Archive.ArchiveHandlerThreadFactory.getIdleThreadName(t.getId()));
     }
 }
