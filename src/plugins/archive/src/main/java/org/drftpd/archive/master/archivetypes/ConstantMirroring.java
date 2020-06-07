@@ -32,7 +32,9 @@ import java.util.*;
  * @author CyBeR
  */
 public class ConstantMirroring extends ArchiveType {
+
     private static final Logger logger = LogManager.getLogger(ConstantMirroring.class);
+
     private final long _slaveDeadAfter;
 
     /*
@@ -50,8 +52,11 @@ public class ConstantMirroring extends ArchiveType {
         }
         size = _slaveList.size();
 
-        if (_numOfSlaves > size && _numOfSlaves < 1) {
-            throw new IllegalArgumentException("numOfSlaves has to be 1 <= numOfSlaves <= the size of the destination slave for conf number " + confNum);
+        if (_numOfSlaves > size) {
+            throw new IllegalArgumentException("numOfSlaves cannot be higher than the amount of registered slaves for configuration item " + confNum);
+        }
+        if (_numOfSlaves < 1) {
+            throw new IllegalArgumentException("numOfSlaves has to be more than 0 for configuration item " + confNum);
         }
     }
 
@@ -65,7 +70,9 @@ public class ConstantMirroring extends ArchiveType {
     }
 
     @Override
-    protected boolean isArchivedDir(DirectoryHandle lrf) throws IncompleteDirectoryException, OfflineSlaveException, FileNotFoundException {
+    protected boolean isArchivedDir(DirectoryHandle lrf)
+            throws IncompleteDirectoryException, OfflineSlaveException, FileNotFoundException {
+
         for (FileHandle src : lrf.getFilesUnchecked()) {
 
             Collection<RemoteSlave> slaves;
@@ -76,15 +83,15 @@ public class ConstantMirroring extends ArchiveType {
              * Only check if this slave is dead if slaveDeadAfter is
              * configured to a non-zero value
              */
-
             if (_slaveDeadAfter > 0) {
-                for (Iterator<RemoteSlave> slaveIter = slaves.iterator(); slaveIter.hasNext(); ) {
-                    RemoteSlave rslave = slaveIter.next();
-                    if (!rslave.isAvailable()) {
-                        long offlineTime = System.currentTimeMillis() - rslave.getLastTimeOnline();
+                for (Iterator<RemoteSlave> slaveIterator = slaves.iterator(); slaveIterator.hasNext(); ) {
+                    RemoteSlave remoteslave = slaveIterator.next();
+                    if (!remoteslave.isAvailable()) {
+                        long offlineTime = System.currentTimeMillis() - remoteslave.getLastTimeOnline();
                         if (offlineTime > _slaveDeadAfter) {
+                            logger.debug("slaveDeadAfter triggered, assuming slave {} is dead and remove", remoteslave.getName());
                             // slave is considered dead
-                            slaveIter.remove();
+                            slaveIterator.remove();
                         }
                     }
                 }
@@ -99,8 +106,8 @@ public class ConstantMirroring extends ArchiveType {
             if (slaves.size() != _numOfSlaves) {
                 return false;
             }
-
         }
+
         for (DirectoryHandle dir : lrf.getDirectoriesUnchecked()) {
             if (!isArchivedDir(dir)) {
                 return false;
