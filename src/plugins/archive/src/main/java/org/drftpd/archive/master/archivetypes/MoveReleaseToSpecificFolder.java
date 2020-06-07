@@ -34,8 +34,8 @@ public class MoveReleaseToSpecificFolder extends ArchiveType {
     /*
      * Constructor:
      */
-    public MoveReleaseToSpecificFolder(Archive archive, SectionInterface section, Properties props, int confnum) {
-        super(archive, section, props, confnum);
+    public MoveReleaseToSpecificFolder(Archive archive, SectionInterface section, Properties props, int confNum) {
+        super(archive, section, props, confNum);
     }
 
     /*
