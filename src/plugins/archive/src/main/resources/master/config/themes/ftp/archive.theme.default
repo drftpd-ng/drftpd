@@ -5,3 +5,4 @@ badslave=Unable to add ${slavename} to the slaveList
 loadarchive=The Archive plugin must be loaded, use SITE LOADPLUGIN Archive
 success=Started ArchiveHandler for ${archivetypename} on ${dirname}
 fail=${exception}
+archivequeuestats=Total Archive Actions in the Queue ${totaljobs}. ${activejobs} executing
