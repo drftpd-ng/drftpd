@@ -20,6 +20,7 @@ package org.drftpd.archive.master.archivetypes;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
+import org.drftpd.archive.master.Archive;
 import org.drftpd.archive.master.DuplicateArchiveException;
 import org.drftpd.archive.master.event.ArchiveFailedEvent;
 import org.drftpd.archive.master.event.ArchiveFinishEvent;
@@ -37,7 +38,7 @@ import java.util.Set;
  * @author CyBeR
  * @version $Id$
  */
-public class ArchiveHandler extends Thread {
+public class ArchiveHandler implements Runnable {
     protected static final Logger logger = LogManager.getLogger(ArchiveHandler.class);
 
     private final ArchiveType _archiveType;
@@ -45,7 +46,6 @@ public class ArchiveHandler extends Thread {
     private ArrayList<Job> _jobs = null;
 
     public ArchiveHandler(ArchiveType archiveType) {
-        super(archiveType.getClass().getName() + " archiving " + archiveType.getSection().getName());
         _archiveType = archiveType;
         AnnotationProcessor.process(this);
     }
@@ -65,17 +65,6 @@ public class ArchiveHandler extends Thread {
         return new ArrayList<>(_jobs);
     }
 
-    public ArrayList getThreadByName(String threadName) {
-        ArrayList<Thread> threadArrayList = new ArrayList<>();
-        for (Thread t : Thread.getAllStackTraces().keySet()) {
-            if (t.isAlive() && t.getName().equals(threadName)) {
-                threadArrayList.add(t);
-            }
-        }
-
-        return threadArrayList;
-    }
-
     /*
      * Thread for ArchiveHandler
      * This will go through and find the oldest non archived dir, then try and archive it
@@ -84,18 +73,9 @@ public class ArchiveHandler extends Thread {
      * This also throws events so they can be caught for sitebot announcing.
      */
     public void run() {
+        Thread t = Thread.currentThread();
+        t.setName("Archive Handler-" + t.getId() + " - " + _archiveType.getClass().getName() + " archiving " + _archiveType.getSection().getName());
         // Prevent spawning more than 1 active threads
-        /*
-        // This breaks a lot of manual actions if you do them quickly after another.
-        // This needs to be changed to use en executorservice
-        ArrayList<Thread> threadArrayList = getThreadByName(this.getName());
-        if (threadArrayList.size() > 1) {
-            for (Thread t : threadArrayList) {
-                if (t.isAlive())
-                    return; // A thread is already running lets skip this cycle
-            }
-        }
-         */
         long curtime = System.currentTimeMillis();
         for (int i = 0; i < _archiveType.getRepeat(); i++) {
             /*
@@ -112,12 +92,7 @@ public class ArchiveHandler extends Thread {
                     }
 
                     if (_archiveType.getDirectory() == null) {
-                        return; // all done
-                    }
-                    try {
-                        _archiveType._parent.addArchiveHandler(this);
-                    } catch (DuplicateArchiveException e) {
-                        logger.warn("Directory -- {} -- is already being archived ", _archiveType.getDirectory());
+                        logger.debug("No directory found to archive, nothing left to do.");
                         return;
                     }
                 }
@@ -126,6 +101,7 @@ public class ArchiveHandler extends Thread {
 
                     if (destSlaves == null) {
                         _archiveType.setDirectory(null);
+                        logger.warn("Unable to allocate destination Slaves, nothing we can do.");
                         return; // no available slaves to use
                     }
 
@@ -133,25 +109,29 @@ public class ArchiveHandler extends Thread {
                 }
 
                 GlobalContext.getEventService().publish(new ArchiveStartEvent(_archiveType, _jobs));
-                long starttime = System.currentTimeMillis();
+                long startTime = System.currentTimeMillis();
                 if (_jobs != null) {
                     _archiveType.waitForSendOfFiles(_jobs);
                 }
 
                 if (!_archiveType.moveRelease(getArchiveType().getDirectory())) {
                     _archiveType.addFailedDir(getArchiveType().getDirectory().getPath());
-                    GlobalContext.getEventService().publish(new ArchiveFailedEvent(_archiveType, starttime, "Failed To Move Directory"));
+                    GlobalContext.getEventService().publish(new ArchiveFailedEvent(_archiveType, startTime, "Failed To Move Directory"));
                     logger.error("Failed to Archiving {} (Failed To Move Directory)", getArchiveType().getDirectory().getPath());
                 } else {
-                    GlobalContext.getEventService().publish(new ArchiveFinishEvent(_archiveType, starttime));
+                    GlobalContext.getEventService().publish(new ArchiveFinishEvent(_archiveType, startTime));
                     logger.info("Done archiving {}", getArchiveType().getDirectory().getPath());
                 }
             } catch (Exception e) {
-                logger.warn("", e);
+                logger.warn("Caught an unexpected exception while trying to archive", e);
             } finally {
-                _archiveType._parent.removeArchiveHandler(this);
+                if (!_archiveType._parent.removeArchiveHandler(this)) {
+                    logger.error("We were unable to remove this ArchiveHandler from the registered ArchiveHandlers");
+                }
                 _archiveType.setDirectory(null);
             }
         }
+        // Give the thread a correct name (Waiting for archive)
+        t.setName(Archive.ArchiveHandlerThreadFactory.getIdleThreadName(t.getId()));
     }
 }

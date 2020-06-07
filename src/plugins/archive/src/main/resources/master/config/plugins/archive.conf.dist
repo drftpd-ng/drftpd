@@ -7,6 +7,15 @@
 # cycletime = (Required) - Length between each cycle (Minutes)                                     #
 #              1440 = 1 day | 10080 = 1 week | 43200 = 1 month                                     #
 #                                                                                                  #
+# maxConcurrentActions = (Required) - Maximum concurrent archive actions                           #
+#                         10 (default)                                                             #
+#                         Please note:                                                             #
+#                         - We do not enforce any maximums here, but setting this too high         #
+#                           might make your master slow/sluggish and/or other random strange       #
+#                           behaviour could be observed                                            #
+#                         - We will set this to the amount of archive configurations specified     #
+#                           below + 1 (for overhead/manual actions)                                #
+#                                                                                                  #
 # x.type = (Required) - ArchiveTypeName                                                            #
 # x.section = (Required) - Section To Archive From                                                 #
 # x.archiveafter = (Optional) - Archive Releases After X minutes                                   #
@@ -156,3 +165,5 @@
 # Default [30]
 cycletime=30
 
+# Default [10]
+maxConcurrentActions=10
