@@ -95,6 +95,8 @@ public class ReplacerUtils {
                 } else {
                     fieldSize = Integer.parseInt(options);
                 }
+                logger.debug("valueSize: {}, fieldSize: {}, maxSize: {}", valueSize, fieldSize, maxSize);
+
                 // Deal with maxSize
                 if (maxSize != -1 && valueSize > maxSize) {
                     logger.warn("Value {} has a bigger size than the variable {} should hold (value size: {}, variable max size: {}. We are cutting of the end to make it fit", currentValue, variable, valueSize, maxSize);
@@ -102,14 +104,11 @@ public class ReplacerUtils {
                 } else {
                     // Only pad if we need to
                     if (fieldSize > valueSize) {
-                        // Calculate how much we need to pad
-                        int paddingSize = fieldSize - valueSize;
-
                         // Apply padding
                         if (alignLeft) {
-                            currentValue = StringUtils.rightPad(currentValue, paddingSize);
+                            currentValue = StringUtils.rightPad(currentValue, fieldSize);
                         } else {
-                            currentValue = StringUtils.leftPad(currentValue, paddingSize);
+                            currentValue = StringUtils.leftPad(currentValue, fieldSize);
                         }
                     }
                 }
