@@ -20,4 +20,4 @@ archive.finish.move=${color}15${bold}ARCHIVED:${bold}${coloroff} '${color}15${rl
 
 archive.failed=${color}04${bold}ARCHIVED-FAILED:${bold}${coloroff} '${color}15${srcdir}/${rls}${coloroff}' Reason: '${color}15${reason}${coloroff}'
 
-archivequeuestats=${color}04${bold}ARCHIVE-ACTIONS:${bold}${coloroff} Total Archive Actions in the Queue ${totaljobs}. ${activejobs} executing
+archivequeuestats=Total Archive Actions in the Queue ${totaljobs} of which ${activejobs} are being executed
