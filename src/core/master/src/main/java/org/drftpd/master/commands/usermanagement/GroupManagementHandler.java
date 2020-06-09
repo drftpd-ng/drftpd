@@ -599,6 +599,12 @@ public class GroupManagementHandler extends CommandInterface {
         env.put("slotsfree", g.getGroupSlots() - numUsers);
         env.put("leechtotal", g.getLeechSlots());
         env.put("leechfree", g.getLeechSlots() - numLeechUsers);
+        env.put("minratio", g.getMinRatio());
+        env.put("maxratio", g.getMaxRatio());
+        env.put("groupratio", g.getMinRatio()+"/"+g.getMaxRatio());
+        env.put("slots", g.getGroupSlots()+"/"+(g.getGroupSlots() - numUsers));
+        env.put("leechslots", g.getGroupSlots()+"/"+(g.getLeechSlots() - numLeechUsers));
+        env.put("created", new SimpleDateFormat("d MMM yyyy HH:mm:ss").format(g.getCreated()));
 
         String tail = _bundle.getString("ginfo.tail");
         try {
