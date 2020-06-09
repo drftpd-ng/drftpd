@@ -101,14 +101,16 @@ ginfo.head=\
 ${sp,1}\\\\     \\\\    |     /_____/     \\\\      /    |\\\\     \\\\     \\\\   /\n\
 ${sp,2}\\\\______    |______|    \\\\___________/|_____________\\\\    ____/ ${group}\n\
 .----- /______| -------------------------------------- |_____| ---------.\n\
-|  Username |     Up |      Megs |     Dn |      Megs | Ratio |    Wkly |\n\
-|-----------+--------+-----------+--------+-----------+-------+---------|
-ginfo.user=|${user,-11}|${fup,8}|${mbup,10} |${fdn,8}|${mbdn,10} | ${ratio} |${wkly,8} |
+|  Username |     Up |     Megs |     Dn |     Megs | Ratio   |    Wkly |\n\
+|-----------+--------+----------+--------+----------+---------+---------|
+ginfo.user=|${user,-11}|${fup,7} |${mbup,9} |${fdn,7} |${mbdn,9} |${ratio,8} |${wkly,8} |
 ginfo.tail=\
-|-----------+--------+-----------+--------+-----------+-------+---------|\n\
-|        * = siteop           + = gadmin            ! = deleted         |\n\
-|-----------+--------+-----------+--------+-----------+-------+---------|\n\
-|   Tot Megs Up:${allmbup,10}         Tot Files Up:${allfup,7}          |\n\
-|   Tot Megs Dn:${allmbdn,10}         Tot Files Dn:${allfdn,7}          |\n\
-|   Slots(Total/Free): ${slotstotal}/${slotsfree}   Leech Slots(Total/Free): ${leechtotal}/${leechfree}  |\n\
+|-----------------------------------------------------------------------|\n\
+|        * = Site Admin       + = Group Admin       ! = deleted         |\n\
+|-----------------------------------------------------------------------|\n\
+| Tot Megs Up: ${allmbup,19} | Tot Files Up: ${allfup,20} |\n\
+| Tot Megs Dn: ${allmbdn,19} | Tot Files Dn: ${allfdn,20} |\n\
+|----------------------------------+------------------------------------|\n\
+| Ratio(Min/Max): ${groupratio,16} | Created: ${created,25} |\n\
+| Slots(Total/Free): ${slots,13} | Leech Slots(Total/Free): ${leechslots,9} |\n\
 `-----------------------------------------------------------------------'
