@@ -17,19 +17,28 @@
  */
 package org.drftpd.jobs.master;
 
+import org.apache.commons.lang3.StringUtils;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 import org.drftpd.common.exceptions.RemoteIOException;
+
 import org.drftpd.master.GlobalContext;
+
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.exceptions.SlaveUnavailableException;
+
 import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.master.slavemanagement.SlaveManager;
+
 import org.drftpd.master.vfs.FileHandle;
+
 import org.drftpd.slave.exceptions.FileExistsException;
 import org.drftpd.slave.exceptions.ObjectNotFoundException;
 
 import java.io.FileNotFoundException;
+
 import java.util.*;
 
 /**
@@ -38,8 +47,11 @@ import java.util.*;
  * @version $Id$
  */
 public class Job {
+
     private static final Logger logger = LogManager.getLogger(Job.class);
+
     private static long jobIndexCount = 0;
+
     private Set<String> _destSlaves;
 
     private final FileHandle _file;
@@ -81,9 +93,9 @@ public class Job {
     /**
      * This does NOT create a complete Job, it lacks only the destination Slave list
      *
-     * @param file
-     * @param priority
-     * @param transferNum
+     * @param file Actual file in the VFS
+     * @param priority The priority of this Job
+     * @param transferNum The amount of transfers
      */
     private Job(FileHandle file, int priority, int transferNum) {
         _index = jobIndexCount++;
@@ -104,13 +116,13 @@ public class Job {
         _destSlaves = new HashSet<>(destSlaves);
         _onlyCountOnlineSlaves = onlyCountOnlineSlaves;
         if (_transferNum > destSlaves.size()) {
-            throw new IllegalArgumentException(
-                    "transferNum cannot be greater than destSlaves.size()");
+            logger.error("new Job creation failed as {} transfer number is greater that the number of destination slaves {}", transferNum, destSlaves.size());
+            throw new IllegalArgumentException("transferNum cannot be greater than destSlaves.size()");
         }
 
         if (_transferNum <= 0) {
-            throw new IllegalArgumentException(
-                    "transferNum must be greater than 0");
+            logger.error("new Job creation failed as {} transfer number cannot be less than 0", transferNum);
+            throw new IllegalArgumentException("transferNum must be greater than 0");
         }
     }
 
@@ -156,25 +168,25 @@ public class Job {
                 getFile().removeSlave(rslave);
             }
         } catch (FileNotFoundException e) {
-            // couldn't find the file that was referenced, unsure of what to
-            // do now
+            // couldn't find the file that was referenced, unsure of what to do now
             // probably can just leave it alone
+            logger.error("File was not found anymore for this Job, it existed during creation of the Job. Not sure how to handle so ignoring");
         } finally {
             _deleteDone = true;
         }
     }
 
-
     public Collection<RemoteSlave> getSlaveObjects(Collection<String> names) throws ObjectNotFoundException {
         ArrayList<RemoteSlave> slaves = new ArrayList<>();
         ArrayList<String> stringSlaves = new ArrayList<>(names);
-        for (String rslave : stringSlaves) {
+        for (String remoteSlaveName : stringSlaves) {
             try {
-                slaves.add(GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(rslave));
+                slaves.add(GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(remoteSlaveName));
             } catch (ObjectNotFoundException e) {
                 // have to abort, destination slave no longer exists
+                logger.error("The Slave {} seems to have gone missing (?deleted?). Aborting", remoteSlaveName);
                 abort();
-                throw new ObjectNotFoundException("Slave " + rslave + " no longer exists");
+                throw new ObjectNotFoundException("Slave " + remoteSlaveName + " no longer exists");
             }
         }
         return slaves;
@@ -183,8 +195,8 @@ public class Job {
     public Collection<String> getSlaveNames(Collection<RemoteSlave> names) {
         ArrayList<RemoteSlave> slaves = new ArrayList<>(names);
         ArrayList<String> stringSlaves = new ArrayList<>();
-        for (RemoteSlave rslave : slaves) {
-            stringSlaves.add(rslave.getName());
+        for (RemoteSlave remoteSlave : slaves) {
+            stringSlaves.add(remoteSlave.getName());
         }
         return stringSlaves;
     }
@@ -194,23 +206,25 @@ public class Job {
      * {@see net.sf.drftpd.master.SlaveManagerImpl#getASlave(Collection, char, FtpConfig)}
      */
     public Set<String> getDestinationSlaves() {
+        Set<String> destinationSlaves = new HashSet<>();
         if (_onlyCountOnlineSlaves) {
-            HashSet<String> onlineDestinationSlaves = new HashSet<>();
-            for (String rslave : new HashSet<>(_destSlaves)) {
+            for (String remoteSlaveName : new HashSet<>(_destSlaves)) {
                 RemoteSlave remoteSlave;
                 try {
-                    remoteSlave = GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(rslave);
+                    remoteSlave = GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(remoteSlaveName);
                     if (remoteSlave.isAvailable()) {
-                        onlineDestinationSlaves.add(rslave);
+                        destinationSlaves.add(remoteSlave.getName());
                     }
                 } catch (ObjectNotFoundException e) {
                     // Slave doesn't exist anymore in List, I guess we just abort?
+                    logger.error("The Slave {} seems to have gone missing (?deleted?). Aborting", remoteSlaveName);
                     abort();
                 }
             }
-            return Collections.unmodifiableSet(onlineDestinationSlaves);
+        } else {
+            destinationSlaves = _destSlaves;
         }
-        return Collections.unmodifiableSet(_destSlaves);
+        return Collections.unmodifiableSet(destinationSlaves);
     }
 
     public void abort() {
@@ -282,19 +296,11 @@ public class Job {
     }
 
     private String outputDestinationSlaves() {
-        StringBuilder slaveBuilder = new StringBuilder();
-
-        for (String rslave : new HashSet<>(_destSlaves)) {
-            slaveBuilder.append(rslave);
-            slaveBuilder.append(',');
-        }
-        if (slaveBuilder.length() > 0) {
-            return slaveBuilder.substring(0, slaveBuilder.length() - 1);
-        }
-        return null;
+        return StringUtils.join(_destSlaves, ',');
     }
 
     private synchronized void reset() {
+        logger.debug("Reset was called");
         if (_slaveTransfer != null) {
             _slaveTransfer.abort("Resetting slave2slave Transfer");
             _slaveTransfer = null;
@@ -309,7 +315,8 @@ public class Job {
         }
 
         if (getSlavesToTransferTo().isEmpty() && (_transferNum > 0)) {
-            throw new IllegalStateException("Job cannot have a destSlaveSet of size 0 with transferNum > 0 - File: '" + getFile() + "' File Slaves: '" + getFile().getSlaveNames().toString() + "'");
+            throw new IllegalStateException("Job cannot have a destSlaveSet of size 0 with transferNum > 0 - File: '" + getFile() + "' " +
+                    "File Slaves: '" + getFile().getSlaveNames().toString() + "'");
         }
 
         if (_transferNum <= 0) {
@@ -319,39 +326,37 @@ public class Job {
     }
 
     public String toString() {
-        return "Job[index=" + _index + "][file=" + getFile() + ",dest=["
-                + outputDestinationSlaves() + "],transferNum=" + _transferNum
-                + ",priority=" + getPriority() + "],deleteDone=" + _deleteDone;
+        return "Job[index=" + _index + "][file=" + getFile() + ",dest=[" + outputDestinationSlaves() + "],transferNum=" +
+                _transferNum + ",priority=" + getPriority() + "],deleteDone=" + _deleteDone;
     }
 
     /**
      * Returns true if transfer was completed successfully
      *
-     * @param checkCRC
-     * @param sourceSlave
-     * @param destSlave
-     * @return
-     * @throws FileNotFoundException
+     * @param checkCRC whether we need to check the CRC
+     * @param secureTransfer Whether this transfer needs to be secure
+     * @param sourceSlave Source slave the file needs to be sent from
+     * @param destSlave destination slave the file needs to be sent to
+     * @throws FileNotFoundException if there was an issue with the file
      */
+    public void transfer(boolean checkCRC, boolean secureTransfer, RemoteSlave sourceSlave, RemoteSlave destSlave)
+            throws FileNotFoundException {
 
-    public void transfer(boolean checkCRC, boolean secureTransfer, RemoteSlave sourceSlave,
-                         RemoteSlave destSlave) throws FileNotFoundException {
         synchronized (this) {
             if (_slaveTransfer != null) {
                 throw new IllegalStateException("Job is already transferring");
             }
             if (getFile().getSlaves().contains(destSlave)) {
-                throw new IllegalStateException(
-                        "File already exists on target slave");
+                throw new IllegalStateException("File already exists on target slave");
             }
-            _slaveTransfer = new SlaveTransfer(getFile(), sourceSlave,
-                    destSlave, secureTransfer);
+            _slaveTransfer = new SlaveTransfer(getFile(), sourceSlave, destSlave, secureTransfer);
         }
 
         logger.info("Sending {} from {} to {}", getFile().getName(), sourceSlave.getName(), destSlave.getName());
         long startTime = System.currentTimeMillis();
         try {
             boolean crcMatch = _slaveTransfer.transfer();
+            logger.debug("After transfer the CRC matched -> {}", crcMatch);
             if (crcMatch || !checkCRC) {
                 logSuccess();
             } else {
@@ -361,8 +366,8 @@ public class Job {
         } catch (DestinationSlaveException e) {
             if (e.getCause() instanceof FileExistsException) {
                 logger.debug("Caught FileExistsException in sending {} from {} to {}", getFile().getName(), sourceSlave.getName(), destSlave.getName(), e);
-                long remoteChecksum = 0;
-                long localChecksum = 0;
+                long remoteChecksum;
+                long localChecksum;
 
                 try {
                     String index = SlaveManager.getBasicIssuer().issueChecksumToSlave(destSlave, getFile().getPath());
@@ -408,8 +413,7 @@ public class Job {
             }
             logger.error("Error on SourceSlaveException during slave2slave transfer from {} to {}", sourceSlave.getName(), destSlave.getName(), e);
         } catch (SlaveException e) {
-            throw new RuntimeException(
-                    "SlaveException was not of type DestinationSlaveException or SourceSlaveException");
+            throw new RuntimeException("SlaveException was not of type DestinationSlaveException or SourceSlaveException");
         } finally {
             addTimeSpent(System.currentTimeMillis() - startTime);
             reset();
@@ -473,22 +477,23 @@ public class Job {
     /*
      * This will check to see if file is already archived to the correct slaves
      * it will loop through all destination slaves, and make sure that the file is
-     * on at least "_trasnferNum" of them.
+     * on at least "_transferNum" of them.
      */
     public boolean checkIfArchived() {
         int numofslaves = _originalTransferNum;
         try {
-            for (String destslave : _destSlaves) {
-                if (getFile().getSlaveNames().contains(destslave)) {
+            for (String destSlave : _destSlaves) {
+                if (getFile().getSlaveNames().contains(destSlave)) {
                     // File exist on destination slave
                     numofslaves--;
                 }
             }
         } catch (FileNotFoundException e) {
+            logger.debug("We were unable to fine {}. This is unexecpted, but we assume all is well", getFile().getName());
             // couldn't find find...not good...but assume all is well.
         }
 
         return numofslaves <= 0;
-
     }
+
 }
