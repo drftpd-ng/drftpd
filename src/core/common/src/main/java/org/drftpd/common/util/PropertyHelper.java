@@ -28,8 +28,7 @@ public class PropertyHelper {
     private PropertyHelper() {
     }
 
-    public static String getProperty(Properties p, String name)
-            throws NullPointerException {
+    public static String getProperty(Properties p, String name) throws NullPointerException {
         String result = p.getProperty(name);
 
         if (result == null) {
@@ -39,9 +38,8 @@ public class PropertyHelper {
         return result;
     }
 
-    public static String getProperty(Properties p, String name,
-                                     String defaultValue) throws NullPointerException {
-        return p.getProperty(name, defaultValue);
+    public static String getProperty(Properties p, String name, String defaultValue) throws NullPointerException {
         // result can't be null
+        return p.getProperty(name, defaultValue);
     }
 }

@@ -21,7 +21,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.drftpd.archive.master.Archive;
-import org.drftpd.archive.master.DuplicateArchiveException;
 import org.drftpd.archive.master.event.ArchiveFailedEvent;
 import org.drftpd.archive.master.event.ArchiveFinishEvent;
 import org.drftpd.archive.master.event.ArchiveStartEvent;
@@ -65,6 +64,25 @@ public class ArchiveHandler implements Runnable {
         return new ArrayList<>(_jobs);
     }
 
+    public boolean hasActiveThreadForArchiveTypeAndSection() {
+        Archive archive = _archiveType.getParent();
+        if (archive == null) {
+            logger.error("Parent for archivetype is null, this should not happen");
+            return true;
+        }
+        for (ArchiveHandler ah : archive.getArchiveHandlers()) {
+            if (!_archiveType.isManual())
+            {
+                if (_archiveType.getConfNum() == ah.getArchiveType().getConfNum()) {
+                    if (ah.getJobs().size() > 0) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
     /*
      * Thread for ArchiveHandler
      * This will go through and find the oldest non archived dir, then try and archive it
@@ -73,18 +91,20 @@ public class ArchiveHandler implements Runnable {
      * This also throws events so they can be caught for sitebot announcing.
      */
     public void run() {
+        // Set the name for this thread
         Thread t = Thread.currentThread();
         t.setName("Archive Handler-" + t.getId() + " - " + _archiveType.getClass().getName() + " archiving " + _archiveType.getSection().getName());
-        // Prevent spawning more than 1 active threads
-        long curtime = System.currentTimeMillis();
+
+        // Check to make sure that we are the only timer based runner for this archive type
+        if (hasActiveThreadForArchiveTypeAndSection()) {
+            logger.warn("Another timer based ArchiveHandler already exists and is active, so this one is duplicate and not running it");
+            t.setName(Archive.ArchiveHandlerThreadFactory.getIdleThreadName(t.getId()));
+            return;
+        }
+        logger.debug("Starting this ArchiveHandler");
+
+        // Loop as often as Repeat demands
         for (int i = 0; i < _archiveType.getRepeat(); i++) {
-            /*
-            // We do not care about this if we manually archive it should always do it
-            if ((System.currentTimeMillis() - curtime) > _archiveType._parent.getCycleTime()) {
-                //don't want to double archive stuff...so we to check and make sure
-                return;
-            }
-            */
             try {
                 synchronized (_archiveType._parent) {
                     if (_archiveType.getDirectory() == null) {
@@ -102,7 +122,7 @@ public class ArchiveHandler implements Runnable {
                     if (destSlaves == null) {
                         _archiveType.setDirectory(null);
                         logger.warn("Unable to allocate destination Slaves, nothing we can do.");
-                        return; // no available slaves to use
+                        break; // no available slaves to use
                     }
 
                     _jobs = _archiveType.send();
@@ -111,6 +131,7 @@ public class ArchiveHandler implements Runnable {
                 GlobalContext.getEventService().publish(new ArchiveStartEvent(_archiveType, _jobs));
                 long startTime = System.currentTimeMillis();
                 if (_jobs != null) {
+                    // This forces the thread to sleep if not all jobs are finished
                     _archiveType.waitForSendOfFiles(_jobs);
                 }
 
@@ -131,6 +152,7 @@ public class ArchiveHandler implements Runnable {
                 _archiveType.setDirectory(null);
             }
         }
+        logger.debug("Finished this ArchiveHandler");
         // Give the thread a correct name (Waiting for archive)
         t.setName(Archive.ArchiveHandlerThreadFactory.getIdleThreadName(t.getId()));
     }

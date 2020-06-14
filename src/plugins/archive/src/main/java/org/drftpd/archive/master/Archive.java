@@ -54,7 +54,7 @@ public class Archive implements PluginInterface {
     // All active ArchiveHandlers
     private HashSet<ArchiveHandler> _archiveHandlers = null;
 
-    // The timertask we created based on _cycleTime
+    // The timer task we created based on _cycleTime
     private TimerTask _runHandler = null;
 
     // A map of archive types (name -> archiveType class)

@@ -197,9 +197,11 @@ public class ArchiveCommandHandler extends CommandInterface {
     }
 
     public CommandResponse doLISTQUEUE(CommandRequest request) {
+
         CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-        int x = 1;
+
         Map<String, Object> env = new HashMap<>();
+
         Archive archive;
 
         try {
