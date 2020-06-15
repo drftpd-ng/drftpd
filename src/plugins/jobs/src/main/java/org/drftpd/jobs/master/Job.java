@@ -489,7 +489,7 @@ public class Job {
                 }
             }
         } catch (FileNotFoundException e) {
-            logger.debug("We were unable to fine {}. This is unexecpted, but we assume all is well", getFile().getName());
+            logger.debug("We were unable to fine {}. This is unexpected, but we assume all is well", getFile().getName());
             // couldn't find find...not good...but assume all is well.
         }
 
