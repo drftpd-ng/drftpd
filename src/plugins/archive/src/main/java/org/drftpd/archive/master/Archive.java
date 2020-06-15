@@ -134,7 +134,7 @@ public class Archive implements PluginInterface {
 
         int minActions = getTypesMap().size() + 1;
         if (minActions > maxConcurrentActions) {
-            logger.warn("Setting maxconcurrentActions to [" + minActions + "] to allow for your configured archive statements");
+            logger.warn("Setting maxConcurrentActions to [" + minActions + "] to allow for your configured archive statements");
             maxConcurrentActions = minActions;
         }
         _archiveHandlerExecutor = Executors.newFixedThreadPool(maxConcurrentActions, new ArchiveHandlerThreadFactory());
@@ -252,6 +252,7 @@ public class Archive implements PluginInterface {
             return "Archive Handler-" + threadId + " - Waiting for work";
         }
 
+        @Override
         public Thread newThread(Runnable r) {
             Thread t = Executors.defaultThreadFactory().newThread(r);
             t.setName(getIdleThreadName(t.getId()));
