@@ -48,8 +48,27 @@ On the master you will need to:
 On the slaves you will need to:
 - Install Java SE or OpenJDK 14 
 - Add needed deps that are not present :
-  - MediaInfo (CLI): https://mediaarea.net/fr/MediaInfo
+  - MediaInfo (CLI): https://mediaarea.net/en/MediaInfo
   - mkvalidator tool: https://www.matroska.org/downloads/mkvalidator.html
+
+### For early users (stable)
+Checkout the project from https://github.com/drftpd-ng/drftpd.git 
+
+- Run `mvn validate`
+- Run `mvn install`
+
+Check generated runtime directory
+
+#### Master
+- Copy .dist files to .conf only if you change the settings
+- Optional : Run `./genkey.sh` for Linux or `master.bat` for Windows (if you want to use SSL (Master & Slave))
+- Run `./master.sh` for Linux or `master.bat` for Windows
+- Connect to `127.0.0.1:2121` with `drftpd:drftpd`
+
+#### Slave
+- Copy .dist files to .conf only if you change the settings
+- Optional : Copy the `drftpd.key` from the master to the config directory
+- Run `./slave.sh` for Linux or `slave.bat` for Windows
 
 ### For dev (unstable)
 Checkout the project from https://github.com/drftpd-ng/drftpd.git 
@@ -66,25 +85,6 @@ Use `org.drftpd.master.Master`
 Use `org.drftpd.slave.Slave`
 
 - Start with env var: `DRFTPD_CONFIG_PATH=$PROJECT_DIR$/runtime/slave`
-
-### For early users (stable)
-Download the release from https://github.com/drftpd-ng/drftpd/releases
-
-- Run `mvn validate`
-- Run `mvn install`
-
-Check generated runtime directory
-
-#### Master
-- Copy .dist files to .conf only if you change the settings
-- Optional : Run `./genkey.sh` for Linux or `master.bat` for Windows (if you want to use SSL (Master & Slave)
-- Run `./master.sh` for Linux or `master.bat` for Windows
-- Connect to `127.0.0.1:2121` with `drftpd:drftpd`
-
-#### Slave
-- Copy .dist files to .conf only if you change the settings
-- Optional : Copy the `drftpd.key` from the master to the config directory
-- Run `./slave.sh` for Linux or `slave.bat` for Windows
 
 ## Documentation
 You can find the documention online at: https://github.com/drftpd-ng/drftpd/wiki
