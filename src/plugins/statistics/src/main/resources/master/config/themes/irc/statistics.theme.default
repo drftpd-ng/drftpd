@@ -1,4 +1,3 @@
-# $Id$
 alup.header=
 alup=[${pos,2}] ${user,-12} ${tagline,-24} ${upfiles,5} ${upbytes,11} ${uprate,8}
 alup.footer=
