@@ -214,7 +214,7 @@ public class MoreStats extends CommandInterface {
             }
 
             env.put("none", "");
-            env.put("pos", i);
+            env.put("pos", "" + i);
             env.put("grp", grp.getGroupname());
             env.put("files", grp.getFiles());
             env.put("megs", Bytes.formatBytes(grp.getBytes()));

@@ -30,6 +30,8 @@ daydn.header=
 daydn=[${pos,2}] ${user,-12} ${tagline,-24} ${dnfilesday,5} ${dnbytesday,11} ${dnrateday,8}
 daydn.footer=
 
+morestats.grpstats=[${pos,2}] ${grp,-12} ${files,-24} ${megs,9}
+
 stats=Created: ${created}\n\
 ------------FILES-------SIZE--RANK\n\
 ALUP ${alupfiles,12} ${alupbytes,10} ${aluprank,5}\nALDN ${aldnfiles,12} ${aldnbytes,10} ${aldnrank,5}\n\
