@@ -31,3 +31,5 @@ daydn=[${pos,2}] ${user,-12} ${tagline,-24} ${dnfilesday,5} ${dnbytesday,11} ${d
 daydn.footer=
 
 morestats.grpstats=[${pos,2}] ${grp,-12} ${files,-24} ${megs,9}
+
+morestats.trafficstats=${stat} ${average} ${megs} ${files}

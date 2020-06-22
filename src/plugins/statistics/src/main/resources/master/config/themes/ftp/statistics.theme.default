@@ -32,6 +32,8 @@ daydn.footer=
 
 morestats.grpstats=[${pos,2}] ${grp,-12} ${files,-24} ${megs,9}
 
+morestats.trafficstats=${stat} ${average} ${megs} ${files}
+
 stats=Created: ${created}\n\
 ------------FILES-------SIZE--RANK\n\
 ALUP ${alupfiles,12} ${alupbytes,10} ${aluprank,5}\nALDN ${aldnfiles,12} ${aldnbytes,10} ${aldnrank,5}\n\
