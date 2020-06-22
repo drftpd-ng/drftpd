@@ -87,7 +87,7 @@ public class SpeedTest extends CommandInterface {
 
     public CommandResponse doSITE_REFRESHSPEEDTEST(CommandRequest request) {
         refreshServers();
-        return new CommandResponse(200, request.getSession().jprintf(_bundle, "servers.refresh", null, request.getUser()));
+        return new CommandResponse(200, request.getSession().jprintf(_bundle, "speedtest.servers.refresh", null, request.getUser()));
     }
 
 
