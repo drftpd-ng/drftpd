@@ -56,10 +56,8 @@ public class ConfigManager implements ConfigInterface {
     private static final File permsFile = ConfigLoader.loadConfigFile("perms.conf", false);
     private static final String masterConfigFile = "master.conf";
 
-    private static final Key<Hashtable<String, ArrayList<PathPermission>>> PATHPERMS
-            = new Key<>(ConfigManager.class, "pathPerms");
-    private static final Key<Hashtable<String, Permission>> PERMS
-            = new Key<>(ConfigManager.class, "perms");
+    private static final Key<Hashtable<String, ArrayList<PathPermission>>> PATHPERMS = new Key<>(ConfigManager.class, "pathPerms");
+    private static final Key<Hashtable<String, Permission>> PERMS = new Key<>(ConfigManager.class, "perms");
 
     private String hideInStats = "";
 
@@ -121,17 +119,16 @@ public class ConfigManager implements ConfigInterface {
      * Load all connected handlers.
      */
     private void loadConfigHandlers() {
-        _directivesMap = new HashMap<>();
+        HashMap<String, ConfigContainer> directivesMap = new HashMap<>();
 
-        Set<Class<? extends ExtendedPermissions>> extendedPermissions = new Reflections("org.drftpd")
-                .getSubTypesOf(ExtendedPermissions.class);
+        Set<Class<? extends ExtendedPermissions>> extendedPermissions = new Reflections("org.drftpd").getSubTypesOf(ExtendedPermissions.class);
         try {
             for (Class<? extends ExtendedPermissions> extendedPermission : extendedPermissions) {
                 ExtendedPermissions perms = extendedPermission.getConstructor().newInstance();
                 for (PermissionDefinition permission : perms.permissions()) {
                     Class<? extends ConfigHandler> handler = permission.getHandler();
                     String directive = permission.getDirective();
-                    if (_directivesMap.containsKey(directive)) {
+                    if (directivesMap.containsKey(directive)) {
                         logger.debug("A handler for {} already loaded, check your plugin.xml's", directive);
                         continue;
                     }
@@ -139,13 +136,16 @@ public class ConfigManager implements ConfigInterface {
                     ConfigHandler handlerInstance = handler.getConstructor().newInstance();
                     Method methodInstance = handler.getMethod(method, String.class, StringTokenizer.class);
                     ConfigContainer cc = new ConfigContainer(handlerInstance, methodInstance);
-                    _directivesMap.put(directive, cc);
+                    directivesMap.put(directive, cc);
+                    logger.debug("Added directive {} to our directives map", directive);
                 }
             }
+            // Finally set the map once we processed all of the classes
+            _directivesMap = directivesMap;
         } catch (Exception e) {
-            logger.error("Failed to load plugins for master extension point 'Directive', possibly the master"
-                    + " extension point definition has changed in the plugin.xml", e);
+            logger.error("Failed to load plugins for master extension point 'ExtendedPermissions. The map is left as is or empty", e);
         }
+        logger.debug("Loaded {} ExtendedPermissions classes", _directivesMap.size());
     }
 
     /**
@@ -328,7 +328,7 @@ public class ConfigManager implements ConfigInterface {
             if (in != null) {
                 try {
                     in.close();
-                } catch (IOException e) {
+                } catch (IOException ignored) {
                 }
             }
         }
