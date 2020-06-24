@@ -15,24 +15,20 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.drftpd.statistics.master;
+package org.drftpd.dupecheck.master;
 
 import org.drftpd.master.commands.config.hooks.DefaultConfigHandler;
 import org.drftpd.master.permissions.ExtendedPermissions;
 import org.drftpd.master.permissions.PermissionDefinition;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
-public class StatsExtendedPermissions implements ExtendedPermissions {
+public class DupeCheckExtendedPermissions implements ExtendedPermissions {
 
     @Override
     public List<PermissionDefinition> permissions() {
-        PermissionDefinition noStatsUP = new PermissionDefinition("nostatsup", DefaultConfigHandler.class, "handlePathPerm");
-        PermissionDefinition noStatsDN = new PermissionDefinition("nostatsdn", DefaultConfigHandler.class, "handlePathPerm");
-        PermissionDefinition creditCheck = new PermissionDefinition("creditcheck", StatsHandler.class, "handleCreditCheck");
-        PermissionDefinition creditLoss = new PermissionDefinition("creditloss", StatsHandler.class, "handleCreditLoss");
-        PermissionDefinition creditLimit = new PermissionDefinition("creditlimit", StatsHandler.class, "handleCreditLimit");
-        return Arrays.asList(noStatsDN, noStatsUP, creditCheck, creditLoss, creditLimit);
+        PermissionDefinition dupeCheck = new PermissionDefinition("dupecheck", DefaultConfigHandler.class, "handlePathPerm");
+        return Collections.singletonList(dupeCheck);
     }
 }
