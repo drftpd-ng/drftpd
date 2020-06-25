@@ -21,6 +21,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.drftpd.archive.master.Archive;
+import org.drftpd.archive.master.DuplicateArchiveException;
 import org.drftpd.archive.master.event.ArchiveFailedEvent;
 import org.drftpd.archive.master.event.ArchiveFinishEvent;
 import org.drftpd.archive.master.event.ArchiveStartEvent;
@@ -113,6 +114,13 @@ public class ArchiveHandler implements Runnable {
 
                     if (_archiveType.getDirectory() == null) {
                         logger.debug("No directory found to archive, nothing left to do.");
+                        return;
+                    }
+                    try {
+                        // Ensure we are not already archiving this request
+                        _archiveType._parent.checkPathForArchiveStatus(_archiveType.getDirectory().getPath());
+                    } catch (DuplicateArchiveException e) {
+                        logger.warn("Directory -- {} -- is already being archived ", _archiveType.getDirectory());
                         return;
                     }
                 }
