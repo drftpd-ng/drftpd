@@ -157,11 +157,7 @@ public class Archive implements PluginInterface {
                     SectionInterface sec = GlobalContext.getGlobalContext().getSectionManager().getSection(PropertyHelper.getProperty(_props, count + ".section", "").trim());
                     ArchiveType archiveType = getArchiveType(count, type, sec, _props);
                     if (archiveType != null) {
-                        try {
-                            executeArchiveType(archiveType);
-                        } catch(DuplicateArchiveException e) {
-                            logger.warn("Unable to execute archive task", e);
-                        }
+                        executeArchiveType(archiveType);
                     }
                     count++;
                 }
@@ -177,10 +173,7 @@ public class Archive implements PluginInterface {
     /*
      * Submit a new archive task to be executed
      */
-    public synchronized void executeArchiveType(ArchiveType at) throws DuplicateArchiveException {
-
-        // Ensure we are not already archiving this request
-        checkPathForArchiveStatus(at.getDirectory().getPath());
+    public synchronized void executeArchiveType(ArchiveType at) {
 
         // Create the Runnable ArchiveHandler
         ArchiveHandler ah = new ArchiveHandler(at);

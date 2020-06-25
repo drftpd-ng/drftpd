@@ -103,6 +103,13 @@ public class ArchiveHandler implements Runnable {
                         logger.debug("No directory found to archive, nothing left to do.");
                         return;
                     }
+                    try {
+                        // Ensure we are not already archiving this request
+                        _archiveType._parent.checkPathForArchiveStatus(_archiveType.getDirectory().getPath());
+                    } catch (DuplicateArchiveException e) {
+                        logger.warn("Directory -- {} -- is already being archived ", _archiveType.getDirectory());
+                        return;
+                    }
                 }
                 if (!_archiveType.moveReleaseOnly()) {
                     Set<RemoteSlave> destSlaves = _archiveType.findDestinationSlaves();

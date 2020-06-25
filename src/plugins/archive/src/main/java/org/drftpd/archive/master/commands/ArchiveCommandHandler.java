@@ -143,14 +143,17 @@ public class ArchiveCommandHandler extends CommandInterface {
         // Configure the archiveType with our directory handle
         archiveType.setDirectory(dirHandle);
 
-        // Submit the ArchiveType request for execution
         try {
-            archiveManager.executeArchiveType(archiveType);
+            // Ensure we are not already archiving this request
+            archiveManager.checkPathForArchiveStatus(archiveType.getDirectory().getPath());
         } catch (DuplicateArchiveException e) {
             env.put("exception", e.getMessage());
             response.addComment(request.getSession().jprintf(_bundle, env, "fail"));
             return response;
         }
+
+        // Submit the ArchiveType request for execution
+        archiveManager.executeArchiveType(archiveType);
 
         response.addComment(request.getSession().jprintf(_bundle, env, "success"));
 
