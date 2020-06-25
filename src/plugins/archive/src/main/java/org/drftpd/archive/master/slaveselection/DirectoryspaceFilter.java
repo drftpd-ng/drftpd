@@ -84,7 +84,11 @@ public class DirectoryspaceFilter extends Filter {
         List<DirectoryHandle> dirHandlers = new ArrayList<>();
         for (ArchiveHandler handler : archive.getArchiveHandlers()) {
             if (handler.getArchiveType().getSection().equals(section)) {
-                dirHandlers.add(handler.getArchiveType().getDirectory());
+                DirectoryHandle dirHandle = handler.getArchiveType().getDirectory();
+                // if we do not have a directory handler the archiveType is still pending so we ignore
+                if (dirHandle != null) {
+                    dirHandlers.add(dirHandle);
+                }
             }
         }
         logger.debug("We found {} active and/or pending archive actions", dirHandlers.size());

@@ -30,6 +30,7 @@ import org.drftpd.common.util.PropertyHelper;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.event.ReloadEvent;
 import org.drftpd.master.sections.SectionInterface;
+import org.drftpd.master.vfs.DirectoryHandle;
 import org.reflections.Reflections;
 
 import java.util.*;
@@ -203,7 +204,12 @@ public class Archive implements PluginInterface {
      */
     public synchronized void checkPathForArchiveStatus(String handlerPath) throws DuplicateArchiveException {
         for (ArchiveHandler ah : _archiveHandlers) {
-            String ahPath = ah.getArchiveType().getDirectory().getPath();
+            DirectoryHandle dirHandle = ah.getArchiveType().getDirectory();
+            if (dirHandle == null) {
+                // archiveType is not yet started so directory is not known yet ...
+                continue;
+            }
+            String ahPath = dirHandle.getPath();
 
             if (ahPath.length() > handlerPath.length()) {
                 if (ahPath.startsWith(handlerPath)) {

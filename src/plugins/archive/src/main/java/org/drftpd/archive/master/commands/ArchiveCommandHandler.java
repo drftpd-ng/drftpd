@@ -128,6 +128,12 @@ public class ArchiveCommandHandler extends CommandInterface {
             return response;
         }
 
+        if (dirHandle == null) {
+            response.addComment("Something went wrong as our directory handle is still empty");
+
+            return response;
+        }
+
         // Get the section for our directory handle
         SectionInterface section = GlobalContext.getGlobalContext().getSectionManager().lookup(dirHandle);
 
@@ -140,17 +146,17 @@ public class ArchiveCommandHandler extends CommandInterface {
             return response;
         }
 
-        // Configure the archiveType with our directory handle
-        archiveType.setDirectory(dirHandle);
-
         try {
             // Ensure we are not already archiving this request
-            archiveManager.checkPathForArchiveStatus(archiveType.getDirectory().getPath());
+            archiveManager.checkPathForArchiveStatus(dirHandle.getPath());
         } catch (DuplicateArchiveException e) {
             env.put("exception", e.getMessage());
             response.addComment(request.getSession().jprintf(_bundle, env, "fail"));
             return response;
         }
+
+        // Configure the archiveType with our directory handle
+        archiveType.setDirectory(dirHandle);
 
         // Submit the ArchiveType request for execution
         archiveManager.executeArchiveType(archiveType);
