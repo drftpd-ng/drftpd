@@ -32,6 +32,7 @@ import org.drftpd.master.slavemanagement.RemoteSlave;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -47,6 +48,7 @@ public class ArchiveHandler implements Runnable {
 
     public ArchiveHandler(ArchiveType archiveType) {
         _archiveType = archiveType;
+        _jobs = new ArrayList<>();
         AnnotationProcessor.process(this);
     }
 
@@ -58,11 +60,8 @@ public class ArchiveHandler implements Runnable {
         return _archiveType.getSection();
     }
 
-    public ArrayList<Job> getJobs() {
-        if (_jobs == null) {
-            return (ArrayList<Job>) Collections.<Job>emptyList();
-        }
-        return new ArrayList<>(_jobs);
+    public List<Job> getJobs() {
+        return Collections.unmodifiableList(_jobs);
     }
 
     public boolean hasActiveThreadForArchiveTypeAndSection() {
@@ -138,7 +137,7 @@ public class ArchiveHandler implements Runnable {
 
                 GlobalContext.getEventService().publish(new ArchiveStartEvent(_archiveType, _jobs));
                 long startTime = System.currentTimeMillis();
-                if (_jobs != null) {
+                if (_jobs.size() > 0) {
                     // This forces the thread to sleep if not all jobs are finished
                     _archiveType.waitForSendOfFiles(_jobs);
                 }
