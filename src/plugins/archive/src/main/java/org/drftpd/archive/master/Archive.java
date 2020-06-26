@@ -147,9 +147,11 @@ public class Archive implements PluginInterface {
         }
 
         // Initialize a new TimerTask
+        logger.debug("Initializing a new timer task for {} milliseconds", _cycleTime);
         _runHandler = new TimerTask() {
             public void run() {
 
+                logger.debug("TimerTask triggered");
                 int count = 1;
 
                 String type;
@@ -162,6 +164,7 @@ public class Archive implements PluginInterface {
                     }
                     count++;
                 }
+                logger.debug("TimerTask finished, we starting archive types for {} items", count);
             }
         };
         try {
