@@ -115,7 +115,6 @@ public class Archive implements PluginInterface {
      */
     private void initTypes() {
         CaseInsensitiveHashMap<String, Class<? extends ArchiveType>> typesMap = new CaseInsensitiveHashMap<>();
-        // TODO [DONE] @k2r Archive init types
         Set<Class<? extends ArchiveType>> archiveTypes = new Reflections("org.drftpd").getSubTypesOf(ArchiveType.class);
         for (Class<? extends ArchiveType> archiveType : archiveTypes) {
             typesMap.put(archiveType.getSimpleName(), archiveType);
@@ -160,11 +159,12 @@ public class Archive implements PluginInterface {
                     SectionInterface sec = GlobalContext.getGlobalContext().getSectionManager().getSection(PropertyHelper.getProperty(_props, count + ".section", "").trim());
                     ArchiveType archiveType = getArchiveType(count, type, sec, _props);
                     if (archiveType != null) {
+                        logger.debug("config item {} will be executed, type: {}", count, archiveType.toString());
                         executeArchiveType(archiveType);
                     }
                     count++;
                 }
-                logger.debug("TimerTask finished, we starting archive types for {} items", count);
+                logger.debug("TimeTask finished, if there was any work we started it (touched {} configs)", (count - 1));
             }
         };
         try {
