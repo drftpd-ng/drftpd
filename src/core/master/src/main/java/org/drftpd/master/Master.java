@@ -305,7 +305,7 @@ public class Master {
     }
 
     @EventSubscriber
-    public void onReloadEvent() {
+    public void onReloadEvent(ReloadEvent event) {
         logger.info("Reloading " + cmdConf);
         loadCommands();
         _commandManager.initialize(getCommands(), themeDir);

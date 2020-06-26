@@ -57,7 +57,7 @@ public class ZipIncompleteManager implements PluginInterface {
     }
 
     @EventSubscriber
-    public void onReloadEvent() {
+    public void onReloadEvent(ReloadEvent event) {
         logger.info("Received reload event, reloading");
         loadManager();
     }
