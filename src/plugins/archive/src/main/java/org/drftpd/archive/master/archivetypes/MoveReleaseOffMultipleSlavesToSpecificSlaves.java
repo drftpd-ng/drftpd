@@ -103,6 +103,10 @@ public class MoveReleaseOffMultipleSlavesToSpecificSlaves extends ArchiveType {
      */
     @Override
     public String toString() {
-        return "MoveReleaseOffSlavesToMostFreeSlaves=[directory=[" + getDirectory().getPath() + "]dest=[" + outputSlaves(findDestinationSlaves()) + "]numOfSlaves=[" + _numOfSlaves + "]]";
+        String directory = "N/A";
+        if (getDirectory() != null) {
+            directory = getDirectory().getPath();
+        }
+        return "MoveReleaseOffSlavesToMostFreeSlaves=[directory=[" + directory + "]dest=[" + outputSlaves(findDestinationSlaves()) + "]numOfSlaves=[" + _numOfSlaves + "]]";
     }
 }
