@@ -46,7 +46,8 @@ public class EncryptedBeanUserManager extends BeanUserManager {
     }
 
     @EventSubscriber
-    public void onReloadEvent(ReloadEvent event) {
+    public void onReloadEvent() {
+        logger.info("Received reload event, reloading");
         readPasscrypt();
     }
 

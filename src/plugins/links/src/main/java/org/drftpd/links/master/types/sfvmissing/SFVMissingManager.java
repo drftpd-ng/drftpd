@@ -17,12 +17,15 @@
  */
 package org.drftpd.links.master.types.sfvmissing;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.common.extensibility.PluginDependencies;
 import org.drftpd.common.extensibility.PluginInterface;
 import org.drftpd.links.master.LinkManager;
 import org.drftpd.links.master.LinkType;
+import org.drftpd.links.master.types.zipincomplete.ZipIncompleteManager;
 import org.drftpd.master.event.DirectoryFtpEvent;
 import org.drftpd.master.event.ReloadEvent;
 import org.drftpd.master.event.TransferEvent;
@@ -39,6 +42,7 @@ import java.io.FileNotFoundException;
 
 @PluginDependencies(refs = {LinkManager.class})
 public class SFVMissingManager implements PluginInterface {
+    private static final Logger logger = LogManager.getLogger(SFVMissingManager.class);
     private LinkManager _linkmanager;
 
     @Override
@@ -53,7 +57,8 @@ public class SFVMissingManager implements PluginInterface {
     }
 
     @EventSubscriber
-    public void onReloadEvent(ReloadEvent event) {
+    public void onReloadEvent() {
+        logger.info("Received reload event, reloading");
         loadManager();
     }
 

@@ -72,7 +72,8 @@ public class AutoNukeManager implements PluginInterface {
     }
 
     @EventSubscriber
-    public void onReloadEvent(ReloadEvent event) {
+    public void onReloadEvent() {
+        logger.info("Received reload event, reloading");
         loadConf();
     }
 

@@ -58,7 +58,8 @@ public class NukeFilterManager implements PluginInterface {
     }
 
     @EventSubscriber
-    public void onReloadEvent(ReloadEvent event) {
+    public void onReloadEvent() {
+        logger.info("Received reload event, reloading");
         _nfs.reloadConfigs();
     }
 

@@ -184,7 +184,8 @@ public class IMDBConfig {
     }
 
     @EventSubscriber
-    public void onReloadEvent(ReloadEvent event) {
+    public void onReloadEvent() {
+        logger.info("Received reload event, reloading");
         loadConfig();
     }
 }
