@@ -203,12 +203,11 @@ public class Archive implements PluginInterface {
      * throws DuplicateArchiveException if it is.
      */
     public synchronized void checkPathForArchiveStatus(String handlerPath) throws DuplicateArchiveException {
-        // Count the number of archive handlers that has this path currently
-        // 0 = none
-        // 1 = the handler is doing a final check before starting jobs
-        // 2 and up = We already have a handler doing this path and another handler does the final sanity check and should fail
-        int count = 0;
         for (ArchiveHandler ah : _archiveHandlers) {
+            if(ah.getJobs().size() == 0) {
+                // no jobs associated to this archive type yet so it has not been initialized yet
+                continue;
+            }
             DirectoryHandle dirHandle = ah.getArchiveType().getDirectory();
             if (dirHandle == null) {
                 // archiveType is not yet started so directory is not known yet ...
@@ -218,22 +217,19 @@ public class Archive implements PluginInterface {
 
             if (ahPath.length() > handlerPath.length()) {
                 if (ahPath.startsWith(handlerPath)) {
-                    count++;
+                    throw new DuplicateArchiveException(ahPath + " is already being archived");
                 }
             } else {
                 if (handlerPath.startsWith(ahPath)) {
-                    count++;
+                    throw new DuplicateArchiveException(handlerPath + " is already being archived");
                 }
             }
-        }
-        if (count > 1) {
-            // More than one ArchiveHandler has this path, so this check needs to throw an exception
-            throw new DuplicateArchiveException(handlerPath + " is already being archived");
         }
     }
 
     @EventSubscriber
-    public void onReloadEvent(ReloadEvent event) {
+    public void onReloadEvent() {
+        logger.info("Received reload event, reloading");
         reload();
     }
 

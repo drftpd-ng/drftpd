@@ -17,6 +17,8 @@
  */
 package org.drftpd.links.master.types.sfvincomplete;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.common.extensibility.PluginDependencies;
@@ -27,6 +29,7 @@ import org.drftpd.master.event.ReloadEvent;
 import org.drftpd.master.event.TransferEvent;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.exceptions.SlaveUnavailableException;
+import org.drftpd.master.usermanager.encryptedjavabeans.EncryptedBeanUserManager;
 import org.drftpd.master.vfs.event.VirtualFileSystemInodeDeletedEvent;
 import org.drftpd.zipscript.master.sfv.ZipscriptVFSDataSFV;
 
@@ -40,6 +43,9 @@ import java.io.IOException;
 
 @PluginDependencies(refs = {LinkManager.class})
 public class SFVIncompleteManager implements PluginInterface {
+
+    protected static final Logger logger = LogManager.getLogger(SFVIncompleteManager.class);
+
     private LinkManager _linkmanager;
 
     @Override
@@ -54,7 +60,8 @@ public class SFVIncompleteManager implements PluginInterface {
     }
 
     @EventSubscriber
-    public void onReloadEvent(ReloadEvent event) {
+    public void onReloadEvent() {
+        logger.info("Received reload event, reloading");
         loadManager();
     }
 

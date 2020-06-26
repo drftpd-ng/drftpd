@@ -17,6 +17,8 @@
  */
 package org.drftpd.request.master;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.common.extensibility.CommandHook;
@@ -35,6 +37,9 @@ import java.util.Properties;
  * @version $Id$
  */
 public class RequestPostHook {
+
+    private static final Logger logger = LogManager.getLogger(RequestPostHook.class);
+
     private boolean _decreaseWeekReqs;
 
     public void RequestPostHook() {
@@ -88,7 +93,8 @@ public class RequestPostHook {
     }
 
     @EventSubscriber
-    public void onReloadEvent(ReloadEvent event) {
+    public void onReloadEvent() {
+        logger.info("Received reload event, reloading");
         readConfig();
     }
 }

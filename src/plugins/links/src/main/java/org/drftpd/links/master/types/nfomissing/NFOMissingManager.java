@@ -17,6 +17,8 @@
  */
 package org.drftpd.links.master.types.nfomissing;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.common.extensibility.PluginDependencies;
@@ -38,6 +40,8 @@ import java.io.FileNotFoundException;
 
 @PluginDependencies(refs = {LinkManager.class})
 public class NFOMissingManager implements PluginInterface {
+
+    private static final Logger logger = LogManager.getLogger(NFOMissingManager.class);
     private LinkManager _linkmanager;
 
     @Override
@@ -52,7 +56,8 @@ public class NFOMissingManager implements PluginInterface {
     }
 
     @EventSubscriber
-    public void onReloadEvent(ReloadEvent event) {
+    public void onReloadEvent() {
+        logger.info("Received reload event, reloading");
         loadManager();
     }
 
