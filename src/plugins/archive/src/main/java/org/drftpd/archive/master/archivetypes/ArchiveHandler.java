@@ -44,7 +44,7 @@ public class ArchiveHandler implements Runnable {
 
     private final ArchiveType _archiveType;
 
-    private ArrayList<Job> _jobs = null;
+    private ArrayList<Job> _jobs;
 
     public ArchiveHandler(ArchiveType archiveType) {
         _archiveType = archiveType;
