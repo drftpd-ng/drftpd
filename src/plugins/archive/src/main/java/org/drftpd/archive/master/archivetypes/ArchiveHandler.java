@@ -98,6 +98,9 @@ public class ArchiveHandler implements Runnable {
         // Check to make sure that we are the only timer based runner for this archive type
         if (hasActiveThreadForArchiveTypeAndSection()) {
             logger.warn("Another timer based ArchiveHandler already exists and is active, so this one is duplicate and not running it");
+            if (!_archiveType._parent.removeArchiveHandler(this)) {
+                logger.error("We were unable to remove this ArchiveHandler from the registered ArchiveHandlers");
+            }
             t.setName(Archive.ArchiveHandlerThreadFactory.getIdleThreadName(t.getId()));
             return;
         }
@@ -113,14 +116,16 @@ public class ArchiveHandler implements Runnable {
 
                     if (_archiveType.getDirectory() == null) {
                         logger.debug("No directory found to archive, nothing left to do.");
-                        return;
+                        // Do a break here (no return) as that stops the finally from running (ie: deleting the archive handler)
+                        break;
                     }
                     try {
                         // Ensure we are not already archiving this request
                         _archiveType._parent.checkPathForArchiveStatus(_archiveType.getDirectory().getPath());
                     } catch (DuplicateArchiveException e) {
                         logger.warn("Directory -- {} -- is already being archived ", _archiveType.getDirectory());
-                        return;
+                        // Do a break here (no return) as that stops the finally from running (ie: deleting the archive handler)
+                        break;
                     }
                 }
                 if (!_archiveType.moveReleaseOnly()) {
