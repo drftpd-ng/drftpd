@@ -41,7 +41,6 @@ public class MoveReleaseToSpecificFolder extends ArchiveType {
     /*
      *  Not needed cause we are just moving slaves
      */
-    @Override
     public HashSet<RemoteSlave> findDestinationSlaves() {
         return null;
     }
@@ -64,7 +63,6 @@ public class MoveReleaseToSpecificFolder extends ArchiveType {
     /*
      * Outs this as a string to show what is being archived.
      */
-    @Override
     public String toString() {
         String directory = "N/A";
         if (getDirectory() != null) {
