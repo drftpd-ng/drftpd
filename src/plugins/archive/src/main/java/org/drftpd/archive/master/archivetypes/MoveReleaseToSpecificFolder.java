@@ -66,7 +66,11 @@ public class MoveReleaseToSpecificFolder extends ArchiveType {
      */
     @Override
     public String toString() {
-        return "MoveReleaseToSpecificFolder=[directory=[" + getDirectory().getPath() + "]dest=[" + _archiveToFolder.getPath() + "]]";
+        String directory = "N/A";
+        if (getDirectory() != null) {
+            directory = getDirectory().getPath();
+        }
+        return "MoveReleaseToSpecificFolder=[directory=[" + directory + "]dest=[" + _archiveToFolder.getPath() + "]]";
     }
 
 }
