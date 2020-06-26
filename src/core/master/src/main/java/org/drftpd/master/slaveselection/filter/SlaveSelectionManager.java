@@ -58,7 +58,7 @@ public class SlaveSelectionManager extends SlaveSelectionManagerInterface {
     }
 
     @EventSubscriber
-    public void onReloadEvent() {
+    public void onReloadEvent(ReloadEvent event) {
         logger.info("Received reload event, reloading");
         initFilters();
         try {

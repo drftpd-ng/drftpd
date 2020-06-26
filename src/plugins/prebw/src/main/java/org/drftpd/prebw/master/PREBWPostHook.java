@@ -195,7 +195,7 @@ public class PREBWPostHook {
     }
 
     @EventSubscriber
-    public void onReloadEvent() {
+    public void onReloadEvent(ReloadEvent event) {
         logger.info("Received reload event, reloading");
         loadConf();
     }

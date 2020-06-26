@@ -2830,7 +2830,7 @@ public class SiteBot implements ReplyConstants, Runnable {
     }
 
     @EventSubscriber
-    public void onReloadEvent() {
+    public void onReloadEvent(ReloadEvent event) {
         logger.info("Reloading conf/plugins/{}/irccommands.conf", _confDir);
         loadCommands();
         _commandManager.initialize(getCommands(), themeDir);
