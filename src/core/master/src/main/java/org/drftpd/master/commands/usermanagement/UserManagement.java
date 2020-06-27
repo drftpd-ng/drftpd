@@ -52,10 +52,10 @@ public class UserManagement {
 
     public static final Key<Date> LASTSEEN = new Key<>(UserManagement.class, "lastseen");
 
-    public static final Key<Long> WKLY_ALLOTMENT = new Key<>(UserManagement.class, "wkly_allotment");
+    public static final Key<Long> WKLYALLOT = new Key<>(UserManagement.class, "wklyallot");
 
-    public static final Key<Date> BAN_TIME = new Key<>(UserManagement.class, "ban_time");
+    public static final Key<Date> BANTIME = new Key<>(UserManagement.class, "bantime");
 
-    public static final Key<String> BAN_REASON = new Key<>(UserManagement.class, "ban_reason");
+    public static final Key<String> BANREASON = new Key<>(UserManagement.class, "banreason");
 
 }

@@ -212,10 +212,10 @@ public class Master {
             }
         }
 
-        Date banTime = user.getKeyedMap().getObject(UserManagement.BAN_TIME, new Date());
+        Date banTime = user.getKeyedMap().getObject(UserManagement.BANTIME, new Date());
         if (banTime.getTime() > System.currentTimeMillis()) {
             return new FtpReply(530, "Sorry you are banned until "
-                    + banTime + "! (" + user.getKeyedMap().getObjectString(UserManagement.BAN_REASON) + ")");
+                    + banTime + "! (" + user.getKeyedMap().getObjectString(UserManagement.BANREASON) + ")");
         }
 
         if (!baseconn.isSecure() && GlobalContext.getConfig().checkPermission("userrejectinsecure", user)) {

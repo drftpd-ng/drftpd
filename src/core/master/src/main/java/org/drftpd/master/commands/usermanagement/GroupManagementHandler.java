@@ -573,7 +573,7 @@ public class GroupManagementHandler extends CommandInterface {
                 env.put("fdn", "" + user.getDownloadedFiles());
                 env.put("mbdn", Bytes.formatBytes(user.getDownloadedBytes()));
                 env.put("ratio", "1:" + user.getKeyedMap().getObjectFloat(UserManagement.RATIO));
-                env.put("wkly", Bytes.formatBytes(user.getKeyedMap().getObjectLong(UserManagement.WKLY_ALLOTMENT)));
+                env.put("wkly", Bytes.formatBytes(user.getKeyedMap().getObjectLong(UserManagement.WKLYALLOT)));
                 response.addComment(ReplacerUtils.jprintf(body, env));
             } catch (MissingResourceException e) {
                 response.addComment(e.getMessage());

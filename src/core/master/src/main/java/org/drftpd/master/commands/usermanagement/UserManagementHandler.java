@@ -232,7 +232,7 @@ public class UserManagementHandler extends CommandInterface {
             newUser.setPassword(pass);
             newUser.getKeyedMap().setObject(UserManagement.CREATED, new Date());
             newUser.getKeyedMap().setObject(UserManagement.LASTSEEN, new Date());
-            newUser.getKeyedMap().setObject(UserManagement.BAN_TIME, new Date());
+            newUser.getKeyedMap().setObject(UserManagement.BANTIME, new Date());
             newUser.getKeyedMap().setObject(UserManagement.COMMENT, "Added by " + currentUser.getName());
 
             // TODO fix this.
@@ -246,7 +246,7 @@ public class UserManagementHandler extends CommandInterface {
             newUser.getKeyedMap().setObject(UserManagement.MAXLOGINSIP, maxloginsipVal);
             newUser.getKeyedMap().setObject(UserManagement.MAXSIMUP, maxsimupVal);
             newUser.getKeyedMap().setObject(UserManagement.MAXSIMDN, maxsimdnVal);
-            newUser.getKeyedMap().setObject(UserManagement.WKLY_ALLOTMENT, wklyallotVal);
+            newUser.getKeyedMap().setObject(UserManagement.WKLYALLOT, wklyallotVal);
 
             newUser.setIdleTime(idletimeVal);
             newUser.setCredits(creditsVal);
@@ -689,8 +689,8 @@ public class UserManagementHandler extends CommandInterface {
 
                     long weeklyAllotment = Bytes.parseBytes(commandArguments[0]);
                     logger.info("'{}' changed wkly_allotment for '{}' from '{}' to {}'", session.getUserNull(request.getUser()).getName(), userToChange.getName(), userToChange.getKeyedMap().getObjectLong(
-                            UserManagement.WKLY_ALLOTMENT), weeklyAllotment);
-                    userToChange.getKeyedMap().setObject(UserManagement.WKLY_ALLOTMENT,
+                            UserManagement.WKLYALLOT), weeklyAllotment);
+                    userToChange.getKeyedMap().setObject(UserManagement.WKLYALLOT,
                             weeklyAllotment);
 
                     response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
@@ -1762,9 +1762,9 @@ public class UserManagementHandler extends CommandInterface {
                     + banTime + "m";
         }
 
-        myUser.getKeyedMap().setObject(UserManagement.BAN_TIME,
+        myUser.getKeyedMap().setObject(UserManagement.BANTIME,
                 new Date(System.currentTimeMillis() + (banTime * 60000)));
-        myUser.getKeyedMap().setObject(UserManagement.BAN_REASON, banMsg);
+        myUser.getKeyedMap().setObject(UserManagement.BANREASON, banMsg);
         myUser.commit();
 
         return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
@@ -1801,9 +1801,9 @@ public class UserManagementHandler extends CommandInterface {
         for (User user : GlobalContext.getGlobalContext().getUserManager().getAllUsers()) {
             if (user.getName().equals(executioner))
                 continue;
-            user.getKeyedMap().setObject(UserManagement.BAN_TIME,
+            user.getKeyedMap().setObject(UserManagement.BANTIME,
                     new Date(System.currentTimeMillis() + (banTime * 60000)));
-            user.getKeyedMap().setObject(UserManagement.BAN_REASON, banMsg);
+            user.getKeyedMap().setObject(UserManagement.BANREASON, banMsg);
             user.commit();
         }
 
@@ -1831,8 +1831,8 @@ public class UserManagementHandler extends CommandInterface {
             return new CommandResponse(200, e.getMessage());
         }
 
-        myUser.getKeyedMap().setObject(UserManagement.BAN_TIME, new Date());
-        myUser.getKeyedMap().setObject(UserManagement.BAN_REASON, "");
+        myUser.getKeyedMap().setObject(UserManagement.BANTIME, new Date());
+        myUser.getKeyedMap().setObject(UserManagement.BANREASON, "");
 
         myUser.commit();
 
@@ -1842,8 +1842,8 @@ public class UserManagementHandler extends CommandInterface {
     public CommandResponse doSITE_UNBANALL(CommandRequest request) {
 
         for (User user : GlobalContext.getGlobalContext().getUserManager().getAllUsers()) {
-            user.getKeyedMap().setObject(UserManagement.BAN_TIME, new Date());
-            user.getKeyedMap().setObject(UserManagement.BAN_REASON, "");
+            user.getKeyedMap().setObject(UserManagement.BANTIME, new Date());
+            user.getKeyedMap().setObject(UserManagement.BANREASON, "");
             user.commit();
         }
 
@@ -1856,7 +1856,7 @@ public class UserManagementHandler extends CommandInterface {
         CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
         for (User user : myUsers) {
             long timeleft = user.getKeyedMap().getObject(
-                    UserManagement.BAN_TIME, new Date()).getTime()
+                    UserManagement.BANTIME, new Date()).getTime()
                     - System.currentTimeMillis();
             if (timeleft > 0) {
                 Map<String, Object> env = new HashMap<>();
