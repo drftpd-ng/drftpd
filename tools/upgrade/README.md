@@ -23,4 +23,4 @@ Also produces a groups.properties file to be run against a java tool (WIP)
 * run in execute mode: python3 migrate-v3-v4.py -e (generates a groups.properties)
 * Make executable: chmod 755 *.sh
 * compile java: `./compile.sh` for Linux or `compile.bat` for Windows
-* Create groups: `./run.sh for` for Linux or `run.bat` for Windows (Creates drftpd json group objects based on groups.properties)
+* Create groups: `./run.sh` for for Linux or `run.bat` for Windows (Creates drftpd json group objects based on groups.properties)
