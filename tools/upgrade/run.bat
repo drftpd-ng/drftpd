@@ -1,0 +1,1 @@
+java -classpath "lib/*;build/*;." contrib.Upgrade
