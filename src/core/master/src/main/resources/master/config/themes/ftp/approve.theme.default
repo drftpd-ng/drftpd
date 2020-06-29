@@ -1,8 +1,8 @@
-approve.search.empty=No Directory Found For: ${searchstr}
-approve.search.start=Multiple Directories Found For: ${searchstr}
+approve.approved=${path} has already been approved.
+approve.error.path=Specified path does not exist, ${path}
+approve.remove=${path} un-approved by ${user}
+approve.search.empty=No directory found for: ${searchstr}
+approve.search.end=End of search. Use 'approve' on full path.
 approve.search.item=${num} -> ${path}
-approve.search.end=End Of Search. Use 'approve' On Full Path.
-approve.error.path=Specified Path Does Not Exist, ${path}
-approve.success=${path} Approved By ${user}
-approve.remove=${path} Un-Approved By ${user}
-approve.approved=${path} Has Already Been Approved
+approve.search.start=Multiple directories found for: ${searchstr}
+approve.success=${path} approved by ${user}
