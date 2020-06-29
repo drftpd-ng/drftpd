@@ -1,60 +1,84 @@
-# $Id$
-who.up=${color}15${bold}WHO${coloroff}: ${targetuser} -> UP: ${file} @ ${speed} to ${slave}.
-who.down=${color}15${bold}WHO${coloroff}: ${targetuser} -> DN: ${file} @ ${speed} from ${slave} (${percentcomplete}% done).
-who.idle=${color}15${bold}WHO${coloroff}: ${targetuser} -> IDLE: User has been idle for ${idle}.
-who.new=${color}15${bold}WHO${coloroff}: ${targetuser} -> IDLE: User has been idle for ${idle}.
-who.statusspeed=${color}15${bold}WHO${coloroff}: Total upload speed: ${totalupspeed,9} Total download speed: ${totaldnspeed,9}
-who.statususers=${color}15${bold}WHO${coloroff}: ${currentusers} of ${maxusers} User(s) Currently Online
-idle.empty=${color}15${bold}WHO${coloroff}: No idle connections found
-download.empty=${color}15${bold}WHO${coloroff}: No active download connections found
-upload.empty=${color}15${bold}WHO${coloroff}: No active upload connections found
+addgroup.success=${color}15${bold}ADDGROUP{coloroff}: Group ${targetgroup} created
 
-bw.statusspeed=${color}15${bold}BANDWIDTH${bold}${coloroff}: ${color}15${bold}(${bold}${coloroff} UP: ${xfersup} at ${totalupspeed} ${color}15${bold})-(${bold}${coloroff} DN: ${xfersdn} at ${totaldnspeed} ${color}15${bold})-(${bold}${coloroff} TOTAL: ${xfers} at ${totalspeed} ${color}15${bold})${bold}${coloroff}
-speed.up=${color}15${bold}${targetuser}${coloroff}: UP: ${file} @ ${speed} to ${slave}.
-
-speed.down=${color}15${bold}${targetuser}${coloroff}: DN: ${file} @ ${speed} from ${slave} (${percentcomplete}% done).
-speed.idle=${color}15${bold}${targetuser}${coloroff}: IDLE: User has been idle for ${idle}
-
-credits.user=${color}15${bold}CREDITS${coloroff}: ${bold}${credituser}${bold} has ${bold}${creditscount}${bold} credits
-credits.total=${color}15${bold}CREDITS${coloroff}: Total credits for ${usercount} users is ${totalcredits}
-credits.error=${color}15${bold}CREDITS${coloroff}: ${bold}${credituser}${bold} is not a valid username
-
-addip.specify=${color}15${bold}ADDIP${coloroff}: You need to specify a Ident@IP to add
 addip.dupe=${color}15${bold}ADDID${coloroff}: IP ${mask} already added to ${targetuser}
+addip.specify=${color}15${bold}ADDIP${coloroff}: You need to specify a Ident@IP to add
 addip.success=${color}15${bold}ADDIP${coloroff}: IP ${mask} added to ${targetuser}
 
-adduser.noslots=${color}15${bold}ADDUSER${coloroff}: Sorry, no more open slots available
 adduser.missingpass=${color}15${bold}ADDUSER${coloroff}: You forgot a password
+adduser.noslots=${color}15${bold}ADDUSER${coloroff}: Sorry, no more open slots available
 adduser.primgroup=${color}15${bold}ADDUSER${coloroff}: Primary group set to ${primgroup}
 adduser.success=${color}15${bold}ADDUSER${coloroff}: User ${targetuser} created
-deluser.success=${color}15${bold}DELUSER${coloroff}: User ${targetuser} deleted
-purgeuser.success=${color}15${bold}DELUSER${coloroff}: User ${targetuser} purged
 
-addgroup.success=${color}15${bold}ADDGROUP{coloroff}: Group ${targetgroup} created
-delgroup.success=${color}15${bold}ADDGROUP{coloroff}: Group ${targetgroup} deleted
+bans=${color}15${bold}BANS${coloroff}: ${username} banned for another ${timeleft}m until ${org.drftpd.master.commands.usermanagement.UserManagement@bantime} (${org.drftpd.master.commands.usermanagement.UserManagement@banreason})
+
+bw.statusspeed=${color}15${bold}BW${bold}${coloroff}: ${color}15${bold}(${bold}${coloroff} UP: ${xfersup} at ${totalupspeed} ${color}15${bold})-(${bold}${coloroff} DN: ${xfersdn} at ${totaldnspeed} ${color}15${bold})-(${bold}${coloroff} TOTAL: ${xfers} at ${totalspeed} ${color}15${bold})${bold}${coloroff}
 
 change.specify=${color}15${bold}CHANGE${coloroff}: You need to specify a value to change
 
-changeratio.invalidratio=${color}15${bold}CHANGE${coloroff}: Ratio must be 0 or between ${minratio} and ${maxratio}
-changeratio.nomoreslots=${color}15${bold}CHANGE${coloroff}: You have used all your leech slots
-changeratio.success=${color}15${bold}CHANGE${coloroff}: Changed ratio to 1:${newratio}
-changecredits.success=${color}15${bold}CHANGE${coloroff}: Changed credits to ${newcredits}
-changecomment.success=${color}15${bold}CHANGE${coloroff}: ${targetuser} comment is: ${comment}
-changeidletime.success=${color}15${bold}CHANGE${coloroff}: Changed idle time to ${newidletime}s
-changeprimgroup.success=${color}15${bold}CHANGE${coloroff}: Changed primary group to ${primgroup}
-changenumlogins.success=${color}15${bold}CHANGE${coloroff}: Changed max logins to ${numlogins} and from same IP to ${numloginsip}
-changegroupslots.success=${color}15${bold}CHANGE${coloroff}: Changed group slots to ${groupslots} and group leech slots to ${groupleechslots}
-changemaxsim.success=${color}15${bold}CHANGE${coloroff}: Changed max simultaneous download/upload slots to ${maxdn}/${maxup}
+changecomment.success=${color}15${bold}CHANGECOMMENT${coloroff}: ${targetuser} comment is: ${comment}
+
+changecredits.success=${color}15${bold}CHANGECREDITS${coloroff}: Changed credits to ${newcredits}
+
+changegroup.created.success=${color}15${bold}CHANGEGROUP${coloroff}: Reset creation time for ${targetgroup}
+changegroup.leechslots.success=${color}15${bold}CHANGEGROUP${coloroff}: Changed group leech slots to ${leechslots}
+changegroup.ratio.success=${color}15${bold}CHANGEGROUP${coloroff}: Changed group min/max ratio to ${minratio}/${maxratio}
+changegroup.slots.success=${color}15${bold}CHANGEGROUP${coloroff}: Changed group slots to ${groupslots} and group leech slots to ${leechslots}
+
+changegroupadmin.add.user=${color}15${bold}CHANGEGROUPADMIN${coloroff}: User ${targetuser} added as group admin to ${targetgroup}
+changegroupadmin.bad.user=${color}15${bold}CHANGEGROUPADMIN${coloroff}: User ${targetuser} does not exist
+changegroupadmin.remove.user=${color}15${bold}CHANGEGROUPADMIN${coloroff}: User ${targetuser} removed from ${targetgroup} as group admin
+
+changeidletime.success=${color}15${bold}CHANGEIDLETIME${coloroff}: Changed idle time to ${newidletime}s
+
+changemaxsim.success=${color}15${bold}CHANGEMAXSIM${coloroff}: Changed max simultaneous download/upload slots to ${maxdn}/${maxup}
+
+changenumlogins.success=${color}15${bold}CHANGENUMLOGINS${coloroff}: Changed max logins to ${numlogins} and from same IP to ${numloginsip}
+
+changeprimgroup.success=${color}15${bold}CHANGEPRIMGROUP${coloroff}: Changed primary group to ${primgroup}
+
 changeuser.created.success=${color}15${bold}CHANGEUSER${coloroff}: Reset creation time for ${targetuser}
 
-changegroup.slots.success=${color}15${bold}CHANGEGROUP${coloroff}: Changed group slots to ${groupslots}
-changegroup.leechslots.success=${color}15${bold}CHANGEGROUP${coloroff}: Changed group leech slots to ${leechslots}
-changegroup.created.success=${color}15${bold}CHANGEGROUP${coloroff}: Reset creation time for ${targetgroup}
-changegroup.ratio.success=${color}15${bold}CHANGE${coloroff}: Changed group min/max ratio to ${minratio}/${maxratio}
+changeratio.invalidratio=${color}15${bold}CHANGERATIO${coloroff}: Ratio must be 0 or between ${minratio} and ${maxratio}
+changeratio.nomoreslots=${color}15${bold}CHANGERATIO${coloroff}: You have used all your leech slots
+changeratio.success=${color}15${bold}CHANGERATIO${coloroff}: Changed ratio to 1:${newratio}
 
-changegroupadmin.bad.user=${color}15${bold}CHANGEGROUPADMIN${coloroff}: User ${targetuser} does not exist
-changegroupadmin.add.user=${color}15${bold}CHANGEGROUPADMIN${coloroff}: User ${targetuser} added as group admin to ${targetgroup}
-changegroupadmin.remove.user=${color}15${bold}CHANGEGROUPADMIN${coloroff}: User ${targetuser} removed from ${targetgroup} as group admin
+credits.error=${color}15${bold}CREDITS${coloroff}: ${bold}${credituser}${bold} is not a valid username
+credits.total=${color}15${bold}CREDITS${coloroff}: Total credits for ${usercount} users is ${totalcredits}
+credits.user=${color}15${bold}CREDITS${coloroff}: ${bold}${credituser}${bold} has ${bold}${creditscount}${bold} credits
+
+debug=${color}15${bold}DEBUG${coloroff}: Debug now set to ${org.drftpd.master.commands.usermanagement.UserManagement@debug}
+
+delgroup.success=${color}15${bold}DELGROUP${coloroff}: Group ${targetgroup} deleted
+
+deluser.success=${color}15${bold}DELUSER${coloroff}: User ${targetuser} deleted
+
+download.empty=${color}15${bold}DOWNLOAD${coloroff}: No active download connections found
+
+ginfo.head=\
+.-----------------------------------------------------------------------.\n\
+|  Username |     Up |     Megs |     Dn |     Megs | Ratio   |    Wkly |\n\
+|-----------+--------+-----------+--------+-----------+-------+---------|
+ginfo.tail=\
+|-----------------------------------------------------------------------|\n\
+|        * = Site Admin       + = Group Admin       ! = deleted         |\n\
+|-----------------------------------------------------------------------|\n\
+| Tot Megs Up: ${allmbup,19} | Tot Files Up: ${allfup,20} |\n\
+| Tot Megs Dn: ${allmbdn,19} | Tot Files Dn: ${allfdn,20} |\n\
+|----------------------------------+------------------------------------|\n\
+| Ratio(Min/Max): ${groupratio,16} | Created: ${created,25} |\n\
+| Slots(Total/Free): ${slots,13} | Leech Slots(Total/Free): ${leechslots,9} |\n\
+`-----------------------------------------------------------------------'
+ginfo.user=|${user,-11}|${fup,7} |${mbup,9} |${fdn,7} |${mbdn,9} |${ratio,8} |${wkly,8} |
+
+idle.empty=${color}15${bold}IDLE${coloroff}: No idle connections found
+
+purgeuser.success=${color}15${bold}PURGEUSER${coloroff}: User ${targetuser} purged
+
+speed.down=${color}15${bold}${targetuser}${coloroff}: DN: ${file} @ ${speed} from ${slave} (${percentcomplete}% done).
+speed.idle=${color}15${bold}${targetuser}${coloroff}: IDLE: User has been idle for ${idle}
+speed.up=${color}15${bold}${targetuser}${coloroff}: UP: ${file} @ ${speed} to ${slave}
+
+upload.empty=${color}15${bold}UPLOAD${coloroff}: No active upload connections found
 
 user=Username: ${username,-20} Created: ${org.drftpd.master.commands.usermanagement.UserManagement@created}\n\
 Comment: ${org.drftpd.master.commands.usermanagement.UserManagement@comment,-21} Last seen: ${org.drftpd.master.commands.usermanagement.UserManagement@lastseen}\n\
@@ -73,23 +97,30 @@ IP masks: ${ipmasks}\n\
 IRC Ident: ${org.drftpd.master.commands.usermanagement.UserManagement@ircident,-23}\n\
 Tagline: ${org.drftpd.master.commands.usermanagement.UserManagement@tagline}
 
-mike.saved.group=Group / Leech slots: ${org.drftpd.master.commands.usermanagement.UserManagement@groupslots,-3} ${org.drftpd.master.commands.usermanagement.UserManagement@leechslots,-6}\
-Group Min/Max Ratio: ${org.drftpd.master.commands.usermanagement.UserManagement@minratio}/${org.drftpd.master.commands.usermanagement.UserManagement@maxratio}\n\
+user.comment=Comment: ${comment,-21} Last seen: ${lastseen}
+user.extragroups=Extra groups: ${extragroups}
+user.groupslots=Group / Leech slots: ${groupslots} ${groupleechslots}
+user.idle=Total logins: ${totallogins,-16} Idle time: ${idletime}
+user.ipmasks=IP masks: ${ipmasks}
+user.logins=Max logins: ${maxlogins,-18} From same IP: ${maxloginsip}
+user.maxsim=Max sim uploads: ${maxsimup,-13} Max sim downloads: ${maxsimdn}
+user.nuke=Times nuked: ${timesnuked,-17} Bytes nuked: ${nukedbytes}
+user.primarygroup=Primary group: ${primarygroup}
+user.ratio=Ratio: ${userratio,-23} Credits: ${usercredits}
+user.username=Username: ${username,-20} Created: ${created}
+user.xfer=Total uploaded: ${useruploaded,-14} Total downloaded: ${userdownloaded}
 
-bans=${color}15${bold}BANS${coloroff}: ${username} banned for another ${timeleft}m until ${org.drftpd.master.commands.usermanagement.UserManagement@bantime} (${org.drftpd.master.commands.usermanagement.UserManagement@banreason})
+who.down=${color}15${bold}WHO${coloroff}: ${targetuser} -> DN: ${file} @ ${speed} from ${slave} (${percentcomplete}% done)
+who.idle=${color}15${bold}WHO${coloroff}: ${targetuser} -> IDLE: User has been idle for ${idle}
+who.new=${color}15${bold}WHO${coloroff}: ${targetuser} -> IDLE: User has been idle for ${idle}
+who.statusspeed=${color}15${bold}WHO${coloroff}: Total upload speed: ${totalupspeed,9} Total download speed: ${totaldnspeed,9}
+who.statususers=${color}15${bold}WHO${coloroff}: ${currentusers} of ${maxusers} User(s) Currently Online
+who.up=${color}15${bold}WHO${coloroff}: ${targetuser} -> UP: ${file} @ ${speed} to ${slave}
 
-ginfo.head=\
-.-----------------------------------------------------------------------.\n\
-|  Username |     Up |     Megs |     Dn |     Megs | Ratio   |    Wkly |\n\
-|-----------+--------+-----------+--------+-----------+-------+---------|
-ginfo.user=|${user,-11}|${fup,7} |${mbup,9} |${fdn,7} |${mbdn,9} |${ratio,8} |${wkly,8} |
-ginfo.tail=\
-|-----------------------------------------------------------------------|\n\
-|        * = Site Admin       + = Group Admin       ! = deleted         |\n\
-|-----------------------------------------------------------------------|\n\
-| Tot Megs Up: ${allmbup,19} | Tot Files Up: ${allfup,20} |\n\
-| Tot Megs Dn: ${allmbdn,19} | Tot Files Dn: ${allfdn,20} |\n\
-|----------------------------------+------------------------------------|\n\
-| Ratio(Min/Max): ${groupratio,16} | Created: ${created,25} |\n\
-| Slots(Total/Free): ${slots,13} | Leech Slots(Total/Free): ${leechslots,9} |\n\
-`-----------------------------------------------------------------------'
+swho.command=${color}15${bold}SWHO${coloroff}: ${targetuser,-11}[${thread}]   -> ${command} -> [${ip}]
+swho.down=${color}15${bold}SWHO${coloroff}: ${targetuser,-11}[${thread}]   -> DN ${speed,9} from ${slave} - ${file} -> [${ip}]
+swho.idle=${color}15${bold}SWHO${coloroff}: ${targetuser,-11}[${thread}]   -> Idle for ${idle} -> [${ip}]
+swho.new=${color}15${bold}SWHO${coloroff}: ${targetuser,-11}[${thread}]   -> Idle for ${idle} -> [${ip}]
+swho.statusspeed=${color}15${bold}SWHO${coloroff}: Total upload speed: ${totalupspeed,9} Total download speed: ${totaldnspeed,9}
+swho.statususers=${color}15${bold}SWHO${coloroff}: ${currentusers} of ${maxusers} User(s) Currently Online
+swho.up=${color}15${bold}SWHO${coloroff}: ${targetuser,-11}[${thread}]   -> UP ${speed,9} to   ${slave} - ${file} -> [${ip}]
