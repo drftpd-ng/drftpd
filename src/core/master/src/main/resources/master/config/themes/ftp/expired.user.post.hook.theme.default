@@ -1,1 +1,1 @@
-expireduser=Expires: ${expiredate}
+expireduser=Expires: ${expiredate}.

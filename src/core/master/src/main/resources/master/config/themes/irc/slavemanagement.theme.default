@@ -1,24 +1,24 @@
 addslave.exists=${slavename} already exists as a valid slave, could not add it.
-addslave.success=Successfully added ${slavename}
+addslave.success=Successfully added ${slavename}.
 
 delslave.notfound=${slavename} is not a valid slave, cannot delete it.
-delslave.success=Successfully removed ${slavename}
+delslave.success=Successfully removed ${slavename}.
 
 diskfree=${color}15${bold}DISKFREE${bold}${coloroff}: We have ${bold}${diskfree}${bold} free, with a total disk space of ${bold}${disktotal}${bold}. Total ${diskfreepercent} free on ${slavesonline} of ${slavestotal} slaves.
 
 slave.addmask.dupe=${mask} failed to be added to ${slavename}, ${mask} already exists.
-slave.addmask.success=${mask} has successfully been added to ${slavename}
+slave.addmask.success=${mask} has successfully been added to ${slavename}.
 slave.data=${key,15} ${value,15}
 slave.data.header=            Key            Value
-slave.delmask.failed=${mask} failed to be removed from ${slavename}, check that the mask is in ${slavename}
-slave.delmask.success=${mask} has successfully been removed from ${slavename}
-slave.offline=${color}15${bold}${slavename}${coloroff}: ${color}4${bold}OFFLINE${bold}${coloroff}
-slave.online=${color}15${bold}${slavename}${coloroff}: ${bold}${status}${bold} ${color}15${bold}(${bold}${coloroff} UP: ${xfersup} @ ${throughputup} ${color}15${bold})-(${bold}${coloroff} DN: ${xfersdown} @ ${throughputdown} ${color}15${bold})-(${bold}${coloroff} DF:${bold}${coloroff} ${bold}${diskfree}${bold}/${disktotal} ${color}15${bold})${bold}${coloroff}
-slave.masks=Valid masks: ${masks}
+slave.delmask.failed=${mask} failed to be removed from ${slavename}, check that the mask is in ${slavename}.
+slave.delmask.success=${mask} has successfully been removed from ${slavename}.
+slave.offline=${color}15${bold}${slavename}${coloroff}: ${color}4${bold}OFFLINE${bold}${coloroff}.
+slave.online=${color}15${bold}${slavename}${coloroff}: ${bold}${status}${bold} ${color}15${bold}(${bold}${coloroff} UP: ${xfersup} @ ${throughputup} ${color}15${bold})-(${bold}${coloroff} DN: ${xfersdown} @ ${throughputdown} ${color}15${bold})-(${bold}${coloroff} DF:${bold}${coloroff} ${bold}${diskfree}${bold}/${disktotal} ${color}15${bold})${bold}${coloroff}.
+slave.masks=Valid masks: ${masks}.
 slave.none=No slaves are currently loaded.
 slave.notfound=${slavename} is not a valid slave.
-slave.queues=${slavename} queue sizes\nRename queue: ${renamesize,14}\nRemerge queue: ${remergesize,13}\nRemerge(CRC) queue: ${remergecrcsize,8}
-slave.remerging=${color}15${bold}${slavename}${coloroff}: ${color}4${bold}REMERGING${bold}${coloroff}
-slave.set.success=${key} was set to ${value}
+slave.queues=${slavename} queue sizes\nRename queue: ${renamesize,14}\nRemerge queue: ${remergesize,13}\nRemerge(CRC) queue: ${remergecrcsize,8}.
+slave.remerging=${color}15${bold}${slavename}${coloroff}: ${color}4${bold}REMERGING${bold}${coloroff}.
+slave.set.success=${key} was set to ${value}.
 slave.unset.failure=Cannot remove ${key} from slave, key does not exist.
-slave.unset.success=Removed ${key} with value ${value}
+slave.unset.success=Removed ${key} with value ${value}.

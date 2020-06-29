@@ -1,23 +1,23 @@
 ## Define the announce.
-place.failed=[ ${rank} ] ${grpname} uppded ${upBytesPU}/User -> failed groupquota ( ${size} user upped ${upBytes} [min. ${min}])
-place.losing=[ ${rank} ] ${grpname} uppded ${upBytesPU}/User -> failed groupquota ( ${size} user upped ${upBytes} [min. ${min}])
+place.failed=[ ${rank} ] ${grpname} uppded ${upBytesPU}/User -> failed groupquota ( ${size} user upped ${upBytes} [min. ${min}]).
+place.losing=[ ${rank} ] ${grpname} uppded ${upBytesPU}/User -> failed groupquota ( ${size} user upped ${upBytes} [min. ${min}]).
 place.notfound==Group: ${name} not found.
-place.passed=[ ${rank} ] ${grpname} uppded ${upBytesPU}/User -> passed groupquota ( ${size} user upped ${upBytes})
-place.winning=[ ${rank} ] ${grpname} uppded ${upBytesPU}/User -> passed groupquota ( ${size} user upped ${upBytes})
+place.passed=[ ${rank} ] ${grpname} uppded ${upBytesPU}/User -> passed groupquota ( ${size} user upped ${upBytes}).
+place.winning=[ ${rank} ] ${grpname} uppded ${upBytesPU}/User -> passed groupquota ( ${size} user upped ${upBytes}).
 
 ## Define the announce for top command.
 grouptop.cut.empty=Nobody will be cut from here this list.
 grouptop.cut.failed=[ ${rank} ] ${usernick}/${usergroup} ( ${upbytes} Up ) is currently FAILING.
-grouptop.cut.header=[ ${bold}${name}${bold} - ${groups} Groups, These Groups Will NOT Make It - (${time} Remaining) ]
-grouptop.cut.header.min=[ ${bold}${name}${bold} - ${groups} Groups, These Groups Will NOT Make It - (${time} Remaining) (Min ${min}) and ${percent}% of #1 monthup) ]
-grouptop.top.header=[ ${bold}${name}${bold} - ${groups} Groups, Top ${keep} Will Stay - (${time} Remaining) ]
-grouptop.top.header.min=[ ${bold}${name}${bold} - ${grps} Groups, Top ${keep} Will Stay - (${time} Remaining) (Min ${min}) and ${percent}% of #1 monthup) ]
-grouptop.top.passed=[ ${rank} ] ${grpname} upped ${avgbytes}/User => passed (${grpsize} users upped ${grpbytes})
-grouptop.top.failed=[ ${rank} ] ${grpname} upped ${avgbytes}/User => failed (${grpsize} users upped ${grpbytes} [min. ${min}])
+grouptop.cut.header=[ ${bold}${name}${bold} - ${groups} Groups, These Groups Will NOT Make It - (${time} Remaining) ].
+grouptop.cut.header.min=[ ${bold}${name}${bold} - ${groups} Groups, These Groups Will NOT Make It - (${time} Remaining) (Min ${min}) and ${percent}% of #1 monthup) ].
+grouptop.top.header=[ ${bold}${name}${bold} - ${groups} Groups, Top ${keep} Will Stay - (${time} Remaining) ].
+grouptop.top.header.min=[ ${bold}${name}${bold} - ${grps} Groups, Top ${keep} Will Stay - (${time} Remaining) (Min ${min}) and ${percent}% of #1 monthup) ].
+grouptop.top.passed=[ ${rank} ] ${grpname} upped ${avgbytes}/User => passed (${grpsize} users upped ${grpbytes}).
+grouptop.top.failed=[ ${rank} ] ${grpname} upped ${avgbytes}/User => failed (${grpsize} users upped ${grpbytes} [min. ${min}]).
 
 ## Defined the announce for specific group passed.
-grouptop.passed.failed=|+| ${rank}. ${usernick} upped ${up}
-grouptop.passed.failed.header=[ ${rank} ] ${grpname} uppded ${upBytesPU}/User -> failed groupquota (${size} user upped ${upBytes} [min. ${min}])
+grouptop.passed.failed=|+| ${rank}. ${usernick} upped ${up}.
+grouptop.passed.failed.header=[ ${rank} ] ${grpname} uppded ${upBytesPU}/User -> failed groupquota (${size} user upped ${upBytes} [min. ${min}]).
 grouptop.passed.nosuchgroup=Group: ${grpname} not found.
-grouptop.passed.passed=|+| ${rank}. ${usernick} upped ${up}
-grouptop.passed.passed.header=[ ${rank} ] ${grpname} uppded ${upBytesPU}/User -> passed groupquota (${size} user upped ${upBytes})
+grouptop.passed.passed=|+| ${rank}. ${usernick} upped ${up}.
+grouptop.passed.passed.header=[ ${rank} ] ${grpname} uppded ${upBytesPU}/User -> passed groupquota (${size} user upped ${upBytes}).

@@ -1,11 +1,11 @@
 status.classes=Classes: ${loaded.classes} currently loaded / ${unloaded.classes} unloaded / ${total.classes} total loaded since startup.
 status.gcinfo=Garbage Collector was executed ${collection.count}x, spent ${collection.time} during those operations.
 status.heap=Heap Memory: ${heap.used} used / ${heap.available} available / ${heap.max} maximum.
-status.master.uptime=Master has been online for ${uptime}
+status.master.uptime=Master has been online for ${uptime}.
 status.nonheap=Non-Heap Memory: ${nonheap.used} used / ${nonheap.available} available / ${nonheap.max} maximum.
 status.osinfo=Operational System: ${os.name} vers. ${os.version} (${os.arch})
-status.slave.notfound=${slave}: NOTFOUND
-status.slave.offline=${slave}: OFFLINE
-status.slave.uptime=${slave} has been online for ${uptime}
-status.threads=Threads running: ${current.threads} / Peak thread count: ${max.threads} / Amount of created threads since startup: ${total.threads}
-status.vminfo=JVM: ${vm.name} vers. ${vm.version} by ${vm.vendor}
+status.slave.notfound=${slave}: NOTFOUND.
+status.slave.offline=${slave}: OFFLINE.
+status.slave.uptime=${slave} has been online for ${uptime}.
+status.threads=Threads running: ${current.threads} / Peak thread count: ${max.threads} / Amount of created threads since startup: ${total.threads}.
+status.vminfo=JVM: ${vm.name} vers. ${vm.version} by ${vm.vendor}.

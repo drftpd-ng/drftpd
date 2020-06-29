@@ -1,4 +1,3 @@
-# $Id$
 user.success=Password required for ${user}.
 pass.success=${user} logged in successfully.
 pass.fail=Incorrect password for ${user}.
