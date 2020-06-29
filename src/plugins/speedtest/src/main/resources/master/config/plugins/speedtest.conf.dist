@@ -1,6 +1,11 @@
 ########################
 ## SpeedTest Settings ##
 ###################################################################################################
+#                                                                                                 #
+# Each file must be uploaded to the path to be announced as a speedtest on irc and                #
+#  then deleted automatically, otherwise the files will be kept.                                  #
+#                                                                                                 #
+###################################################################################################
 
 # Specify paths for speedtest, all subdirs of this path is considered a SPEEDTEST dir.
 #path.1=/SPEEDTEST
