@@ -187,13 +187,18 @@ public class ArchiveCommandHandler extends CommandInterface {
     public CommandResponse doLISTARCHIVETYPES(CommandRequest request) {
         CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
         int x = 1;
+
         Map<String, Object> env = new HashMap<>();
+
         Archive archive;
+
+        // Get the current session
+        Session session = request.getSession();
 
         try {
             archive = getArchive();
         } catch (ObjectNotFoundException e) {
-            response.addComment(request.getSession().jprintf(_bundle, env, "loadarchive"));
+            response.addComment(session.jprintf(_bundle, env, "loadarchive"));
             return response;
         }
 
@@ -213,11 +218,24 @@ public class ArchiveCommandHandler extends CommandInterface {
 
         Archive archive;
 
+        // Get the current session
+        Session session = request.getSession();
+
         try {
             archive = getArchive();
         } catch (ObjectNotFoundException e) {
-            response.addComment(request.getSession().jprintf(_bundle, env, "loadarchive"));
+            response.addComment(session.jprintf(_bundle, env, "loadarchive"));
             return response;
+        }
+
+        boolean showDetails = false;
+        if (request.hasArgument()) {
+            if (request.getArgument().equalsIgnoreCase("details")) {
+                showDetails = true;
+            } else
+            {
+                response.addComment("Incorrect arguments detected, ignoring");
+            }
         }
 
         int activeJobs = 0;
@@ -227,10 +245,17 @@ public class ArchiveCommandHandler extends CommandInterface {
                 activeJobs++;
             }
             totalJobs++;
+            if (showDetails) {
+                Map<String, Object> env2 = new HashMap<>();
+                env2.put("uuid", ah.getUUID());
+                env2.put("archivetypename", ah.getArchiveType().getClass().getName());
+                env2.put("jobs", ah.getJobs().size());
+                response.addComment(session.jprintf(_bundle, env2, "archivequeuedetail"));
+            }
         }
         env.put("activejobs", activeJobs);
         env.put("totaljobs", totalJobs);
-        response.addComment(request.getSession().jprintf(_bundle, env, "archivequeuestats"));
+        response.addComment(session.jprintf(_bundle, env, "archivequeuestats"));
 
         return response;
     }

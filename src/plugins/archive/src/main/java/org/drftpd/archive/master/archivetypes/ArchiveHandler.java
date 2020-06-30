@@ -30,25 +30,26 @@ import org.drftpd.master.GlobalContext;
 import org.drftpd.master.sections.SectionInterface;
 import org.drftpd.master.slavemanagement.RemoteSlave;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author CyBeR
  * @version $Id$
  */
 public class ArchiveHandler implements Runnable {
+
     protected static final Logger logger = LogManager.getLogger(ArchiveHandler.class);
 
     private final ArchiveType _archiveType;
 
     private ArrayList<Job> _jobs;
 
+    private final UUID _uuid;
+
     public ArchiveHandler(ArchiveType archiveType) {
         _archiveType = archiveType;
         _jobs = new ArrayList<>();
+        _uuid = UUID.randomUUID();
         AnnotationProcessor.process(this);
     }
 
@@ -62,6 +63,10 @@ public class ArchiveHandler implements Runnable {
 
     public List<Job> getJobs() {
         return Collections.unmodifiableList(_jobs);
+    }
+
+    public UUID getUUID() {
+        return _uuid;
     }
 
     public boolean hasActiveThreadForArchiveTypeAndSection() {
@@ -98,7 +103,7 @@ public class ArchiveHandler implements Runnable {
         // Check to make sure that we are the only timer based runner for this archive type
         if (hasActiveThreadForArchiveTypeAndSection()) {
             logger.warn("Another timer based ArchiveHandler already exists and is active, so this one is duplicate and not running it");
-            if (!_archiveType._parent.removeArchiveHandler(this)) {
+            if (_archiveType._parent.removeArchiveHandler(this) == null) {
                 logger.error("We were unable to remove this ArchiveHandler from the registered ArchiveHandlers");
             }
             t.setName(Archive.ArchiveHandlerThreadFactory.getIdleThreadName(t.getId()));
@@ -158,7 +163,7 @@ public class ArchiveHandler implements Runnable {
             } catch (Exception e) {
                 logger.warn("Caught an unexpected exception while trying to archive", e);
             } finally {
-                if (!_archiveType._parent.removeArchiveHandler(this)) {
+                if (_archiveType._parent.removeArchiveHandler(this) == null) {
                     logger.error("We were unable to remove this ArchiveHandler from the registered ArchiveHandlers");
                 }
                 _archiveType.setDirectory(null);

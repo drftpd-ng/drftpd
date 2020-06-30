@@ -34,6 +34,7 @@ import org.drftpd.master.vfs.DirectoryHandle;
 import org.reflections.Reflections;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -53,7 +54,7 @@ public class Archive implements PluginInterface {
     private long _cycleTime;
 
     // All active ArchiveHandlers
-    private HashSet<ArchiveHandler> _archiveHandlers = null;
+    private Map<UUID, ArchiveHandler> _archiveHandlers;
 
     // The timer task we created based on _cycleTime
     private TimerTask _runHandler = null;
@@ -106,7 +107,7 @@ public class Archive implements PluginInterface {
      * Returns a list of the current archive types, as a copy.
      * We don't want to allow modifications to this.
      */
-    public synchronized CaseInsensitiveHashMap<String, Class<? extends ArchiveType>> getTypesMap() {
+    public CaseInsensitiveHashMap<String, Class<? extends ArchiveType>> getTypesMap() {
         return new CaseInsensitiveHashMap<>(_typesMap);
     }
 
@@ -177,36 +178,38 @@ public class Archive implements PluginInterface {
     /*
      * Submit a new archive task to be executed
      */
-    public synchronized void executeArchiveType(ArchiveType at) {
+    public void executeArchiveType(ArchiveType at) {
 
         // Create the Runnable ArchiveHandler
         ArchiveHandler ah = new ArchiveHandler(at);
 
         // Register it to our active archive handlers and submit it to our executor
-        _archiveHandlers.add(ah);
+        _archiveHandlers.put(ah.getUUID(), ah);
         _archiveHandlerExecutor.submit(ah);
+        logger.debug("New archive handler with uuid {} registered and submitted to executor", ah.getUUID());
     }
 
     /*
      * This Removes archive handler from current archives in use
      */
-    public synchronized boolean removeArchiveHandler(ArchiveHandler handler) {
-        return _archiveHandlers.remove(handler);
+    public ArchiveHandler removeArchiveHandler(ArchiveHandler handler) {
+        logger.debug("Removing archive handler with uuid {} from active handlers", handler.getUUID());
+        return _archiveHandlers.remove(handler.getUUID());
     }
 
     /*
      * Returns all the current ArchiveHandlers
      */
     public Collection<ArchiveHandler> getArchiveHandlers() {
-        return Collections.unmodifiableCollection(_archiveHandlers);
+        return Collections.unmodifiableCollection(_archiveHandlers.values());
     }
 
     /*
      * This checks to see if the current directory is already queued to be archived.
      * throws DuplicateArchiveException if it is.
      */
-    public synchronized void checkPathForArchiveStatus(String handlerPath) throws DuplicateArchiveException {
-        for (ArchiveHandler ah : _archiveHandlers) {
+    public void checkPathForArchiveStatus(String handlerPath) throws DuplicateArchiveException {
+        for (ArchiveHandler ah : _archiveHandlers.values()) {
             if(ah.getJobs().size() == 0) {
                 // no jobs associated to this archive type yet so it has not been initialized yet
                 continue;
@@ -240,7 +243,7 @@ public class Archive implements PluginInterface {
         // Subscribe to events
         AnnotationProcessor.process(this);
         logger.info("Archive plugin loaded successfully");
-        _archiveHandlers = new HashSet<>();
+        _archiveHandlers = new ConcurrentHashMap<>();
         reload();
     }
 
