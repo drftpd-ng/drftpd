@@ -61,7 +61,7 @@ Check generated runtime directory
 
 #### Master
 - Copy .dist files to .conf only if you change the settings
-- Optional : Run `./genkey.sh` for Linux or `master.bat` for Windows (if you want to use SSL (Master & Slave))
+- Optional : Run `./genkey.sh` for Linux or `genkey.bat` for Windows (if you want to use SSL (Master & Slave))
 - Run `./master.sh` for Linux or `master.bat` for Windows
 - Connect to `127.0.0.1:2121` with `drftpd:drftpd`
 
