@@ -52,7 +52,7 @@ public class UserManagement {
 
     public static final Key<Date> LASTSEEN = new Key<>(UserManagement.class, "lastseen");
 
-    public static final Key<Long> WKLYALLOT = new Key<>(UserManagement.class, "wklyallot");
+    public static final Key<Long> WKLYALLOTMENT = new Key<>(UserManagement.class, "wklyallotment");
 
     public static final Key<Date> BANTIME = new Key<>(UserManagement.class, "bantime");
 

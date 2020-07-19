@@ -213,7 +213,7 @@ public class UserManagementHandler extends CommandInterface {
             String maxsimup = cfg.getProperty("max_uploads", "2");
             String maxsimdn = cfg.getProperty("max_downloads", "2");
             String idletime = cfg.getProperty("idle_time", "300");
-            String wklyallot = cfg.getProperty("wkly_allotment", "0");
+            String wklyallotment = cfg.getProperty("wkly_allotment", "0");
             String credits = cfg.getProperty("credits", "0b");
             String tagline = cfg.getProperty("tagline", "No tagline set.");
 
@@ -224,7 +224,7 @@ public class UserManagementHandler extends CommandInterface {
             int maxsimdnVal = Integer.parseInt(maxsimdn);
             int idletimeVal = Integer.parseInt(idletime);
             long creditsVal = Bytes.parseBytes(credits);
-            long wklyallotVal = Bytes.parseBytes(wklyallot);
+            long wklyallotmentVal = Bytes.parseBytes(wklyallotment);
 
             // action, no more NoSuchElementException below here
             newUser = GlobalContext.getGlobalContext().getUserManager().createUser(newUsername);
@@ -237,16 +237,14 @@ public class UserManagementHandler extends CommandInterface {
 
             // TODO fix this.
             //newUser.getKeyedMap().setObject(Statistics.LOGINS,0);
-
             newUser.getKeyedMap().setObject(UserManagement.IRCIDENT, "");
-
             newUser.getKeyedMap().setObject(UserManagement.TAGLINE, tagline);
             newUser.getKeyedMap().setObject(UserManagement.RATIO, ratioVal);
             newUser.getKeyedMap().setObject(UserManagement.MAXLOGINS, maxloginsVal);
             newUser.getKeyedMap().setObject(UserManagement.MAXLOGINSIP, maxloginsipVal);
             newUser.getKeyedMap().setObject(UserManagement.MAXSIMUP, maxsimupVal);
             newUser.getKeyedMap().setObject(UserManagement.MAXSIMDN, maxsimdnVal);
-            newUser.getKeyedMap().setObject(UserManagement.WKLYALLOT, wklyallotVal);
+            newUser.getKeyedMap().setObject(UserManagement.WKLYALLOTMENT, wklyallotmentVal);
 
             newUser.setIdleTime(idletimeVal);
             newUser.setCredits(creditsVal);
@@ -689,8 +687,8 @@ public class UserManagementHandler extends CommandInterface {
 
                     long weeklyAllotment = Bytes.parseBytes(commandArguments[0]);
                     logger.info("'{}' changed wkly_allotment for '{}' from '{}' to {}'", session.getUserNull(request.getUser()).getName(), userToChange.getName(), userToChange.getKeyedMap().getObjectLong(
-                            UserManagement.WKLYALLOT), weeklyAllotment);
-                    userToChange.getKeyedMap().setObject(UserManagement.WKLYALLOT,
+                            UserManagement.WKLYALLOTMENT), weeklyAllotment);
+                    userToChange.getKeyedMap().setObject(UserManagement.WKLYALLOTMENT,
                             weeklyAllotment);
 
                     response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");

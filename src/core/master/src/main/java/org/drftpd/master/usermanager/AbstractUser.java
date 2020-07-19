@@ -280,8 +280,8 @@ public abstract class AbstractUser extends User implements Commitable {
     public void resetWeek(Date resetDate) {
         GlobalContext.getEventService().publish(new UserEvent(this, "RESETWEEK", resetDate.getTime()));
         super.resetWeek(resetDate);
-        if (getKeyedMap().getObjectLong(UserManagement.WKLYALLOT) > 0) {
-            setCredits(getKeyedMap().getObjectLong(UserManagement.WKLYALLOT));
+        if (getKeyedMap().getObjectLong(UserManagement.WKLYALLOTMENT) > 0) {
+            setCredits(getKeyedMap().getObjectLong(UserManagement.WKLYALLOTMENT));
         }
         logger.info("Reset weekly stats for {}", getName());
     }
