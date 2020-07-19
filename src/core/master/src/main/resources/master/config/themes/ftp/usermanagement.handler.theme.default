@@ -9,7 +9,7 @@ adduser.noslots=Sorry, no more open slots available.
 adduser.primgroup=Primary group set to ${primgroup}.
 adduser.success=User ${targetuser} created.
 
-bans=${username} banned for another ${timeleft}m until ${org.drftpd.master.commands.usermanagement.UserManagement@bantime} (${org.drftpd.master.commands.usermanagement.UserManagement@banreason}).
+bans=${username} banned for another ${timeleft}m until ${org.drftpd.master.commands.usermanagement.UserManagement@ban_time} (${org.drftpd.master.commands.usermanagement.UserManagement@banreason}).
 
 bw.statusspeed=Total upload speed: ${totalupspeed,9} Total download speed: ${totaldnspeed,9}.
 
@@ -87,7 +87,7 @@ upload.empty=No active upload connections found.
 user=Username: ${username,-20} Created: ${org.drftpd.master.commands.usermanagement.UserManagement@created}\n\
 Comment: ${org.drftpd.master.commands.usermanagement.UserManagement@comment,-21} Last seen: ${org.drftpd.master.commands.usermanagement.UserManagement@lastseen}\n\
 Total logins: ${org.drftpd.statistics.master.metadata.StatsUserData@logins,-16}\n\
-Idle time: ${idletime,-19} Weekly Allotment: ${org.drftpd.master.commands.usermanagement.UserManagement@wklyallotment}\n\
+Idle time: ${idletime,-19} Weekly Allotment: ${org.drftpd.master.commands.usermanagement.UserManagement@wkly_allotment}\n\
 Ratio: ${org.drftpd.master.commands.usermanagement.UserManagement@ratio,-23} Credits: ${credits}\n\
 Max logins: ${org.drftpd.master.commands.usermanagement.UserManagement@maxlogins,-18} From same IP: ${org.drftpd.master.commands.usermanagement.UserManagement@maxloginsip}\n\
 Max sim uploads: ${org.drftpd.master.commands.usermanagement.UserManagement@maxsimup,-13} Max sim downloads: ${org.drftpd.master.commands.usermanagement.UserManagement@maxsimdn}\n\
@@ -96,7 +96,7 @@ Times nuked: ${org.drftpd.master.commands.nuke.metadata.NukeUserData@nuked,-17} 
 Requests: ${org.drftpd.request.master.metadata.RequestUserData@requests,-20} Filled requests: ${org.drftpd.request.master.metadata.RequestUserData@requestsFilled}\n\
 Requests this week: ${org.drftpd.request.master.metadata.RequestUserData@weekReqs}\n\
 Primary group: ${group,-15} Banned: ${isbanned}\n\
-Extra groups: ${groups,-16} Banned Until: ${org.drftpd.master.commands.usermanagement.UserManagement@bantime}\n\
+Extra groups: ${groups,-16} Banned Until: ${org.drftpd.master.commands.usermanagement.UserManagement@ban_time}\n\
 IP masks: ${ipmasks}\n\
 IRC Ident: ${org.drftpd.master.commands.usermanagement.UserManagement@ircident,-23}\n\
 Tagline: ${org.drftpd.master.commands.usermanagement.UserManagement@tagline}

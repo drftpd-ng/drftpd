@@ -36,7 +36,7 @@ public class ReplacerUtils {
 
     private static final Logger logger = LogManager.getLogger(ReplacerUtils.class);
 
-    private static final Pattern pattern = Pattern.compile("\\$\\{([a-zA-Z0-9@\\.,-]+)\\}");
+    private static final Pattern pattern = Pattern.compile("\\$\\{([a-zA-Z0-9@\\.,_-]+)\\}");
 
     private ReplacerUtils() {
         super();
