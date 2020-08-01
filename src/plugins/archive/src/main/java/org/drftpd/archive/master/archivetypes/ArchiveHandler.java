@@ -30,23 +30,26 @@ import org.drftpd.master.GlobalContext;
 import org.drftpd.master.sections.SectionInterface;
 import org.drftpd.master.slavemanagement.RemoteSlave;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author CyBeR
  * @version $Id$
  */
 public class ArchiveHandler implements Runnable {
+
     protected static final Logger logger = LogManager.getLogger(ArchiveHandler.class);
 
     private final ArchiveType _archiveType;
 
     private ArrayList<Job> _jobs;
 
+    private final UUID _uuid;
+
     public ArchiveHandler(ArchiveType archiveType) {
         _archiveType = archiveType;
+        _jobs = new ArrayList<>();
+        _uuid = UUID.randomUUID();
         AnnotationProcessor.process(this);
     }
 
@@ -58,11 +61,31 @@ public class ArchiveHandler implements Runnable {
         return _archiveType.getSection();
     }
 
-    public ArrayList<Job> getJobs() {
-        if (_jobs == null) {
-            return (ArrayList<Job>) Collections.<Job>emptyList();
+    public List<Job> getJobs() {
+        return Collections.unmodifiableList(_jobs);
+    }
+
+    public UUID getUUID() {
+        return _uuid;
+    }
+
+    public boolean hasActiveThreadForArchiveTypeAndSection() {
+        Archive archive = _archiveType.getParent();
+        if (archive == null) {
+            logger.error("Parent for archivetype is null, this should not happen");
+            return true;
         }
-        return new ArrayList<>(_jobs);
+        for (ArchiveHandler ah : archive.getArchiveHandlers()) {
+            if (!_archiveType.isManual())
+            {
+                if (_archiveType.getConfNum() == ah.getArchiveType().getConfNum()) {
+                    if (ah.getJobs().size() > 0) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     /*
@@ -73,26 +96,23 @@ public class ArchiveHandler implements Runnable {
      * This also throws events so they can be caught for sitebot announcing.
      */
     public void run() {
+        // Set the name for this thread
         Thread t = Thread.currentThread();
         t.setName("Archive Handler-" + t.getId() + " - " + _archiveType.getClass().getName() + " archiving " + _archiveType.getSection().getName());
-        // Prevent spawning more than 1 active threads
-        ArrayList<Thread> threadArrayList = getThreadByName(this.getName());
-        if (threadArrayList.size() > 1) {
-            for (Thread t : threadArrayList) {
-                if (t.isAlive())
-                    return; // A thread is already running lets skip this cycle
-            }
-        }
 
-        long curtime = System.currentTimeMillis();
-        for (int i = 0; i < _archiveType.getRepeat(); i++) {
-            /*
-            // We do not care about this if we manually archive it should always do it
-            if ((System.currentTimeMillis() - curtime) > _archiveType._parent.getCycleTime()) {
-                //don't want to double archive stuff...so we to check and make sure
-                return;
+        // Check to make sure that we are the only timer based runner for this archive type
+        if (hasActiveThreadForArchiveTypeAndSection()) {
+            logger.warn("Another timer based ArchiveHandler already exists and is active, so this one is duplicate and not running it");
+            if (_archiveType._parent.removeArchiveHandler(this) == null) {
+                logger.error("We were unable to remove this ArchiveHandler from the registered ArchiveHandlers");
             }
-            */
+            t.setName(Archive.ArchiveHandlerThreadFactory.getIdleThreadName(t.getId()));
+            return;
+        }
+        logger.debug("Starting this ArchiveHandler");
+
+        // Loop as often as Repeat demands
+        for (int i = 0; i < _archiveType.getRepeat(); i++) {
             try {
                 synchronized (_archiveType._parent) {
                     if (_archiveType.getDirectory() == null) {
@@ -101,14 +121,16 @@ public class ArchiveHandler implements Runnable {
 
                     if (_archiveType.getDirectory() == null) {
                         logger.debug("No directory found to archive, nothing left to do.");
-                        return;
+                        // Do a break here (no return) as that stops the finally from running (ie: deleting the archive handler)
+                        break;
                     }
                     try {
                         // Ensure we are not already archiving this request
                         _archiveType._parent.checkPathForArchiveStatus(_archiveType.getDirectory().getPath());
                     } catch (DuplicateArchiveException e) {
                         logger.warn("Directory -- {} -- is already being archived ", _archiveType.getDirectory());
-                        return;
+                        // Do a break here (no return) as that stops the finally from running (ie: deleting the archive handler)
+                        break;
                     }
                 }
                 if (!_archiveType.moveReleaseOnly()) {
@@ -117,7 +139,7 @@ public class ArchiveHandler implements Runnable {
                     if (destSlaves == null) {
                         _archiveType.setDirectory(null);
                         logger.warn("Unable to allocate destination Slaves, nothing we can do.");
-                        return; // no available slaves to use
+                        break; // no available slaves to use
                     }
 
                     _jobs = _archiveType.send();
@@ -125,7 +147,8 @@ public class ArchiveHandler implements Runnable {
 
                 GlobalContext.getEventService().publish(new ArchiveStartEvent(_archiveType, _jobs));
                 long startTime = System.currentTimeMillis();
-                if (_jobs != null) {
+                if (_jobs.size() > 0) {
+                    // This forces the thread to sleep if not all jobs are finished
                     _archiveType.waitForSendOfFiles(_jobs);
                 }
 
@@ -140,12 +163,13 @@ public class ArchiveHandler implements Runnable {
             } catch (Exception e) {
                 logger.warn("Caught an unexpected exception while trying to archive", e);
             } finally {
-                if (!_archiveType._parent.removeArchiveHandler(this)) {
+                if (_archiveType._parent.removeArchiveHandler(this) == null) {
                     logger.error("We were unable to remove this ArchiveHandler from the registered ArchiveHandlers");
                 }
                 _archiveType.setDirectory(null);
             }
         }
+        logger.debug("Finished this ArchiveHandler");
         // Give the thread a correct name (Waiting for archive)
         t.setName(Archive.ArchiveHandlerThreadFactory.getIdleThreadName(t.getId()));
     }
