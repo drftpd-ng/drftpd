@@ -127,6 +127,13 @@ public abstract class ArchiveType {
         setProperties(p);
     }
 
+    /*
+     * Function to get the GlobalContext, this is here so we can override it during unit testing
+     */
+    public GlobalContext getGlobalContext() {
+        return getParent().getGlobalContext();
+    }
+
     public Archive getParent() {
         return _parent;
     }
@@ -416,7 +423,7 @@ public abstract class ArchiveType {
      * Gets the jobmananger, hopefully its loaded.
      */
     public JobManager getJobManager() {
-        for (PluginInterface plugin : GlobalContext.getGlobalContext().getPlugins()) {
+        for (PluginInterface plugin : getGlobalContext().getPlugins()) {
             if (plugin instanceof JobManager) {
                 return (JobManager) plugin;
             }
@@ -532,7 +539,7 @@ public abstract class ArchiveType {
         _archiveDirType = "";
         String _moveToDirProp = properties.getProperty(_confNum + ".todirectory", "").trim();
         if (!_moveToDirProp.equals("")) {
-            SectionInterface sec = GlobalContext.getGlobalContext().getSectionManager().getSection(_moveToDirProp);
+            SectionInterface sec = getGlobalContext().getSectionManager().getSection(_moveToDirProp);
             if (sec.getName().isEmpty()) {
                 try {
                     DirectoryHandle moveInode = new DirectoryHandle(_moveToDirProp);
@@ -580,7 +587,7 @@ public abstract class ArchiveType {
             slaveName = slaveName.trim();
 
             try {
-                RemoteSlave remoteSlave = GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(slaveName);
+                RemoteSlave remoteSlave = getGlobalContext().getSlaveManager().getRemoteSlave(slaveName);
                 destSlaves.add(remoteSlave);
             } catch (ObjectNotFoundException e) {
                 logger.error("Unable to get slave {} from the SlaveManager", slaveName);

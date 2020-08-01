@@ -75,6 +75,10 @@ public class Archive implements PluginInterface {
     // Our Executor Service for running archive handlers
     private ExecutorService _archiveHandlerExecutor;
 
+    public GlobalContext getGlobalContext() {
+        return GlobalContext.getGlobalContext();
+    }
+
     /*
      * Returns the archive type corresponding with the .conf file
      * and which Archive number the loop is on
@@ -143,7 +147,7 @@ public class Archive implements PluginInterface {
         // First cancel and remove our active TimerTask
         if (_runHandler != null) {
             _runHandler.cancel();
-            GlobalContext.getGlobalContext().getTimer().purge();
+            getGlobalContext().getTimer().purge();
         }
 
         // Initialize a new TimerTask
@@ -157,7 +161,7 @@ public class Archive implements PluginInterface {
                 String type;
                 while ((type = PropertyHelper.getProperty(_props, count + ".type", null)) != null) {
                     type = type.trim();
-                    SectionInterface sec = GlobalContext.getGlobalContext().getSectionManager().getSection(PropertyHelper.getProperty(_props, count + ".section", "").trim());
+                    SectionInterface sec = getGlobalContext().getSectionManager().getSection(PropertyHelper.getProperty(_props, count + ".section", "").trim());
                     ArchiveType archiveType = getArchiveType(count, type, sec, _props);
                     if (archiveType != null) {
                         logger.debug("config item {} will be executed, type: {}", count, archiveType.toString());
@@ -169,7 +173,7 @@ public class Archive implements PluginInterface {
             }
         };
         try {
-            GlobalContext.getGlobalContext().getTimer().schedule(_runHandler, _cycleTime, _cycleTime);
+            getGlobalContext().getTimer().schedule(_runHandler, _cycleTime, _cycleTime);
         } catch (IllegalStateException e) {
             logger.warn("Unable to schedule our TimerTask as the GlobalContext Timer is in an illegal state", e);
         }
@@ -250,7 +254,7 @@ public class Archive implements PluginInterface {
     public void stopPlugin(String reason) {
         if (_runHandler != null) {
             _runHandler.cancel();
-            GlobalContext.getGlobalContext().getTimer().purge();
+            getGlobalContext().getTimer().purge();
         }
         AnnotationProcessor.unprocess(this);
         logger.info("Archive plugin unloaded successfully");
