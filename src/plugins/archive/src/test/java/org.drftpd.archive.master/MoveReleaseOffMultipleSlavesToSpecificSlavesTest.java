@@ -53,7 +53,7 @@ public class MoveReleaseOffMultipleSlavesToSpecificSlavesTest {
         p.setProperty(confNum + ".slavename.1", "DEST1");
         p.setProperty(confNum + ".slavename.2", "DEST2");
         p.setProperty(confNum + ".slavename.3", "DEST3");
-        MoveReleaseOffMultipleSlavesToSpecificSlaves instance = new TestMoveReleaseOffMultipleSlavesToSpecificSlaves(a, s, p, confNum);
+        MoveReleaseOffMultipleSlavesToSpecificSlaves instance = new MoveReleaseOffMultipleSlavesToSpecificSlaves(a, s, p, confNum);
 
         assertEquals(instance.getConfNum(), confNum);
         assertEquals(instance.getSection().getName(), s.getName());
@@ -79,7 +79,7 @@ public class MoveReleaseOffMultipleSlavesToSpecificSlavesTest {
         p.setProperty(confNum + ".numofslaves", String.valueOf(1));
         p.setProperty(confNum + ".offofslave.1", "SRC1");
         p.setProperty(confNum + ".slavename.1", "DEST1");
-        MoveReleaseOffMultipleSlavesToSpecificSlaves instance = new TestMoveReleaseOffMultipleSlavesToSpecificSlaves(a, s, p, confNum);
+        MoveReleaseOffMultipleSlavesToSpecificSlaves instance = new MoveReleaseOffMultipleSlavesToSpecificSlaves(a, s, p, confNum);
 
         assertEquals(instance.getConfNum(), confNum);
         assertEquals(instance.getSection().getName(), s.getName());
@@ -93,18 +93,6 @@ public class MoveReleaseOffMultipleSlavesToSpecificSlavesTest {
         assertFalse(instance.isMovingRelease());
         assertNull(instance.getDestinationDirectory());
         assertFalse(instance.checkFailedDir("bla"));
-    }
-
-    static class TestMoveReleaseOffMultipleSlavesToSpecificSlaves extends MoveReleaseOffMultipleSlavesToSpecificSlaves {
-
-        public TestMoveReleaseOffMultipleSlavesToSpecificSlaves(TestArchive a, SectionInterface s, Properties p, int confNum) {
-            super(a, s, p, confNum);
-        }
-
-        @Override
-        public GlobalContext getGlobalContext() {
-            return GC.getGlobalContext();
-        }
     }
 
     static class TestArchive extends Archive {
