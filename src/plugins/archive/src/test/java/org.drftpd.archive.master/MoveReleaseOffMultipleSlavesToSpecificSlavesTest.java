@@ -4,6 +4,7 @@ import org.drftpd.archive.master.archivetypes.MoveReleaseOffMultipleSlavesToSpec
 import org.drftpd.common.extensibility.PluginInterface;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.protocol.MasterProtocolCentral;
+import org.drftpd.master.sections.SectionManagerInterface;
 import org.drftpd.master.slavemanagement.DummyRemoteSlave;
 import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.master.GlobalContext;
@@ -22,8 +23,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class MoveReleaseOffMultipleSlavesToSpecificSlavesTest {
 
-    private static GC _globalContext = null;
-
     @BeforeAll
     static void setUp() {
         DummySlaveManager sm = new DummySlaveManager();
@@ -35,28 +34,26 @@ public class MoveReleaseOffMultipleSlavesToSpecificSlavesTest {
         slaves.put("DEST3", new DummyRemoteSlave("DEST3"));
         sm.setSlaves(slaves);
 
-        _globalContext = new GC();
-        _globalContext.setSlaveManager(sm);
+        GC.getGlobalContext().setSlaveManager(sm);
     }
 
     @Test
     public void testConfigOne() {
-        assertEquals(_globalContext.getSlaveManager().getSlaves().size(), 5);
-        TestArchive a = new TestArchive(_globalContext);
+        TestArchive a = new TestArchive();
         Section s = new Section(new DirectoryHandle("/one"));
         int confNum = 1;
         Properties p = new Properties();
-        p.put(confNum + ".archiveafter", 43200);
-        p.put(confNum + ".numofslaves", 2);
-        p.put(confNum + ".archiveregex", "^.*(1080(p|i)).*$");
-        p.put(confNum + ".priority", 5);
-        p.put(confNum + ".repeat", 10);
-        p.put(confNum + ".offofslave.1", "SRC1");
-        p.put(confNum + ".offofslave.2", "SRC2");
-        p.put(confNum + ".slavename.1", "DEST1");
-        p.put(confNum + ".slavename.2", "DEST2");
-        p.put(confNum + ".slavename.3", "DEST3");
-        MoveReleaseOffMultipleSlavesToSpecificSlaves instance = new TestMoveReleaseOffMultipleSlavesToSpecificSlaves(_globalContext, a, s, p, confNum);
+        p.setProperty(confNum + ".archiveafter", String.valueOf(43200));
+        p.setProperty(confNum + ".numofslaves", String.valueOf(2));
+        p.setProperty(confNum + ".archiveregex", "^.*(1080(p|i)).*$");
+        p.setProperty(confNum + ".priority", String.valueOf(5));
+        p.setProperty(confNum + ".repeat", String.valueOf(10));
+        p.setProperty(confNum + ".offofslave.1", "SRC1");
+        p.setProperty(confNum + ".offofslave.2", "SRC2");
+        p.setProperty(confNum + ".slavename.1", "DEST1");
+        p.setProperty(confNum + ".slavename.2", "DEST2");
+        p.setProperty(confNum + ".slavename.3", "DEST3");
+        MoveReleaseOffMultipleSlavesToSpecificSlaves instance = new TestMoveReleaseOffMultipleSlavesToSpecificSlaves(a, s, p, confNum);
 
         assertEquals(instance.getConfNum(), confNum);
         assertEquals(instance.getSection().getName(), s.getName());
@@ -74,15 +71,15 @@ public class MoveReleaseOffMultipleSlavesToSpecificSlavesTest {
 
     @Test
     public void testConfigTwo() {
-        TestArchive a = new TestArchive(_globalContext);
+        TestArchive a = new TestArchive();
         Section s = new Section(new DirectoryHandle("/two"));
         int confNum = 5;
         Properties p = new Properties();
-        p.put(confNum + ".archiveafter", 43200);
-        p.put(confNum + ".numofslaves", 1);
-        p.put(confNum + ".offofslave.1", "SRC1");
-        p.put(confNum + ".slavename.1", "DEST1");
-        MoveReleaseOffMultipleSlavesToSpecificSlaves instance = new TestMoveReleaseOffMultipleSlavesToSpecificSlaves(_globalContext, a, s, p, confNum);
+        p.setProperty(confNum + ".archiveafter", String.valueOf(43200));
+        p.setProperty(confNum + ".numofslaves", String.valueOf(1));
+        p.setProperty(confNum + ".offofslave.1", "SRC1");
+        p.setProperty(confNum + ".slavename.1", "DEST1");
+        MoveReleaseOffMultipleSlavesToSpecificSlaves instance = new TestMoveReleaseOffMultipleSlavesToSpecificSlaves(a, s, p, confNum);
 
         assertEquals(instance.getConfNum(), confNum);
         assertEquals(instance.getSection().getName(), s.getName());
@@ -99,25 +96,20 @@ public class MoveReleaseOffMultipleSlavesToSpecificSlavesTest {
     }
 
     static class TestMoveReleaseOffMultipleSlavesToSpecificSlaves extends MoveReleaseOffMultipleSlavesToSpecificSlaves {
-        GC _gc;
 
-        public TestMoveReleaseOffMultipleSlavesToSpecificSlaves(GC gc, TestArchive a, SectionInterface s, Properties p, int confNum) {
+        public TestMoveReleaseOffMultipleSlavesToSpecificSlaves(TestArchive a, SectionInterface s, Properties p, int confNum) {
             super(a, s, p, confNum);
-            _gc = gc;
         }
 
         @Override
         public GlobalContext getGlobalContext() {
-            return _gc;
+            return GC.getGlobalContext();
         }
     }
 
     static class TestArchive extends Archive {
-        GC _gc;
-
-        public TestArchive(GC gc) {
+        public TestArchive() {
             super();
-            _gc = gc;
         }
 
         @Override
@@ -125,7 +117,7 @@ public class MoveReleaseOffMultipleSlavesToSpecificSlavesTest {
 
         @Override
         public GlobalContext getGlobalContext() {
-            return _gc;
+            return GC.getGlobalContext();
         }
     }
 
@@ -150,9 +142,15 @@ public class MoveReleaseOffMultipleSlavesToSpecificSlavesTest {
     }
 
     static class GC extends GlobalContext {
-        public GC() {
-            _gctx = GlobalContext.getGlobalContext();
-            init();
+        protected GC() {
+            _sectionManager = new org.drftpd.master.sections.def.SectionManager();
+        }
+
+        public static GC getGlobalContext() {
+            if (_gctx == null) {
+                _gctx = new GC();
+            }
+            return (GC) _gctx;
         }
 
         @Override
@@ -169,11 +167,13 @@ public class MoveReleaseOffMultipleSlavesToSpecificSlavesTest {
             return new ArrayList<>();
         }
 
-
         @Override
         public DirectoryHandle getRoot() {
             return new DirectoryHandle("/");
         }
+
+        @Override
+        public SectionManagerInterface getSectionManager() { return super.getSectionManager(); }
     }
 
     static class Section implements SectionInterface {
