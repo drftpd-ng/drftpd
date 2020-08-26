@@ -1,5 +1,3 @@
-nuke=NUKE ${multiplier}X in ${section}: -> ${relpath} [ NUKER : ${user} - REASON : ${reason} ].
-nuke.nukees=NUKEES: ${user}/${group} with ${nukedamount}.
 nuke.search.empty=No directory found with that name.
 nuke.search.end=End of matching directories. Use !nuke on full path to nuke.
 nuke.search.item=${path}.
@@ -8,8 +6,6 @@ nukes=[NUKE] - Path: ${path} - Multiplier: ${multiplier} - UsersNuked: ${usersnu
 nukes.empty=Nukelog empty.
 nukes.empty.section=Nukelog empty for section ${section}.
 
-unnuke=UNNUKE in ${section}: -> ${relpath} [ UNNUKER : ${user} - REASON : ${reason} ].
-unnuke.nukees=UNUKEES: ${user}/${group} : restored ${nukedamount}.
 unnuke.search.empty=No directory found with that name.
 unnuke.search.end=End of matching directories. Use !unnuke on full path to nuke.
 unnuke.search.item=${path}.
