@@ -31,12 +31,8 @@ import org.drftpd.master.usermanager.NoSuchUserException;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.usermanager.UserFileException;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -72,12 +68,14 @@ public abstract class CommandInterface {
                 CommandHook annotation = annotatedMethod.getAnnotation(CommandHook.class);
                 int priority = annotation.priority();
                 List<String> commands = Arrays.asList(annotation.commands());
-                // boolean handleClass = commands.stream().filter(c -> method.matches(c)).collect(Collectors.toList()).size() > 0;
-
                 boolean handleClass = commands.contains(method) || commands.contains("*");
                 if (!handleClass) continue;
-
-                Object hookClass = declaringClass.getConstructor().newInstance();
+                // Sometimes we need to inject the command manager and sometimes not.
+                Constructor<?> declaredConstructor = declaringClass.getDeclaredConstructors()[0];
+                boolean needManager = declaredConstructor.getParameterCount() == 1;
+                Constructor<?> constructor = needManager ? declaringClass.getConstructor(CommandManagerInterface.class)
+                        : declaringClass.getConstructor();
+                Object hookClass = needManager ? constructor.newInstance(cManager) : constructor.newInstance();
                 HookType type = annotation.type();
                 if (type.equals(HookType.PRE)) {
                     preHooks.put(priority, new HookContainer(annotatedMethod, hookClass));
@@ -86,7 +84,7 @@ public abstract class CommandInterface {
                 }
             }
         } catch (Exception e) {
-            logger.error("Failed to load plugins for {} extension point 'PreHook', possibly the {} extension point definition has changed in the plugin.xml", pluginName, pluginName, e);
+            logger.error("Failed to load plugins for {} extension point 'PreHook or postHook'", pluginName, e);
         }
         logger.debug("[{}:{}] Loaded [{}] prehooks and [{}] posthooks", pluginName, method, preHooks.size(), postHooks.size());
         _preHooks = preHooks;

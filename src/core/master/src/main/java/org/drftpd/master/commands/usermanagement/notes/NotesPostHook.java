@@ -21,7 +21,7 @@ import org.drftpd.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.common.extensibility.CommandHook;
 import org.drftpd.common.extensibility.HookType;
 import org.drftpd.master.GlobalContext;
-import org.drftpd.master.Master;
+import org.drftpd.master.commands.CommandManagerInterface;
 import org.drftpd.master.commands.CommandRequest;
 import org.drftpd.master.commands.CommandResponse;
 import org.drftpd.master.commands.usermanagement.notes.metadata.NotesData;
@@ -39,8 +39,8 @@ import java.util.ResourceBundle;
 public class NotesPostHook {
     private ResourceBundle _bundle;
 
-    public void NotesPostHook() {
-        _bundle = Master.getConnectionManager().getCommandManager().getResourceBundle();
+    public void NotesPostHook(CommandManagerInterface manager) {
+        _bundle = manager.getResourceBundle();
     }
 
     @CommandHook(commands = "doSITE_USER", priority = 1000, type = HookType.POST)

@@ -22,7 +22,7 @@ import org.drftpd.common.extensibility.CommandHook;
 import org.drftpd.common.extensibility.HookType;
 import org.drftpd.common.util.ConfigLoader;
 import org.drftpd.master.GlobalContext;
-import org.drftpd.master.Master;
+import org.drftpd.master.commands.CommandManagerInterface;
 import org.drftpd.master.commands.CommandRequest;
 import org.drftpd.master.commands.CommandResponse;
 import org.drftpd.master.commands.dataconnection.DataConnectionHandler;
@@ -48,10 +48,8 @@ public class ZipscriptFlacPostHook {
 
     private final ResourceBundle _bundle;
 
-
-    public ZipscriptFlacPostHook() {
-        _bundle = Master.getConnectionManager().getCommandManager().getResourceBundle();
-
+    public ZipscriptFlacPostHook(CommandManagerInterface manager) {
+        _bundle = manager.getResourceBundle();
     }
 
     @CommandHook(commands = "doCWD", priority = 12, type = HookType.POST)

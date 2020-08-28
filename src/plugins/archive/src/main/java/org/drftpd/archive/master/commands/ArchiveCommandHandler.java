@@ -53,11 +53,10 @@ public class ArchiveCommandHandler extends CommandInterface {
     public void initialize(String method, String pluginName, StandardCommandManager cManager) {
         super.initialize(method, pluginName, cManager);
         _bundle = cManager.getResourceBundle();
-
     }
 
     private Archive getArchive() throws ObjectNotFoundException {
-        Archive archive = null;
+        Archive archive;
         List<PluginInterface> pluginList = GlobalContext.getGlobalContext().getPlugins();
         for (PluginInterface pi : pluginList) {
             if (pi instanceof Archive) {
