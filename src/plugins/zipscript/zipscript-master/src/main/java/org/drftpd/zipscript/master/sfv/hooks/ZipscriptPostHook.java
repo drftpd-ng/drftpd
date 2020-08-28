@@ -25,7 +25,7 @@ import org.drftpd.common.extensibility.HookType;
 import org.drftpd.common.util.Bytes;
 import org.drftpd.common.util.ConfigLoader;
 import org.drftpd.master.GlobalContext;
-import org.drftpd.master.Master;
+import org.drftpd.master.commands.CommandManagerInterface;
 import org.drftpd.master.commands.CommandRequest;
 import org.drftpd.master.commands.CommandResponse;
 import org.drftpd.master.commands.dataconnection.DataConnectionHandler;
@@ -66,8 +66,8 @@ public class ZipscriptPostHook extends SFVTools {
     private static final Logger logger = LogManager.getLogger(ZipscriptPostHook.class);
     private final ResourceBundle _bundle;
 
-    public ZipscriptPostHook() {
-        _bundle = Master.getConnectionManager().getCommandManager().getResourceBundle();
+    public ZipscriptPostHook(CommandManagerInterface manager) {
+        _bundle = manager.getResourceBundle();
     }
 
     @CommandHook(commands = "doRETR", priority = 10, type = HookType.POST)
