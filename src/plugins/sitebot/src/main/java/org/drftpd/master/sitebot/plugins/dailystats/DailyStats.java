@@ -167,6 +167,7 @@ public class DailyStats implements UserResetPreHookInterface {
 
     @EventSubscriber
     public void onReloadEvent(ReloadEvent event) {
+        logger.info("Received reload event, reloading");
         loadConf();
     }
 }

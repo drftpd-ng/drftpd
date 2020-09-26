@@ -77,6 +77,7 @@ public class AutoFreeSpace implements PluginInterface {
 
     @EventSubscriber
     public void onReloadEvent(ReloadEvent event) {
+        logger.info("Received reload event, reloading");
         reload();
     }
 
@@ -97,8 +98,8 @@ public class AutoFreeSpace implements PluginInterface {
         String name;
         long minFreeSpace = Bytes.parseBytes(p.getProperty("keepFree"));
         long cycleTime = Long.parseLong(p.getProperty("cycleTime")) * 60000;
-        deleteOnDate = Boolean.valueOf(p.getProperty("delete.on.date"));
-        deleteOnSpace = Boolean.valueOf(p.getProperty("delete.on.space"));
+        deleteOnDate = Boolean.parseBoolean(p.getProperty("delete.on.date"));
+        deleteOnSpace = Boolean.parseBoolean(p.getProperty("delete.on.space"));
         _excludeSlaves.addAll(Arrays.asList(p.getProperty("excluded.slaves", "").trim().split("\\s")));
         long wipeAfter;
 

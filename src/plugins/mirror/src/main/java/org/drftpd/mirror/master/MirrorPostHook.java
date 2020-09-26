@@ -61,7 +61,9 @@ public class MirrorPostHook {
         _settings.clear();
         for (int i = 1; ; i++) {
             String nbrOfMirrors = cfg.getProperty(i + ".nbrOfMirrors");
-            if (nbrOfMirrors == null) break;
+            if (nbrOfMirrors == null) {
+                break;
+            }
             MirrorSetting setting = new MirrorSetting();
             try {
                 setting.setNbrOfMirrors(Integer.parseInt(nbrOfMirrors));
@@ -75,20 +77,24 @@ public class MirrorPostHook {
                     continue;
                 }
             } catch (NumberFormatException e) {
-                logger.error("Invalid setting for {}.nbrOfMirrors, not a number", i);
+                logger.error("We have a number formatting error, something is not set to an integer as we expect. Config entry {}", i);
                 continue;
             }
             ArrayList<String> paths = new ArrayList<>();
             for (int j = 1; ; j++) {
                 String path = cfg.getProperty(i + ".path." + j);
-                if (path == null || path.trim().isEmpty()) break;
+                if (path == null || path.trim().isEmpty()) {
+                    break;
+                }
                 paths.add(path);
             }
             setting.setPaths(paths);
             ArrayList<String> excludedPaths = new ArrayList<>();
             for (int j = 1; ; j++) {
                 String excludePath = cfg.getProperty(i + ".excludePath." + j);
-                if (excludePath == null || excludePath.trim().isEmpty()) break;
+                if (excludePath == null || excludePath.trim().isEmpty()) {
+                    break;
+                }
                 excludedPaths.add(excludePath);
             }
             setting.setExcludedPaths(excludedPaths);
@@ -99,7 +105,7 @@ public class MirrorPostHook {
                     try {
                         slaveList.add(GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(slaveName));
                     } catch (ObjectNotFoundException e) {
-                        logger.error("Slave name invalid in mirror config ({}): {}", i, slaveName);
+                        logger.error("Config item {} has an invalid slave name {} entered for slaves", i, slaveName);
                     }
                 }
                 setting.setSlaves(slaveList);
@@ -111,7 +117,7 @@ public class MirrorPostHook {
                     try {
                         slaveList.add(GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(slaveName));
                     } catch (ObjectNotFoundException e) {
-                        logger.error("Slave name invalid in mirror config ({}): {}", i, slaveName);
+                        logger.error("Config item {} has an invalid slave name {} entered for excludeSlaves", i, slaveName);
                     }
                 }
                 setting.setExcludedSlaves(slaveList);
@@ -154,7 +160,9 @@ public class MirrorPostHook {
             }
             // Setting still valid?
             // If so no need to continue, only one mirror configuration can be valid
-            if (activeSetting != null) break;
+            if (activeSetting != null) {
+                break;
+            }
         }
         if (activeSetting == null) return;
 
@@ -191,10 +199,9 @@ public class MirrorPostHook {
 
         if (activeSetting.getNbrOfMirrors() <= mirrorSlaves.size()) {
             // We got enough slaves, proceed and add job to queue
-            getJobManager().addJobToQueue(new Job(file, mirrorSlaves, activeSetting.getPriority(),
-                    activeSetting.getNbrOfMirrors()));
+            getJobManager().addJobToQueue(new Job(file, mirrorSlaves, activeSetting.getPriority(), activeSetting.getNbrOfMirrors()));
         } else {
-            logger.debug("Not adding {} to job queue, not enough slaves available.", file.getPath());
+            logger.warn("Not adding {} to job queue, not enough slaves available.", file.getPath());
         }
     }
 
@@ -212,6 +219,7 @@ public class MirrorPostHook {
 
     @EventSubscriber
     public void onReloadEvent(ReloadEvent event) {
+        logger.info("Received reload event, reloading");
         loadConf();
     }
 }

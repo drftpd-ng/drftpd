@@ -30,6 +30,7 @@ import org.drftpd.master.commands.CommandRequest;
 import org.drftpd.master.commands.CommandRequestInterface;
 import org.drftpd.master.commands.CommandResponse;
 import org.drftpd.master.config.ConfigInterface;
+import org.drftpd.master.event.ReloadEvent;
 import org.drftpd.master.indexation.AdvancedSearchParams;
 import org.drftpd.master.indexation.IndexEngineInterface;
 import org.drftpd.master.indexation.IndexException;
@@ -64,7 +65,8 @@ public class DupeCheckHooks {
     }
 
     @EventSubscriber
-    public void onReloadEvent() {
+    public void onReloadEvent(ReloadEvent event) {
+        logger.info("Received reload event, reloading");
         loadConf();
     }
 

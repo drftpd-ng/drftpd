@@ -42,6 +42,7 @@ import java.util.Set;
  * @version $Id$
  */
 public class SlaveSelectionManager extends SlaveSelectionManagerInterface {
+
     protected static final Logger logger = LogManager.getLogger(SlaveSelectionManager.class);
 
     private FilterChain _downChain;
@@ -58,6 +59,7 @@ public class SlaveSelectionManager extends SlaveSelectionManagerInterface {
 
     @EventSubscriber
     public void onReloadEvent(ReloadEvent event) {
+        logger.info("Received reload event, reloading");
         initFilters();
         try {
             reload();
@@ -74,13 +76,15 @@ public class SlaveSelectionManager extends SlaveSelectionManagerInterface {
         Set<Class<? extends Filter>> filters = new Reflections("org.drftpd").getSubTypesOf(Filter.class);
         for (Class<? extends Filter> filter : filters) {
             String simpleName = filter.getSimpleName().replace("Filter", "");
+            logger.debug("Registering {} filter", simpleName);
             filtersMap.put(simpleName, filter);
         }
+        logger.debug("Registered {} filters", filtersMap.size());
         _filtersMap = filtersMap;
     }
 
     public CaseInsensitiveHashMap<String, Class<? extends Filter>> getFiltersMap() {
-        // we dont want to pass this object around allowing it to be modified, make a copy of it.
+        // we do not want to pass this object around allowing it to be modified, make a copy of it.
         return new CaseInsensitiveHashMap<>(_filtersMap);
     }
 
@@ -90,7 +94,7 @@ public class SlaveSelectionManager extends SlaveSelectionManagerInterface {
     public RemoteSlave getASlave(BaseFtpConnection conn, char direction, InodeHandle file)
             throws NoAvailableSlaveException {
         String status;
-        Collection<RemoteSlave> availableSlaves = null;
+        Collection<RemoteSlave> availableSlaves;
         if (direction == Transfer.TRANSFER_RECEIVING_UPLOAD) {
             status = "up";
             availableSlaves = getAvailableSlaves();
@@ -152,17 +156,12 @@ public class SlaveSelectionManager extends SlaveSelectionManagerInterface {
 
     public FilterChain getFilterChain(String type) {
         type = type.toLowerCase();
-        switch (type) {
-            case "down":
-                return _downChain;
-            case "up":
-                return _upChain;
-            case "jobup":
-                return _jobUpChain;
-            case "jobdown":
-                return _jobDownChain;
-            default:
-                throw new IllegalArgumentException();
-        }
+        return switch (type) {
+            case "down" -> _downChain;
+            case "up" -> _upChain;
+            case "jobup" -> _jobUpChain;
+            case "jobdown" -> _jobDownChain;
+            default -> throw new IllegalArgumentException();
+        };
     }
 }

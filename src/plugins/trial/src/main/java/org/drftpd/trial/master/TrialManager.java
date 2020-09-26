@@ -70,6 +70,7 @@ public class TrialManager implements PluginInterface {
 
     @EventSubscriber
     public void onReloadEvent(ReloadEvent event) {
+        logger.info("Received reload event, reloading");
         loadConf();
     }
 

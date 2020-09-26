@@ -34,14 +34,13 @@ public class MoveReleaseToSpecificFolder extends ArchiveType {
     /*
      * Constructor:
      */
-    public MoveReleaseToSpecificFolder(Archive archive, SectionInterface section, Properties props, int confnum) {
-        super(archive, section, props, confnum);
+    public MoveReleaseToSpecificFolder(Archive archive, SectionInterface section, Properties props, int confNum) {
+        super(archive, section, props, confNum);
     }
 
     /*
      *  Not needed cause we are just moving slaves
      */
-    @Override
     public HashSet<RemoteSlave> findDestinationSlaves() {
         return null;
     }
@@ -64,9 +63,12 @@ public class MoveReleaseToSpecificFolder extends ArchiveType {
     /*
      * Outs this as a string to show what is being archived.
      */
-    @Override
     public String toString() {
-        return "MoveReleaseToSpecificFolder=[directory=[" + getDirectory().getPath() + "]dest=[" + _archiveToFolder.getPath() + "]]";
+        String directory = "N/A";
+        if (getDirectory() != null) {
+            directory = getDirectory().getPath();
+        }
+        return "MoveReleaseToSpecificFolder=[directory=[" + directory + "]dest=[" + _archiveToFolder.getPath() + "]]";
     }
 
 }

@@ -64,6 +64,7 @@ public class StoreAnnouncer extends AbstractAnnouncer {
 
     @EventSubscriber
     public void onReloadEvent(ReloadEvent event) {
+        logger.info("Received reload event, reloading");
         loadConf();
     }
 

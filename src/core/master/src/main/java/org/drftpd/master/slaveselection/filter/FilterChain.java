@@ -17,18 +17,28 @@
  */
 package org.drftpd.master.slaveselection.filter;
 
-import org.drftpd.common.misc.CaseInsensitiveHashMap;
-import org.drftpd.common.util.ConfigLoader;
-import org.drftpd.common.vfs.InodeHandleInterface;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import org.drftpd.master.GlobalContext;
+
 import org.drftpd.master.exceptions.FatalException;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
+
+import org.drftpd.common.misc.CaseInsensitiveHashMap;
+
 import org.drftpd.master.network.BaseFtpConnection;
+
 import org.drftpd.master.slavemanagement.RemoteSlave;
+
 import org.drftpd.master.usermanager.User;
 
-import java.io.IOException;
+import org.drftpd.common.util.ConfigLoader;
+
+import org.drftpd.common.vfs.InodeHandleInterface;
+
 import java.net.InetAddress;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Properties;
@@ -38,19 +48,24 @@ import java.util.Properties;
  * @version $Id$
  */
 public class FilterChain {
+
+    private static final Logger logger = LogManager.getLogger(FilterChain.class);
+
     private static final Class<?>[] SIG = new Class<?>[]{int.class, Properties.class};
 
-    private String _cfgfileName;
+    private String _cfgFileName;
 
     private ArrayList<Filter> _filters;
 
     private CaseInsensitiveHashMap<String, Class<? extends Filter>> _filtersMap;
 
-    protected FilterChain() {
-    }
+    /*
+     * Guard that we do not initialize an empty FilterChain
+     */
+    protected FilterChain() {}
 
-    public FilterChain(String cfgFileName, CaseInsensitiveHashMap<String, Class<? extends Filter>> filtersMap) throws IOException {
-        _cfgfileName = cfgFileName;
+    public FilterChain(String cfgFileName, CaseInsensitiveHashMap<String, Class<? extends Filter>> filtersMap) {
+        _cfgFileName = cfgFileName;
         _filtersMap = filtersMap;
         reload();
     }
@@ -89,15 +104,15 @@ public class FilterChain {
     }
 
     public void reload() {
-        Properties p = ConfigLoader.loadConfig(_cfgfileName);
+        Properties p = ConfigLoader.loadConfig(_cfgFileName);
         reload(p);
     }
 
     public void reload(Properties p) {
-        ArrayList<Filter> filters = new ArrayList<>();
-        int i = 1;
 
-        for (; ; i++) {
+        ArrayList<Filter> filters = new ArrayList<>();
+
+        for (int i = 1; ; i++) {
             String filterName = p.getProperty(i + ".filter");
 
             if (filterName == null) {
@@ -119,6 +134,7 @@ public class FilterChain {
         }
 
         filters.trimToSize();
+        logger.debug("Loaded {} filters from {}", filters.size(), _cfgFileName);
         _filters = filters;
     }
 }

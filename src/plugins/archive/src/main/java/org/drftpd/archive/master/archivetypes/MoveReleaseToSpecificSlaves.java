@@ -36,15 +36,15 @@ public class MoveReleaseToSpecificSlaves extends ArchiveType {
      * Constructor, creates archivetype
      * makes sure all args are setup correctly
      */
-    public MoveReleaseToSpecificSlaves(Archive archive, SectionInterface section, Properties props, int confnum) {
-        super(archive, section, props, confnum);
+    public MoveReleaseToSpecificSlaves(Archive archive, SectionInterface section, Properties props, int confNum) {
+        super(archive, section, props, confNum);
 
         if (_slaveList.isEmpty()) {
-            throw new NullPointerException("Cannot continue, 0 destination slaves found for MoveReleaseToSpecificSlave for conf number " + confnum);
+            throw new NullPointerException("Cannot continue, 0 destination slaves found for MoveReleaseToSpecificSlave for conf number " + confNum);
         }
 
         if (_numOfSlaves < 1) {
-            throw new IllegalArgumentException("numOfSlaves has to be > 0 for conf number " + confnum);
+            throw new IllegalArgumentException("numOfSlaves has to be > 0 for conf number " + confNum);
         }
     }
 
@@ -69,7 +69,11 @@ public class MoveReleaseToSpecificSlaves extends ArchiveType {
      */
     @Override
     public String toString() {
-        return "MoveReleaseToSpecificSlaves=[directory=[" + getDirectory().getPath() + "]dest=[" + outputSlaves(findDestinationSlaves()) + "]numOfSlaves=[" + _numOfSlaves + "]]";
+        String directory = "N/A";
+        if (getDirectory() != null) {
+            directory = getDirectory().getPath();
+        }
+        return "MoveReleaseToSpecificSlaves=[directory=[" + directory + "]dest=[" + outputSlaves(findDestinationSlaves()) + "]numOfSlaves=[" + _numOfSlaves + "]]";
     }
 
 }

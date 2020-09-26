@@ -17,7 +17,10 @@
  */
 package org.drftpd.archive.master.archivetypes;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.drftpd.archive.master.Archive;
+import org.drftpd.archive.master.slaveselection.DirectoryspaceFilter;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.sections.SectionInterface;
 import org.drftpd.master.slavemanagement.RemoteSlave;
@@ -35,18 +38,20 @@ import java.util.Set;
  */
 public class MoveReleaseOffMultipleSlavesToSpecificSlaves extends ArchiveType {
 
+    private static final Logger logger = LogManager.getLogger(MoveReleaseOffMultipleSlavesToSpecificSlaves.class.getName());
+
     /*
      * Constructor:
      */
-    public MoveReleaseOffMultipleSlavesToSpecificSlaves(Archive archive, SectionInterface section, Properties props, int confnum) {
-        super(archive, section, props, confnum);
+    public MoveReleaseOffMultipleSlavesToSpecificSlaves(Archive archive, SectionInterface section, Properties props, int confNum) {
+        super(archive, section, props, confNum);
 
         if (_slaveList.isEmpty()) {
-            throw new NullPointerException("Cannot continue, 0 destination slaves found for MoveReleaseOffSlavesToMostFreeSlaves for conf number " + confnum);
+            throw new NullPointerException("Cannot continue, 0 destination slaves found for MoveReleaseOffSlavesToMostFreeSlaves for conf number " + confNum);
         }
 
         if (_numOfSlaves < 1) {
-            throw new IllegalArgumentException("numOfSlaves has to be > 0 for conf number " + confnum);
+            throw new IllegalArgumentException("numOfSlaves has to be > 0 for conf number " + confNum);
         }
     }
 
@@ -66,13 +71,13 @@ public class MoveReleaseOffMultipleSlavesToSpecificSlaves extends ArchiveType {
     protected boolean isArchivedDir(DirectoryHandle lrf) throws IncompleteDirectoryException, OfflineSlaveException, FileNotFoundException {
         for (InodeHandle inode : lrf.getInodeHandlesUnchecked()) {
             if (inode.isLink()) {
+                logger.debug("Ignoring link type for {}", inode.toString());
             } else if (inode instanceof DirectoryHandle) {
                 if (!isArchivedDir((DirectoryHandle) inode)) {
                     return false;
                 }
             } else {
                 try {
-
                     int found = 0;
                     for (RemoteSlave rslave : ((FileHandle) inode).getAvailableSlaves()) {
                         if (findDestinationSlaves().contains(rslave)) {
@@ -82,14 +87,12 @@ public class MoveReleaseOffMultipleSlavesToSpecificSlaves extends ArchiveType {
                         if (found > _numOfSlaves) {
                             return false;
                         }
-
                     }
                 } catch (NoAvailableSlaveException e) {
                     throw new OfflineSlaveException("There were no available slaves for " + inode.getPath());
                 } catch (FileNotFoundException e) {
                     throw new FileNotFoundException("File was not found " + inode.getPath());
                 }
-
             }
         }
         return isArchivedToSpecificSlaves(lrf, _numOfSlaves, _slaveList);
@@ -100,6 +103,10 @@ public class MoveReleaseOffMultipleSlavesToSpecificSlaves extends ArchiveType {
      */
     @Override
     public String toString() {
-        return "MoveReleaseOffSlavesToMostFreeSlaves=[directory=[" + getDirectory().getPath() + "]dest=[" + outputSlaves(findDestinationSlaves()) + "]numOfSlaves=[" + _numOfSlaves + "]]";
+        String directory = "N/A";
+        if (getDirectory() != null) {
+            directory = getDirectory().getPath();
+        }
+        return "MoveReleaseOffSlavesToMostFreeSlaves=[directory=[" + directory + "]dest=[" + outputSlaves(findDestinationSlaves()) + "]numOfSlaves=[" + _numOfSlaves + "]]";
     }
 }

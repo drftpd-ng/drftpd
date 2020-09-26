@@ -17,6 +17,8 @@
  */
 package org.drftpd.links.master.types.zipincomplete;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.common.extensibility.PluginDependencies;
@@ -40,6 +42,7 @@ import java.io.IOException;
 
 @PluginDependencies(refs = {LinkManager.class})
 public class ZipIncompleteManager implements PluginInterface {
+    private static final Logger logger = LogManager.getLogger(ZipIncompleteManager.class);
     LinkManager _linkmanager;
 
     @Override
@@ -55,6 +58,7 @@ public class ZipIncompleteManager implements PluginInterface {
 
     @EventSubscriber
     public void onReloadEvent(ReloadEvent event) {
+        logger.info("Received reload event, reloading");
         loadManager();
     }
 

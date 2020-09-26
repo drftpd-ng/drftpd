@@ -30,37 +30,57 @@ import org.drftpd.common.util.PropertyHelper;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.event.ReloadEvent;
 import org.drftpd.master.sections.SectionInterface;
+import org.drftpd.master.vfs.DirectoryHandle;
 import org.reflections.Reflections;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 /**
  * @author CyBeR
  * @version $Id$
  */
 public class Archive implements PluginInterface {
+
     private static final Logger logger = LogManager.getLogger(Archive.class);
 
+    // Representation of the archive.conf
     private Properties _props;
 
+    // At what interval should we check for archive tasks
     private long _cycleTime;
 
-    private HashSet<ArchiveHandler> _archiveHandlers = null;
+    // All active ArchiveHandlers
+    private Map<UUID, ArchiveHandler> _archiveHandlers;
 
+    // The timer task we created based on _cycleTime
     private TimerTask _runHandler = null;
 
+    // A map of archive types (name -> archiveType class)
     private CaseInsensitiveHashMap<String, Class<? extends ArchiveType>> _typesMap;
 
+    // Get our Properties of archive.conf
     public Properties getProperties() {
         return _props;
     }
 
+    // Get the cycle time
     public long getCycleTime() {
         return _cycleTime;
     }
 
+    // Our Executor Service for running archive handlers
+    private ExecutorService _archiveHandlerExecutor;
+
+    public GlobalContext getGlobalContext() {
+        return GlobalContext.getGlobalContext();
+    }
+
     /*
-     * Returns the archive type corrisponding with the .conf file
+     * Returns the archive type corresponding with the .conf file
      * and which Archive number the loop is on
      */
     public ArchiveType getArchiveType(int count, String type, SectionInterface sec, Properties props) {
@@ -91,7 +111,7 @@ public class Archive implements PluginInterface {
      * Returns a list of the current archive types, as a copy.
      * We don't want to allow modifications to this.
      */
-    public synchronized CaseInsensitiveHashMap<String, Class<? extends ArchiveType>> getTypesMap() {
+    public CaseInsensitiveHashMap<String, Class<? extends ArchiveType>> getTypesMap() {
         return new CaseInsensitiveHashMap<>(_typesMap);
     }
 
@@ -100,9 +120,7 @@ public class Archive implements PluginInterface {
      */
     private void initTypes() {
         CaseInsensitiveHashMap<String, Class<? extends ArchiveType>> typesMap = new CaseInsensitiveHashMap<>();
-        // TODO [DONE] @k2r Archive init types
-        Set<Class<? extends ArchiveType>> archiveTypes = new Reflections("org.drftpd")
-                .getSubTypesOf(ArchiveType.class);
+        Set<Class<? extends ArchiveType>> archiveTypes = new Reflections("org.drftpd").getSubTypesOf(ArchiveType.class);
         for (Class<? extends ArchiveType> archiveType : archiveTypes) {
             typesMap.put(archiveType.getSimpleName(), archiveType);
         }
@@ -117,65 +135,95 @@ public class Archive implements PluginInterface {
         initTypes();
         _props = ConfigLoader.loadPluginConfig("archive.conf");
         _cycleTime = 60000 * Long.parseLong(PropertyHelper.getProperty(_props, "cycletime", "30").trim());
+        int maxConcurrentActions = Integer.parseInt(PropertyHelper.getProperty(_props, "maxConcurrentActions", "10").trim());
 
+        int minActions = getTypesMap().size() + 1;
+        if (minActions > maxConcurrentActions) {
+            logger.warn("Setting maxConcurrentActions to [" + minActions + "] to allow for your configured archive statements");
+            maxConcurrentActions = minActions;
+        }
+        _archiveHandlerExecutor = Executors.newFixedThreadPool(maxConcurrentActions, new ArchiveHandlerThreadFactory());
+
+        // First cancel and remove our active TimerTask
         if (_runHandler != null) {
             _runHandler.cancel();
-            GlobalContext.getGlobalContext().getTimer().purge();
+            getGlobalContext().getTimer().purge();
         }
 
+        // Initialize a new TimerTask
+        logger.debug("Initializing a new timer task for {} milliseconds", _cycleTime);
         _runHandler = new TimerTask() {
             public void run() {
 
+                logger.debug("TimerTask triggered");
                 int count = 1;
 
                 String type;
                 while ((type = PropertyHelper.getProperty(_props, count + ".type", null)) != null) {
                     type = type.trim();
-                    SectionInterface sec = GlobalContext.getGlobalContext().getSectionManager().getSection(PropertyHelper.getProperty(_props, count + ".section", "").trim());
+                    SectionInterface sec = getGlobalContext().getSectionManager().getSection(PropertyHelper.getProperty(_props, count + ".section", "").trim());
                     ArchiveType archiveType = getArchiveType(count, type, sec, _props);
                     if (archiveType != null) {
-                        new ArchiveHandler(archiveType).start();
+                        logger.debug("config item {} will be executed, type: {}", count, archiveType.toString());
+                        executeArchiveType(archiveType);
                     }
                     count++;
                 }
+                logger.debug("TimeTask finished, if there was any work we started it (touched {} configs)", (count - 1));
             }
         };
         try {
-            GlobalContext.getGlobalContext().getTimer().schedule(_runHandler, _cycleTime, _cycleTime);
+            getGlobalContext().getTimer().schedule(_runHandler, _cycleTime, _cycleTime);
         } catch (IllegalStateException e) {
-            // Timer Already Canceled
+            logger.warn("Unable to schedule our TimerTask as the GlobalContext Timer is in an illegal state", e);
         }
+    }
+
+    /*
+     * Submit a new archive task to be executed
+     */
+    public void executeArchiveType(ArchiveType at) {
+
+        // Create the Runnable ArchiveHandler
+        ArchiveHandler ah = new ArchiveHandler(at);
+
+        // Register it to our active archive handlers and submit it to our executor
+        _archiveHandlers.put(ah.getUUID(), ah);
+        _archiveHandlerExecutor.submit(ah);
+        logger.debug("New archive handler with uuid {} registered and submitted to executor", ah.getUUID());
     }
 
     /*
      * This Removes archive handler from current archives in use
      */
-    public synchronized boolean removeArchiveHandler(ArchiveHandler handler) {
-        return _archiveHandlers.remove(handler);
+    public ArchiveHandler removeArchiveHandler(ArchiveHandler handler) {
+        logger.debug("Removing archive handler with uuid {} from active handlers", handler.getUUID());
+        return _archiveHandlers.remove(handler.getUUID());
     }
 
     /*
      * Returns all the current ArchiveHandlers
      */
     public Collection<ArchiveHandler> getArchiveHandlers() {
-        return Collections.unmodifiableCollection(_archiveHandlers);
-    }
-
-    /*
-     * Adds a specfic ArchiveHandle to the list.  Makes sure directory already isn't added.
-     */
-    public synchronized void addArchiveHandler(ArchiveHandler handler) throws DuplicateArchiveException {
-        checkPathForArchiveStatus(handler.getArchiveType().getDirectory().getPath());
-        _archiveHandlers.add(handler);
+        return Collections.unmodifiableCollection(_archiveHandlers.values());
     }
 
     /*
      * This checks to see if the current directory is already queued to be archived.
-     * Throws DuplicateArchive expcetion if it is.
+     * throws DuplicateArchiveException if it is.
      */
-    public synchronized void checkPathForArchiveStatus(String handlerPath) throws DuplicateArchiveException {
-        for (ArchiveHandler ah : _archiveHandlers) {
-            String ahPath = ah.getArchiveType().getDirectory().getPath();
+    public void checkPathForArchiveStatus(String handlerPath) throws DuplicateArchiveException {
+        for (ArchiveHandler ah : _archiveHandlers.values()) {
+            if(ah.getJobs().size() == 0) {
+                // no jobs associated to this archive type yet so it has not been initialized yet
+                continue;
+            }
+            DirectoryHandle dirHandle = ah.getArchiveType().getDirectory();
+            if (dirHandle == null) {
+                // archiveType is not yet started so directory is not known yet ...
+                continue;
+            }
+            String ahPath = dirHandle.getPath();
 
             if (ahPath.length() > handlerPath.length()) {
                 if (ahPath.startsWith(handlerPath)) {
@@ -191,6 +239,7 @@ public class Archive implements PluginInterface {
 
     @EventSubscriber
     public void onReloadEvent(ReloadEvent event) {
+        logger.info("Received reload event, reloading");
         reload();
     }
 
@@ -198,16 +247,30 @@ public class Archive implements PluginInterface {
         // Subscribe to events
         AnnotationProcessor.process(this);
         logger.info("Archive plugin loaded successfully");
-        _archiveHandlers = new HashSet<>();
+        _archiveHandlers = new ConcurrentHashMap<>();
         reload();
     }
 
     public void stopPlugin(String reason) {
         if (_runHandler != null) {
             _runHandler.cancel();
-            GlobalContext.getGlobalContext().getTimer().purge();
+            getGlobalContext().getTimer().purge();
         }
         AnnotationProcessor.unprocess(this);
         logger.info("Archive plugin unloaded successfully");
+    }
+
+    public static class ArchiveHandlerThreadFactory implements ThreadFactory {
+
+        public static String getIdleThreadName(long threadId) {
+            return "Archive Handler-" + threadId + " - Waiting for work";
+        }
+
+        @Override
+        public Thread newThread(Runnable r) {
+            Thread t = Executors.defaultThreadFactory().newThread(r);
+            t.setName(getIdleThreadName(t.getId()));
+            return t;
+        }
     }
 }

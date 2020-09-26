@@ -17,6 +17,8 @@
  */
 package org.drftpd.links.master.types.latestdir;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.common.extensibility.PluginDependencies;
@@ -41,6 +43,7 @@ import java.util.Properties;
 
 @PluginDependencies(refs = {LinkManager.class})
 public class LatestDirManager implements PluginInterface {
+    private static final Logger logger = LogManager.getLogger(LatestDirManager.class);
     private LinkManager _linkmanager;
 
     private ArrayList<DirectoryHandle> _links;
@@ -62,6 +65,7 @@ public class LatestDirManager implements PluginInterface {
 
     @EventSubscriber
     public void onReloadEvent(ReloadEvent event) {
+        logger.info("Received reload event, reloading");
         loadManager();
     }
 

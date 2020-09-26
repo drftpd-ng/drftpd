@@ -280,6 +280,7 @@ public class SpeedTest extends CommandInterface {
 
     @EventSubscriber
     public void onReloadEvent(ReloadEvent event) {
+        logger.info("Received reload event, reloading");
         readConfig();
     }
 

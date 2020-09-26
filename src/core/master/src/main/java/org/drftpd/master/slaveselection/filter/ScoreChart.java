@@ -30,8 +30,8 @@ import java.util.Iterator;
  * @version $Id$
  */
 public class ScoreChart {
-    private final ArrayList<SlaveScore> _scoreChart;
 
+    private final ArrayList<SlaveScore> _scoreChart;
 
     public ScoreChart(Collection<RemoteSlave> slaves) {
         _scoreChart = new ArrayList<>();
@@ -47,16 +47,16 @@ public class ScoreChart {
     public SlaveScore getBestSlaveScore() throws NoAvailableSlaveException {
         SlaveScore bestScore;
 
-        Iterator<SlaveScore> iter = getSlaveScores().iterator();
+        Iterator<SlaveScore> slaveScoreIterator = getSlaveScores().iterator();
 
         if (isEmpty()) {
             throw new NoAvailableSlaveException();
         }
 
-        bestScore = iter.next();
+        bestScore = slaveScoreIterator.next();
 
-        while (iter.hasNext()) {
-            SlaveScore score = iter.next();
+        while (slaveScoreIterator.hasNext()) {
+            SlaveScore score = slaveScoreIterator.next();
 
             if (score.getScore() > bestScore.getScore()) {
                 bestScore = score;
@@ -73,14 +73,14 @@ public class ScoreChart {
     /**
      * Returns the SlaveScore entry for the RemoteSlave rslave.
      */
-    public SlaveScore getScoreForSlave(RemoteSlave rslave) throws ObjectNotFoundException {
+    public SlaveScore getScoreForSlave(RemoteSlave remoteSlave) throws ObjectNotFoundException {
         for (SlaveScore score : getSlaveScores()) {
-            if (score.getRSlave().equals(rslave)) {
+            if (score.getRSlave().equals(remoteSlave)) {
                 return score;
             }
         }
 
-        throw new ObjectNotFoundException(rslave.getName() + " not in ScoreChart");
+        throw new ObjectNotFoundException(remoteSlave.getName() + " not in ScoreChart");
     }
 
     /**
@@ -90,12 +90,12 @@ public class ScoreChart {
         return _scoreChart;
     }
 
-    public void removeSlaveFromChart(RemoteSlave rslave) {
-        _scoreChart.removeIf(score -> score.getRSlave().equals(rslave));
+    public void removeSlaveFromChart(RemoteSlave remoteSlave) {
+        _scoreChart.removeIf(score -> score.getRSlave().equals(remoteSlave));
     }
 
-    public void addScoreToSlave(RemoteSlave rslave, long score) throws ObjectNotFoundException {
-        getScoreForSlave(rslave).addScore(score);
+    public void addScoreToSlave(RemoteSlave remoteSlave, long score) throws ObjectNotFoundException {
+        getScoreForSlave(remoteSlave).addScore(score);
     }
 
     public boolean isEmpty() {
@@ -103,11 +103,11 @@ public class ScoreChart {
     }
 
     public static class SlaveScore implements Comparable<SlaveScore> {
-        private final RemoteSlave _rslave;
+        private final RemoteSlave _remoteSlave;
         private long _score;
 
         public SlaveScore(RemoteSlave rslave) {
-            _rslave = rslave;
+            _remoteSlave = rslave;
         }
 
         public void addScore(long score) {
@@ -119,7 +119,7 @@ public class ScoreChart {
         }
 
         public RemoteSlave getRSlave() {
-            return _rslave;
+            return _remoteSlave;
         }
 
         public long getScore() {
@@ -127,7 +127,7 @@ public class ScoreChart {
         }
 
         public String toString() {
-            return "SlaveScore[rslave=" + getRSlave().getName() + ",score=" + getScore() + "]";
+            return "SlaveScore[remoteSlave=" + getRSlave().getName() + ",score=" + getScore() + "]";
         }
     }
 }

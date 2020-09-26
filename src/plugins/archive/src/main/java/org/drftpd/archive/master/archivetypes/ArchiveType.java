@@ -17,6 +17,7 @@
  */
 package org.drftpd.archive.master.archivetypes;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.drftpd.archive.master.Archive;
@@ -47,39 +48,57 @@ import java.util.regex.PatternSyntaxException;
  * @version $Id$
  */
 public abstract class ArchiveType {
+
     private static final Logger logger = LogManager.getLogger(ArchiveType.class);
+
     protected Archive _parent;
+
     // Current section directory is in.
     protected SectionInterface _section;
-    // Current .conf loop number we are on.  Used for other archive types to grab extra configureations
-    protected int _confnum;
+
+    // Current .conf loop number we are on.  Used for other archive types to grab extra configurations
+    // Any positive number is valid. 0 means manual (ie: create by site archive) and any number above 1 means it's in archive.conf
+    protected int _confNum;
+
     protected Set<RemoteSlave> _slaveList;
+
     // Used For: number of slaves to archive too
     protected int _numOfSlaves;
+
     // Uses For: setting priority vs other archives/jobs
     protected int _priority;
+
     // Used for: moving directory to another folder
     protected DirectoryHandle _archiveToFolder;
-    // Used for: setting destincation directory ONLY after moving it (more for events)
+
+    // Used for: setting destination directory ONLY after moving it (more for events)
     protected DirectoryHandle _destinationDirectory;
+
     // Used for: a specific type of folder to archive too.  (Alpha/Dated)
     protected String _archiveDirType;
-    // Check to see if we are going to move the relase after archive
+
+    // Check to see if we are going to move the release after archive
     protected boolean _moveRelease;
+
     // Checks to see if we are moving the release only (no slave -> slave archive)
     protected boolean _moveReleaseOnly;
+
     // Used for: Archive dirs After This amount of time
     private long _archiveAfter;
+
     // Do not archive dirs older than this
     private long _ignoreAfter;
+
     // Current directory being archived
     private DirectoryHandle _directory;
+
     // Used for: archiving only dirs that match this regex form. (Default is .*)
     private String _archiveRegex;
+
     // Used for: how many times to repeat during each cycle
     private int _repeat;
 
-    //  Used for holding all failed directorys during each cycle
+    // Used for holding all failed directories during each cycle
     private ArrayList<String> _failedDirs;
 
     // Used for scanning subdirs of archived dir, instead of just the parent dir
@@ -91,25 +110,45 @@ public abstract class ArchiveType {
      * their specific needs After the constructor finishes, _slaveList is
      * guaranteed to be non-null, but can still be empty
      *
-     * @param archive
-     * @param section
-     * @param p
-     * @param confnum
+     * @param archive Our Archive Manager instance
+     * @param section The section we are working on
+     * @param p The configuration for this Archive Type
+     * @param confNum The number this Archive Type has in the configuration
      */
-    public ArchiveType(Archive archive, SectionInterface section, Properties p, int confnum) {
-        _confnum = confnum;
+    public ArchiveType(Archive archive, SectionInterface section, Properties p, int confNum) {
+        if (confNum < 0) {
+            logger.error("Incorrect Configuration Number found [" + confNum + "], needs to be positive");
+        }
+        // Initialize this to 0
+        _numOfSlaves = 0;
+        _confNum = confNum;
         _parent = archive;
         _section = section;
         setProperties(p);
     }
 
     /*
+     * Function to get the GlobalContext, this is here so we can override it during unit testing
+     */
+    public GlobalContext getGlobalContext() {
+        return getParent().getGlobalContext();
+    }
+
+    public Archive getParent() {
+        return _parent;
+    }
+
+    public int getConfNum() {
+        return _confNum;
+    }
+
+    /*
      * Checks to see if files are archived to the all the slaves configured
      */
-    protected static final boolean isArchivedToAllSlaves(DirectoryHandle lrf, int x) throws OfflineSlaveException {
+    protected static boolean isArchivedToAllSlaves(DirectoryHandle lrf, int x) throws OfflineSlaveException {
         HashSet<RemoteSlave> slaveSet = null;
-        Set<DirectoryHandle> directories = null;
-        Set<FileHandle> files = null;
+        Set<DirectoryHandle> directories;
+        Set<FileHandle> files;
         try {
             directories = lrf.getDirectoriesUnchecked();
             files = lrf.getFilesUnchecked();
@@ -162,9 +201,9 @@ public abstract class ArchiveType {
     /*
      * Checks to see if the files are archived to the specific slaves specified
      */
-    protected static final boolean isArchivedToSpecificSlaves(DirectoryHandle lrf, int x, Set<RemoteSlave> rslaves) throws OfflineSlaveException {
-        Set<DirectoryHandle> directories = null;
-        Set<FileHandle> files = null;
+    protected static boolean isArchivedToSpecificSlaves(DirectoryHandle lrf, int x, Set<RemoteSlave> rslaves) throws OfflineSlaveException {
+        Set<DirectoryHandle> directories;
+        Set<FileHandle> files;
         try {
             directories = lrf.getDirectoriesUnchecked();
             files = lrf.getFilesUnchecked();
@@ -212,7 +251,7 @@ public abstract class ArchiveType {
     /**
      * Used to determine a list of slaves specified in from the conf file
      *
-     * @return
+     * @return Set<RemoteSlave> Set of destination slaves
      */
     public abstract Set<RemoteSlave> findDestinationSlaves();
 
@@ -220,7 +259,9 @@ public abstract class ArchiveType {
      * if the directory is archived by this type's definition, this method
      * returns true
      *
-     * @throws FileNotFoundException
+     * @throws IncompleteDirectoryException If a Directory is not complete yet
+     * @throws OfflineSlaveException If a slave is offline
+     * @throws FileNotFoundException If a file is not found
      */
     protected abstract boolean isArchivedDir(DirectoryHandle directory) throws IncompleteDirectoryException, OfflineSlaveException, FileNotFoundException;
 
@@ -278,8 +319,11 @@ public abstract class ArchiveType {
                 }
             }
         } catch (IncompleteDirectoryException e) {
+            logger.debug("Received IncompleteDirectoryException", e);
         } catch (OfflineSlaveException e) {
+            logger.debug("Received OfflineSlaveException", e);
         } catch (FileNotFoundException e) {
+            logger.debug("Received FileNotFoundException", e);
         }
     }
 
@@ -315,6 +359,11 @@ public abstract class ArchiveType {
 
                 if (_scansubdirs) {
                     for (DirectoryHandle lrf2 : lrf.getDirectoriesUnchecked()) {
+                        // This attempts to skip specific directory names
+                        // season.(any number)
+                        // any numbers behind each other (1002)
+                        // any numbers followed by a non-word character followed by a number (2008-12)
+                        // Any numbers followed by a non-word character followed by a number followed by a non-word character followed by a number (2008-12-10)
                         if (lrf2.getName().matches("(?i)^(season.*|(\\d+|\\d+\\W\\d+|\\d+\\W\\d+\\W\\d+)$)")) // this matches season.\d+ and datum formats number, number-number, number-number-number
                         {
                             for (DirectoryHandle lrf3 : lrf2.getDirectoriesUnchecked()) {
@@ -334,6 +383,7 @@ public abstract class ArchiveType {
 
             }
         } catch (FileNotFoundException e) {
+            logger.debug("We received a FileNotFoundException and assume that either section does not exist and/or no directories to archive");
             // section does not exist, no directories to archive
             // list is empty so the rest of the code will handle that
         }
@@ -373,7 +423,7 @@ public abstract class ArchiveType {
      * Gets the jobmananger, hopefully its loaded.
      */
     public JobManager getJobManager() {
-        for (PluginInterface plugin : GlobalContext.getGlobalContext().getPlugins()) {
+        for (PluginInterface plugin : getGlobalContext().getPlugins()) {
             if (plugin instanceof JobManager) {
                 return (JobManager) plugin;
             }
@@ -385,7 +435,7 @@ public abstract class ArchiveType {
      * Adds relevant Jobs to the JobManager and returns an ArrayList of those
      * Job's
      *
-     * @throws FileNotFoundException
+     * @throws FileNotFoundException If the requested directory is not found
      */
     public ArrayList<Job> send() throws FileNotFoundException {
         ArrayList<Job> jobs = recursiveSend(getDirectory());
@@ -452,30 +502,33 @@ public abstract class ArchiveType {
      */
     private void setProperties(Properties properties) {
         _failedDirs = new ArrayList<>();
-        _archiveAfter = 60000 * Long.parseLong(PropertyHelper.getProperty(properties, _confnum + ".archiveafter", "0").trim());
-        _ignoreAfter = Long.parseLong(PropertyHelper.getProperty(properties, _confnum + ".ignoreafter", "-1").trim());
-        _numOfSlaves = Integer.parseInt(properties.getProperty(_confnum + ".numofslaves", "0").trim());
-        _repeat = Integer.parseInt(properties.getProperty(_confnum + ".repeat", "1").trim());
-        _scansubdirs = properties.getProperty(_confnum + ".scansubdirs", "0").trim().equals("1");
+        _archiveAfter = 60000 * Long.parseLong(PropertyHelper.getProperty(properties, _confNum + ".archiveafter", "0").trim());
+        _ignoreAfter = Long.parseLong(PropertyHelper.getProperty(properties, _confNum + ".ignoreafter", "-1").trim());
+        _numOfSlaves = Integer.parseInt(properties.getProperty(_confNum + ".numofslaves", "0").trim());
+        _repeat = Integer.parseInt(properties.getProperty(_confNum + ".repeat", "1").trim());
+        _scansubdirs = properties.getProperty(_confNum + ".scansubdirs", "0").trim().equals("1");
+
+        // Guard that repeat is not negative
         if (_repeat < 1) {
+            logger.warn("repeat cannot be negative. Got {}, setting to 1", _repeat);
             _repeat = 1;
         }
+
+        // Set it to milliseconds (input is in minutes)
         if (_ignoreAfter > 0) {
             _ignoreAfter = 60000 * _ignoreAfter;
         }
 
-
         /*
          * Grabs archiveRegex property to check if archive dir matches.  If empty, archives all dirs
          */
-        _archiveRegex = properties.getProperty(_confnum + ".archiveregex", ".*").trim();
+        _archiveRegex = properties.getProperty(_confNum + ".archiveregex", ".*").trim();
         try {
             Pattern.compile(_archiveRegex);
         } catch (PatternSyntaxException e) {
-            logger.error("Regex Entry for {} is invalid", _confnum);
+            logger.error("Regex Entry for {} is invalid", _confNum);
             _archiveRegex = ".*";
         }
-
 
         /*
          * Gets toDirectory property to check if the folder should be moved after archiving
@@ -484,9 +537,9 @@ public abstract class ArchiveType {
         _destinationDirectory = null;
         _moveRelease = false;
         _archiveDirType = "";
-        String _moveToDirProp = properties.getProperty(_confnum + ".todirectory", "").trim();
-        if (_moveToDirProp != "") {
-            SectionInterface sec = GlobalContext.getGlobalContext().getSectionManager().getSection(_moveToDirProp);
+        String _moveToDirProp = properties.getProperty(_confNum + ".todirectory", "").trim();
+        if (!_moveToDirProp.equals("")) {
+            SectionInterface sec = getGlobalContext().getSectionManager().getSection(_moveToDirProp);
             if (sec.getName().isEmpty()) {
                 try {
                     DirectoryHandle moveInode = new DirectoryHandle(_moveToDirProp);
@@ -494,7 +547,7 @@ public abstract class ArchiveType {
                         // dir doesn't exist.  Lets check if Parent does
                         if (!moveInode.getParent().exists()) {
                             // parent dir doesn't exist either, really don't wanna make 3 sets of dirs.
-                            logger.error("Directory and ParentDirectory for conf number '{}' Not Found: {}", _confnum, _moveToDirProp);
+                            logger.error("Directory and ParentDirectory for conf number '{}' Not Found: {}", _confNum, _moveToDirProp);
                         } else {
                             // Parent Exists = Good we can do this
                             _archiveToFolder = moveInode;
@@ -504,7 +557,8 @@ public abstract class ArchiveType {
                         _archiveToFolder = moveInode;
                     }
                 } catch (IllegalArgumentException e) {
-                    //todirectory does not exist.
+                    logger.debug("Received IllegalArgumentException, we assume a directory {} does not exist", _moveToDirProp);
+                    // Directory does not exist.
                 }
             } else {
                 // Section exists = Good we can do this
@@ -517,28 +571,26 @@ public abstract class ArchiveType {
                 /*
                  * If a dir/section is selected, check to see if a specific type of subdir needs to be created.
                  */
-                _archiveDirType = properties.getProperty(_confnum + ".todirectorytype", "").trim();
-
+                _archiveDirType = properties.getProperty(_confNum + ".todirectorytype", "").trim();
             }
         }
 
         HashSet<RemoteSlave> destSlaves = new HashSet<>();
 
         for (int i = 1; ; i++) {
-            String slavename = null;
-
-            try {
-                slavename = PropertyHelper.getProperty(properties, _confnum + ".slavename." + i);
-            } catch (NullPointerException e) {
-                break; // done
+            String slaveName = PropertyHelper.getProperty(properties, _confNum + ".slavename." + i, "");
+            if (slaveName.length() <= 0) {
+                // We are done
+                break;
             }
-            slavename = slavename.trim();
+
+            slaveName = slaveName.trim();
 
             try {
-                RemoteSlave rslave = GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(slavename);
-                destSlaves.add(rslave);
+                RemoteSlave remoteSlave = getGlobalContext().getSlaveManager().getRemoteSlave(slaveName);
+                destSlaves.add(remoteSlave);
             } catch (ObjectNotFoundException e) {
-                logger.error("Unable to get slave {} from the SlaveManager", slavename);
+                logger.error("Unable to get slave {} from the SlaveManager", slaveName);
             }
         }
         _slaveList = destSlaves;
@@ -550,7 +602,14 @@ public abstract class ArchiveType {
          */
         _moveReleaseOnly = ((_slaveList.isEmpty()) && (_moveRelease));
 
-        _priority = Integer.parseInt(properties.getProperty(_confnum + ".priority", "3").trim());
+        _priority = Integer.parseInt(properties.getProperty(_confNum + ".priority", "3").trim());
+    }
+
+    /*
+     * If this ArchiveType was created using manual 'site archive' this will return true otherwise false
+     */
+    public boolean isManual() {
+        return _confNum == 0;
     }
 
     /*
@@ -576,7 +635,7 @@ public abstract class ArchiveType {
 
             try {
                 Thread.sleep(10000);
-            } catch (InterruptedException e) {
+            } catch (InterruptedException ignored) {
             }
 
         } while (!jobQueue.isEmpty());
@@ -586,27 +645,30 @@ public abstract class ArchiveType {
      * Loops though all the slaves, and returns all current slaves for archive
      */
     protected String outputSlaves(Collection<RemoteSlave> slaveList) {
-        StringBuilder slaveBuilder = new StringBuilder();
 
-        for (Iterator<RemoteSlave> iter = slaveList.iterator(); iter.hasNext(); ) {
-            RemoteSlave rslave = iter.next();
-            slaveBuilder.append(rslave.getName());
+        String answer = "Empty";
 
-            if (iter.hasNext()) {
-                slaveBuilder.append(',');
-            } else {
-                return slaveBuilder.toString();
+        if (slaveList.size() > 0) {
+            Set<String> slaves = new HashSet<>();
+            for (RemoteSlave remoteSlave : slaveList) {
+                slaves.add(remoteSlave.getName());
             }
+            answer = StringUtils.join(slaves, ',');
         }
 
-        return "Empty";
+        return answer;
     }
 
     /*
      * Recursively Create parent directories
      */
     protected boolean createDirectories(DirectoryHandle dir) {
-        if (!dir.exists() && (!dir.isRoot())) {
+        if (dir.isRoot()) {
+            // We are at the root and done
+            return true;
+        }
+
+        if (!dir.exists()) {
             if (!dir.getParent().exists()) {
                 if (!createDirectories(dir.getParent())) {
                     return false;
@@ -617,11 +679,13 @@ public abstract class ArchiveType {
                 dir.getParent().createDirectorySystem(dir.getName());
             } catch (FileExistsException e) {
                 // ignore...directory now exists
+                logger.debug("Directory {} already exists, not an error", dir.getName());
             } catch (FileNotFoundException e) {
+                logger.debug("We received a FileNotFoundException and treating it as an error, returning false");
                 return false;
             }
-
         }
+
         return true;
     }
 
@@ -643,6 +707,7 @@ public abstract class ArchiveType {
                     _archiveToFolder.getParent().createDirectorySystem(_archiveToFolder.getName());
                 } catch (FileExistsException e) {
                     // ignore...directory now exists
+                    logger.debug("Directory {} already exists, not an error", _archiveToFolder.getName());
                 } catch (FileNotFoundException e) {
                     logger.warn("Cannot Archive '{}' to '{} unable to create '{}'", getDirectory().getPath(), _archiveToFolder.getPath(), _archiveToFolder.getPath());
                     return false;
@@ -667,6 +732,7 @@ public abstract class ArchiveType {
                             typeInode.getParent().createDirectorySystem(typeInode.getName());
                         } catch (FileExistsException e) {
                             // ignore...directory now exists
+                            logger.debug("Directory {} already exists, not an error", _archiveToFolder.getName());
                         } catch (FileNotFoundException e) {
                             logger.warn("Cannot Archive '{}' to '{} unable to create dir type '{}'", getDirectory().getPath(), _archiveToFolder.getPath(), typeInode.getPath());
                             return false;
@@ -680,7 +746,7 @@ public abstract class ArchiveType {
                 if (type != null) {
                     String toDir = null;
                     if (_archiveDirType.startsWith("rls:")) {
-                        /**
+                        /*
                          * Here we will fix ${rls} and "icorrect issue"
                          * toDir may not be same format as first created dir, hence we want to read the
                          * vfs archive dir instead of relying on content in 'type'
@@ -702,9 +768,9 @@ public abstract class ArchiveType {
                             }
 
                         } catch (FileNotFoundException e) {
-                            logger.error("Failed getting DirectoryHandle for somedir ");
+                            logger.error("Failed getting DirectoryHandle for somedir [FileNotFoundException]", e);
                         } catch (ObjectNotValidException e) {
-                            logger.error("Failed getting DirectoryHandle for somedir");
+                            logger.error("Failed getting DirectoryHandle for somedir [ObjectNotValidException]", e);
                         }
                     }
 
@@ -732,6 +798,7 @@ public abstract class ArchiveType {
             }
         } else {
             // No need to move directory, so lets return true
+            logger.debug("No need to move directory is our conclusion, so we return true here");
             return true;
         }
         return false;
@@ -739,7 +806,7 @@ public abstract class ArchiveType {
 
     /*
      * This is used to get the actual dir that the archived dir needs to be moved too
-     * This is overidable to other types can be made within different archive types
+     * This is overridable to other types can be made within different archive types
      */
     protected String getDirType(String type, DirectoryHandle inode) {
         if (type.equals("alpha")) {
@@ -836,7 +903,7 @@ public abstract class ArchiveType {
             return "UNKNOWN";
         }
 
-        if (type != "") {
+        if (!type.equals("")) {
             logger.warn("No valid type found for: {}", type);
         }
 
