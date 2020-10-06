@@ -369,7 +369,7 @@ public class TvMazeUtils {
         }
         //remove seperators
         for (String separator : _seperators) {
-            newTitle = newTitle.replaceAll("\\\\" + separator, " ");
+            newTitle = newTitle.replaceAll("\\" + separator, " ");
         }
         newTitle = newTitle.trim();
         //remove extra spaces
