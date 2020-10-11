@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.drftpd.speedtestnet.master.event;
+package org.drftpd.speedtest.master.event;
 
 import org.drftpd.common.slave.TransferStatus;
 import org.drftpd.master.usermanager.User;

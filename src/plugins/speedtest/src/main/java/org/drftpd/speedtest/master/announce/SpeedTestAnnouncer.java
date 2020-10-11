@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.drftpd.speedtestnet.master.announce;
+package org.drftpd.speedtest.master.announce;
 
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
@@ -28,7 +28,7 @@ import org.drftpd.master.sitebot.config.AnnounceConfig;
 import org.drftpd.master.util.ReplacerUtils;
 import org.drftpd.master.util.Time;
 import org.drftpd.master.vfs.VirtualFileSystem;
-import org.drftpd.speedtestnet.master.event.SpeedTestEvent;
+import org.drftpd.speedtest.master.event.SpeedTestEvent;
 
 import java.util.HashMap;
 import java.util.Map;
