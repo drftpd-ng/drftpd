@@ -1,15 +1,15 @@
 ## UPGRADING
 
-To upgrade from 3.x to 4.0.0-beta1 you will not be able to keep the virtual file system
+To upgrade from 3.x to 4.0.0-beta2 you will not be able to keep the virtual file system
 or slave files. Userfiles will be converted correctly if password is not encrypted.
 
 Follow the installation documentation and do now install into the version 4.x:
 
 https://github.com/drftpd-ng/drftpd/blob/master/README.md
 
-Next if you have user files that predate 4.0.0-beta1, they need to be converted. There is a script in "TODO"
+Next if you have user files that predate 4.0.0-beta2, they need to be converted. There is a script in "TODO"
 that is called "TODO: Migrate-v3-to-v4.sh". Next start the master and readd slaves.
-Themes and all .conf files have to be rebuild in 4.0.0-beta1. Copying over the files will
+Themes and all .conf files have to be rebuild in 4.0.0-beta2. Copying over the files will
 give you alot of problems. The virtual file system will be built when slaves are
 merged for the first time.
 
