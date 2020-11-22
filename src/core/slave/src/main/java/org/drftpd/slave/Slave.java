@@ -61,6 +61,8 @@ import java.util.zip.CheckedInputStream;
  * @version $Id$
  */
 public class Slave {
+    private static final Object _lock = new Object();
+
     public static final boolean isWin32 = System.getProperty("os.name").startsWith("Windows");
 
     private static final Logger logger = LogManager.getLogger(Slave.class);
@@ -111,20 +113,26 @@ public class Slave {
 
     private boolean _online;
 
-    protected Slave() {
-    }
+    protected Slave() {}
 
     public Slave(Properties p) throws IOException, SSLUnavailableException {
-        InetSocketAddress addr = new InetSocketAddress(PropertyHelper.getProperty(p, "master.host"),
-                Integer.parseInt(PropertyHelper.getProperty(p, "master.bindport")));
+        String masterHost = PropertyHelper.getProperty(p, "master.host");
+        int masterPort;
+        try {
+            masterPort = Integer.parseInt(PropertyHelper.getProperty(p, "master.bindport"));
+        } catch(NumberFormatException e) {
+            logger.error("Unable to parse port from configuration", e);
+            throw new RuntimeException(e);
+        }
+        InetSocketAddress isa = new InetSocketAddress(masterHost, masterPort);
 
         // Whatever interface the slave uses to connect to the master, is the
         // interface that the master will report to clients requesting PASV
         // transfers from this slave, unless pasv_addr is set on the master for this
         // slave
-        logger.info("Connecting to master at {}", addr);
+        String slaveName = PropertyHelper.getProperty(p, "slave.name");
 
-        String slavename = PropertyHelper.getProperty(p, "slave.name");
+        logger.info("Slave {} connecting to master at {}", slaveName, isa);
 
         if (isWin32) {
             _renameQueue = Collections.newSetFromMap(new ConcurrentHashMap<>());
@@ -141,11 +149,11 @@ public class Slave {
         List<String> cipherSuites = new ArrayList<>();
         List<String> supportedCipherSuites = new ArrayList<>();
         try {
-            supportedCipherSuites
-                    .addAll(Arrays.asList(SSLContext.getDefault().getSupportedSSLParameters().getCipherSuites()));
+            supportedCipherSuites.addAll(Arrays.asList(SSLContext.getDefault().getSupportedSSLParameters().getCipherSuites()));
         } catch (Exception e) {
             logger.error("Unable to get supported cipher suites, using default.", e);
         }
+
         // Parse cipher suite whitelist rules
         boolean whitelist = false;
         for (int x = 1; ; x++) {
@@ -185,7 +193,7 @@ public class Slave {
         if (cipherSuites.isEmpty()) {
             _cipherSuites = null;
         } else {
-            _cipherSuites = cipherSuites.toArray(new String[cipherSuites.size()]);
+            _cipherSuites = cipherSuites.toArray(new String[0]);
         }
 
         List<String> sslProtocols = new ArrayList<>();
@@ -206,7 +214,7 @@ public class Slave {
         if (sslProtocols.size() == 0) {
             _sslProtocols = null;
         } else {
-            _sslProtocols = sslProtocols.toArray(new String[sslProtocols.size()]);
+            _sslProtocols = sslProtocols.toArray(new String[0]);
         }
 
         boolean sslMaster = p.getProperty("slave.masterSSL", "false").equalsIgnoreCase("true");
@@ -235,7 +243,7 @@ public class Slave {
             _timeout = actualTimeout;
         }
         _socket.setSoTimeout(socketTimeout);
-        _socket.connect(addr);
+        _socket.connect(isa);
         if (_socket instanceof SSLSocket) {
             if (getCipherSuites() != null) {
                 ((SSLSocket) _socket).setEnabledCipherSuites(getCipherSuites());
@@ -248,8 +256,7 @@ public class Slave {
             try {
                 ((SSLSocket) _socket).startHandshake();
             } catch (SSLHandshakeException e) {
-                throw new SSLUnavailableException("Handshake failure, maybe master isn't SSL ready or SSL is disabled.",
-                        e);
+                throw new SSLUnavailableException("Handshake failure, maybe master isn't SSL ready or SSL is disabled.", e);
             }
         }
         _sout = new ObjectOutputStream(new BufferedOutputStream(_socket.getOutputStream()));
@@ -258,7 +265,7 @@ public class Slave {
 
         _central = new SlaveProtocolCentral(this);
 
-        _sout.writeObject(slavename);
+        _sout.writeObject(slaveName);
         _sout.flush();
         _sout.reset();
 
@@ -319,8 +326,7 @@ public class Slave {
             Class<?> aClass = Class.forName(desiredDs);
             _diskSelection = (DiskSelectionInterface) aClass.getConstructor(Slave.class).newInstance(this);
         } catch (Exception e) {
-            throw new RuntimeException(
-                    "Cannot create instance of diskselection, check 'diskselection' in the configuration file", e);
+            throw new RuntimeException("Cannot create instance of diskselection, check 'diskselection' in the configuration file", e);
         }
     }
 
@@ -349,7 +355,7 @@ public class Slave {
         if (_sin != null) {
             try {
                 _sin.close();
-            } catch (IOException e) {
+            } catch (IOException ignored) {
             }
             _sin = null;
         }
@@ -357,14 +363,14 @@ public class Slave {
             try {
                 _sout.flush();
                 _sout.close();
-            } catch (IOException e) {
+            } catch (IOException ignored) {
             }
             _sout = null;
         }
         if (_socket != null) {
             try {
                 _socket.close();
-            } catch (IOException e) {
+            } catch (IOException ignored) {
             }
             _socket = null;
         }
@@ -397,10 +403,12 @@ public class Slave {
         logger.debug("Checksumming: {}", file.getPath());
 
         CRC32 crc32 = new CRC32();
-        try (CheckedInputStream in = new CheckedInputStream(new BufferedInputStream(new FileInputStream(file)),
-                crc32)) {
+        try (CheckedInputStream in = new CheckedInputStream(new BufferedInputStream(new FileInputStream(file)), crc32)) {
             byte[] buf = new byte[16384];
-            while (in.read(buf) != -1) {
+            while (true) {
+                if (in.read(buf) == -1) {
+                    break;
+                }
             }
             return crc32.getValue();
         }
@@ -534,7 +542,7 @@ public class Slave {
 
             logger.debug("Slave fetched {}", ac);
             class AsyncCommandHandler implements Runnable {
-                private AsyncCommandArgument _command = null;
+                private final AsyncCommandArgument _command;
 
                 public AsyncCommandHandler(AsyncCommandArgument command) {
                     _command = command;
@@ -572,7 +580,7 @@ public class Slave {
     public void removeTransfer(Transfer transfer) {
         // Synchronization only needed for Win32 to notify FileLockThread
         if (isWin32) {
-            synchronized (_transfers) {
+            synchronized (_lock) {
                 if (_transfers.remove(transfer.getTransferIndex()) == null) {
                     throw new IllegalStateException();
                 }
@@ -710,38 +718,45 @@ public class Slave {
 
         public void run() {
             while (true) {
-                synchronized (_transfers) {
+                synchronized (_lock) {
                     try {
-                        _transfers.wait(5000);
-                    } catch (InterruptedException e) {
-                    }
-                    for (Iterator<QueuedOperation> iter = _renameQueue.iterator(); iter.hasNext(); ) {
-                        QueuedOperation qo = iter.next();
+                        // In order to escape from this busy while true loop we need to have a condition to know the main process
+                        // has stopped. Checking the input stream (_sin) will throw an IOException if it is no longer valid.
+                        // We do not care for the available bytes, so it is not used further.
+                        if(_sin.available() >= 0) {
+                            _transfers.wait(5000);
+                        }
+                    } catch (IOException e) {
+                        break;
+                    } catch (InterruptedException ignored) {}
+
+                    for (Iterator<QueuedOperation> operationIterator = _renameQueue.iterator(); operationIterator.hasNext(); ) {
+                        QueuedOperation qo = operationIterator.next();
                         if (qo.getDestination() == null) { // delete
                             try {
                                 delete(qo.getSource());
                                 // delete successful
-                                iter.remove();
+                                operationIterator.remove();
                             } catch (PermissionDeniedException e) {
                                 // keep it in the queue
                             } catch (FileNotFoundException e) {
-                                iter.remove();
+                                operationIterator.remove();
                             } catch (IOException e) {
-                                throw new RuntimeException("Win32 stinks", e);
+                                throw new RuntimeException("Delete operation for " + qo.getSource() + " Failed - Win32 stinks", e);
                             }
                         } else { // rename
                             String fileName = qo.getDestination().substring(qo.getDestination().lastIndexOf("/") + 1);
-                            String destDir = qo.getDestination().substring(0, qo.getDestination().lastIndexOf("/"));
+                            String destinationDir = qo.getDestination().substring(0, qo.getDestination().lastIndexOf("/"));
                             try {
-                                rename(qo.getSource(), destDir, fileName);
+                                rename(qo.getSource(), destinationDir, fileName);
                                 // rename successful
-                                iter.remove();
+                                operationIterator.remove();
                             } catch (PermissionDeniedException e) {
                                 // keep it in the queue
                             } catch (FileNotFoundException e) {
-                                iter.remove();
+                                operationIterator.remove();
                             } catch (IOException e) {
-                                throw new RuntimeException("Win32 stinks", e);
+                                throw new RuntimeException("Rename operation for " + qo.getSource() + " Failed - Win32 stinks", e);
                             }
                         }
                     }
