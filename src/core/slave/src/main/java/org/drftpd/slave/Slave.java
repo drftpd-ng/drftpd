@@ -584,7 +584,7 @@ public class Slave {
                 if (_transfers.remove(transfer.getTransferIndex()) == null) {
                     throw new IllegalStateException();
                 }
-                _transfers.notifyAll();
+                _lock.notifyAll();
             }
         } else {
             if (_transfers.remove(transfer.getTransferIndex()) == null) {
@@ -724,7 +724,7 @@ public class Slave {
                         // has stopped. Checking the input stream (_sin) will throw an IOException if it is no longer valid.
                         // We do not care for the available bytes, so it is not used further.
                         if(_sin.available() >= 0) {
-                            _transfers.wait(5000);
+                            _lock.wait(5000);
                         }
                     } catch (IOException e) {
                         break;
