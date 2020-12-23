@@ -145,7 +145,7 @@ public class ZipscriptZipHandler extends AbstractHandler {
                     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
                             throws IOException {
                         if (Files.isRegularFile(file) && matcher.matches(file)) {
-                            String dizString = new String(Files.readAllBytes(file), StandardCharsets.ISO_8859_1);
+                            String dizString = Files.readString(file, StandardCharsets.ISO_8859_1);
                             int total = getDizTotal(dizString);
                             if (total > 0) {
                                 dizInfo.setValid(true);
