@@ -85,7 +85,7 @@ public class BlowfishECB extends Blowfish {
         byte[] encrypted = cipher.doFinal(buff);
         // B64 custom encryption
         String REncrypt = byteToB64(encrypted);
-        REncrypt = ECB_STANDARD_PREFIX.concat(REncrypt);
+        REncrypt = ECB_STANDARD_PREFIX + REncrypt;
         return REncrypt;
     }
 

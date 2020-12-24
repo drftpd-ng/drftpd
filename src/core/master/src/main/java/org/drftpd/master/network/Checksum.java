@@ -25,6 +25,6 @@ public class Checksum {
     public static String formatChecksum(long checkSum) {
         String checksumString = Long.toHexString(checkSum);
 
-        return "00000000".substring(0, 8 - checksumString.length()).concat(checksumString);
+        return "00000000".substring(0, 8 - checksumString.length()) + checksumString;
     }
 }

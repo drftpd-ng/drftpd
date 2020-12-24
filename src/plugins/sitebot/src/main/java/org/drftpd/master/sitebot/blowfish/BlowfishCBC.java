@@ -124,7 +124,7 @@ public class BlowfishCBC extends Blowfish {
         String base64Encoded = Base64.getEncoder().encodeToString(lEncoded);
 
         //5- Return the result
-        return CBC_PREFIX.concat(base64Encoded);
+        return CBC_PREFIX + base64Encoded;
     }
 
     /**

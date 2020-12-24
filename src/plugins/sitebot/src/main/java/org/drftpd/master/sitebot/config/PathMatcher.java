@@ -49,7 +49,7 @@ public class PathMatcher {
     }
 
     public boolean checkPath(InodeHandle inode) {
-        String path = inode.isDirectory() ? inode.getPath().concat("/") : inode.getPath();
+        String path = inode.isDirectory() ? inode.getPath() + "/" : inode.getPath();
 
         if (_regex) {
             Matcher m = _regexPat.matcher(path);
@@ -67,7 +67,7 @@ public class PathMatcher {
 
     public String getRelativePath(InodeHandle inode) {
         if (_regex) {
-            String path = inode.getPath().concat("/");
+            String path = inode.getPath() + "/";
             Matcher m = _regexPat.matcher(path);
             if (m.matches()) {
                 try {

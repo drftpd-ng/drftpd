@@ -46,7 +46,7 @@ public class GlobPathPermission extends PathPermission {
 
         String path = inode.getPath();
         if (inode.isDirectory() && !inode.getPath().endsWith("/")) {
-            path = inode.getPath().concat("/");
+            path = inode.getPath() + "/";
         }
 
         return _pat.matcher(path).matches();
