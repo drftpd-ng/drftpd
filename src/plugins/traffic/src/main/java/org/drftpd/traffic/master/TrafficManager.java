@@ -140,7 +140,7 @@ public class TrafficManager implements PluginInterface {
     public void onSlowTransferEvent(SlowTransferEvent event) {
         for (TrafficType trafficType : getTrafficTypes()) {
             // Check if allowed to run on Upload/Download
-            if ((event.isStor() && trafficType.getUpload()) || (!event.isStor() && trafficType.getDownload())) {
+            if (event.isStor() ? trafficType.getUpload() : trafficType.getDownload()) {
                 // Check if Include/Exclude path are allowed
                 // And check perms are correct
                 if ((trafficType.checkInclude(event.getFile().getParent().getPath())) && (!trafficType.checkExclude(event.getFile().getParent().getPath())) && (trafficType.getPerms().check(event.getUser()))) {

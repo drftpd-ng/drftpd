@@ -212,7 +212,7 @@ public class Find extends CommandInterface {
             try {
                 inode = item.getValue().equals("d") ? new DirectoryHandle(item.getKey().
                         substring(0, item.getKey().length() - 1)) : new FileHandle(item.getKey());
-                if ((observePrivPath && inode.isHidden(user)) || (!observePrivPath && inode.isHidden(null))) {
+                if (observePrivPath ? inode.isHidden(user) : inode.isHidden(null)) {
                     continue;
                 }
                 env.put("name", inode.getName());
