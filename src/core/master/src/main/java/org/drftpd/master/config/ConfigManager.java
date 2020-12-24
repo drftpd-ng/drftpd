@@ -203,7 +203,7 @@ public class ConfigManager implements ConfigInterface {
         if (cipherSuites.isEmpty()) {
             _cipherSuites = null;
         } else {
-            _cipherSuites = cipherSuites.toArray(new String[cipherSuites.size()]);
+            _cipherSuites = cipherSuites.toArray(new String[0]);
         }
     }
 
@@ -226,7 +226,7 @@ public class ConfigManager implements ConfigInterface {
         if (sslProtocols.size() == 0) {
             _sslProtocols = null;
         } else {
-            _sslProtocols = sslProtocols.toArray(new String[sslProtocols.size()]);
+            _sslProtocols = sslProtocols.toArray(new String[0]);
         }
     }
 
