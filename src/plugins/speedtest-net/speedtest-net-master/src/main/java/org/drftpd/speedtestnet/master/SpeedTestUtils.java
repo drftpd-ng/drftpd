@@ -152,7 +152,7 @@ public class SpeedTestUtils {
         } catch (SlaveUnavailableException e) {
             logger.debug("Trying to get location of offline slave, Please improve code to check for offline slaves to ensure proper error messages to requester");
         } catch (UnknownHostException e) {
-            logger.warn("Caught an unexpected exception getting slave location: " + e.getMessage());
+            logger.warn("Caught an unexpected exception getting slave location: {}", e.getMessage());
         } catch (Exception e) {
             logger.error("Something went wrong getting slave location: {}", e.getMessage());
         }

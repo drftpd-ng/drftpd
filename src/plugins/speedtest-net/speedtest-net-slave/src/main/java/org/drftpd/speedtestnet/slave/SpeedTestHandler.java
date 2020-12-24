@@ -156,7 +156,7 @@ public class SpeedTestHandler extends AbstractHandler {
         long totalBytes = 0L;
 
         long startTime = System.currentTimeMillis();
-        logger.debug("Getting upload speed for [" + url + "]");
+        logger.debug("Getting upload speed for [{}]", url);
 
         RequestConfig requestConfig = RequestConfig.custom()
                 .setResponseTimeout(60000, TimeUnit.MILLISECONDS)
@@ -164,7 +164,7 @@ public class SpeedTestHandler extends AbstractHandler {
                 .setConnectionRequestTimeout(5000, TimeUnit.MILLISECONDS)
                 .build();
 
-        logger.debug("Initializing " + _upThreads + " speedtest upload callables");
+        logger.debug("Initializing {} speedtest upload callables", _upThreads);
         SpeedTestCallable[] speedTestCallables = new SpeedTestCallable[_upThreads];
         for (int i = 0; i < _upThreads; i++) {
             speedTestCallables[i] = new SpeedTestCallable();
@@ -219,7 +219,7 @@ public class SpeedTestHandler extends AbstractHandler {
                     }
                 }
                 if ((System.currentTimeMillis() - startTime) > _upTime) {
-                    logger.debug("uptime " + _upTime + " reached, stopping");
+                    logger.debug("uptime {} reached, stopping", _upTime);
                     break;
                 }
             }
@@ -252,7 +252,7 @@ public class SpeedTestHandler extends AbstractHandler {
         long totalTime = 0L;
         long totalBytes = 0L;
 
-        logger.debug("Getting download speed for [" + url + "]");
+        logger.debug("Getting download speed for [{}]", url);
 
         RequestConfig requestConfig = RequestConfig.custom()
                 .setResponseTimeout(60000, TimeUnit.MILLISECONDS)
@@ -260,7 +260,7 @@ public class SpeedTestHandler extends AbstractHandler {
                 .setConnectionRequestTimeout(5000, TimeUnit.MILLISECONDS)
                 .build();
 
-        logger.debug("Initializing " + _downThreads + " speedtest download callables");
+        logger.debug("Initializing {} speedtest download callables", _downThreads);
         SpeedTestCallable[] speedTestCallables = new SpeedTestCallable[_downThreads];
         for (int i = 0; i < _downThreads; i++) {
             speedTestCallables[i] = new SpeedTestCallable();
@@ -277,10 +277,10 @@ public class SpeedTestHandler extends AbstractHandler {
         for (int size : _sizes) { // Measure dl speed for each size in _sizes
             // We have _downTime for every size
             long startTime = System.currentTimeMillis();
-            logger.debug("Testing size [" + size + "] for url [" + url +"]");
+            logger.debug("Testing size [{}] for url [{}]", size, url);
             if ((System.currentTimeMillis() - startTime) > _downTime)
             {
-                logger.debug("downtime " + _downTime + " reached inside sizes, stopping");
+                logger.debug("downtime {} reached inside sizes, stopping", _downTime);
                 break;
             }
 
@@ -318,7 +318,7 @@ public class SpeedTestHandler extends AbstractHandler {
                 }
                 if ((System.currentTimeMillis() - startTime) > _downTime)
                 {
-                    logger.debug("downtime " + _downTime + " reached inside sizeLoop, stopping");
+                    logger.debug("downtime {} reached inside sizeLoop, stopping", _downTime);
                     break;
                 }
             }
@@ -355,7 +355,7 @@ public class SpeedTestHandler extends AbstractHandler {
     }
 
     private int messureLatency(String url) {
-        logger.debug("Measuring latency of url [" + url + "]");
+        logger.debug("Measuring latency of url [{}]", url);
         RequestConfig requestConfig = RequestConfig.custom()
                 .setResponseTimeout(5000, TimeUnit.MILLISECONDS)
                 .setConnectTimeout(5000, TimeUnit.MILLISECONDS)
@@ -399,7 +399,7 @@ public class SpeedTestHandler extends AbstractHandler {
                 }
             }
             int time = (int) watch.getTime();
-            logger.debug("Iteration[" + i + "] bestTime: " + bestTime + ", new time: " + time);
+            logger.debug("Iteration[{}] bestTime: {}, new time: {}", i, bestTime, time);
             if (time < bestTime) {
                 bestTime = time;
             }

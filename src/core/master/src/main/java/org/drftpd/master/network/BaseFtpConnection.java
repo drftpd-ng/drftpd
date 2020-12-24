@@ -406,8 +406,7 @@ public class BaseFtpConnection extends Session implements Runnable {
 
             _out.flush();
         } catch (SocketException ex) {
-            logger.log(Level.INFO, ex.getMessage() + ", closing for user "
-                    + ((_user == null) ? "<not logged in>" : _user), ex);
+            logger.log(Level.INFO, ex.getMessage() + ", closing for user " + ((_user == null) ? "<not logged in>" : _user), ex);
         } catch (Exception ex) {
             logger.log(Level.INFO, "Exception, closing", ex);
         } finally {

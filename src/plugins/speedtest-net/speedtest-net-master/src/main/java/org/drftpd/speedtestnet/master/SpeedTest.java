@@ -192,11 +192,11 @@ public class SpeedTest extends CommandInterface {
                 slaveLocation = SpeedTestUtils.getSlaveLocation(rslave);
             }
             if (slaveLocation.getLatitude() == 0 && slaveLocation.getLongitude() == 0) {
-                logger.warn("Slave location not found [" + slaveLocation + "]");
+                logger.warn("Slave location not found [{}]", slaveLocation);
                 request.getSession().printOutput(500, request.getSession().jprintf(_bundle, "speedtest.slave.geoip.error", env, request.getUser()));
                 continue;
             }
-            logger.debug("Found location for slave " + rslave.getName() + " -> [" + slaveLocation +"]");
+            logger.debug("Found location for slave {} -> [{}]", rslave.getName(), slaveLocation);
             // Persist the lat/lon
             rslave.setProperty("lat", String.valueOf(slaveLocation.getLatitude()));
             rslave.setProperty("lon", String.valueOf(slaveLocation.getLongitude()));

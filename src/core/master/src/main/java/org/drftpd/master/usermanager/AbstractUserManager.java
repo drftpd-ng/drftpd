@@ -409,7 +409,7 @@ public abstract class AbstractUserManager implements UserManager {
         } catch (Exception e) {
             logger.error("Failed to load plugins of UserResetPreHookInterface for UserManager", e);
         }
-        logger.debug("Loaded [" + prehooks.size() + "] pre hooks for user reset");
+        logger.debug("Loaded [{}] pre hooks for user reset", prehooks.size());
         _preResetHooks = prehooks;
 
         // Deal with posthooks
@@ -424,7 +424,7 @@ public abstract class AbstractUserManager implements UserManager {
         } catch (Exception e) {
             logger.error("Failed to load plugins of UserResetPostHookInterface for UserManager", e);
         }
-        logger.debug("Loaded [" + posthooks.size() + "] post hooks for user reset");
+        logger.debug("Loaded [{}] post hooks for user reset", posthooks.size());
         _postResetHooks = posthooks;
     }
 

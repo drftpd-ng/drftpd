@@ -63,7 +63,7 @@ public class TimeManager {
     }
 
     public void doReset(Calendar cal) {
-        logger.debug("doReset called - " + cal.toString());
+        logger.debug("doReset called - {}", cal.toString());
         // Check if EuropeanCalendar and change if needed
         if (isEuropeanCalendar()) {
             cal.setFirstDayOfWeek(Calendar.MONDAY);

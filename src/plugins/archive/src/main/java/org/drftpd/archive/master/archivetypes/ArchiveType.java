@@ -117,7 +117,7 @@ public abstract class ArchiveType {
      */
     public ArchiveType(Archive archive, SectionInterface section, Properties p, int confNum) {
         if (confNum < 0) {
-            logger.error("Incorrect Configuration Number found [" + confNum + "], needs to be positive");
+            logger.error("Incorrect Configuration Number found [{}], needs to be positive", confNum);
         }
         // Initialize this to 0
         _numOfSlaves = 0;

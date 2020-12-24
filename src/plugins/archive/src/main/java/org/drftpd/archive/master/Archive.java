@@ -139,7 +139,7 @@ public class Archive implements PluginInterface {
 
         int minActions = getTypesMap().size() + 1;
         if (minActions > maxConcurrentActions) {
-            logger.warn("Setting maxConcurrentActions to [" + minActions + "] to allow for your configured archive statements");
+            logger.warn("Setting maxConcurrentActions to [{}] to allow for your configured archive statements", minActions);
             maxConcurrentActions = minActions;
         }
         _archiveHandlerExecutor = Executors.newFixedThreadPool(maxConcurrentActions, new ArchiveHandlerThreadFactory());

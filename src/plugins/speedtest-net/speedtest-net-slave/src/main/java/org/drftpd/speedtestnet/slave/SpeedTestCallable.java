@@ -119,7 +119,7 @@ public class SpeedTestCallable implements Callable<SpeedTestAnswer> {
         }
 
         long time = timeStop - timeStart;
-        logger.debug("Returning [" + bytes + "] bytes and [" + time + "] execution time");
+        logger.debug("Returning [{}] bytes and [{}] execution time", bytes, time);
         return new SpeedTestAnswer(bytes, time);
     }
 
