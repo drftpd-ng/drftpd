@@ -201,9 +201,7 @@ public class Misc extends CommandInterface {
                 cmdLength = cmd.length();
             }
         }
-        StringBuilder padBuilder = new StringBuilder();
-        padBuilder.append(" ".repeat(cmdLength));
-        String pad = padBuilder.toString();
+        String pad = " ".repeat(cmdLength);
         for (Entry<String, Properties> cmd : cmdProperties.entrySet()) {
             String helpString = cmd.getValue().getProperty("help");
             if (helpString == null) {

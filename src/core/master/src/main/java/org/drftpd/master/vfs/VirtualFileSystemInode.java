@@ -369,13 +369,12 @@ public abstract class VirtualFileSystemInode implements Commitable {
      */
     @Override
     public String toString() {
-        StringBuilder ret = new StringBuilder();
-        ret.append("[path=").append(getPath()).append("]");
-        ret.append("[user,group=").append(getUsername()).append(",").append(getGroup()).append("]");
-        ret.append("[creationTime=").append(getCreationTime()).append("]");
-        ret.append("[lastModified=").append(getLastModified()).append("]");
-        ret.append("[size=").append(getSize()).append("]");
-        return ret.toString();
+        String ret = "[path=" + getPath() + "]" +
+                "[user,group=" + getUsername() + "," + getGroup() + "]" +
+                "[creationTime=" + getCreationTime() + "]" +
+                "[lastModified=" + getLastModified() + "]" +
+                "[size=" + getSize() + "]";
+        return ret;
     }
 
     @Override

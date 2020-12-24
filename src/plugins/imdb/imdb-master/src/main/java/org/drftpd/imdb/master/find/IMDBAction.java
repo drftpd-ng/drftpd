@@ -49,21 +49,20 @@ public class IMDBAction implements ActionInterface {
         IMDBInfo imdbInfo = imdbData.getIMDBInfoFromCache();
         if (imdbInfo != null) {
             if (imdbInfo.getMovieFound()) {
-                StringBuilder sb = new StringBuilder();
-                sb.append("#########################################").append(")\n");
-                sb.append("# Title # - ").append(imdbInfo.getTitle()).append("\n");
-                sb.append("# Year # - ").append(imdbInfo.getYear()).append("\n");
-                sb.append("# Runtime # - ").append(imdbInfo.getRuntime()).append(" min").append("\n");
-                sb.append("# Language # - ").append(imdbInfo.getLanguage()).append("\n");
-                sb.append("# Country # - ").append(imdbInfo.getCountry()).append("\n");
-                sb.append("# Director # - ").append(imdbInfo.getDirector()).append("\n");
-                sb.append("# Genres # - ").append(imdbInfo.getGenres()).append("\n");
-                sb.append("# Plot #\n").append(WordUtils.wrap(imdbInfo.getPlot(), 70));
-                sb.append("# Rating # - ");
-                sb.append(imdbInfo.getRating() != null ? imdbInfo.getRating() / 10 + "." + imdbInfo.getRating() % 10 + "/10" : "-").append("\n");
-                sb.append("# Votes # - ").append(imdbInfo.getVotes()).append("\n");
-                sb.append("# URL # - ").append(imdbInfo.getURL()).append("\n");
-                return sb.toString();
+                String sb = "#########################################" + ")\n" +
+                        "# Title # - " + imdbInfo.getTitle() + "\n" +
+                        "# Year # - " + imdbInfo.getYear() + "\n" +
+                        "# Runtime # - " + imdbInfo.getRuntime() + " min" + "\n" +
+                        "# Language # - " + imdbInfo.getLanguage() + "\n" +
+                        "# Country # - " + imdbInfo.getCountry() + "\n" +
+                        "# Director # - " + imdbInfo.getDirector() + "\n" +
+                        "# Genres # - " + imdbInfo.getGenres() + "\n" +
+                        "# Plot #\n" + WordUtils.wrap(imdbInfo.getPlot(), 70) +
+                        "# Rating # - " +
+                        (imdbInfo.getRating() != null ? imdbInfo.getRating() / 10 + "." + imdbInfo.getRating() % 10 + "/10" : "-") + "\n" +
+                        "# Votes # - " + imdbInfo.getVotes() + "\n" +
+                        "# URL # - " + imdbInfo.getURL() + "\n";
+                return sb;
             }
         }
         return "#########################################\nNO IMDB INFO FOUND FOR: " + inode.getPath();

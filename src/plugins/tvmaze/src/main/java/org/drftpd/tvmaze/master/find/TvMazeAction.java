@@ -51,13 +51,12 @@ public class TvMazeAction implements ActionInterface {
         TvMazeVFSData tvmazeData = new TvMazeVFSData((DirectoryHandle) inode);
         TvMazeInfo tvmazeInfo = tvmazeData.getTvMazeInfoFromCache();
         if (tvmazeInfo != null) {
-            StringBuilder sb = new StringBuilder();
-            sb.append("#########################################").append(")\n");
-            sb.append("# Title # - ").append(tvmazeInfo.getName()).append("\n");
-            sb.append("# Genre # - ").append(StringUtils.join(Arrays.toString(tvmazeInfo.getGenres()), ", ")).append("\n");
-            sb.append("# URL # - ").append(tvmazeInfo.getURL()).append("\n");
-            sb.append("# Plot #\n").append(WordUtils.wrap(tvmazeInfo.getSummary(), 70));
-            return sb.toString();
+            String sb = "#########################################" + ")\n" +
+                    "# Title # - " + tvmazeInfo.getName() + "\n" +
+                    "# Genre # - " + StringUtils.join(Arrays.toString(tvmazeInfo.getGenres()), ", ") + "\n" +
+                    "# URL # - " + tvmazeInfo.getURL() + "\n" +
+                    "# Plot #\n" + WordUtils.wrap(tvmazeInfo.getSummary(), 70);
+            return sb;
         }
         return "#########################################\nNO TvMaze INFO FOUND FOR: " + inode.getPath();
     }
