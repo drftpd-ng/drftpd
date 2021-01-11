@@ -76,7 +76,7 @@ ginfo.user=|${user,-11}|${fup,7} |${mbup,9} |${fdn,7} |${mbdn,9} |${ratio,8} |${
 
 idle.empty=No idle connections found.
 
-purgeuser.success=User ${tagetuser} purged.
+purgeuser.success=User ${targetuser} purged.
 
 speed.down=${targetuser,-11} -> DN ${speed,9} from ${slave} - ${file}.
 speed.idle=${targetuser,-11} -> Idle for ${idle}.
