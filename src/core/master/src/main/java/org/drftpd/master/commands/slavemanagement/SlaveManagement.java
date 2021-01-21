@@ -17,6 +17,8 @@
  */
 package org.drftpd.master.commands.slavemanagement;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.drftpd.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.common.exceptions.DuplicateElementException;
 import org.drftpd.common.exceptions.RemoteIOException;
@@ -40,6 +42,7 @@ import org.drftpd.master.vfs.VirtualFileSystem;
 import org.drftpd.slave.exceptions.ObjectNotFoundException;
 import org.drftpd.slave.network.Transfer;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -49,6 +52,8 @@ import java.util.Map.Entry;
  * @version $Id$
  */
 public class SlaveManagement extends CommandInterface {
+
+    protected static final Logger logger = LogManager.getLogger(SlaveManagement.class);
 
     private ResourceBundle _bundle;
 
@@ -105,7 +110,7 @@ public class SlaveManagement extends CommandInterface {
         if (!path.startsWith(VirtualFileSystem.separator)) {
             throw new ImproperUsageException();
         }
-        char direction = Transfer.TRANSFER_UNKNOWN;
+        char direction;
         if (type.equalsIgnoreCase("up")) {
             direction = Transfer.TRANSFER_RECEIVING_UPLOAD;
         } else if (type.equalsIgnoreCase("down")) {
@@ -119,7 +124,7 @@ public class SlaveManagement extends CommandInterface {
         } catch (NoAvailableSlaveException e1) {
             return StandardCommandManager.genericResponse("RESPONSE_530_SLAVE_UNAVAILABLE");
         }
-        SlaveSelectionManager ssm = null;
+        SlaveSelectionManager ssm;
         try {
             ssm = (SlaveSelectionManager) GlobalContext.getGlobalContext().getSlaveSelectionManager();
         } catch (ClassCastException e) {
@@ -132,8 +137,7 @@ public class SlaveManagement extends CommandInterface {
         for (Filter filter : filters) {
             try {
                 filter.process(sc, null, null, direction, new FileHandle(path), null);
-            } catch (NoAvailableSlaveException e) {
-            }
+            } catch (NoAvailableSlaveException ignored) {}
         }
         for (ScoreChart.SlaveScore ss : sc.getSlaveScores()) {
             response.addComment(ss.getRSlave().getName() + "=" + ss.getScore());
@@ -322,8 +326,7 @@ public class SlaveManagement extends CommandInterface {
         while (!rslave.getRemergeQueue().isEmpty() && !rslave.getCRCQueue().isEmpty()) {
             try {
                 Thread.sleep(500);
-            } catch (InterruptedException e) {
-            }
+            } catch (InterruptedException ignored) {}
         }
 
         if (rslave._remergePaused.get()) {
@@ -348,7 +351,7 @@ public class SlaveManagement extends CommandInterface {
     /**
      * Usage: site slave slavename [set,addmask,delmask]
      *
-     * @throws ImproperUsageException
+     * @throws ImproperUsageException Thrown when the command is invoked with incorrect instructions
      */
     public CommandResponse doSITE_SLAVE(CommandRequest request) throws ImproperUsageException {
         Session session = request.getSession();
@@ -370,7 +373,7 @@ public class SlaveManagement extends CommandInterface {
         String slavename = arguments.nextToken();
         env.put("slavename", slavename);
 
-        RemoteSlave rslave = null;
+        RemoteSlave rslave;
 
         try {
             rslave = GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(slavename);
@@ -545,13 +548,18 @@ public class SlaveManagement extends CommandInterface {
 
         try {
             GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(slavename);
-
-            return new CommandResponse(501,
-                    session.jprintf(_bundle, "addslave.exists", request.getUser()));
-        } catch (ObjectNotFoundException e) {
-        }
+            return new CommandResponse(501, session.jprintf(_bundle, "addslave.exists", request.getUser()));
+        } catch (ObjectNotFoundException ignored) {}
 
         GlobalContext.getGlobalContext().getSlaveManager().newSlave(slavename);
+        // We try to reload the SlaveSelectionManager here to make sure it knows of the new slave
+        try {
+            GlobalContext.getGlobalContext().getSlaveSelectionManager().reload();
+        } catch(IOException e) {
+            logger.error("While adding a new slave we reloaded the SlaveSelectionManager, however we trapped an exception");
+            logger.error(e.getStackTrace());
+            response.addComment("We received an Exception during reload of SlaveSelectionManager, this is unexpected and needs investigation");
+        }
         response.addComment(session.jprintf(_bundle, "addslave.success", env, request.getUser()));
 
         return response;
@@ -571,12 +579,12 @@ public class SlaveManagement extends CommandInterface {
 
 
     public CommandResponse doRemergequeue(CommandRequest request) throws ImproperUsageException {
-        String slavestofind = GlobalContext.getConfig().getMainProperties().getProperty("default.slave.output");
+        String slavesToFind = GlobalContext.getConfig().getMainProperties().getProperty("default.slave.output");
         String slave = "all";
         if (request.hasArgument()) {
             slave = request.getArgument().toLowerCase();
-        } else if (slavestofind != null) {
-            slave = slavestofind;
+        } else if (slavesToFind != null) {
+            slave = slavesToFind;
         }
 
         ArrayList<String> arr = new ArrayList<>();
