@@ -1254,7 +1254,7 @@ public class UserManagementHandler extends CommandInterface {
             myUser.rename(args[1]);
             BaseFtpConnection.fixBaseFtpConnUser(oldUsername, myUser.getName());
             // Fix the request user reference
-            if (requesterUsername == oldUsername) {
+            if (requesterUsername.equals(oldUsername)) {
                 request.setUser(myUser.getName());
             }
             myUser.commit();
