@@ -173,18 +173,18 @@ public class UserManagementHandler extends CommandInterface {
         Group g = null;
         if (isGAdduser) {
             g = session.getGroupNull(st.nextToken());
-        } else {
-            // regular adduser, take over primary group of user
-            g = currentUser.getGroup();
-        }
-
-        // If the group is unknown we bail out
-        if (g == null) {
-            throw new ImproperUsageException();
+            // Make sure the group actually exists...
+            if (g == null) {
+                return new CommandResponse(500, "Group does not exist");
+            }
         }
 
         // If the currentUser is a group admin check if he actually is the group admin for the group we are adding a user to and that there are enough slots available
         if (isGroupAdmin) {
+            if (!isGAdduser) {
+                // regular adduser, take over primary group of user
+                g = currentUser.getGroup();
+            }
             if (!g.isAdmin(currentUser)) {
                 return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
             }
@@ -216,6 +216,14 @@ public class UserManagementHandler extends CommandInterface {
             String wklyallotment = cfg.getProperty("wkly_allotment", "0");
             String credits = cfg.getProperty("credits", "0b");
             String tagline = cfg.getProperty("tagline", "No tagline set.");
+            String group = cfg.getProperty("group", "");
+            if (g == null) {
+                g = session.getGroupNull(group);
+                // Make sure the group actually exists...
+                if (g == null) {
+                    return new CommandResponse(500, "Defaultuser group does not exist");
+                }
+            }
 
             float ratioVal = Float.parseFloat(ratio);
             int maxloginsVal = Integer.parseInt(maxlogins);
