@@ -114,14 +114,12 @@ public class BaseFtpConnection extends Session implements Runnable {
      * This methods iterates thru all control connections trying to match connections owned by 'oldUsername'
      * and re-sets it to 'newUsername'.
      *
-     * @param oldUsername
-     * @param newUsername
+     * @param oldUsername the old Username before we renamed the user
+     * @param newUsername the new Username
      */
     public static void fixBaseFtpConnUser(String oldUsername, String newUsername) {
         for (BaseFtpConnection conn : GlobalContext.getConnectionManager().getConnections()) {
-            if (conn.getUsername() == null) {
-                // User authentication not completed yet for this connection
-            } else if (conn.getUsername().equals(oldUsername)) {
+            if (conn.getUsername() != null && conn.getUsername().equals(oldUsername)) {
                 conn.setUser(newUsername);
             }
         }

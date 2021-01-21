@@ -1249,8 +1249,14 @@ public class UserManagementHandler extends CommandInterface {
         try {
             User myUser = GlobalContext.getGlobalContext().getUserManager().getUserByName(args[0]);
             String oldUsername = myUser.getName();
+            // We need to get the requester username before we rename as we might be renaming ourselves...
+            String requesterUsername = session.getUserNull(request.getUser()).getName();
             myUser.rename(args[1]);
             BaseFtpConnection.fixBaseFtpConnUser(oldUsername, myUser.getName());
+            // Fix the request user reference
+            if (requesterUsername.equals(oldUsername)) {
+                request.setUser(myUser.getName());
+            }
             myUser.commit();
             logger.info("'{}' renamed '{}' to '{}'", session.getUserNull(request.getUser()).getName(), oldUsername, myUser.getName());
         } catch (NoSuchUserException e) {

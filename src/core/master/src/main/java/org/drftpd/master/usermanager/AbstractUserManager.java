@@ -263,17 +263,16 @@ public abstract class AbstractUserManager implements UserManager {
     public abstract Group getGroupByNameUnchecked(String groupname) throws NoSuchGroupException, GroupFileException;
 
     protected synchronized void renameUser(User oldUser, String newUsername) throws UserExistsException, UserFileException {
-        if (!_users.containsKey(newUsername)) {
-            try {
-                getUserByNameUnchecked(newUsername);
-            } catch (NoSuchUserException e) {
-                _users.remove(oldUser.getName());
-                _users.put(newUsername, new SoftReference<>(oldUser));
-                return;
-            }
+        if (_users.containsKey(newUsername)) {
+            throw new UserExistsException("user " + newUsername + " exists");
         }
 
-        throw new UserExistsException("user " + newUsername + " exists");
+        try {
+            getUserByNameUnchecked(newUsername);
+        } catch (NoSuchUserException e) {
+            _users.remove(oldUser.getName());
+            _users.put(newUsername, new SoftReference<>(oldUser));
+        }
     }
 
     protected synchronized void renameGroup(Group oldGroup, String newGroupname) throws GroupExistsException, GroupFileException {
