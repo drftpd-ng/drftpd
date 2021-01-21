@@ -1,9 +1,43 @@
-###########################
-## Default User Settings ##
-###################################################################################################
+##########################################################
+## Default User Settings, used when creating a new user ##
+##########################################################
 
-# min/max ratio that gadmins can set on their group members:
-# Default: [3.0][3.0]
-min_ratio=3.0
-max_ratio=3.0
+# Ratio
+# Default: 3.0
+# ratio=3.0
 
+# Maximum logins
+# Default: 2
+# max_logins=2
+
+# Maximum logins per IP
+# Default: 2
+# max_logins_ip=2
+
+# Maximum uploads
+# Default: 2
+# max_uploads=2
+
+# Maximum downloads
+# Default: 2
+# max_downloads=2
+
+# Idle time
+# Default: 300
+# idle_time=300
+
+# Weekly allotment (0 = disabled)
+# Default: 0
+# wkly_allotment=0
+
+# Credits
+# Default: 0b
+# credits=0b
+
+# Tag line
+# Default: No tagline set.
+tagline=No tagline set.
+
+# Group
+# Default: NoGroup
+# group=NoGroup
