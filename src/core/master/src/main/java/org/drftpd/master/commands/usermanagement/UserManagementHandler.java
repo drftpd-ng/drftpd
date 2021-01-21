@@ -216,7 +216,8 @@ public class UserManagementHandler extends CommandInterface {
             String wklyallotment = cfg.getProperty("wkly_allotment", "0");
             String credits = cfg.getProperty("credits", "0b");
             String tagline = cfg.getProperty("tagline", "No tagline set.");
-            String group = cfg.getProperty("group", "");
+            String group = cfg.getProperty("group", "NoGroup");
+            // If we do not have a group yet we got here using 'adduser' and we pick the default group
             if (g == null) {
                 g = session.getGroupNull(group);
                 // Make sure the group actually exists...

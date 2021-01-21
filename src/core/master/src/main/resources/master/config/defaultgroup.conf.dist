@@ -1,9 +1,8 @@
-############################
-## Default Group Settings ##
-####################################################################################################
+###########################################################
+## Default Group Settings, used when creating new groups ##
+###########################################################
 
 # min/max ratio that gadmins can set on their group members:
 # Default: [3.0][3.0]
 min_ratio=3.0
 max_ratio=3.0
-
