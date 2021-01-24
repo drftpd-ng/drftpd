@@ -53,8 +53,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class SlaveManager implements Runnable, TimeEventInterface {
     protected static final int actualTimeout = 60000; // one minute, evaluated
-    private static final Logger logger = LogManager.getLogger(SlaveManager.class
-            .getName());
+    private static final Logger logger = LogManager.getLogger(SlaveManager.class.getName());
     private static final String slavePath = "userdata/slaves/";
     private static final int socketTimeout = 10000; // 10 seconds, for Socket
     // on a SocketTimeout

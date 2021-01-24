@@ -98,7 +98,6 @@ public class SectionManager implements SectionManagerInterface {
         _typesMap = typesMap;
     }
 
-
     public void reload() {
         initTypes();
         Properties p = ConfigLoader.loadConfig("sections.conf");
