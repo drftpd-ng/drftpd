@@ -10,10 +10,6 @@
 # Default: [10080]
 cycleTime=10080
 
-# AutoFreeSpace will try to keep each slave above this number.
-# Default: [100GB]
-keepFree=100GB
-
 # Do not delete files with this following names (regex).
 #excluded.file.1=.*speedtest.*
 
@@ -24,15 +20,18 @@ keepFree=100GB
 # Default: [true]
 announce.only=true
 
-# Only one option can be set to true.
-# Delete files only based on time rather then time+keepFree.
-# Default: [false]
-delete.on.date=false
-# Delete files only based on space rather than time+keepFree.
-# Default: [false]
-delete.on.space=false
+# On which mode should autofreespace work
+# Possible options: disabled, date, space
+# disabled: Do nothing (plugin disabled)
+# date: Delete files based on wipeAfter per section
+# space: Delete files based on keepFree
+mode=disabled
 
-# Do not delete releases younger than X minutes.
+# AutoFreeSpace will try to keep each slave above this number (Only used if mode = space)
+# Default: [100GB]
+keepFree=100GB
+
+# Do not delete releases younger than X minutes (wipeAfter only used if mode = date)
 1.section=SECTION
 1.wipeAfter=43200
 

@@ -24,8 +24,6 @@ import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.autofreespace.master.event.AFSEvent;
 import org.drftpd.common.extensibility.PluginInterface;
 import org.drftpd.common.util.Bytes;
-import org.drftpd.common.util.ConfigLoader;
-import org.drftpd.common.util.PropertyHelper;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.event.ReloadEvent;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
@@ -39,30 +37,19 @@ import org.drftpd.master.vfs.InodeHandle;
 import java.io.FileNotFoundException;
 import java.util.*;
 
-
 /**
  * @author Teflon
  * @author Stevezau
  * @author scitz0
  * @version $Id$
  * adapted to drftpd 3.0.0 by Stevezau
- * @inspired by P
  */
 
 public class AutoFreeSpace implements PluginInterface {
     private static final Logger logger = LogManager.getLogger(AutoFreeSpace.class);
-    private HashMap<String, Section> sections;
-    private ArrayList<String> _excludeFiles;
-    private ArrayList<String> _excludeSlaves;
     private Timer _timer;
-    private boolean _onlyAnnounce;
-    private boolean deleteOnDate = false;
-    private boolean deleteOnSpace = false;
 
     public void startPlugin() {
-        _excludeFiles = new ArrayList<>();
-        _excludeSlaves = new ArrayList<>();
-        sections = new HashMap<>();
         reload();
         // Subscribe to events
         AnnotationProcessor.process(this);
@@ -82,84 +69,147 @@ public class AutoFreeSpace implements PluginInterface {
     }
 
     private void reload() {
-        logger.info("AUTODELETE: Reloading {}", AutoFreeSpace.class.getName());
-        Properties p = ConfigLoader.loadPluginConfig("autofreespace.conf");
-        if (_timer == null) {
-            _timer = new Timer();
-        } else {
+        if (_timer != null) {
+            logger.info("AUTODELETE: Reloading {}", AutoFreeSpace.class.getName());
             _timer.cancel();
-            _timer = new Timer();
+        } else
+        {
+            logger.info("AUTODELETE: Loading {}", AutoFreeSpace.class.getName());
         }
 
-        _excludeFiles.clear();
-        _excludeSlaves.clear();
-
-        int id = 1;
-        String name;
-        long minFreeSpace = Bytes.parseBytes(p.getProperty("keepFree"));
-        long cycleTime = Long.parseLong(p.getProperty("cycleTime")) * 60000;
-        deleteOnDate = Boolean.parseBoolean(p.getProperty("delete.on.date"));
-        deleteOnSpace = Boolean.parseBoolean(p.getProperty("delete.on.space"));
-        _excludeSlaves.addAll(Arrays.asList(p.getProperty("excluded.slaves", "").trim().split("\\s")));
-        long wipeAfter;
-
-        while ((name = PropertyHelper.getProperty(p, id + ".section", null)) != null) {
-            wipeAfter = Long.parseLong(p.getProperty(id + ".wipeAfter")) * 60000;
-            sections.put(name, new Section(id, name, wipeAfter));
-            id++;
+        AutoFreeSpaceSettings.getSettings().reload();
+        if (AutoFreeSpaceSettings.getSettings().getMode().equals(AutoFreeSpaceSettings.MODE_DISABLED)) {
+            logger.info("AutoFreeSpace plugin is disabled");
+            return;
         }
-
-        for (int i = 1; ; i++) {
-            String sec = p.getProperty("excluded.file." + i);
-            if (sec == null)
-                break;
-            _excludeFiles.add(sec);
-        }
-        _excludeFiles.trimToSize();
-
-        _onlyAnnounce = p.getProperty("announce.only", "false").equalsIgnoreCase("true");
-
-        _timer.schedule(new MrCleanit(_excludeFiles, minFreeSpace, sections), cycleTime, cycleTime);
-    }
-
-    static class Section {
-        private final int id;
-        private final String name;
-        private final long wipeAfter;
-
-        public Section(int id, String name, long wipeAfter) {
-            this.id = id;
-            this.name = name;
-            this.wipeAfter = wipeAfter;
-        }
-
-        public int getId() {
-            return this.id;
-        }
-
-        public String getName() {
-            return this.name;
-        }
-
-        public long getWipeAfter() {
-            return this.wipeAfter;
+        _timer = new Timer();
+        try {
+            _timer.schedule(new MrCleanIt(), AutoFreeSpaceSettings.getSettings().getCycleTime(), AutoFreeSpaceSettings.getSettings().getCycleTime());
+        } catch (IllegalStateException e) {
+            logger.error("Unable to start AutoFreeSpace timer task, reload and try again");
         }
     }
 
-    private class MrCleanit extends TimerTask {
-        private final ArrayList<String> _excludeFiles;
-        private final HashMap<String, Section> _sections;
-        private final long _minFreeSpace;
+    private static class MrCleanIt extends TimerTask {
+        // This contains a list of all releases that (would) have been deleted.
+        // Only useful when option "announce.only" is enabled
+        // Also this will grow indefinitely and could potentially be a memory hog
         private final ArrayList<String> checkedReleases = new ArrayList<>();
 
-        public MrCleanit(ArrayList<String> excludeFiles, long minFreeSpace, HashMap<String, Section> sections) {
-            _excludeFiles = excludeFiles;
-            _minFreeSpace = minFreeSpace;
-            _sections = sections;
+        public MrCleanIt() {}
+
+        public void run() {
+            try {
+                int slavesCount = 0;
+                for (RemoteSlave remoteSlave : GlobalContext.getGlobalContext().getSlaveManager().getAvailableSlaves()) {
+                    if (AutoFreeSpaceSettings.getSettings().getExcludeSlaves().contains(remoteSlave.getName())) {
+                        logger.debug("Skipping [{}] as it is excluded", remoteSlave.getName());
+                        continue;
+                    }
+
+                    try {
+                        if (AutoFreeSpaceSettings.getSettings().getMode().equals(AutoFreeSpaceSettings.MODE_DATE)) {
+                            cleanByDate(remoteSlave);
+                        }
+                        if (AutoFreeSpaceSettings.getSettings().getMode().equals(AutoFreeSpaceSettings.MODE_SPACE)) {
+                            cleanBySpace(remoteSlave);
+                        }
+                    } catch (SlaveUnavailableException e) {
+                        logger.warn("Slave suddenly went offline");
+                    }
+                    slavesCount++;
+                }
+                logger.debug("AUTODELETE: Checked [{}] Slaves for free space", slavesCount);
+            } catch (NoAvailableSlaveException nase) {
+                logger.warn("AUTODELETE: No slaves online, no point in running the cleaning procedure");
+            }
+        }
+
+        /**
+         * Function to delete data on slave purely based on date, with a minimum per section (wipeAfter)
+         * @param remoteSlave The slave to check for items to be deleted
+         */
+        private void cleanByDate(RemoteSlave remoteSlave) throws SlaveUnavailableException {
+            int deletedCount = 0;
+            try {
+                InodeHandle oldestRelease;
+                while ((oldestRelease = getOldestRelease(remoteSlave)) != null) {
+                    GlobalContext.getEventService().publishAsync(new AFSEvent(oldestRelease, remoteSlave));
+                    if (AutoFreeSpaceSettings.getSettings().getOnlyAnnounce()) {
+                        checkedReleases.add(oldestRelease.getName());
+                    } else {
+                        logger.info("AUTODELETE: Removing {}", oldestRelease.getName());
+                        oldestRelease.deleteUnchecked(); // Throws the FileNotFoundException
+                    }
+                    deletedCount++;
+                }
+            } catch(FileNotFoundException e) {
+                logger.error("AUTODELETE: Deleted [{}] releases on slave {} before we ran into an unexpected exception: {}", deletedCount, remoteSlave.getName(), e.getCause());
+            }
+            if (deletedCount > 0) {
+                logger.debug("AUTODELETE: Deleted [{}] releases on slave {}", deletedCount, remoteSlave.getName());
+            } else {
+                logger.warn("AUTODELETE: Found 0 oldest releases for slave {}", remoteSlave.getName());
+            }
+        }
+
+        private void cleanBySpace(RemoteSlave remoteSlave) throws SlaveUnavailableException {
+            long freespace = remoteSlave.getSlaveStatus().getDiskSpaceAvailable();
+            long freespaceSaved = freespace;
+
+            if (freespace >= AutoFreeSpaceSettings.getSettings().getMinFreeSpace()) {
+                logger.debug("AUTODELETE: Space over limit for slave {} will not clean: {}>={}", remoteSlave.getName(), Bytes.formatBytes(freespace), Bytes.formatBytes(AutoFreeSpaceSettings.getSettings().getMinFreeSpace()));
+                return;
+            }
+
+            logger.debug("AUTODELETE: Space under limit for {}, will clean: {}<{}", remoteSlave.getName(), Bytes.formatBytes(freespace), Bytes.formatBytes(AutoFreeSpaceSettings.getSettings().getMinFreeSpace()));
+            GlobalContext.getEventService().publishAsync(new AFSEvent(null, remoteSlave));
+            if (AutoFreeSpaceSettings.getSettings().getOnlyAnnounce()) {
+                return;
+            }
+
+            int deletedCount = 0;
+            while (freespace < AutoFreeSpaceSettings.getSettings().getMinFreeSpace()) {
+
+                InodeHandle oldestRelease;
+
+                try {
+                    oldestRelease = getOldestRelease(remoteSlave);
+                    if (oldestRelease == null) {
+                        logger.debug("AUTODELETE: oldestRelease is null. Stopping iteration");
+                        break;
+                    }
+
+                    GlobalContext.getEventService().publishAsync(new AFSEvent(oldestRelease, remoteSlave));
+                    if (AutoFreeSpaceSettings.getSettings().getOnlyAnnounce()) {
+                        checkedReleases.add(oldestRelease.getName());
+                    } else {
+                        logger.info("AUTODELETE: Removing {}", oldestRelease.getName());
+                        oldestRelease.deleteUnchecked(); // Throws the FileNotFoundException
+                        freespace = remoteSlave.getSlaveStatus().getDiskSpaceAvailable();
+                        logger.info("AUTODELETE: Removed {}, cleared {} on {}", oldestRelease.getName(), Bytes.formatBytes(remoteSlave.getSlaveStatus().getDiskSpaceAvailable() - freespace), remoteSlave.getName());
+                    }
+                    deletedCount++;
+                } catch (FileNotFoundException e) {
+                    logger.error("AUTODELETE: Deleted [{}] releases on slave {} before we ran into an unexpected exception: {}", deletedCount, remoteSlave.getName(), e.getCause());
+                }
+
+                if (freespaceSaved == freespace && !AutoFreeSpaceSettings.getSettings().getOnlyAnnounce()) {
+                    logger.warn("AUTODELETE: We tried to clean slave {}, but free space has not changed. Stopping iteration", remoteSlave.getName());
+                    break;
+                }
+
+                freespaceSaved = freespace;
+            }
+            if (deletedCount > 0) {
+                logger.debug("AUTODELETE: Deleted [{}] releases on slave {}", deletedCount, remoteSlave.getName());
+            } else {
+                logger.warn("AUTODELETE: Found 0 oldest releases to clean for slave {}", remoteSlave.getName());
+            }
         }
 
         private boolean checkInvalidName(String name) {
-            for (String regex : _excludeFiles) {
+            for (String regex : AutoFreeSpaceSettings.getSettings().getExcludeFiles()) {
                 if (name.matches(regex)) {
                     return true;
                 }
@@ -195,8 +245,7 @@ public class AutoFreeSpace implements PluginInterface {
             return null;
         }
 
-        private boolean gotFilesOn(InodeHandle inode, RemoteSlave slave)
-                throws NoAvailableSlaveException, FileNotFoundException {
+        private boolean gotFilesOn(InodeHandle inode, RemoteSlave slave)throws NoAvailableSlaveException, FileNotFoundException {
 
             if (inode.isFile()) {
                 return ((FileHandle) inode).getAvailableSlaves().contains(slave);
@@ -211,14 +260,16 @@ public class AutoFreeSpace implements PluginInterface {
             return false;
         }
 
-        private InodeHandle getOldestRelease(RemoteSlave slave) throws FileNotFoundException {
-
+        private InodeHandle getOldestRelease(RemoteSlave slave) {
             InodeHandle oldest = null;
 
-            for (SectionInterface si :
-                    GlobalContext.getGlobalContext().getSectionManager().getSections()) {
+            // Loop over all sections
+            for (SectionInterface si : GlobalContext.getGlobalContext().getSectionManager().getSections()) {
 
-                if (!_sections.containsKey(si.getName())) {
+                // We are only interested in sections we have a config for
+                AutoFreeSpaceSettings.Section section = AutoFreeSpaceSettings.getSettings().getSections().get(si.getName());
+                if (section == null) {
+                    logger.debug("Skipping section [{}] as no configuration exists", si.getName());
                     continue;
                 }
 
@@ -226,22 +277,33 @@ public class AutoFreeSpace implements PluginInterface {
                 try {
                     InodeHandle file = getOldestFile(si.getBaseDirectory(), slave);
 
-                    if (file == null)
+                    // Quickly skip if this sections does not have anything
+                    if (file == null) {
                         continue;
+                    }
 
                     logger.debug("AUTODELETE: Oldest file in section {}: {}", si.getName(), file.getName());
 
                     long age = System.currentTimeMillis() - file.creationTime();
-                    Section section = _sections.get(si.getName());
-                    long _archiveAfter = section.getWipeAfter();
+                    long _wipeAfter = section.getWipeAfter();
 
+                    // (Optionally) set newest oldest if oldest is null or the newly found file is older than oldest already is
                     if (oldest == null || file.creationTime() < oldest.creationTime()) {
-                        if (age > _archiveAfter && !checkedReleases.contains(file.getName())) {
-                            oldest = file;
-                            logger.debug("AUTODELETE: New oldest file: {}, oldest in section {}", oldest.getName(), si.getName());
-                        } else if (deleteOnSpace) {
-                            oldest = file;
-                            logger.debug("AUTODELETE: Deleting due to low space on slave: {} in section {}", file.getName(), si.getName());
+                        boolean update = false;
+                        if (AutoFreeSpaceSettings.getSettings().getMode().equals(AutoFreeSpaceSettings.MODE_DATE)) {
+                            if (age > _wipeAfter) {
+                                update = true;
+                            }
+                        }
+                        if (AutoFreeSpaceSettings.getSettings().getMode().equals(AutoFreeSpaceSettings.MODE_SPACE)) {
+                            update = true;
+                        }
+                        if (update) {
+                            // Guard for announce.only setting
+                            if (!checkedReleases.contains(file.getName())) {
+                                logger.debug("AUTODELETE: New oldest file: {}. Found in section {}", oldest.getName(), si.getName());
+                                oldest = file;
+                            }
                         }
                     }
                 } catch (FileNotFoundException e) {
@@ -249,102 +311,23 @@ public class AutoFreeSpace implements PluginInterface {
                 }
             }
 
-            if (oldest == null) {
-                throw new FileNotFoundException("Nothing to wipe");
-            }
-
             return oldest;
         }
 
-        public void run() {
-            try {
-                for (RemoteSlave remoteSlave :
-                        GlobalContext.getGlobalContext().getSlaveManager().getAvailableSlaves()) {
-                    if (_excludeSlaves.contains(remoteSlave.getName())) {
-                        continue;
-                    }
-
-                    if (deleteOnDate) {
-                        try {
-                            InodeHandle oldestRelease;
-                            while ((oldestRelease = getOldestRelease(remoteSlave)) != null) {
-                                GlobalContext.getEventService().publishAsync(new AFSEvent(oldestRelease, remoteSlave));
-                                if (_onlyAnnounce) {
-                                    checkedReleases.add(oldestRelease.getName());
-                                    continue;
-                                }
-                                oldestRelease.deleteUnchecked();
-                                logger.info("AUTODELETE: Removing {}", oldestRelease.getName());
-                            }
-                        } catch (FileNotFoundException e) {
-                            logger.warn("AUTODELETE: Oldest release not found for slave {}: {}", remoteSlave.getName(), e);
-                        }
-                    } else {
-
-                        try {
-                            long freespace = remoteSlave.getSlaveStatus().getDiskSpaceAvailable();
-                            long freespaceBak = freespace;
-
-                            if (freespace < _minFreeSpace) {
-                                logger.debug("AUTODELETE: Space under limit for {}, will clean: {}<{}", remoteSlave.getName(), Bytes.formatBytes(freespace), Bytes.formatBytes(_minFreeSpace));
-                                GlobalContext.getEventService().publishAsync(new AFSEvent(null, remoteSlave));
-                                if (_onlyAnnounce) {
-                                    return;
-                                }
-                            } else {
-                                logger.debug("AUTODELETE: Space over limit for {} will not clean: {}>{}", remoteSlave.getName(), Bytes.formatBytes(freespace), Bytes.formatBytes(_minFreeSpace));
-                            }
-
-                            while (freespace < _minFreeSpace) {
-
-                                InodeHandle oldestRelease;
-
-                                try {
-                                    oldestRelease = getOldestRelease(remoteSlave);
-
-                                    GlobalContext.getEventService().publishAsync(new AFSEvent(oldestRelease, remoteSlave));
-
-                                    //issue somewhere around here, we find the release but it never gets deleted..
-                                    oldestRelease.deleteUnchecked();
-
-                                    freespace = remoteSlave.getSlaveStatus().getDiskSpaceAvailable();
-
-                                    logger.info("AUTODELETE: Removing {}, cleared {} on {}", oldestRelease.getName(), Bytes.formatBytes(remoteSlave.getSlaveStatus().getDiskSpaceAvailable() - freespace), remoteSlave.getName());
-
-                                } catch (FileNotFoundException e) {
-                                    logger.warn("AUTODELETE: Oldest release not found for slave {}: {}", remoteSlave.getName(), e);
-                                }
-
-                                if (freespaceBak == freespace) {
-                                    logger.warn("Tried, but could not clean the slave to meet your demands, giving up for now");
-                                    break;
-                                }
-
-                                freespaceBak = freespace;
-                            }
-                        } catch (SlaveUnavailableException e) {
-                            logger.warn("Slave suddenly went offline");
-                        }
-                    }
-                }
-            } catch (NoAvailableSlaveException nase) {
-                logger.warn("AUTODELETE: No slaves online, no point in running the cleaning procedure");
-            }
-        }
-
-        private class AgeComparator implements Comparator<InodeHandle> {
+        private static class AgeComparator implements Comparator<InodeHandle> {
 
             // Compare two InodeHandle.
             public final int compare(InodeHandle a, InodeHandle b) {
-                Long aLong, bLong;
+                long aLong;
+                long bLong;
                 try {
                     aLong = a.creationTime();
                     bLong = b.creationTime();
-                } catch (FileNotFoundException fnfe) {
-                    logger.warn("AUTODELETE: File missing when comparing age", fnfe.getCause());
+                } catch (FileNotFoundException e) {
+                    logger.warn("AUTODELETE: File missing when comparing age", e.getCause());
                     return 0;
                 }
-                int result = aLong.compareTo(bLong);
+                int result = Long.compare(aLong, bLong);
                 if (result == 0)
                     return a.getName().compareTo(b.getName());
                 else
