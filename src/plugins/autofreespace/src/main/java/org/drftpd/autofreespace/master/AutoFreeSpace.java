@@ -94,11 +94,15 @@ public class AutoFreeSpace implements PluginInterface {
         // This contains a list of all releases that (would) have been deleted.
         // Only useful when option "announce.only" is enabled
         // Also this will grow indefinitely and could potentially be a memory hog
-        private final ArrayList<String> checkedReleases = new ArrayList<>();
+        private List<String> checkedReleases;
 
-        public MrCleanIt() {}
+        public MrCleanIt() {
+            checkedReleases = new ArrayList<>();
+        }
 
         public void run() {
+            // Make sure we start with a clean list
+            checkedReleases = new ArrayList<>();
             try {
                 int slavesCount = 0;
                 for (RemoteSlave remoteSlave : GlobalContext.getGlobalContext().getSlaveManager().getAvailableSlaves()) {
@@ -153,6 +157,10 @@ public class AutoFreeSpace implements PluginInterface {
             }
         }
 
+        /**
+         * Function to delete data on slave purely based on free space
+         * @param remoteSlave The slave to check for items to be deleted
+         */
         private void cleanBySpace(RemoteSlave remoteSlave) throws SlaveUnavailableException {
             long freespace = remoteSlave.getSlaveStatus().getDiskSpaceAvailable();
             long freespaceSaved = freespace;
