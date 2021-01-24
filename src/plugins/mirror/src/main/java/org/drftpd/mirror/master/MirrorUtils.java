@@ -26,7 +26,7 @@ import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.master.vfs.InodeHandle;
 
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author lh
@@ -34,7 +34,7 @@ import java.util.ArrayList;
 public class MirrorUtils {
     private static final Logger logger = LogManager.getLogger(MirrorUtils.class);
 
-    public static void unMirrorDir(DirectoryHandle dir, User user, ArrayList<String> excludePaths) throws FileNotFoundException {
+    public static void unMirrorDir(DirectoryHandle dir, User user, List<String> excludePaths) throws FileNotFoundException {
         for (String excludePath : excludePaths) {
             if (dir.getPath().matches(excludePath)) {
                 // Skip this dir

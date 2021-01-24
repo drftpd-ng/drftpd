@@ -24,11 +24,11 @@ import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.common.extensibility.CommandHook;
 import org.drftpd.common.extensibility.HookType;
 import org.drftpd.common.extensibility.PluginInterface;
-import org.drftpd.common.util.ConfigLoader;
 import org.drftpd.jobs.master.Job;
 import org.drftpd.jobs.master.JobManager;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.commands.CommandRequest;
+import org.drftpd.master.commands.CommandRequestInterface;
 import org.drftpd.master.commands.CommandResponse;
 import org.drftpd.master.event.ReloadEvent;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
@@ -39,91 +39,55 @@ import org.drftpd.slave.exceptions.ObjectNotFoundException;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Properties;
+import java.util.List;
+import java.util.StringTokenizer;
 
 /**
  * @author lh
  */
-public class MirrorPostHook {
-    private static final Logger logger = LogManager.getLogger(MirrorPostHook.class);
+public class MirrorHooks {
+    private static final Logger logger = LogManager.getLogger(MirrorHooks.class);
 
-    private final ArrayList<MirrorSetting> _settings;
-
-    public MirrorPostHook() {
-        _settings = new ArrayList<>();
-        loadConf();
+    public MirrorHooks() {
+        reload();
         // Subscribe to events
         AnnotationProcessor.process(this);
+        logger.info("MirrorPostHook successfully initialized");
     }
 
-    private void loadConf() {
-        Properties cfg = ConfigLoader.loadPluginConfig("mirror.conf");
-        _settings.clear();
-        for (int i = 1; ; i++) {
-            String nbrOfMirrors = cfg.getProperty(i + ".nbrOfMirrors");
-            if (nbrOfMirrors == null) {
+    private void reload() {
+        MirrorSettings.getSettings().reload();
+    }
+
+    @CommandHook(commands = "doSITE_DELSLAVE", priority = 100, type = HookType.PRE)
+    public CommandRequestInterface doMirrorPreHook(CommandRequest request) {
+        // First handle syntax errors cases which will be handled in the normal command execution
+        if (!request.hasArgument()) {
+            // Syntax error but we'll let the command itself deal with it
+            return request;
+        }
+        StringTokenizer arguments = new StringTokenizer(request.getArgument());
+        if (!arguments.hasMoreTokens()) {
+            // Syntax error but we'll let the command itself deal with it
+            return request;
+        }
+        String slavename = arguments.nextToken();
+        RemoteSlave slave;
+        try {
+            slave = GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(slavename);
+        } catch(ObjectNotFoundException e) {
+            // This is an error, but we'll let the command itself deal with it
+            return request;
+        }
+
+        for (MirrorSettings.MirrorConfiguration mirrorConfig : MirrorSettings.getSettings().getConfigurations()) {
+            if (mirrorConfig.getSlaves().contains(slave.getName()) || mirrorConfig.getExcludedSlaves().contains(slave.getName())){
+                request.setAllowed(false);
+                request.setDeniedResponse(new CommandResponse(550, "Slave "+slave.getName()+" is still referenced in Mirror configuration, not allowing delete"));
                 break;
             }
-            MirrorSetting setting = new MirrorSetting();
-            try {
-                setting.setNbrOfMirrors(Integer.parseInt(nbrOfMirrors));
-                if (setting.getNbrOfMirrors() < 2) {
-                    logger.error("Invalid setting for {}.nbrOfMirrors, must be greater than 2", i);
-                    continue;
-                }
-                setting.setPriority(Integer.parseInt(cfg.getProperty(i + ".priority", "3")));
-                if (setting.getPriority() < 1) {
-                    logger.error("Invalid setting for {}.priority, must be greater than 0", i);
-                    continue;
-                }
-            } catch (NumberFormatException e) {
-                logger.error("We have a number formatting error, something is not set to an integer as we expect. Config entry {}", i);
-                continue;
-            }
-            ArrayList<String> paths = new ArrayList<>();
-            for (int j = 1; ; j++) {
-                String path = cfg.getProperty(i + ".path." + j);
-                if (path == null || path.trim().isEmpty()) {
-                    break;
-                }
-                paths.add(path);
-            }
-            setting.setPaths(paths);
-            ArrayList<String> excludedPaths = new ArrayList<>();
-            for (int j = 1; ; j++) {
-                String excludePath = cfg.getProperty(i + ".excludePath." + j);
-                if (excludePath == null || excludePath.trim().isEmpty()) {
-                    break;
-                }
-                excludedPaths.add(excludePath);
-            }
-            setting.setExcludedPaths(excludedPaths);
-            String slaves = cfg.getProperty(i + ".slaves");
-            if (slaves != null && !slaves.trim().isEmpty()) {
-                HashSet<RemoteSlave> slaveList = new HashSet<>();
-                for (String slaveName : slaves.split(" ")) {
-                    try {
-                        slaveList.add(GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(slaveName));
-                    } catch (ObjectNotFoundException e) {
-                        logger.error("Config item {} has an invalid slave name {} entered for slaves", i, slaveName);
-                    }
-                }
-                setting.setSlaves(slaveList);
-            }
-            String excludeSlaves = cfg.getProperty(i + ".excludeSlaves");
-            if (excludeSlaves != null && !excludeSlaves.trim().isEmpty()) {
-                HashSet<RemoteSlave> slaveList = new HashSet<>();
-                for (String slaveName : excludeSlaves.split(" ")) {
-                    try {
-                        slaveList.add(GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(slaveName));
-                    } catch (ObjectNotFoundException e) {
-                        logger.error("Config item {} has an invalid slave name {} entered for excludeSlaves", i, slaveName);
-                    }
-                }
-                setting.setExcludedSlaves(slaveList);
-            }
-            _settings.add(setting);
         }
+        return request;
     }
 
     @CommandHook(commands = "doSTOR", priority = 100, type = HookType.POST)
@@ -141,11 +105,13 @@ public class MirrorPostHook {
         }
 
         // Check if there is a valid configuration for this path
-        MirrorSetting activeSetting = null;
-        for (MirrorSetting setting : _settings) {
+        MirrorSettings.MirrorConfiguration activeSetting = null;
+        for (MirrorSettings.MirrorConfiguration setting : MirrorSettings.getSettings().getConfigurations()) {
             for (String pattern : setting.getPaths()) {
                 if (file.getPath().matches(pattern)) {
+                    // Setting matched the path
                     activeSetting = setting;
+                    // Found a match, break the loop early
                     break;
                 }
             }
@@ -153,7 +119,9 @@ public class MirrorPostHook {
                 // Setting valid but check excluded paths also
                 for (String pattern : setting.getExcludedPaths()) {
                     if (file.getPath().matches(pattern)) {
+                        // Excluded for this setting based on pattern
                         activeSetting = null;
+                        // Break the loop early
                         break;
                     }
                 }
@@ -164,22 +132,20 @@ public class MirrorPostHook {
                 break;
             }
         }
-        if (activeSetting == null) return;
+        // If we find no setting at all to match there is nothing for us to do
+        if (activeSetting == null) {
+            return;
+        }
 
-        HashSet<String> mirrorSlaves = new HashSet<>();
+        List<String> mirrorSlaves;
         try {
-            // Add slave(s) file already exist on
-            for (String existingSlave : file.getSlaveNames()) {
-                mirrorSlaves.add(existingSlave);
-            }
+            mirrorSlaves = new ArrayList<>(file.getSlaveNames());
         } catch (FileNotFoundException e) {
             // file deleted, no problem, just exit
             return;
         }
-        if (activeSetting.getSlaves() != null) {
-            for (RemoteSlave slave : activeSetting.getSlaves()) {
-                mirrorSlaves.add(slave.getName());
-            }
+        if (activeSetting.getSlaves().size() > 0) {
+            mirrorSlaves.addAll(activeSetting.getSlaves());
         } else {
             try {
                 for (RemoteSlave slave : GlobalContext.getGlobalContext().getSlaveManager().getAvailableSlaves()) {
@@ -189,16 +155,14 @@ public class MirrorPostHook {
                 // No need to continue
                 return;
             }
-            if (activeSetting.getExcludedSlaves() != null) {
-                // Remove excluded slaves
-                for (RemoteSlave slave : activeSetting.getExcludedSlaves()) {
-                    mirrorSlaves.remove(slave.getName());
-                }
+            if (activeSetting.getExcludedSlaves().size() > 0) {
+                mirrorSlaves.removeAll(activeSetting.getExcludedSlaves());
             }
         }
 
         if (activeSetting.getNbrOfMirrors() <= mirrorSlaves.size()) {
             // We got enough slaves, proceed and add job to queue
+            logger.debug("Adding {} to job queue with {} slaves {}", file.getPath(), mirrorSlaves.size(), mirrorSlaves.toString());
             getJobManager().addJobToQueue(new Job(file, mirrorSlaves, activeSetting.getPriority(), activeSetting.getNbrOfMirrors()));
         } else {
             logger.warn("Not adding {} to job queue, not enough slaves available.", file.getPath());
@@ -220,6 +184,6 @@ public class MirrorPostHook {
     @EventSubscriber
     public void onReloadEvent(ReloadEvent event) {
         logger.info("Received reload event, reloading");
-        loadConf();
+        reload();
     }
 }
