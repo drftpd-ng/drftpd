@@ -24,6 +24,7 @@ import org.drftpd.common.extensibility.HookType;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.commands.CommandRequest;
 import org.drftpd.master.commands.CommandResponse;
+import org.drftpd.master.commands.pre.Pre;
 import org.drftpd.master.sections.SectionInterface;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.ObjectNotValidException;
@@ -34,10 +35,30 @@ import org.drftpd.tvmaze.master.TvMazeUtils;
 import java.io.FileNotFoundException;
 
 /**
- * @author lh
+ * @author scitz0
  */
-public class TvMazePostHook {
-    private static final Logger logger = LogManager.getLogger(TvMazePostHook.class);
+
+public class TvMazeHooks {
+    private static final Logger logger = LogManager.getLogger(TvMazeHooks.class);
+
+    @CommandHook(commands = "doSITE_PRE", priority = 100, type = HookType.POST)
+    public void doSitePrePostHook(CommandRequest request, CommandResponse response) {
+        if (response.getCode() != 250) {
+            // PRE Failed, skip
+            logger.debug("Response code is not 250, skipping");
+            return;
+        }
+
+        // PRE dir
+        DirectoryHandle dirHandle = response.getObject(Pre.PREDIR, null);
+        if (dirHandle == null) {
+            // no pre dir found, how can this be on successful PRE?
+            logger.debug("PREDIR Object not set, how can this be a successful pre??, skipping");
+            return;
+        }
+
+        checkForTvMazeAction(dirHandle);
+    }
 
     @CommandHook(commands = "doMKD", priority = 1000, type = HookType.POST)
     public void doMKDPostHook(CommandRequest request, CommandResponse response) {
@@ -46,30 +67,36 @@ public class TvMazePostHook {
             return;
         }
 
-        DirectoryHandle workingDir;
+        DirectoryHandle dirHandle;
         try {
-            workingDir = request.getCurrentDirectory().getDirectoryUnchecked(request.getArgument());
+            dirHandle = request.getCurrentDirectory().getDirectoryUnchecked(request.getArgument());
         } catch (FileNotFoundException | ObjectNotValidException e) {
             logger.error("Failed getting DirectoryHandle for {}", request.getArgument());
             return;
         }
 
-        if (!TvMazeUtils.isRelease(workingDir.getName())) {
+        if (!TvMazeUtils.isRelease(dirHandle.getName())) {
+            logger.debug("Not a release according TvMaze naming convention");
             return;
         }
 
-        SectionInterface sec = GlobalContext.getGlobalContext().getSectionManager().lookup(workingDir);
+        checkForTvMazeAction(dirHandle);
+    }
+
+    private void checkForTvMazeAction(DirectoryHandle dirHandle) {
+        SectionInterface sec = GlobalContext.getGlobalContext().getSectionManager().lookup(dirHandle);
         if (!TvMazeUtils.containSection(sec, TvMazeConfig.getInstance().getRaceSections())) {
+            logger.debug("No TvMaze configuration found, skipping");
             return;
         }
 
-        if (workingDir.getName().matches(TvMazeConfig.getInstance().getExclude())) {
+        if (dirHandle.getName().matches(TvMazeConfig.getInstance().getExclude())) {
+            logger.debug("Excluded from TvMaze by configuration, skipping");
             return;
         }
 
         // Spawn a TvMazePrintThread and exit.
-        // This so its not stalling MKD
-        TvMazePrintThread tvmaze = new TvMazePrintThread(workingDir, sec);
-        tvmaze.start();
+        // This so its not stalling the command execution
+        (new TvMazePrintThread(dirHandle, sec)).start();
     }
 }
