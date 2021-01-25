@@ -509,15 +509,22 @@ public class SlaveManagement extends CommandInterface {
         try {
             GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(slavename);
         } catch (ObjectNotFoundException e) {
-            response.addComment(session.jprintf(_bundle,
-                    "delslave.notfound", env, request.getUser()));
+            response.addComment(session.jprintf(_bundle, "delslave.notfound", env, request.getUser()));
 
             return response;
         }
 
         GlobalContext.getGlobalContext().getSlaveManager().delSlave(slavename);
-        response.addComment(session.jprintf(_bundle,
-                "delslave.success", env, request.getUser()));
+        response.addComment(session.jprintf(_bundle, "delslave.success", env, request.getUser()));
+
+        // We try to reload the SlaveSelectionManager here to make sure it knows of the new slave
+        try {
+            GlobalContext.getGlobalContext().getSlaveSelectionManager().reload();
+        } catch(IOException e) {
+            logger.error("While removing a slave we reloaded the SlaveSelectionManager, however we trapped an exception");
+            logger.error(e.getStackTrace());
+            response.addComment("We received an Exception during reload of SlaveSelectionManager, this is unexpected and needs investigation");
+        }
 
         return response;
     }
