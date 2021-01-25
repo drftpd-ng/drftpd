@@ -37,10 +37,13 @@ public class MirrorSettings {
     private List<MirrorConfiguration> _configurations;
     private List<String> _unmirrorExcludePaths;
 
+    private long _unmirrorTime;
+
     private MirrorSettings() {
         // Set defaults (just in case)
         _configurations = new ArrayList<>();
         _unmirrorExcludePaths = new ArrayList<>();
+        _unmirrorTime = 60L * 60000L;
         reload();
     }
 
@@ -55,6 +58,8 @@ public class MirrorSettings {
     public void reload() {
         logger.debug("Loading configation");
         Properties cfg = ConfigLoader.loadPluginConfig("mirror.conf");
+
+        _unmirrorTime = Long.parseLong(cfg.getProperty("pre.unmirror.time", "60")) * 60000L;
 
         List<MirrorConfiguration> configurations = new ArrayList<>();
         List<String> unmirrorExcludePaths = new ArrayList<>();
@@ -142,6 +147,10 @@ public class MirrorSettings {
 
     public List<String> getUnmirrorExcludePaths() {
         return _unmirrorExcludePaths;
+    }
+
+    public long getUnmirrorTime() {
+        return _unmirrorTime;
     }
 
     public static class MirrorConfiguration {

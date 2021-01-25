@@ -21,6 +21,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
+import org.drftpd.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.common.extensibility.CommandHook;
 import org.drftpd.common.extensibility.HookType;
 import org.drftpd.common.extensibility.PluginInterface;
@@ -30,17 +31,16 @@ import org.drftpd.master.GlobalContext;
 import org.drftpd.master.commands.CommandRequest;
 import org.drftpd.master.commands.CommandRequestInterface;
 import org.drftpd.master.commands.CommandResponse;
+import org.drftpd.master.commands.pre.Pre;
 import org.drftpd.master.event.ReloadEvent;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.slavemanagement.RemoteSlave;
+import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.slave.exceptions.ObjectNotFoundException;
 
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.StringTokenizer;
+import java.util.*;
 
 /**
  * @author lh
@@ -88,6 +88,28 @@ public class MirrorHooks {
             }
         }
         return request;
+    }
+
+    @CommandHook(commands = "doSITE_PRE", type = HookType.POST)
+    public void doPREPostHook(CommandRequest request, CommandResponse response) {
+        if (response.getCode() != 250) {
+            // PRE failed, abort
+            return;
+        }
+
+        if (MirrorSettings.getSettings().getUnmirrorTime() == 0L) {
+            // Nothing to do
+            return;
+        }
+
+        try {
+            PRETask preTask = new PRETask(response.getObject(Pre.PREDIR));
+            GlobalContext.getGlobalContext().getTimer().schedule(preTask, MirrorSettings.getSettings().getUnmirrorTime());
+        } catch (KeyNotFoundException e) {
+            logger.warn("Unable to activate UnMirror timer as PREDIR variable has not been set (bug?/error?)");
+        } catch (IllegalStateException e) {
+            logger.error("Unable to start UnMirror timer task on GlobalContext Timer", e);
+        }
     }
 
     @CommandHook(commands = "doSTOR", priority = 100, type = HookType.POST)
@@ -170,7 +192,7 @@ public class MirrorHooks {
     }
 
     /*
-     * Gets the jobmananger, hopefully its loaded.
+     * Gets the JobManager, hopefully its loaded.
      */
     public JobManager getJobManager() {
         for (PluginInterface plugin : GlobalContext.getGlobalContext().getPlugins()) {
@@ -185,5 +207,21 @@ public class MirrorHooks {
     public void onReloadEvent(ReloadEvent event) {
         logger.info("Received reload event, reloading");
         reload();
+    }
+
+    private static class PRETask extends TimerTask {
+        private final DirectoryHandle _dir;
+
+        public PRETask(DirectoryHandle dir) {
+            _dir = dir;
+        }
+
+        public void run() {
+            try {
+                MirrorUtils.unMirrorDir(_dir, null, MirrorSettings.getSettings().getUnmirrorExcludePaths());
+            } catch (FileNotFoundException e) {
+                logger.error("Unmirror error:", e);
+            }
+        }
     }
 }
