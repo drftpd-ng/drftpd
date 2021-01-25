@@ -119,3 +119,8 @@ disk.commit.delay=10000
 # This can filter you "site slaves" or "!slaves" output.
 # Filter matches from the first characters .startsWith()
 #default.slave.output=race
+
+# On PRE all directories and users are reset to a user/group pair.
+# By default this is drftpd/drftpd and if you rename this user, update it here aswell
+# default.pre.user=drftpd
+# default.pre.group=drftpd

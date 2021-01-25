@@ -79,4 +79,8 @@ public interface ConfigInterface {
     String[] getSSLProtocols();
 
     String getHideInStats();
+
+    String getDefaultPreUser();
+
+    String getDefaultPreGroup();
 }

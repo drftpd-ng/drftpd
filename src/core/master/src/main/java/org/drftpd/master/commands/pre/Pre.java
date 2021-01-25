@@ -20,6 +20,8 @@ package org.drftpd.master.commands.pre;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.drftpd.common.dynamicdata.Key;
+import org.drftpd.common.extensibility.CommandHook;
+import org.drftpd.common.extensibility.HookType;
 import org.drftpd.common.util.Bytes;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.commands.*;
@@ -38,6 +40,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.StringTokenizer;
 
 /**
  * @author scitz0
@@ -49,15 +52,22 @@ public class Pre extends CommandInterface {
 
     private static void recursiveRemoveOwnership(DirectoryHandle dir, long lastModified) {
         try {
-            dir.setUsername("drftpd");
-            dir.setGroup("drftpd");
+            dir.setUsername(GlobalContext.getConfig().getDefaultPreUser());
+            dir.setGroup(GlobalContext.getConfig().getDefaultPreGroup());
             dir.setLastModified(lastModified);
             for (InodeHandle file : dir.getInodeHandlesUnchecked()) {
-                file.setUsername("drftpd");
-                file.setGroup("drftpd");
-                file.setLastModified(lastModified);
-                if (file.isDirectory())
+                // Do not fail all pending files if one has issues
+                if (file.isDirectory()) {
                     recursiveRemoveOwnership((DirectoryHandle) file, lastModified);
+                } else {
+                    try {
+                        file.setUsername(GlobalContext.getConfig().getDefaultPreUser());
+                        file.setGroup(GlobalContext.getConfig().getDefaultPreGroup());
+                        file.setLastModified(lastModified);
+                    } catch (FileNotFoundException e) {
+                        logger.warn("FileNotFoundException on recursiveRemoveOwnership()", e);
+                    }
+                }
             }
         } catch (FileNotFoundException e) {
             logger.warn("FileNotFoundException on recursiveRemoveOwnership()", e);
@@ -68,47 +78,73 @@ public class Pre extends CommandInterface {
         super.initialize(method, pluginName, cManager);
     }
 
+    @CommandHook(commands = "doSITE_PRE", priority = 1, type = HookType.PRE)
+    public CommandRequestInterface doPREPreHook(CommandRequest request) {
+        // The actual command handles all error cases, this is just to make sure the PREDIR Object is set before we run any other pre hooks
+        if (request.hasArgument()) { // Handled correctly in doSITE_PRE
+            StringTokenizer st = new StringTokenizer(request.getArgument());
+            if (st.countTokens() == 2) { // Handled correctly in doSITE_PRE
+                String sectionName = st.nextToken();
+                String releaseName = st.nextToken();
+                SectionInterface section = GlobalContext.getGlobalContext().getSectionManager().getSection(sectionName);
+                if (!section.getName().equals("")) { // Handled correctly in doSITE_PRE
+                    User user = request.getSession().getUserNull(request.getUser());
+                    DirectoryHandle preDir;
+
+                    String path = VirtualFileSystem.fixPath(releaseName);
+                    if (!(path.startsWith(VirtualFileSystem.separator))) {
+                        // Not a full path, let's make it one
+                        if (request.getCurrentDirectory().isRoot()) {
+                            path = VirtualFileSystem.separator + path;
+                        } else {
+                            path = request.getCurrentDirectory().getPath() + VirtualFileSystem.separator + path;
+                        }
+                    }
+
+                    try {
+                        preDir = request.getCurrentDirectory().getDirectory(path, user);
+                        // We found our predir, let's set it so all pre-hooks can use it
+                        logger.debug("[doSITE_PRE] first pre hook - Setting PREDIR Object to [{}]", preDir.toString());
+                        request.setObject(PREDIR, preDir);
+                    } catch (FileNotFoundException | ObjectNotValidException e) {  // Handled correctly in doSITE_PRE based on PREDIR Object = null
+                        logger.warn("[doSITE_PRE] first pre hook failed to find predir for [{}]", releaseName, e);
+                    }
+                }
+            }
+        }
+
+        return request;
+    }
+
     public CommandResponse doSITE_PRE(CommandRequest request) throws ImproperUsageException {
+
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
         }
 
-        String[] args = request.getArgument().split(" ");
-
-        if (args.length != 2) {
+        StringTokenizer st = new StringTokenizer(request.getArgument());
+        if (st.countTokens() != 2) {
             return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
         }
+        String sectionName = st.nextToken();
+        String releaseName = st.nextToken();
 
-        SectionInterface section = GlobalContext.getGlobalContext().getSectionManager().getSection(args[1]);
+        SectionInterface section = GlobalContext.getGlobalContext().getSectionManager().getSection(sectionName);
 
         if (section.getName().equals("")) {
             return new CommandResponse(500, "Invalid section, see SITE SECTIONS for a list of available sections");
         }
 
         User user = request.getSession().getUserNull(request.getUser());
+        // This is set in a pre hook at priority 1
+        DirectoryHandle preDir = request.getObject(PREDIR, null);
 
-        DirectoryHandle preDir;
-
-        String path = VirtualFileSystem.fixPath(args[0]);
-        if (!(path.startsWith(VirtualFileSystem.separator))) {
-            // Not a full path, let's make it one
-            if (request.getCurrentDirectory().isRoot()) {
-                path = VirtualFileSystem.separator + path;
-            } else {
-                path = request.getCurrentDirectory().getPath() + VirtualFileSystem.separator + path;
-            }
-        }
-
-        try {
-            preDir = request.getCurrentDirectory().getDirectory(path, user);
-        } catch (FileNotFoundException e) {
+        if (preDir == null) {
+            logger.error("For some reason the pre hook did not set the preDir based on input [{}]", releaseName);
             return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
-        } catch (ObjectNotValidException e) {
-            return StandardCommandManager.genericResponse("RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN_FILE_EXISTS");
         }
 
-        ConfigInterface config = GlobalContext.getConfig();
-        if (!config.checkPathPermission("pre", user, preDir)) {
+        if (!GlobalContext.getConfig().checkPathPermission("pre", user, preDir)) {
             return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
         }
 
@@ -138,7 +174,7 @@ public class Pre extends CommandInterface {
         try {
             bytes = preDir.getSize();
         } catch (FileNotFoundException e) {
-            logger.warn("FileNotFoundException ", e);
+            logger.warn("FileNotFoundException while getting size of predir {}: ", preDir.toString(), e);
         }
 
         try {
@@ -153,13 +189,12 @@ public class Pre extends CommandInterface {
 
         preDir = toInode;
 
-        GlobalContext.getEventService().publishAsync(new PreEvent(preDir, section,
-                Integer.toString(files), Bytes.formatBytes(bytes)));
+        GlobalContext.getEventService().publishAsync(new PreEvent(preDir, section, Integer.toString(files), Bytes.formatBytes(bytes)));
 
+        // Update PREDIR Object
         response.setObject(PREDIR, preDir);
 
         return response;
-
     }
 
     private void preAwardCredits(DirectoryHandle preDir, HashMap<User, Long> awards) {
@@ -173,10 +208,7 @@ public class Pre extends CommandInterface {
                     } catch (NoSuchUserException e) {
                         logger.warn("PRE: Cannot award credits to non-existing user", e);
                         continue;
-                    } catch (UserFileException e) {
-                        logger.warn("", e);
-                        continue;
-                    } catch (FileNotFoundException e) {
+                    } catch (UserFileException | FileNotFoundException e) {
                         logger.warn("", e);
                         continue;
                     }

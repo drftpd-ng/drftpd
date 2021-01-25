@@ -455,6 +455,14 @@ public class ConfigManager implements ConfigInterface {
         return perm.check(user);
     }
 
+    public String getDefaultPreUser() {
+        return _mainCfg.getProperty("default.pre.user", "drftpd");
+    }
+
+    public String getDefaultPreGroup() {
+        return _mainCfg.getProperty("default.pre.group", "drftpd");
+    }
+
     public String[] getCipherSuites() {
         return _cipherSuites;
     }
