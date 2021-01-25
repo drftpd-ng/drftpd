@@ -34,9 +34,12 @@ import org.drftpd.master.commands.CommandResponse;
 import org.drftpd.master.commands.pre.Pre;
 import org.drftpd.master.event.ReloadEvent;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
+import org.drftpd.master.sections.SectionInterface;
 import org.drftpd.master.slavemanagement.RemoteSlave;
+import org.drftpd.master.usermanager.User;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.FileHandle;
+import org.drftpd.master.vfs.VirtualFileSystem;
 import org.drftpd.slave.exceptions.ObjectNotFoundException;
 
 import java.io.FileNotFoundException;
@@ -71,10 +74,10 @@ public class MirrorHooks {
             // Syntax error but we'll let the command itself deal with it
             return request;
         }
-        String slavename = arguments.nextToken();
+        String slaveName = arguments.nextToken();
         RemoteSlave slave;
         try {
-            slave = GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(slavename);
+            slave = GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(slaveName);
         } catch(ObjectNotFoundException e) {
             // This is an error, but we'll let the command itself deal with it
             return request;
@@ -87,6 +90,51 @@ public class MirrorHooks {
                 break;
             }
         }
+        return request;
+    }
+
+    @CommandHook(commands = "doSITE_PRE", type = HookType.PRE)
+    public CommandRequestInterface doPREPreHook(CommandRequest request) {
+        // The actual command handles all error cases, this is just to make sure the PREDIR Object is set before we run any other pre hooks
+        if (request.hasArgument()) { // Handled correctly in doSITE_PRE
+            StringTokenizer st = new StringTokenizer(request.getArgument());
+            if (st.countTokens() == 2) { // Handled correctly in doSITE_PRE
+                String sectionName = st.nextToken();
+                String releaseName = st.nextToken();
+                SectionInterface section = GlobalContext.getGlobalContext().getSectionManager().getSection(sectionName);
+                if (!section.getName().equals("")) { // Handled correctly in doSITE_PRE
+                    User user = request.getSession().getUserNull(request.getUser());
+                    String path = VirtualFileSystem.fixPath(releaseName);
+                    if (!(path.startsWith(VirtualFileSystem.separator))) {
+                        // Not a full path, let's make it one
+                        if (request.getCurrentDirectory().isRoot()) {
+                            path = VirtualFileSystem.separator + path;
+                        } else {
+                            path = request.getCurrentDirectory().getPath() + VirtualFileSystem.separator + path;
+                        }
+                    }
+                    int stoppedJobs = 0;
+                    int activeJobs = 0;
+                    for (Job job : getJobManager().getAllJobsFromQueue()) {
+                        // Make sure length wise we are correct here
+                        if (job.getFile().getPath().length() >= path.length()) {
+                            if (job.getFile().getPath().substring(0, path.length()).equalsIgnoreCase(path)) {
+                                if (job.isTransferring()) {
+                                    logger.warn("Cannot stop Job [{}] as it is already transferring", job.toString());
+                                    activeJobs++;
+                                } else {
+                                    logger.warn("Stopping Job [{}] as {} requested {} to be pre'd", job.toString(), user.getName(), releaseName);
+                                    getJobManager().stopJob(job);
+                                    stoppedJobs++;
+                                }
+                            }
+                        }
+                    }
+                    logger.debug("We found {} active jobs (could not be stopped) and stopped {} jobs because of {} being pre'd", activeJobs, stoppedJobs, releaseName);
+                }
+            }
+        }
+
         return request;
     }
 
