@@ -1253,14 +1253,23 @@ public class UserManagementHandler extends CommandInterface {
         if (args.length != 2) {
             return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
         }
+        String argsUserName = args[0];
+        String argsUserNameNew = args[1];
 
         Session session = request.getSession();
+        String requesterUsername = session.getUserNull(request.getUser()).getName();
+
+        // This is a safe guard as a lot of places assume the "drftpd" user exists
+        if (argsUserName.equalsIgnoreCase("drftpd")) {
+            logger.warn("{} Tried to rename [{}] user which is not allowed", requesterUsername, argsUserName);
+            return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
+        }
+
         try {
-            User myUser = GlobalContext.getGlobalContext().getUserManager().getUserByName(args[0]);
+            User myUser = GlobalContext.getGlobalContext().getUserManager().getUserByName(argsUserName);
             String oldUsername = myUser.getName();
             // We need to get the requester username before we rename as we might be renaming ourselves...
-            String requesterUsername = session.getUserNull(request.getUser()).getName();
-            myUser.rename(args[1]);
+            myUser.rename(argsUserNameNew);
             BaseFtpConnection.fixBaseFtpConnUser(oldUsername, myUser.getName());
             // Fix the request user reference
             if (requesterUsername.equals(oldUsername)) {
