@@ -78,44 +78,6 @@ public class Pre extends CommandInterface {
         super.initialize(method, pluginName, cManager);
     }
 
-    @CommandHook(commands = "doSITE_PRE", priority = 1, type = HookType.PRE)
-    public CommandRequestInterface doPREPreHook(CommandRequest request) {
-        // The actual command handles all error cases, this is just to make sure the PREDIR Object is set before we run any other pre hooks
-        if (request.hasArgument()) { // Handled correctly in doSITE_PRE
-            StringTokenizer st = new StringTokenizer(request.getArgument());
-            if (st.countTokens() == 2) { // Handled correctly in doSITE_PRE
-                String sectionName = st.nextToken();
-                String releaseName = st.nextToken();
-                SectionInterface section = GlobalContext.getGlobalContext().getSectionManager().getSection(sectionName);
-                if (!section.getName().equals("")) { // Handled correctly in doSITE_PRE
-                    User user = request.getSession().getUserNull(request.getUser());
-                    DirectoryHandle preDir;
-
-                    String path = VirtualFileSystem.fixPath(releaseName);
-                    if (!(path.startsWith(VirtualFileSystem.separator))) {
-                        // Not a full path, let's make it one
-                        if (request.getCurrentDirectory().isRoot()) {
-                            path = VirtualFileSystem.separator + path;
-                        } else {
-                            path = request.getCurrentDirectory().getPath() + VirtualFileSystem.separator + path;
-                        }
-                    }
-
-                    try {
-                        preDir = request.getCurrentDirectory().getDirectory(path, user);
-                        // We found our predir, let's set it so all pre-hooks can use it
-                        logger.debug("[doSITE_PRE] first pre hook - Setting PREDIR Object to [{}]", preDir.toString());
-                        request.setObject(PREDIR, preDir);
-                    } catch (FileNotFoundException | ObjectNotValidException e) {  // Handled correctly in doSITE_PRE based on PREDIR Object = null
-                        logger.warn("[doSITE_PRE] first pre hook failed to find predir for [{}]", releaseName, e);
-                    }
-                }
-            }
-        }
-
-        return request;
-    }
-
     public CommandResponse doSITE_PRE(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {
@@ -136,11 +98,28 @@ public class Pre extends CommandInterface {
         }
 
         User user = request.getSession().getUserNull(request.getUser());
-        // This is set in a pre hook at priority 1
-        DirectoryHandle preDir = request.getObject(PREDIR, null);
+
+        DirectoryHandle preDir = null;
+
+        String path = VirtualFileSystem.fixPath(releaseName);
+        if (!(path.startsWith(VirtualFileSystem.separator))) {
+            // Not a full path, let's make it one
+            if (request.getCurrentDirectory().isRoot()) {
+                path = VirtualFileSystem.separator + path;
+            } else {
+                path = request.getCurrentDirectory().getPath() + VirtualFileSystem.separator + path;
+            }
+        }
+
+        try {
+            preDir = request.getCurrentDirectory().getDirectory(path, user);
+        } catch (FileNotFoundException | ObjectNotValidException e) {  // Handled correctly in doSITE_PRE based on PREDIR Object = null
+            logger.warn("[doSITE_PRE] Failed to find predir for [{}]", releaseName, e);
+            return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
+        }
 
         if (preDir == null) {
-            logger.error("For some reason the pre hook did not set the preDir based on input [{}]", releaseName);
+            logger.error("For some reason we were unable to set the preDir based on input [{}]", releaseName);
             return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
         }
 
