@@ -369,13 +369,9 @@ public class GroupManagementHandler extends CommandInterface {
 
                         int groupSlots = Short.parseShort(commandArguments[0]);
 
-                        int leechSlots = Short.parseShort(commandArguments[0]);
-
-                        logger.info("'{}' changed group slots for '{}' from '{}' to '{}'", currentUser.getName(), groupToChange.getName(), groupToChange.getGroupSlots(), groupSlots, leechSlots);
+                        logger.info("'{}' changed group slots for '{}' from '{}' to '{}'", currentUser.getName(), groupToChange.getName(), groupToChange.getGroupSlots(), groupSlots);
                         groupToChange.setGroupSlots(groupSlots);
                         env.put("groupslots", "" + groupToChange.getGroupSlots());
-                        groupToChange.setLeechSlots(leechSlots);
-                        env.put("leechslots", "" + groupToChange.getLeechSlots());
                         response.addComment(session.jprintf(_bundle, "changegroup.slots.success", env, request.getUser()));
                     } catch (NumberFormatException ex) {
                         return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");

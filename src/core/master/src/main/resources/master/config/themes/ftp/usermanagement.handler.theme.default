@@ -22,7 +22,7 @@ changecredits.success=Changed credits to ${newcredits}.
 changegroup.created.success=Reset creation time for ${targetgroup}.
 changegroup.leechslots.success=Changed group leech slots to ${leechslots}.
 changegroup.ratio.success=Changed group min/max ratio to ${minratio}/${maxratio}.
-changegroup.slots.success=Changed group slots to ${groupslots} and group leech slots to ${leechslots}.
+changegroup.slots.success=Changed group slots to ${groupslots}.
 
 changegroupadmin.add.user=User ${targetuser} added as group admin to ${targetgroup}.
 changegroupadmin.bad.user=User ${targetuser} does not exist.

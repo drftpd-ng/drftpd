@@ -22,7 +22,7 @@ changecredits.success=${color}15${bold}CHANGECREDITS${coloroff}: Changed credits
 changegroup.created.success=${color}15${bold}CHANGEGROUP${coloroff}: Reset creation time for ${targetgroup}.
 changegroup.leechslots.success=${color}15${bold}CHANGEGROUP${coloroff}: Changed group leech slots to ${leechslots}.
 changegroup.ratio.success=${color}15${bold}CHANGEGROUP${coloroff}: Changed group min/max ratio to ${minratio}/${maxratio}.
-changegroup.slots.success=${color}15${bold}CHANGEGROUP${coloroff}: Changed group slots to ${groupslots} and group leech slots to ${leechslots}.
+changegroup.slots.success=${color}15${bold}CHANGEGROUP${coloroff}: Changed group slots to ${groupslots}.
 
 changegroupadmin.add.user=${color}15${bold}CHANGEGROUPADMIN${coloroff}: User ${targetuser} added as group admin to ${targetgroup}.
 changegroupadmin.bad.user=${color}15${bold}CHANGEGROUPADMIN${coloroff}: User ${targetuser} does not exist.
