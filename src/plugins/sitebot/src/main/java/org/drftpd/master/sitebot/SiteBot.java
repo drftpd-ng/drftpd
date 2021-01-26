@@ -1295,32 +1295,78 @@ public class SiteBot implements ReplyConstants, Runnable {
      * @param notice         The notice message.
      */
     protected void onNotice(String sourceNick, String sourceLogin, String sourceHostname, String target, String notice) {
-        DH1080 exchange = null;
-        String blowfishMode = BlowfishManager.CBC; //default blowfish on CBC
-        if (notice.startsWith("DH1080_INIT") && _config.getDH1080Enabled() && _config.getBlowfishEnabled()) {
-            StringTokenizer tokenizeMessage = new StringTokenizer(notice.trim().substring(12));
-            notice = tokenizeMessage.nextToken();
-            if (tokenizeMessage.hasMoreTokens()) {
-                blowfishMode = tokenizeMessage.nextToken();
+        if (!target.equalsIgnoreCase(getNick())) {
+            logger.debug("We are (currently) only interested in notices against the bot");
+            return;
+        }
+        // We only care for DH1080 exchange messages
+        if (!notice.startsWith("DH1080")) {
+            logger.debug("Ignoring notice {} as it does not start with DH1080", notice);
+            return;
+        }
+        // We do not care for DH1080 notices if it is not enabled
+        if (!(_config.getDH1080Enabled() && _config.getBlowfishEnabled())) {
+            logger.debug("DH1080 is disabled, not handling notice");
+            return;
+        }
+        logger.debug("RAW DH1080 Target: {}, Notice: {}", target, notice);
+        DH1080 exchange;
+        //default blowfish on CBC
+        String blowfishMode = BlowfishManager.CBC;
+        String exchangeKey = "";
+
+        if (notice.startsWith("DH1080_INIT")) {
+            if (notice.length() <= 12) {
+                logger.warn("Received malformed DH1080_INIT: {}", notice);
+                return;
+            }
+            // We have more data to process
+            StringTokenizer st = new StringTokenizer(notice.trim().substring(12));
+            exchangeKey = st.nextToken().trim();
+            if (st.hasMoreTokens()) {
+                String modeRequested = st.nextToken();
+                if (modeRequested.equalsIgnoreCase(BlowfishManager.ECB)) {
+                    blowfishMode = BlowfishManager.ECB;
+                } else if (modeRequested.equalsIgnoreCase(BlowfishManager.CBC)) {
+                    blowfishMode = BlowfishManager.CBC;
+                } else
+                {
+                    logger.error("Unknown DH1080_INIT mode requested: {}", modeRequested);
+                    return;
+                }
+            }
+            if (st.hasMoreTokens()) {
+                logger.warn("Received malformed DH1080_INIT: {}", notice);
+                return;
             }
             exchange = new DH1080();
             // Send our public key back to the sender
             sendNotice(sourceNick, "DH1080_FINISH " + exchange.getPublicKey() + " " + blowfishMode);
-        } else if (notice.startsWith("DH1080_FINISH") && _config.getDH1080Enabled() && _config.getBlowfishEnabled()) {
-            notice = notice.trim().substring(14);
+        } else if (notice.startsWith("DH1080_FINISH")) {
+            if (notice.length() <= 14) {
+                logger.warn("Received malformed DH1080_FINISH: {}", notice);
+                return;
+            }
+            StringTokenizer st = new StringTokenizer(notice.trim().substring(14));
+            if (st.hasMoreTokens()) {
+                logger.warn("Received malformed DH1080_FINISH: {}", notice);
+                return;
+            }
+            exchangeKey = st.nextToken().trim();
             exchange = _dh1080.get(sourceNick);
             // For security reasons remove the DH1080 object from the map as we no longer need it
             _dh1080.remove(sourceNick);
+        } else {
+            logger.warn("Received unknown DH1080 command: {}", notice);
+            return;
         }
-        if (_config.getDH1080Enabled() && _config.getBlowfishEnabled()) {
-            if (exchange == null) {
-                // Somehow we got a response to a DH1080 session we didn't initiate, ignore it
-            } else {
-                String secretKey = exchange.getSharedSecret(notice);
-                getUserDetails(sourceNick, sourceNick + "!" + sourceLogin + "@" + sourceHostname)
-                        .setBlowCipher(secretKey, blowfishMode);
-            }
+        if (exchange == null || exchangeKey.length() == 0) {
+            // Somehow we got a response to a DH1080 session we didn't initiate, ignore it
+            logger.error("DH1080 exchange object is not set which should not be possible, suspect bug...");
+            return;
         }
+        String secretKey = exchange.getSharedSecret(exchangeKey);
+        getUserDetails(sourceNick, sourceNick + "!" + sourceLogin + "@" + sourceHostname).setBlowCipher(secretKey, blowfishMode);
     }
 
     /**
