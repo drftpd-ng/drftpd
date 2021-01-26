@@ -1296,7 +1296,7 @@ public class SiteBot implements ReplyConstants, Runnable {
      */
     protected void onNotice(String sourceNick, String sourceLogin, String sourceHostname, String target, String notice) {
         if (!target.equalsIgnoreCase(getNick())) {
-            logger.debug("We are (currently) only interested in notices against the bot");
+            logger.debug("Ignoring notice as it is not directed against the bot, got {} and our nick is {}", target, getNick());
             return;
         }
         // We only care for DH1080 exchange messages
