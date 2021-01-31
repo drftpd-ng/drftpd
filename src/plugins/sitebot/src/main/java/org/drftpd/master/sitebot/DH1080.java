@@ -84,9 +84,6 @@ public class DH1080 {
         byte[] dArr = new byte[input.length() * 6 >> 3];
 
         for (int i = 0, z = 0; z < dArr.length; ) {
-            if (z >= dArr.length) {
-                break;
-            }
             dArr[z++] = (byte) ((IA[input.charAt(i)] << 2) | (IA[input.charAt(i + 1)] >> 4));
             i++;
             if (z >= dArr.length) {
@@ -135,7 +132,7 @@ public class DH1080 {
         m = (char) (5 - (i % 6));
         t <<= m;
         if (m != 0) {
-            dArr[p++] = CA[t];
+            dArr[p+1] = CA[t];
         }
         return new String(dArr);
     }
@@ -178,7 +175,7 @@ public class DH1080 {
             System.arraycopy(bigBytes, 1, smallerBytes, 0, smallerBytes.length);
             bigBytes = smallerBytes;
         }
-        // bigInteger strips leading bytes that represent '0', which we not wish... se we add them here.
+        // bigInteger strips leading bytes that represent '0', which we not wish... so we add them here.
         if (bigBytes.length != KEY_BYTE_LENGTH) {
             int missing = KEY_BYTE_LENGTH - bigBytes.length;
             logger.debug("Restoring leading '0' byte bytes, we need to add {} extra '0' byte bytes to get to {}", missing, KEY_BYTE_LENGTH);
