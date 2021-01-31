@@ -145,22 +145,31 @@ public class DH1080 {
         return encodeB64(getBytes(_publicInt));
     }
 
-    public String getSharedSecret(String peerPublicKey) {
+    public boolean validatePublicKey(String peerPublicKey) {
         byte[] peerPublicKeyDecoded = decodeB64(peerPublicKey);
         if (peerPublicKeyDecoded.length != KEY_BYTE_LENGTH) {
             logger.warn("Received a peer DH1080 public key that does not conform to the correct specifications, received {} bytes", peerPublicKeyDecoded.length);
-            return null;
+            return false;
         }
         BigInteger peerPublicKeyInt = new BigInteger(1, peerPublicKeyDecoded);
         if (peerPublicKeyInt.bitCount() <= 1) {
             logger.warn("Received a peer DH1080 public key that does not conform to the correct specifications, need at least 2 bits set");
-            return null;
+            return false;
         }
         BigInteger primeInt = new BigInteger(1, decodeB64(PRIME));
         if (peerPublicKeyInt.compareTo(BigInteger.TWO) < 0 || peerPublicKeyInt.compareTo(primeInt.subtract(BigInteger.ONE)) > 0) {
             logger.warn("Received a peer DH1080 public key that does not conform to the correct specifications, out of bounds '2 < (public key) < PRIME'");
+            return false;
+        }
+        return true;
+    }
+
+    public String getSharedSecret(String peerPublicKey) {
+        if (!validatePublicKey(peerPublicKey)) {
             return null;
         }
+        BigInteger peerPublicKeyInt = new BigInteger(1, decodeB64(peerPublicKey));
+        BigInteger primeInt = new BigInteger(1, decodeB64(PRIME));
         BigInteger shareInt = peerPublicKeyInt.modPow(_privateInt, primeInt);
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-256");

@@ -1339,6 +1339,10 @@ public class SiteBot implements ReplyConstants, Runnable {
                 return;
             }
             exchange = new DH1080();
+            if (!exchange.validatePublicKey(exchangeKey)) {
+                logger.warn("Received malformed public key");
+                return;
+            }
             // Send our public key back to the sender
             sendNotice(sourceNick, "DH1080_FINISH " + exchange.getPublicKey() + " " + blowfishMode);
         } else if (notice.startsWith("DH1080_FINISH")) {
