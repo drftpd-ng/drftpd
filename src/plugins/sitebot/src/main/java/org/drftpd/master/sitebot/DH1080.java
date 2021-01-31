@@ -38,7 +38,12 @@ public class DH1080 {
     private static final char[] CA = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".toCharArray();
 
     private static final int[] IA = new int[256];
+
+    // DH1080 'p' value
     private static final String PRIME = "++ECLiPSE+is+proud+to+present+latest+FiSH+release+featuring+even+more+security+for+you+++shouts+go+out+to+TMG+for+helping+to+generate+this+cool+sophie+germain+prime+number++++/C32L";
+
+    // DH1080 'g' value
+    private static final String GENERATOR = "2";
 
     static {
         Arrays.fill(IA, -1);
@@ -56,8 +61,12 @@ public class DH1080 {
             // We do not need to reseed as this is only used during handshake
             SecureRandom sRNG = SecureRandom.getInstance("SHA1PRNG", "SUN");
             _privateInt = new BigInteger(1080, sRNG);
+            // Make sure the first bit is '0' as mIRC also forces the first bit to be '0'
+            if (_privateInt.mod(BigInteger.TWO).equals(BigInteger.ZERO)) {
+                _privateInt = _privateInt.add(BigInteger.ONE);
+            }
             BigInteger primeInt = new BigInteger(1, decodeB64(PRIME));
-            _publicInt = (new BigInteger("2")).modPow(_privateInt, primeInt);
+            _publicInt = new BigInteger(GENERATOR).modPow(_privateInt, primeInt);
         } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
             logger.warn("Algorithm and/or Provider for DH1080 random number generator not available", e);
         }
@@ -131,8 +140,12 @@ public class DH1080 {
         return new String(dArr);
     }
 
+    /**
+     *
+     * @return The string representing the (bytes) public key, and will always be 135 bytes
+     */
     public String getPublicKey() {
-        return encodeB64(getBytes(_publicInt));
+        return encodeB64(getBytes(_publicInt, 135));
     }
 
     public String getSharedSecret(String peerPubKey) {
@@ -141,7 +154,7 @@ public class DH1080 {
         BigInteger shareInt = peerPubInt.modPow(_privateInt, primeInt);
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
-            byte[] hashed = md.digest(getBytes(shareInt));
+            byte[] hashed = md.digest(getBytes(shareInt, 0));
             return encodeB64(hashed);
         } catch (NoSuchAlgorithmException e) {
             logger.debug("Algorithm for DH1080 shared secret hashing not available", e);
@@ -157,13 +170,23 @@ public class DH1080 {
      * extra byte to be added to the resulting array. This will cause problems
      * so in this case we strip the first byte off the array before returning.
      */
-    private byte[] getBytes(BigInteger big) {
+    private byte[] getBytes(BigInteger big, int arrayLength) {
         byte[] bigBytes = big.toByteArray();
-        if ((big.bitLength() % 8) != 0) {
-            return bigBytes;
+        // Fix sign mis interpretation here (adds an extra byte)
+        if ((big.bitLength() % 8) == 0) {
+            byte[] smallerBytes = new byte[big.bitLength() / 8];
+            System.arraycopy(bigBytes, 1, smallerBytes, 0, smallerBytes.length);
+            bigBytes = smallerBytes;
         }
-        byte[] smallerBytes = new byte[big.bitLength() / 8];
-        System.arraycopy(bigBytes, 1, smallerBytes, 0, smallerBytes.length);
-        return smallerBytes;
+        // bigInteger strips leading bytes that represent '0', which we not wish... se we add them here.
+        // But only if we provided an arrayLength to the function bigger than 0
+        if (arrayLength > 0 && bigBytes.length != arrayLength) {
+            int missing = arrayLength - bigBytes.length;
+            logger.debug("Restoring leading '0' byte bytes, we need to add {} extra '0' byte bytes to get to {}", missing, arrayLength);
+            byte[] missingBytes = new byte[arrayLength];
+            System.arraycopy(bigBytes, 0, missingBytes, missing, bigBytes.length);
+            bigBytes = missingBytes;
+        }
+        return bigBytes;
     }
 }
