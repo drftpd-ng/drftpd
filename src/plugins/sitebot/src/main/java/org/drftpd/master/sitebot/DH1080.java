@@ -132,7 +132,7 @@ public class DH1080 {
         m = (char) (5 - (i % 6));
         t <<= m;
         if (m != 0) {
-            dArr[p+1] = CA[t];
+            dArr[p] = CA[t];
         }
         return new String(dArr);
     }
