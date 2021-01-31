@@ -64,7 +64,7 @@ public class DH1080 {
             SecureRandom sRNG = SecureRandom.getInstance("SHA1PRNG", "SUN");
             _privateInt = new BigInteger(1080, sRNG);
             // Make sure the first bit is '0' as mIRC also forces the first bit to be '0'
-            if (_privateInt.mod(BigInteger.TWO).equals(BigInteger.ZERO)) {
+            if (!_privateInt.mod(BigInteger.TWO).equals(BigInteger.ZERO)) {
                 _privateInt = _privateInt.add(BigInteger.ONE);
             }
             BigInteger primeInt = new BigInteger(1, decodeB64(PRIME));
