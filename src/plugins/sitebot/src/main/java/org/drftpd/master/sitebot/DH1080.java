@@ -62,11 +62,9 @@ public class DH1080 {
         try {
             // We do not need to reseed as this is only used during handshake
             SecureRandom sRNG = SecureRandom.getInstance("SHA1PRNG", "SUN");
-            _privateInt = new BigInteger(1080, sRNG);
-            // Make sure the first bit is '0' as mIRC also forces the first bit to be '0'
-            if (!_privateInt.mod(BigInteger.TWO).equals(BigInteger.ZERO)) {
-                _privateInt = _privateInt.add(BigInteger.ONE);
-            }
+            // we clear bit position '0' to mimic what fish for mIRC does
+            // We clear bit 1079 and set 1078 to ensure 'strong' private key
+            _privateInt = new BigInteger(1080, sRNG).clearBit(0).clearBit(1079).setBit(1078);
             BigInteger primeInt = new BigInteger(1, decodeB64(PRIME));
             _publicInt = new BigInteger(GENERATOR).modPow(_privateInt, primeInt);
         } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
