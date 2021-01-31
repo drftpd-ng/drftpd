@@ -1365,6 +1365,10 @@ public class SiteBot implements ReplyConstants, Runnable {
             return;
         }
         String secretKey = exchange.getSharedSecret(exchangeKey);
+        if (secretKey == null) {
+            logger.error("Unable to calculate a shared secret key");
+            return;
+        }
         getUserDetails(sourceNick, sourceNick + "!" + sourceLogin + "@" + sourceHostname).setBlowCipher(secretKey, blowfishMode);
     }
 
