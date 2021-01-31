@@ -45,6 +45,8 @@ public class DH1080 {
     // DH1080 'g' value
     private static final String GENERATOR = "2";
 
+    private static final int KEY_BYTE_LENGTH = 135;
+
     static {
         Arrays.fill(IA, -1);
         for (int i = 0; i < CA.length; i++) {
@@ -145,7 +147,7 @@ public class DH1080 {
      * @return The string representing the (bytes) public key, and will always be 135 bytes
      */
     public String getPublicKey() {
-        return encodeB64(getBytes(_publicInt, 135));
+        return encodeB64(getBytes(_publicInt));
     }
 
     public String getSharedSecret(String peerPubKey) {
@@ -154,7 +156,7 @@ public class DH1080 {
         BigInteger shareInt = peerPubInt.modPow(_privateInt, primeInt);
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
-            byte[] hashed = md.digest(getBytes(shareInt, 0));
+            byte[] hashed = md.digest(getBytes(shareInt));
             return encodeB64(hashed);
         } catch (NoSuchAlgorithmException e) {
             logger.debug("Algorithm for DH1080 shared secret hashing not available", e);
@@ -170,7 +172,7 @@ public class DH1080 {
      * extra byte to be added to the resulting array. This will cause problems
      * so in this case we strip the first byte off the array before returning.
      */
-    private byte[] getBytes(BigInteger big, int arrayLength) {
+    private byte[] getBytes(BigInteger big) {
         byte[] bigBytes = big.toByteArray();
         // Fix sign mis interpretation here (adds an extra byte)
         if ((big.bitLength() % 8) == 0) {
@@ -179,11 +181,10 @@ public class DH1080 {
             bigBytes = smallerBytes;
         }
         // bigInteger strips leading bytes that represent '0', which we not wish... se we add them here.
-        // But only if we provided an arrayLength to the function bigger than 0
-        if (arrayLength > 0 && bigBytes.length != arrayLength) {
-            int missing = arrayLength - bigBytes.length;
-            logger.debug("Restoring leading '0' byte bytes, we need to add {} extra '0' byte bytes to get to {}", missing, arrayLength);
-            byte[] missingBytes = new byte[arrayLength];
+        if (bigBytes.length != KEY_BYTE_LENGTH) {
+            int missing = KEY_BYTE_LENGTH - bigBytes.length;
+            logger.debug("Restoring leading '0' byte bytes, we need to add {} extra '0' byte bytes to get to {}", missing, KEY_BYTE_LENGTH);
+            byte[] missingBytes = new byte[KEY_BYTE_LENGTH];
             System.arraycopy(bigBytes, 0, missingBytes, missing, bigBytes.length);
             bigBytes = missingBytes;
         }
