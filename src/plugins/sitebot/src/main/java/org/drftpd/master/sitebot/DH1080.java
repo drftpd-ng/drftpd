@@ -23,6 +23,7 @@ import org.apache.logging.log4j.Logger;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.SecureRandom;
 import java.util.Arrays;
 
@@ -52,12 +53,13 @@ public class DH1080 {
 
     public DH1080() {
         try {
-            SecureRandom sRNG = SecureRandom.getInstance("SHA1PRNG");
+            // We do not need to reseed as this is only used during handshake
+            SecureRandom sRNG = SecureRandom.getInstance("SHA1PRNG", "SUN");
             _privateInt = new BigInteger(1080, sRNG);
             BigInteger primeInt = new BigInteger(1, decodeB64(PRIME));
             _publicInt = (new BigInteger("2")).modPow(_privateInt, primeInt);
-        } catch (NoSuchAlgorithmException e) {
-            logger.debug("Algorithm for DH1080 random number generator not available", e);
+        } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
+            logger.warn("Algorithm and/or Provider for DH1080 random number generator not available", e);
         }
     }
 
