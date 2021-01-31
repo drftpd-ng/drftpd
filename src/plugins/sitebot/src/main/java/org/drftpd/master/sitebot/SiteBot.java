@@ -1309,7 +1309,6 @@ public class SiteBot implements ReplyConstants, Runnable {
             logger.debug("DH1080 is disabled, not handling notice");
             return;
         }
-        logger.debug("RAW DH1080 Target: {}, Notice: {}", target, notice);
         DH1080 exchange;
         //default blowfish on CBC
         String blowfishMode = BlowfishManager.CBC;
