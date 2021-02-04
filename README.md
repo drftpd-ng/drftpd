@@ -49,7 +49,7 @@ On the slaves you will need to:
 - Install Java SE or OpenJDK 15 
 - Add needed deps that are not present :
   - MediaInfo (CLI): https://mediaarea.net/en/MediaInfo
-  - mkvalidator tool: https://www.matroska.org/downloads/mkvalidator.html
+  - mkvalidator tool: https://github.com/Matroska-Org/foundation-source
 
 ### For early users (stable)
 Checkout the project from https://github.com/drftpd-ng/drftpd.git 
@@ -86,7 +86,7 @@ Use `org.drftpd.slave.Slave`
 
 - Start with env var: `DRFTPD_CONFIG_PATH=$PROJECT_DIR$/runtime/slave`
 
-## Documentation
+## Documentation (incomplete)
 You can find the documention online at: https://github.com/drftpd-ng/drftpd/wiki
 
 ## Support & Bug tracker
