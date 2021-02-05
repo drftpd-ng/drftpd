@@ -1,26 +1,47 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration>
-    <Appenders>
-        <RollingFile name="root" fileName="logs/slave.log" filePattern="logs/slave-%d{yyyy-MM-dd}-%i.log.gz">
-            <PatternLayout>
-                <Pattern>%p %d{ISO8601} [%t] %c %x - %m%n</Pattern>
-            </PatternLayout>
-            <Policies>
-                <TimeBasedTriggeringPolicy/>
-                <SizeBasedTriggeringPolicy/>
-            </Policies>
-            <DefaultRolloverStrategy max="15"/>
-        </RollingFile>
-    </Appenders>
-    <Loggers>
-        <Logger name="org.apache.hc.client5.http" level="WARN">
-            <AppenderRef ref="root"/>
-        </Logger>
-        <Logger name="org.apache.hc.client5.http.wire" level="WARN">
-            <AppenderRef ref="root"/>
-        </Logger>
-        <Root level="WARN">
-            <AppenderRef ref="root"/>
-        </Root>
-    </Loggers>
+	<Properties>
+		<Property name="baseDir">logs</Property>
+	</Properties>
+	<Appenders>
+		<RollingFile name="root" fileName="${baseDir}/slave.log" filePattern="${baseDir}/$${date:yyyy-MM}/slave-%d{yyyy-MM-dd}.log.gz">
+			<PatternLayout pattern="%p %d{ISO8601} [%t] %c %x - %m%n"/>
+			<CronTriggeringPolicy schedule="0 0 0 * * ?"/>
+			<DefaultRolloverStrategy>
+				<Delete basePath="${baseDir}" maxDepth="2">
+					<IfFileName glob="*/slave-*.log.gz"/>
+					<IfLastModified age="90d"/>
+				</Delete>
+			</DefaultRolloverStrategy>
+		</RollingFile>
+	</Appenders>
+	<Loggers>
+		<Logger name="org.apache.hc.client5.http" level="warn" additivity="false">
+			<AppenderRef ref="root"/>
+		</Logger>
+		<Logger name="org.apache.hc.client5.http.wire" level="warn" additivity="false">
+			<AppenderRef ref="root"/>
+		</Logger>
+		<Logger name="org.drftpd.slave.diskselection.filter.DiskSelectionFilter" level="warn" additivity="false">
+			<AppenderRef ref="root"/>
+		</Logger>
+		<Logger name="org.drftpd.slave.network.ActiveConnection" level="warn" additivity="false">
+			<AppenderRef ref="root"/>
+		</Logger>
+		<Logger name="org.drftpd.slave.protocol.BasicHandler" level="warn" additivity="false">
+			<AppenderRef ref="root"/>
+		</Logger>
+		<Logger name="org.drftpd.slave.protocol.SlaveProtocolCentral" level="warn" additivity="false">
+			<AppenderRef ref="root"/>
+		</Logger>
+		<Logger name="org.drftpd.slave.Slave" level="warn" additivity="false">
+			<AppenderRef ref="root"/>
+		</Logger>
+		<Logger name="org.drftpd.slave.vfs.RootCollection" level="warn" additivity="false">
+			<AppenderRef ref="root"/>
+		</Logger>
+		<Root level="warn">
+			<AppenderRef ref="root"/>
+		</Root>
+	</Loggers>
 </Configuration>
