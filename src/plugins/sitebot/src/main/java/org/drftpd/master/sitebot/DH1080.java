@@ -139,7 +139,7 @@ public class DH1080 {
 
     /**
      *
-     * @return The string representing the (bytes) public key, and will always be 135 bytes
+     * @return The Base64 string representing the (bytes) public key, and will always be 135 bytes
      */
     public String getPublicKey() {
         return encodeB64(getBytes(_publicInt));
