@@ -145,27 +145,33 @@ public class DH1080 {
         return encodeB64(getBytes(_publicInt));
     }
 
-    public boolean validatePublicKey(String peerPublicKey) {
-        byte[] peerPublicKeyDecoded = decodeB64(peerPublicKey);
+    /**
+     * Function to check if a key is not valid
+     *
+     * @param publicKey The public key to check
+     * @return false if the key is valid, otherwise true as it is invalid
+     */
+    public boolean isNotAValidPublicKey(String publicKey) {
+        byte[] peerPublicKeyDecoded = decodeB64(publicKey);
         if (peerPublicKeyDecoded.length != KEY_BYTE_LENGTH) {
             logger.warn("Received a peer DH1080 public key that does not conform to the correct specifications, received {} bytes", peerPublicKeyDecoded.length);
-            return false;
+            return true;
         }
         BigInteger peerPublicKeyInt = new BigInteger(1, peerPublicKeyDecoded);
         if (peerPublicKeyInt.bitCount() <= 1) {
             logger.warn("Received a peer DH1080 public key that does not conform to the correct specifications, need at least 2 bits set");
-            return false;
+            return true;
         }
         BigInteger primeInt = new BigInteger(1, decodeB64(PRIME));
         if (peerPublicKeyInt.compareTo(BigInteger.TWO) < 0 || peerPublicKeyInt.compareTo(primeInt.subtract(BigInteger.ONE)) >= 0) {
             logger.warn("Received a peer DH1080 public key that does not conform to the correct specifications, out of bounds '2 < (public key) < PRIME'");
-            return false;
+            return true;
         }
-        return true;
+        return false;
     }
 
     public String getSharedSecret(String peerPublicKey) {
-        if (!validatePublicKey(peerPublicKey)) {
+        if (isNotAValidPublicKey(peerPublicKey)) {
             return null;
         }
         BigInteger peerPublicKeyInt = new BigInteger(1, decodeB64(peerPublicKey));
