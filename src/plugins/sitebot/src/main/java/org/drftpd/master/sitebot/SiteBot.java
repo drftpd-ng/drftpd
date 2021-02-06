@@ -44,6 +44,7 @@ import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.nio.charset.Charset;
+import java.nio.charset.UnsupportedCharsetException;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.*;
@@ -58,6 +59,7 @@ public class SiteBot implements ReplyConstants, Runnable {
     public static final Map<String, Object> GLOBAL_ENV = new HashMap<>();
     private static final Logger logger = LogManager.getLogger(SiteBot.class);
     private static final String themeDir = "config/themes/irc";
+    private static final Object CHANNELS_LOCK = new Object();
 
     static {
         GLOBAL_ENV.put("bold", "\u0002");
@@ -242,10 +244,8 @@ public class SiteBot implements ReplyConstants, Runnable {
 
         _inetAddress = socket.getLocalAddress();
 
-        InputStreamReader inputStreamReader = null;
-        OutputStreamWriter outputStreamWriter = null;
-        inputStreamReader = new InputStreamReader(socket.getInputStream(), getEncoding());
-        outputStreamWriter = new OutputStreamWriter(socket.getOutputStream(), getEncoding());
+        InputStreamReader inputStreamReader = new InputStreamReader(socket.getInputStream(), getEncoding());
+        OutputStreamWriter outputStreamWriter = new OutputStreamWriter(socket.getOutputStream(), getEncoding());
 
         BufferedReader breader = new BufferedReader(inputStreamReader);
         BufferedWriter bwriter = new BufferedWriter(outputStreamWriter);
@@ -265,7 +265,7 @@ public class SiteBot implements ReplyConstants, Runnable {
         List<String> storedCommands = new ArrayList<>();
 
         // Read stuff back from the server to see if we connected.
-        String line = null;
+        String line;
         int tries = 1;
         while ((line = breader.readLine()) != null) {
 
@@ -766,7 +766,7 @@ public class SiteBot implements ReplyConstants, Runnable {
         StringTokenizer tokenizer = new StringTokenizer(line);
         String senderInfo = tokenizer.nextToken();
         String command = tokenizer.nextToken();
-        String target = null;
+        String target;
 
         int exclamation = senderInfo.indexOf("!");
         int at = senderInfo.indexOf("@");
@@ -846,9 +846,9 @@ public class SiteBot implements ReplyConstants, Runnable {
             this.onPrivateMessage(sourceNick, sourceLogin, sourceHostname, line.substring(line.indexOf(" :") + 2));
         } else if (command.equals("JOIN")) {
             // Someone is joining a channel.
-            String channel = target;
-            this.addUser(channel, new IrcUser("", sourceNick));
-            this.onJoin(channel, sourceNick, sourceLogin, sourceHostname);
+            // taget = channel name
+            this.addUser(target, new IrcUser("", sourceNick));
+            this.onJoin(target, sourceNick, sourceLogin, sourceHostname);
         } else if (command.equals("PART")) {
             // Someone is parting from a channel.
             this.removeUser(target, sourceNick);
@@ -858,13 +858,13 @@ public class SiteBot implements ReplyConstants, Runnable {
             this.onPart(target, sourceNick, sourceLogin, sourceHostname);
         } else if (command.equals("NICK")) {
             // Somebody is changing their nick.
-            String newNick = target;
-            this.renameUser(sourceNick, newNick);
+            // target = new nick name
+            this.renameUser(sourceNick, target);
             if (sourceNick.equals(this.getNick())) {
                 // Update our nick if it was us that changed nick.
-                this.setNick(newNick);
+                this.setNick(target);
             }
-            this.onNickChange(sourceNick, sourceLogin, sourceHostname, newNick);
+            this.onNickChange(sourceNick, sourceLogin, sourceHostname, target);
         } else if (command.equals("NOTICE")) {
             // Someone is sending a notice.
             this.onNotice(sourceNick, sourceLogin, sourceHostname, target, line.substring(line.indexOf(" :") + 2));
@@ -945,9 +945,7 @@ public class SiteBot implements ReplyConstants, Runnable {
             try {
                 logger.debug("Delaying for '{}' milliseconds, Started", _config.getDelayAfterNickserv());
                 Thread.sleep(_config.getDelayAfterNickserv());
-
-            } catch (InterruptedException e) {
-            }
+            } catch (InterruptedException ignored) {}
             logger.debug("Delaying for '{}' milliseconds, Completed", _config.getDelayAfterNickserv());
         }
     }
@@ -1088,24 +1086,24 @@ public class SiteBot implements ReplyConstants, Runnable {
             if (start > 7) {
                 // grab from after the equals sign until the next variable
                 int end = response.indexOf(" ", start);
-                if (end < -1) {  // PREFIX could be at the end
+                if (end == -1) {  // PREFIX could be at the end
                     end = response.length();
                 }
                 String prefixSegment = response.substring(start, end).trim();
-                int firstBracket = prefixSegment.indexOf("(") + 1;
+                int firstBracket = prefixSegment.indexOf("(");
                 // carry on processing if found, otherwise the defaults set in the constructor will be used
-                if (firstBracket >= 0) {
+                if (firstBracket != -1) {
+                    firstBracket+=1;
                     int secondBracket = prefixSegment.lastIndexOf(")");
                     String modeLetters = prefixSegment.substring(firstBracket, secondBracket);
                     String modeSymbols = prefixSegment.substring(secondBracket + 1);
                     if (modeLetters.length() == modeSymbols.length()) {  // just to make sure nothing funny is going on
                         // recreate the _userPrefixes table with the server specific info
                         _userPrefixes = new HashMap<>();
-                        _userPrefixOrder = "";
                         for (int x = 0; x < modeLetters.length(); x++) {
                             _userPrefixes.put(modeLetters.charAt(x) + "", modeSymbols.charAt(x) + "");
-                            _userPrefixOrder = _userPrefixOrder + modeSymbols.charAt(x);
                         }
+                        _userPrefixOrder = _userPrefixes.values().stream().reduce("", String::concat);
                     }
                 }
             }
@@ -1177,6 +1175,7 @@ public class SiteBot implements ReplyConstants, Runnable {
      * @since PircBot 1.0.0
      */
     protected void onUserList(String channel, IrcUser[] users) {
+        logger.debug("Ignoreing onUserList for {} with users: {}", channel, Arrays.toString(users));
     }
 
     /**
@@ -1280,6 +1279,7 @@ public class SiteBot implements ReplyConstants, Runnable {
      * @param action   The action carried out by the user.
      */
     protected void onAction(String sender, String login, String hostname, String target, String action) {
+        logger.debug("Ignoring onAction, sender: {}, login: {}, hostname: {}, target: {}, action: {}", sender, login, hostname, target, action);
     }
 
     /**
@@ -1312,7 +1312,7 @@ public class SiteBot implements ReplyConstants, Runnable {
         DH1080 exchange;
         //default blowfish on CBC
         String blowfishMode = BlowfishManager.CBC;
-        String exchangeKey = "";
+        String exchangeKey;
 
         if (notice.startsWith("DH1080_INIT")) {
             if (notice.length() <= 12) {
@@ -1389,6 +1389,7 @@ public class SiteBot implements ReplyConstants, Runnable {
      * @param hostname The hostname of the user who joined the channel.
      */
     protected void onJoin(String channel, String sender, String login, String hostname) {
+        logger.debug("Ignoring onJoin, channel: {}, sender: {}, login: {}, hostname: {}", channel, sender, login, hostname);
     }
 
     /**
@@ -1404,8 +1405,9 @@ public class SiteBot implements ReplyConstants, Runnable {
      * @param hostname The hostname of the user who parted from the channel.
      */
     protected void onPart(String channel, String sender, String login, String hostname) {
-        // Check whether the parting user is still in another chan with us, if not tidyup
-        if (!isCommonChannel(sender)) {
+        logger.debug("onPart, channel: {}, sender: {}, login: {}, hostname: {}", channel, sender, login, hostname);
+        // Check whether the parting user is still in another channel with us, if not tidy up
+        if (isUnknownNick(sender)) {
             _users.remove(sender);
         }
     }
@@ -1423,6 +1425,7 @@ public class SiteBot implements ReplyConstants, Runnable {
      * @param newNick  The new nick.
      */
     protected void onNickChange(String oldNick, String login, String hostname, String newNick) {
+        logger.debug("onNickChange: oldNick: {}, login: {}, hostname: {}, newNick: {}", oldNick, login, hostname, newNick);
         UserDetails user = _users.remove(oldNick);
         if (user != null) {
             user.setNick(newNick);
@@ -1445,8 +1448,9 @@ public class SiteBot implements ReplyConstants, Runnable {
      * @param reason         The reason given by the user who performed the kick.
      */
     protected void onKick(String channel, String kickerNick, String kickerLogin, String kickerHostname, String recipientNick, String reason) {
-        // Check whether the kicked user is still in another chan with us, if not tidyup
-        if (!isCommonChannel(recipientNick)) {
+        logger.debug("onKick: channel: {}, kickerNick: {}, kickerLogin: {}, kickerHostname: {}, recipientNick: {}, reason: {}", channel, kickerNick, kickerLogin, kickerHostname, recipientNick, reason);
+        // Check whether the kicked user is still in another channel with us, if not tidy up
+        if (isUnknownNick(recipientNick)) {
             _users.remove(recipientNick);
         }
     }
@@ -1465,7 +1469,8 @@ public class SiteBot implements ReplyConstants, Runnable {
      * @param reason         The reason given for quitting the server.
      */
     protected void onQuit(String sourceNick, String sourceLogin, String sourceHostname, String reason) {
-        // Remove userdetails if we have them
+        logger.debug("onQuit: sourceNick: {}, sourceLogin: {}, sourceHostname: {}, reason: {}", sourceNick, sourceLogin, sourceHostname, reason);
+        // Remove userDetails if we have them
         _users.remove(sourceNick);
     }
 
@@ -1484,6 +1489,7 @@ public class SiteBot implements ReplyConstants, Runnable {
      *                the topic was already there.
      */
     protected void onTopic(String channel, String topic, String setBy, long date, boolean changed) {
+        logger.debug("ignoring onTopic: channel: {}, topic: {}, setBy: {}, date: {}, changed: {}", channel, topic, setBy, date, changed);
     }
 
     /**
@@ -1504,6 +1510,7 @@ public class SiteBot implements ReplyConstants, Runnable {
      * @see #listChannels() listChannels
      */
     protected void onChannelInfo(String channel, int userCount, String topic) {
+        logger.debug("ignoring onChannelInfo: channel: {}, userCount: {}, topic: {}", channel, userCount, topic);
     }
 
     /**
@@ -1524,7 +1531,7 @@ public class SiteBot implements ReplyConstants, Runnable {
 
         if (_channelPrefixes.indexOf(target.charAt(0)) >= 0) {
             // The mode of a channel is being changed.
-            String channel = target;
+            // target = channel
             StringTokenizer tok = new StringTokenizer(mode);
             String[] params = new String[tok.countTokens()];
 
@@ -1545,88 +1552,88 @@ public class SiteBot implements ReplyConstants, Runnable {
                 if (atPos == '+' || atPos == '-') {
                     pn = atPos;
                 } else if (_userPrefixes.containsKey(atPos + "")) {
-                    this.updateUser(channel, pn, _userPrefixes.get(atPos + ""), params[p]);
+                    this.updateUser(target, pn, _userPrefixes.get(atPos + ""), params[p]);
                     // now deal with the known(standard) user modes
                     if (atPos == 'o') {
                         if (pn == '+') {
-                            onOp(channel, sourceNick, sourceLogin, sourceHostname, params[p]);
+                            onOp(target, sourceNick, sourceLogin, sourceHostname, params[p]);
                         } else {
-                            onDeop(channel, sourceNick, sourceLogin, sourceHostname, params[p]);
+                            onDeop(target, sourceNick, sourceLogin, sourceHostname, params[p]);
                         }
                     } else if (atPos == 'v') {
                         if (pn == '+') {
-                            onVoice(channel, sourceNick, sourceLogin, sourceHostname, params[p]);
+                            onVoice(target, sourceNick, sourceLogin, sourceHostname, params[p]);
                         } else {
-                            onDeVoice(channel, sourceNick, sourceLogin, sourceHostname, params[p]);
+                            onDeVoice(target, sourceNick, sourceLogin, sourceHostname, params[p]);
                         }
                     }
                     p++;
 
                 } else if (atPos == 'k') {
                     if (pn == '+') {
-                        onSetChannelKey(channel, sourceNick, sourceLogin, sourceHostname, params[p]);
+                        onSetChannelKey(target, sourceNick, sourceLogin, sourceHostname, params[p]);
                     } else {
-                        onRemoveChannelKey(channel, sourceNick, sourceLogin, sourceHostname, params[p]);
+                        onRemoveChannelKey(target, sourceNick, sourceLogin, sourceHostname, params[p]);
                     }
                     p++;
                 } else if (atPos == 'l') {
                     if (pn == '+') {
-                        onSetChannelLimit(channel, sourceNick, sourceLogin, sourceHostname, Integer.parseInt(params[p]));
+                        onSetChannelLimit(target, sourceNick, sourceLogin, sourceHostname, Integer.parseInt(params[p]));
                         p++;
                     } else {
-                        onRemoveChannelLimit(channel, sourceNick, sourceLogin, sourceHostname);
+                        onRemoveChannelLimit(target, sourceNick, sourceLogin, sourceHostname);
                     }
                 } else if (atPos == 'b') {
                     if (pn == '+') {
-                        onSetChannelBan(channel, sourceNick, sourceLogin, sourceHostname, params[p]);
+                        onSetChannelBan(target, sourceNick, sourceLogin, sourceHostname, params[p]);
                     } else {
-                        onRemoveChannelBan(channel, sourceNick, sourceLogin, sourceHostname, params[p]);
+                        onRemoveChannelBan(target, sourceNick, sourceLogin, sourceHostname, params[p]);
                     }
                     p++;
                 } else if (atPos == 't') {
                     if (pn == '+') {
-                        onSetTopicProtection(channel, sourceNick, sourceLogin, sourceHostname);
+                        onSetTopicProtection(target, sourceNick, sourceLogin, sourceHostname);
                     } else {
-                        onRemoveTopicProtection(channel, sourceNick, sourceLogin, sourceHostname);
+                        onRemoveTopicProtection(target, sourceNick, sourceLogin, sourceHostname);
                     }
                 } else if (atPos == 'n') {
                     if (pn == '+') {
-                        onSetNoExternalMessages(channel, sourceNick, sourceLogin, sourceHostname);
+                        onSetNoExternalMessages(target, sourceNick, sourceLogin, sourceHostname);
                     } else {
-                        onRemoveNoExternalMessages(channel, sourceNick, sourceLogin, sourceHostname);
+                        onRemoveNoExternalMessages(target, sourceNick, sourceLogin, sourceHostname);
                     }
                 } else if (atPos == 'i') {
                     if (pn == '+') {
-                        onSetInviteOnly(channel, sourceNick, sourceLogin, sourceHostname);
+                        onSetInviteOnly(target, sourceNick, sourceLogin, sourceHostname);
                     } else {
-                        onRemoveInviteOnly(channel, sourceNick, sourceLogin, sourceHostname);
+                        onRemoveInviteOnly(target, sourceNick, sourceLogin, sourceHostname);
                     }
                 } else if (atPos == 'm') {
                     if (pn == '+') {
-                        onSetModerated(channel, sourceNick, sourceLogin, sourceHostname);
+                        onSetModerated(target, sourceNick, sourceLogin, sourceHostname);
                     } else {
-                        onRemoveModerated(channel, sourceNick, sourceLogin, sourceHostname);
+                        onRemoveModerated(target, sourceNick, sourceLogin, sourceHostname);
                     }
                 } else if (atPos == 'p') {
                     if (pn == '+') {
-                        onSetPrivate(channel, sourceNick, sourceLogin, sourceHostname);
+                        onSetPrivate(target, sourceNick, sourceLogin, sourceHostname);
                     } else {
-                        onRemovePrivate(channel, sourceNick, sourceLogin, sourceHostname);
+                        onRemovePrivate(target, sourceNick, sourceLogin, sourceHostname);
                     }
                 } else if (atPos == 's') {
                     if (pn == '+') {
-                        onSetSecret(channel, sourceNick, sourceLogin, sourceHostname);
+                        onSetSecret(target, sourceNick, sourceLogin, sourceHostname);
                     } else {
-                        onRemoveSecret(channel, sourceNick, sourceLogin, sourceHostname);
+                        onRemoveSecret(target, sourceNick, sourceLogin, sourceHostname);
                     }
                 }
             }
 
-            this.onMode(channel, sourceNick, sourceLogin, sourceHostname, mode);
+            this.onMode(target, sourceNick, sourceLogin, sourceHostname, mode);
         } else {
             // The mode of a user is being changed.
-            String nick = target;
-            this.onUserMode(nick, sourceNick, sourceLogin, sourceHostname, mode);
+            // target = nick
+            this.onUserMode(target, sourceNick, sourceLogin, sourceHostname, mode);
         }
     }
 
@@ -1855,7 +1862,7 @@ public class SiteBot implements ReplyConstants, Runnable {
      * @param sourceNick     The nick of the user that performed the mode change.
      * @param sourceLogin    The login of the user that performed the mode change.
      * @param sourceHostname The hostname of the user that performed the mode change.
-     * @param hostmask
+     * @param hostmask       The hostmask of the ban that is removed
      * @since PircBot 0.9.5
      */
     protected void onRemoveChannelBan(String channel, String sourceNick, String sourceLogin, String sourceHostname, String hostmask) {
@@ -2374,14 +2381,15 @@ public class SiteBot implements ReplyConstants, Runnable {
      *
      * @param charset The charset as a string to use
      * @throws NullPointerException         If the charset is null
-     * @throws UnsupportedEncodingException If the passed encoding isn't supported
+     * @throws UnsupportedCharsetException  If the passed encoding isn't supported
      *                                      by the JMV
      * @see #setEncoding(Charset)
      * @since PircBot 1.0.4
      */
-    public void setEncoding(String charset) throws UnsupportedEncodingException {
-        if (charset == null)
+    public void setEncoding(String charset) throws UnsupportedCharsetException {
+        if (charset == null) {
             throw new NullPointerException("Can't set charset to null");
+        }
 
         setEncoding(Charset.forName(charset));
     }
@@ -2396,11 +2404,11 @@ public class SiteBot implements ReplyConstants, Runnable {
      *
      * @param charset The new encoding charset to be used by PircBot.
      * @throws NullPointerException         If the charset is null
-     * @throws UnsupportedEncodingException If the named charset is not supported. -- TODO?
      */
     public void setEncoding(Charset charset) {
-        if (charset == null)
+        if (charset == null) {
             throw new NullPointerException("Can't set charset to null");
+        }
 
         _charset = charset;
     }
@@ -2498,7 +2506,7 @@ public class SiteBot implements ReplyConstants, Runnable {
     public final IrcUser[] getUsers(String channel) {
         channel = channel.toLowerCase();
         IrcUser[] userArray = new IrcUser[0];
-        synchronized (_channels) {
+        synchronized (CHANNELS_LOCK) {
             HashMap<IrcUser, IrcUser> users = _channels.get(channel);
             if (users != null) {
                 userArray = new IrcUser[users.size()];
@@ -2524,7 +2532,7 @@ public class SiteBot implements ReplyConstants, Runnable {
      */
     public final String[] getChannels() {
         String[] channels;
-        synchronized (_channels) {
+        synchronized (CHANNELS_LOCK) {
             channels = _channels.keySet().toArray(new String[0]);
         }
         return channels;
@@ -2561,7 +2569,7 @@ public class SiteBot implements ReplyConstants, Runnable {
      */
     private void addUser(String channel, IrcUser user) {
         channel = channel.toLowerCase();
-        synchronized (_channels) {
+        synchronized (CHANNELS_LOCK) {
             HashMap<IrcUser, IrcUser> users = _channels.get(channel);
             if (users == null) {
                 users = new HashMap<>();
@@ -2577,7 +2585,7 @@ public class SiteBot implements ReplyConstants, Runnable {
     private IrcUser removeUser(String channel, String nick) {
         channel = channel.toLowerCase();
         IrcUser user = new IrcUser("", nick);
-        synchronized (_channels) {
+        synchronized (CHANNELS_LOCK) {
             HashMap<IrcUser, IrcUser> users = _channels.get(channel);
             if (users != null) {
                 return users.remove(user);
@@ -2590,7 +2598,7 @@ public class SiteBot implements ReplyConstants, Runnable {
      * Remove a user from all channels in our memory.
      */
     private void removeUser(String nick) {
-        synchronized (_channels) {
+        synchronized (CHANNELS_LOCK) {
             for (String channel : _channels.keySet()) {
                 this.removeUser(channel, nick);
             }
@@ -2601,7 +2609,7 @@ public class SiteBot implements ReplyConstants, Runnable {
      * Rename a user if they appear in any of the channels we know about.
      */
     private void renameUser(String oldNick, String newNick) {
-        synchronized (_channels) {
+        synchronized (CHANNELS_LOCK) {
             for (String channel : _channels.keySet()) {
                 IrcUser user = this.removeUser(channel, oldNick);
                 if (user != null) {
@@ -2617,7 +2625,7 @@ public class SiteBot implements ReplyConstants, Runnable {
      */
     private void removeChannel(String channel) {
         channel = channel.toLowerCase();
-        synchronized (_channels) {
+        synchronized (CHANNELS_LOCK) {
             _channels.remove(channel);
         }
     }
@@ -2626,12 +2634,14 @@ public class SiteBot implements ReplyConstants, Runnable {
      * Removes all channels from our memory of users.
      */
     private void removeAllChannels() {
-        _channels = new CaseInsensitiveHashMap<>();
+        synchronized (CHANNELS_LOCK) {
+            _channels = new CaseInsensitiveHashMap<>();
+        }
     }
 
     private void updateUser(String channel, char giveTake, String userPrefix, String nick) {
         channel = channel.toLowerCase();
-        synchronized (_channels) {
+        synchronized (CHANNELS_LOCK) {
             HashMap<IrcUser, IrcUser> users = _channels.get(channel);
             if (users != null) {
                 for (IrcUser userObj : users.values()) {
@@ -2811,22 +2821,21 @@ public class SiteBot implements ReplyConstants, Runnable {
         }
     }
 
-    private boolean isCommonChannel(String nick) {
-        boolean foundUser = false;
+    /**
+     * Function to check if we know of a nick on another channel
+     *
+     * @param nick The nick name to check for in all channels
+     * @return true if the nick is not known anymore, otherwise false
+     */
+    private boolean isUnknownNick(String nick) {
         for (Entry<String, HashMap<IrcUser, IrcUser>> entry : _channels.entrySet()) {
             for (IrcUser user : entry.getValue().keySet()) {
                 if (user.getNick().equalsIgnoreCase(nick)) {
-                    foundUser = true;
-                    // Found the user in this chan, no need to check remaining nicks
-                    break;
+                    return false;
                 }
             }
-            if (foundUser) {
-                // We've found the user, no need to check remaining channels
-                break;
-            }
         }
-        return foundUser;
+        return true;
     }
 
     public String getBotName() {
@@ -2893,10 +2902,10 @@ public class SiteBot implements ReplyConstants, Runnable {
         // held on any existing ones
         joinChannels();
         // Check whether each channel we are currently in is still listed in the conf, if not then part
-        ArrayList<ChannelConfig> chanConfig = _config.getChannels();
+        ArrayList<ChannelConfig> channelConfig = _config.getChannels();
         for (String channel : _channels.keySet()) {
             boolean isConf = false;
-            for (ChannelConfig confChan : chanConfig) {
+            for (ChannelConfig confChan : channelConfig) {
                 if (confChan.getName().equalsIgnoreCase(channel)) {
                     isConf = true;
                     break;
@@ -2982,6 +2991,7 @@ class CommandThreadFactory implements ThreadFactory {
         return "SiteBot Command Handler-" + threadId + " - Waiting for commands";
     }
 
+    @Override
     public Thread newThread(Runnable r) {
         Thread t = Executors.defaultThreadFactory().newThread(r);
         t.setName(getIdleThreadName(t.getId()));
