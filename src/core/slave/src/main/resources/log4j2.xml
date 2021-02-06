@@ -1,26 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration>
     <Appenders>
-        <RollingFile name="root" fileName="logs/slave.log" filePattern="logs/slave-%d{yyyy-MM-dd}-%i.log.gz">
+        <Console name="CONSOLE" target="SYSTEM_OUT">
             <PatternLayout>
                 <Pattern>%p %d{ISO8601} [%t] %c %x - %m%n</Pattern>
             </PatternLayout>
-            <Policies>
-                <TimeBasedTriggeringPolicy/>
-                <SizeBasedTriggeringPolicy/>
-            </Policies>
-            <DefaultRolloverStrategy max="15"/>
-        </RollingFile>
+        </Console>
     </Appenders>
     <Loggers>
-        <Logger name="org.apache.hc.client5.http" level="WARN">
-            <AppenderRef ref="root"/>
-        </Logger>
-        <Logger name="org.apache.hc.client5.http.wire" level="WARN">
-            <AppenderRef ref="root"/>
-        </Logger>
         <Root level="WARN">
-            <AppenderRef ref="root"/>
+            <AppenderRef ref="CONSOLE"/>
         </Root>
     </Loggers>
 </Configuration>

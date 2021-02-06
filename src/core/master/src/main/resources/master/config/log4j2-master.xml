@@ -1,163 +1,136 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration>
+    <Properties>
+        <Property name="baseDir">logs</Property>
+    </Properties>
     <Appenders>
-        <RollingFile name="root" fileName="logs/master.log" filePattern="logs/master-%d{yyyy-MM-dd}-%i.log.gz">
-            <PatternLayout>
-                <Pattern>%p %d{ISO8601} [%t] %c %x - %m%n</Pattern>
-            </PatternLayout>
-            <Policies>
-                <TimeBasedTriggeringPolicy/>
-                <SizeBasedTriggeringPolicy/>
-            </Policies>
-            <DefaultRolloverStrategy max="15"/>
+        <RollingFile name="root" fileName="${baseDir}/master.log" filePattern="${baseDir}/$${date:yyyy-MM}/commands-%d{yyyy-MM-dd}.log.gz">
+            <PatternLayout pattern="%p %d{ISO8601} [%t] %c %x - %m%n" />
+            <CronTriggeringPolicy schedule="0 0 0 * * ?" />
+            <DefaultRolloverStrategy>
+                <Delete basePath="${baseDir}" maxDepth="2">
+                    <IfFileName glob="*/master.log-*.log.gz" />
+                    <IfLastModified age="90d" />
+                </Delete>
+            </DefaultRolloverStrategy>
         </RollingFile>
-        <RollingFile name="slave" fileName="logs/remoteslave.log" filePattern="logs/remoteslave-%d{yyyy-MM-dd}-%i.log.gz">
-            <PatternLayout>
-                <Pattern>%p %d{ISO8601} [%t] %c %x - %m%n</Pattern>
-            </PatternLayout>
-            <Policies>
-                <TimeBasedTriggeringPolicy/>
-                <SizeBasedTriggeringPolicy/>
-            </Policies>
-            <DefaultRolloverStrategy max="15"/>
+        <RollingFile name="remoteslave" fileName="${baseDir}/remoteslave.log" filePattern="${baseDir}/$${date:yyyy-MM}/remoteslave-%d{yyyy-MM-dd}.log.gz">
+            <PatternLayout pattern="%p %d{ISO8601} [%t] %c %x - %m%n" />
+            <CronTriggeringPolicy schedule="0 0 0 * * ?" />
+            <DefaultRolloverStrategy>
+                <Delete basePath="${baseDir}" maxDepth="2">
+                    <IfFileName glob="*/remoteslave-*.log.gz" />
+                    <IfLastModified age="90d" />
+                </Delete>
+            </DefaultRolloverStrategy>
         </RollingFile>
-        <RollingFile name="sysop" fileName="logs/sysop.log" filePattern="logs/sysop-%d{yyyy-MM-dd}-%i.log.gz">
-            <PatternLayout>
-                <Pattern>%p %d{ISO8601} [%t] %c %x - %m%n</Pattern>
-            </PatternLayout>
-            <Policies>
-                <TimeBasedTriggeringPolicy/>
-                <SizeBasedTriggeringPolicy/>
-            </Policies>
-            <DefaultRolloverStrategy max="15"/>
+        <RollingFile name="sysop" fileName="${baseDir}/sysop.log" filePattern="${baseDir}/$${date:yyyy-MM}/sysop-%d{yyyy-MM-dd}.log.gz">
+            <PatternLayout pattern="%p %d{ISO8601} [%t] %c %x - %m%n" />
+            <CronTriggeringPolicy schedule="0 0 0 * * ?" />
+            <DefaultRolloverStrategy>
+                <Delete basePath="${baseDir}" maxDepth="2">
+                    <IfFileName glob="*/sysop-*.log.gz" />
+                    <IfLastModified age="90d" />
+                </Delete>
+            </DefaultRolloverStrategy>
         </RollingFile>
-        <RollingFile name="archive" fileName="logs/archive.log" filePattern="logs/archive-%d{yyyy-MM-dd}-%i.log.gz">
-          <PatternLayout>
-            <Pattern>%p %d{ISO8601} [%t] %c %x - %m%n</Pattern>
-          </PatternLayout>
-          <Policies>
-            <TimeBasedTriggeringPolicy />
-            <SizeBasedTriggeringPolicy />
-          </Policies>
-          <DefaultRolloverStrategy max="15"/>
+        <RollingFile name="archive" fileName="${baseDir}/archive.log" filePattern="${baseDir}/$${date:yyyy-MM}/archive-%d{yyyy-MM-dd}.log.gz">
+            <PatternLayout pattern="%p %d{ISO8601} [%t] %c %x - %m%n" />
+            <CronTriggeringPolicy schedule="0 0 0 * * ?" />
+            <DefaultRolloverStrategy>
+                <Delete basePath="${baseDir}" maxDepth="2">
+                    <IfFileName glob="*/archive-*.log.gz" />
+                    <IfLastModified age="90d" />
+                </Delete>
+            </DefaultRolloverStrategy>
         </RollingFile>
-        <RollingFile name="jobmanager" fileName="logs/jobmanager.log" filePattern="logs/jobmanager-%d{yyyy-MM-dd}-%i.log.gz">
-          <PatternLayout>
-            <Pattern>%p %d{ISO8601} [%t] %c %x - %m%n</Pattern>
-          </PatternLayout>
-          <Policies>
-            <TimeBasedTriggeringPolicy />
-            <SizeBasedTriggeringPolicy />
-          </Policies>
-          <DefaultRolloverStrategy max="15"/>
+        <RollingFile name="jobmanager" fileName="${baseDir}/jobmanager.log" filePattern="${baseDir}/$${date:yyyy-MM}/jobmanager-%d{yyyy-MM-dd}.log.gz">
+            <PatternLayout pattern="%p %d{ISO8601} [%t] %c %x - %m%n" />
+            <CronTriggeringPolicy schedule="0 0 0 * * ?" />
+            <DefaultRolloverStrategy>
+                <Delete basePath="${baseDir}" maxDepth="2">
+                    <IfFileName glob="*/jobmanager-*.log.gz" />
+                    <IfLastModified age="90d" />
+                </Delete>
+            </DefaultRolloverStrategy>
         </RollingFile>
-        <RollingFile name="imdb" fileName="logs/imdb.log" filePattern="logs/imdb-%d{yyyy-MM-dd}-%i.log.gz">
-          <PatternLayout>
-            <Pattern>%p %d{ISO8601} [%t] %c %x - %m%n</Pattern>
-          </PatternLayout>
-          <Policies>
-            <TimeBasedTriggeringPolicy />
-            <SizeBasedTriggeringPolicy />
-          </Policies>
-          <DefaultRolloverStrategy max="15"/>
+        <RollingFile name="imdb" fileName="${baseDir}/imdb.log" filePattern="${baseDir}/$${date:yyyy-MM}/imdb-%d{yyyy-MM-dd}.log.gz">
+            <PatternLayout pattern="%p %d{ISO8601} [%t] %c %x - %m%n" />
+            <CronTriggeringPolicy schedule="0 0 0 * * ?" />
+            <DefaultRolloverStrategy>
+                <Delete basePath="${baseDir}" maxDepth="2">
+                    <IfFileName glob="*/imdb-*.log.gz" />
+                    <IfLastModified age="90d" />
+                </Delete>
+            </DefaultRolloverStrategy>
         </RollingFile>
-        <RollingFile name="index" fileName="logs/index.log" filePattern="logs/index-%d{yyyy-MM-dd}-%i.log.gz">
-          <PatternLayout>
-            <Pattern>%p %d{ISO8601} [%t] %c %x - %m%n</Pattern>
-          </PatternLayout>
-          <Policies>
-            <TimeBasedTriggeringPolicy />
-            <SizeBasedTriggeringPolicy />
-          </Policies>
-          <DefaultRolloverStrategy max="15"/>
+        <RollingFile name="sitebot" fileName="${baseDir}/sitebot.log" filePattern="${baseDir}/$${date:yyyy-MM}/sitebot-%d{yyyy-MM-dd}.log.gz">
+            <PatternLayout pattern="%p %d{ISO8601} [%t] %c %x - %m%n" />
+            <CronTriggeringPolicy schedule="0 0 0 * * ?" />
+            <DefaultRolloverStrategy>
+                <Delete basePath="${baseDir}" maxDepth="2">
+                    <IfFileName glob="*/sitebot-*.log.gz" />
+                    <IfLastModified age="90d" />
+                </Delete>
+            </DefaultRolloverStrategy>
         </RollingFile>
-        <RollingFile name="root" fileName="logs/master.log" filePattern="logs/master-%d{yyyy-MM-dd}-%i.log.gz">
-          <PatternLayout>
-            <Pattern>%p %d{ISO8601} [%t] %c %x - %m%n</Pattern>
-          </PatternLayout>
-          <Policies>
-            <TimeBasedTriggeringPolicy />
-            <SizeBasedTriggeringPolicy />
-          </Policies>
-          <DefaultRolloverStrategy max="15"/>
+        <RollingFile name="tvmaze" fileName="${baseDir}/tvmaze.log" filePattern="${baseDir}/$${date:yyyy-MM}/tvmaze-%d{yyyy-MM-dd}.log.gz">
+            <PatternLayout pattern="%p %d{ISO8601} [%t] %c %x - %m%n" />
+            <CronTriggeringPolicy schedule="0 0 0 * * ?" />
+            <DefaultRolloverStrategy>
+                <Delete basePath="${baseDir}" maxDepth="2">
+                    <IfFileName glob="*/tvmaze-*.log.gz" />
+                    <IfLastModified age="90d" />
+                </Delete>
+            </DefaultRolloverStrategy>
         </RollingFile>
-        <RollingFile name="sitebot" fileName="logs/sitebot.log" filePattern="logs/sitebot-%d{yyyy-MM-dd}-%i.log.gz">
-          <PatternLayout>
-            <Pattern>%p %d{ISO8601} [%t] %c %x - %m%n</Pattern>
-          </PatternLayout>
-          <Policies>
-            <TimeBasedTriggeringPolicy />
-            <SizeBasedTriggeringPolicy />
-          </Policies>
-          <DefaultRolloverStrategy max="15"/>
-        </RollingFile>
-        <RollingFile name="slave" fileName="logs/remoteslave.log" filePattern="logs/remoteslave-%d{yyyy-MM-dd}-%i.log.gz">
-          <PatternLayout>
-            <Pattern>%p %d{ISO8601} [%t] %c %x - %m%n</Pattern>
-          </PatternLayout>
-          <Policies>
-            <TimeBasedTriggeringPolicy />
-            <SizeBasedTriggeringPolicy />
-          </Policies>
-          <DefaultRolloverStrategy max="15"/>
-        </RollingFile>
-        <RollingFile name="sysop" fileName="logs/sysop.log" filePattern="logs/sysop-%d{yyyy-MM-dd}-%i.log.gz">
-          <PatternLayout>
-            <Pattern>%p %d{ISO8601} [%t] %c %x - %m%n</Pattern>
-          </PatternLayout>
-          <Policies>
-            <TimeBasedTriggeringPolicy />
-            <SizeBasedTriggeringPolicy />
-          </Policies>
-          <DefaultRolloverStrategy max="15"/>
-        </RollingFile>
-        <RollingFile name="tvmaze" fileName="logs/tvmaze.log" filePattern="logs/tvmaze-%d{yyyy-MM-dd}-%i.log.gz">
-          <PatternLayout>
-            <Pattern>%p %d{ISO8601} [%t] %c %x - %m%n</Pattern>
-          </PatternLayout>
-          <Policies>
-            <TimeBasedTriggeringPolicy />
-            <SizeBasedTriggeringPolicy />
-          </Policies>
-          <DefaultRolloverStrategy max="15"/>
+        <RollingFile name="index" fileName="${baseDir}/index.log" filePattern="${baseDir}/$${date:yyyy-MM}/index-%d{yyyy-MM-dd}.log.gz">
+            <PatternLayout pattern="%p %d{ISO8601} [%t] %c %x - %m%n" />
+            <CronTriggeringPolicy schedule="0 0 0 * * ?" />
+            <DefaultRolloverStrategy>
+                <Delete basePath="${baseDir}" maxDepth="2">
+                    <IfFileName glob="*/index-*.log.gz" />
+                    <IfLastModified age="90d" />
+                </Delete>
+            </DefaultRolloverStrategy>
         </RollingFile>
     </Appenders>
     <Loggers>
         <Logger name="org.drftpd.master.commands.usermanagement" level="warn" additivity="false">
-            <AppenderRef ref="sysop"/>
+            <AppenderRef ref="sysop" />
         </Logger>
         <Logger name="org.drftpd.master.slavemanagement.RemoteSlave" level="warn" additivity="false">
-            <AppenderRef ref="slave"/>
+            <AppenderRef ref="remoteslave" />
         </Logger>
         <Logger name="org.drftpd.master.slavemanagement.SlaveManager" level="warn" additivity="false">
-            <AppenderRef ref="slave"/>
+            <AppenderRef ref="remoteslave" />
         </Logger>
         <Logger name="org.drftpd.archive.master" level="warn" additivity="false">
-            <AppenderRef ref="archive"/>
+            <AppenderRef ref="archive" />
         </Logger>
         <Logger name="org.drftpd.jobs.master" level="warn" additivity="false">
-            <AppenderRef ref="jobmanager"/>
+            <AppenderRef ref="jobmanager" />
         </Logger>
         <Logger name="org.drftpd.master.sitebot" level="warn" additivity="false">
-            <AppenderRef ref="sitebot"/>
+            <AppenderRef ref="sitebot" />
         </Logger>
         <Logger name="org.drftpd.master.indexation" level="warn" additivity="false">
-            <AppenderRef ref="index"/>
+            <AppenderRef ref="index" />
         </Logger>
         <Logger name="org.drftpd.commands.imdb.master" level="warn" additivity="false">
-            <AppenderRef ref="imdb"/>
+            <AppenderRef ref="imdb" />
         </Logger>
         <Logger name="org.drftpd.commands.indexmanager" level="warn" additivity="false">
-            <AppenderRef ref="index"/>
+            <AppenderRef ref="index" />
         </Logger>
         <Logger name="org.drftpd.commands.tvmaze.master" level="warn" additivity="false">
-            <AppenderRef ref="tvmaze"/>
+            <AppenderRef ref="tvmaze" />
         </Logger>
         <Logger name="org.drftpd.master.network.BaseFtpConnection.service" level="warn" additivity="false">
-            <AppenderRef ref="root"/>
+            <AppenderRef ref="root" />
         </Logger>
         <Root level="warn">
-            <AppenderRef ref="root"/>
+            <AppenderRef ref="root" />
         </Root>
     </Loggers>
 </Configuration>
