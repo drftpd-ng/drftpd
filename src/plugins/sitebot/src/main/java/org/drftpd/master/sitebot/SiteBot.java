@@ -124,7 +124,6 @@ public class SiteBot implements ReplyConstants, Runnable {
     // A HashMap to store the available prefixes and associated mode operator
     private HashMap<String, String> _userPrefixes = new HashMap<>();
     // prefixes as delivered from the server .. highest to lowest - default to op/voice
-    private String _userPrefixOrder = "@+";
     private final String _channelPrefixes = "#&+!";
 
     public SiteBot(String confDir) throws FatalException {
@@ -1103,7 +1102,6 @@ public class SiteBot implements ReplyConstants, Runnable {
                         for (int x = 0; x < modeLetters.length(); x++) {
                             _userPrefixes.put(modeLetters.charAt(x) + "", modeSymbols.charAt(x) + "");
                         }
-                        _userPrefixOrder = _userPrefixes.values().stream().reduce("", String::concat);
                     }
                 }
             }
