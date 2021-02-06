@@ -31,8 +31,6 @@ import java.util.Properties;
  */
 public class SiteBotConfig {
 
-    private boolean _activated;
-
     private boolean _autoNick;
 
     private boolean _blowfishEnabled;
@@ -73,6 +71,10 @@ public class SiteBotConfig {
 
     private boolean _dh1080Enabled;
 
+    private boolean _dh1080EcbEnabled;
+
+    private boolean _dh1080CbcEnabled;
+
     private String _localBindHost;
 
     private int _maxLineLength;
@@ -97,8 +99,6 @@ public class SiteBotConfig {
 
     private final LinkedList<ServerConfig> _servers = new LinkedList<>();
 
-    private X509TrustManager _trustManager;
-
     private String _user;
 
     private String _userModes;
@@ -110,25 +110,22 @@ public class SiteBotConfig {
     }
 
     private void readProperties(Properties cfg) {
+        X509TrustManager trustManager = new BlindTrustManager();
         if (cfg.getProperty("ssl.strictTrust").equalsIgnoreCase("true")) {
-            _trustManager = new PartialTrustManager(
-                    cfg.getProperty("ssl.keystore.password"));
-        } else {
-            _trustManager = new BlindTrustManager();
+            trustManager = new PartialTrustManager(cfg.getProperty("ssl.keystore.password"));
         }
         for (int i = 1; ; i++) {
             String hostName = cfg.getProperty("server." + i + ".host");
             if (hostName == null) {
                 break;
             }
-            int port = Integer.valueOf(cfg.getProperty("server." + i + ".port"));
+            int port = Integer.parseInt(cfg.getProperty("server." + i + ".port"));
             String password = cfg.getProperty("server." + i + ".password");
             boolean ssl = cfg.getProperty("server." + i + ".use_ssl").equalsIgnoreCase("true");
-            _servers.add(new ServerConfig(hostName, port, password, ssl, _trustManager));
+            _servers.add(new ServerConfig(hostName, port, password, ssl, trustManager));
         }
-        _connectDelay = Long.valueOf(cfg.getProperty("connect.delay")) * 1000;
-        _messageDelay = Long.valueOf(cfg.getProperty("message.sendDelay"));
-        _activated = cfg.getProperty("activated").equalsIgnoreCase("true");
+        _connectDelay = Long.parseLong(cfg.getProperty("connect.delay")) * 1000;
+        _messageDelay = Long.parseLong(cfg.getProperty("message.sendDelay"));
         _autoNick = cfg.getProperty("nick.auto").equalsIgnoreCase("true");
         _name = cfg.getProperty("name");
         _nick = cfg.getProperty("nick");
@@ -148,7 +145,7 @@ public class SiteBotConfig {
         _nickservRegNick = cfg.getProperty("services.nickserv.register.nick");
         _nickservRegPassword = cfg.getProperty("services.nickserv.register.password");
 
-        _delayAfterNickserv = Long.valueOf(cfg.getProperty("services.nickserv.delayafter", "0"));
+        _delayAfterNickserv = Long.parseLong(cfg.getProperty("services.nickserv.delayafter", "0"));
 
         _chanservEnabled = cfg.getProperty("services.chanserv.enable").equalsIgnoreCase("true");
         for (int i = 1; ; i++) {
@@ -176,6 +173,8 @@ public class SiteBotConfig {
         _charset = cfg.getProperty("charset");
         _blowfishEnabled = cfg.getProperty("blowfish.enable").equalsIgnoreCase("true");
         _dh1080Enabled = cfg.getProperty("blowfish.dh1080.enable").equalsIgnoreCase("true");
+        _dh1080EcbEnabled = cfg.getProperty("blowfish.dh1080.ecb").equalsIgnoreCase("true");
+        _dh1080CbcEnabled = cfg.getProperty("blowfish.dh1080.cbc").equalsIgnoreCase("true");
         _blowfishPunish = cfg.getProperty("blowfish.unencrypted.punish").equalsIgnoreCase("true");
         _blowfishPunishAction = cfg.getProperty("blowfish.unencrypted.action");
         _blowfishPunishReason = cfg.getProperty("blowfish.unencrypted.reason");
@@ -188,10 +187,6 @@ public class SiteBotConfig {
             _commandsQueue = true;
         }
         _maxLineLength = Integer.parseInt(cfg.getProperty("line.length.max", "512"));
-    }
-
-    public boolean isActivated() {
-        return _activated;
     }
 
     public boolean getAutoNick() {
@@ -244,6 +239,14 @@ public class SiteBotConfig {
 
     public boolean getDH1080Enabled() {
         return _dh1080Enabled;
+    }
+
+    public boolean getDH1080CBCEnabled() {
+        return _dh1080CbcEnabled;
+    }
+
+    public boolean getDH1080ECBEnabled() {
+        return _dh1080EcbEnabled;
     }
 
     public String getLocalBindHost() {
