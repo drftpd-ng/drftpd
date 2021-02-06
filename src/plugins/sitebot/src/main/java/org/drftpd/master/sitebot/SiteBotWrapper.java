@@ -37,25 +37,34 @@ public class SiteBotWrapper implements PluginInterface {
     private final ArrayList<SiteBot> _bots = new ArrayList<>();
 
     public void startPlugin() {
+        // Load config properties
         Properties cfg = ConfigLoader.loadPluginConfig("irc.conf");
+
+        // Bail if config is empty
         if (cfg.isEmpty()) {
             logger.debug("No configuration found for the SiteBot, skipping initialization");
             return;
         }
 
-        boolean isActivated = cfg.getProperty("activated").equalsIgnoreCase("true");
-        if (!isActivated) return;
+        // Bail if config we are not activated
+        if(!cfg.getProperty("activated").equalsIgnoreCase("true")) {
+            logger.info("SiteBot is not enabled in configuration, skipping initialization");
+            return;
+        }
 
-        SiteBot bot = new SiteBot("");
-        new Thread(bot).start();
-        _bots.add(bot);
+        // We should initialize our main bot, do that here
+        _bots.add(new SiteBot(""));
+
+        // Handle the case were we need to create more than 1 bot
         if (cfg.getProperty("bot.multiple.enable").equalsIgnoreCase("true")) {
             StringTokenizer st = new StringTokenizer(cfg.getProperty("bot.multiple.directories"));
             while (st.hasMoreTokens()) {
-                bot = new SiteBot(st.nextToken());
-                new Thread(bot).start();
-                _bots.add(bot);
+                _bots.add(new SiteBot(st.nextToken()));
             }
+        }
+        logger.debug("Creating {} threads for SiteBots", _bots.size());
+        for (SiteBot bot : _bots) {
+            new Thread(bot).start();
         }
     }
 
