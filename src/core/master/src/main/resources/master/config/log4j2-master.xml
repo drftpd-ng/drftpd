@@ -4,12 +4,12 @@
         <Property name="baseDir">logs</Property>
     </Properties>
     <Appenders>
-        <RollingFile name="root" fileName="${baseDir}/master.log" filePattern="${baseDir}/$${date:yyyy-MM}/commands-%d{yyyy-MM-dd}.log.gz">
+        <RollingFile name="root" fileName="${baseDir}/master.log" filePattern="${baseDir}/$${date:yyyy-MM}/master-%d{yyyy-MM-dd}.log.gz">
             <PatternLayout pattern="%p %d{ISO8601} [%t] %c %x - %m%n" />
             <CronTriggeringPolicy schedule="0 0 0 * * ?" />
             <DefaultRolloverStrategy>
                 <Delete basePath="${baseDir}" maxDepth="2">
-                    <IfFileName glob="*/master.log-*.log.gz" />
+                    <IfFileName glob="*/master-*.log.gz" />
                     <IfLastModified age="90d" />
                 </Delete>
             </DefaultRolloverStrategy>
