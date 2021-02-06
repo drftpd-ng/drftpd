@@ -39,7 +39,7 @@ public class DH1080Test {
         "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP",
     };
 
-    @RepeatedTest(100)
+    @RepeatedTest(1000)
     public void testDH1080BruteForce() {
         DH1080 dh1 = new DH1080();
         DH1080 dh2 = new DH1080();
@@ -52,7 +52,7 @@ public class DH1080Test {
     public void testDH1080IncorrectKeys() {
         DH1080 testDH = new DH1080();
         for (String key : incorrectKeys) {
-            logger.warn("Testing Incorrect key: [{}]", key);
+            logger.debug("Testing Incorrect key: [{}]", key);
             assertNull(testDH.getSharedSecret(key));
         }
     }
@@ -61,7 +61,7 @@ public class DH1080Test {
     public void testDH1080CorrectKeys() {
         DH1080 testDH = new DH1080();
         for (String key : correctKeys) {
-            logger.warn("Testing Correct key: [{}]", key);
+            logger.debug("Testing Correct key: [{}]", key);
             assertNotNull(testDH.getSharedSecret(key));
         }
     }
