@@ -88,8 +88,8 @@ public class Pre extends CommandInterface {
         if (st.countTokens() != 2) {
             return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
         }
-        String sectionName = st.nextToken();
         String releaseName = st.nextToken();
+        String sectionName = st.nextToken();
 
         SectionInterface section = GlobalContext.getGlobalContext().getSectionManager().getSection(sectionName);
 
