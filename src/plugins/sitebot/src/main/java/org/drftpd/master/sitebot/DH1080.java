@@ -163,7 +163,7 @@ public class DH1080 {
             return true;
         }
         BigInteger primeInt = new BigInteger(1, decodeB64(PRIME));
-        if (peerPublicKeyInt.compareTo(BigInteger.TWO) < 0 || peerPublicKeyInt.compareTo(primeInt.subtract(BigInteger.ONE)) >= 0) {
+        if (peerPublicKeyInt.compareTo(BigInteger.TWO) <= 0 || peerPublicKeyInt.compareTo(primeInt.subtract(BigInteger.ONE)) >= 0) {
             logger.warn("Received a peer DH1080 public key that does not conform to the correct specifications, out of bounds '2 < (public key) < PRIME'");
             return true;
         }
