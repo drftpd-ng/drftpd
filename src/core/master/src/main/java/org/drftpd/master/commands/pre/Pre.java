@@ -55,6 +55,8 @@ public class Pre extends CommandInterface {
             dir.setUsername(GlobalContext.getConfig().getDefaultPreUser());
             dir.setGroup(GlobalContext.getConfig().getDefaultPreGroup());
             dir.setLastModified(lastModified);
+            // Make sure the directories appear to have just been created. This helps the autofreespace plugin as well as makes it look OK
+            dir.getInode().setCreationTime(lastModified);
             for (InodeHandle file : dir.getInodeHandlesUnchecked()) {
                 // Do not fail all pending files if one has issues
                 if (file.isDirectory()) {
