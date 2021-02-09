@@ -25,7 +25,10 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.IntStream;
 
 /**
  * @author djb61
@@ -80,7 +83,16 @@ public class DH1080 {
      * implements the broken version used by DH1080 and should
      * not be used for anything else.
      */
-    private static byte[] decodeB64(String input) {
+    public static byte[] decodeB64(String input) {
+        List<Character> invalidChars = new ArrayList<>();
+        IntStream.range(0, input.length()).filter(i -> IA[input.charAt(i)] == -1).forEach(i -> {
+            invalidChars.add(input.charAt(i));
+        });
+        if (invalidChars.size() > 0) {
+            logger.error("String input is not valid DH1080 Base64, found invalid characters: '{}'", Arrays.toString(invalidChars.toArray())+"]");
+            return new byte[0];
+        }
+
         byte[] dArr = new byte[input.length() * 6 >> 3];
 
         for (int i = 0, z = 0; z < dArr.length; ) {
@@ -108,7 +120,7 @@ public class DH1080 {
      * implements the broken version used by DH1080 and should
      * not be used for anything else.
      */
-    private static String encodeB64(byte[] input) {
+    public static String encodeB64(byte[] input) {
         int i;
         int p = 0;
         char m, t;
@@ -163,6 +175,7 @@ public class DH1080 {
             return true;
         }
         BigInteger primeInt = new BigInteger(1, decodeB64(PRIME));
+        // Strictly speaking the "2 < " part would be handled above by hitCount. But we need to make sure!
         if (peerPublicKeyInt.compareTo(BigInteger.TWO) <= 0 || peerPublicKeyInt.compareTo(primeInt.subtract(BigInteger.ONE)) >= 0) {
             logger.warn("Received a peer DH1080 public key that does not conform to the correct specifications, out of bounds '2 < (public key) < PRIME'");
             return true;
