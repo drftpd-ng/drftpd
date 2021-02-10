@@ -84,12 +84,11 @@ public class DH1080 {
      * not be used for anything else.
      */
     public static byte[] decodeB64(String input) {
+        // We check here if the incoming key is actually valid according to our MIME (CA / IA)
         List<Character> invalidChars = new ArrayList<>();
-        IntStream.range(0, input.length()).filter(i -> IA[input.charAt(i)] == -1).forEach(i -> {
-            invalidChars.add(input.charAt(i));
-        });
+        IntStream.range(0, input.length()).filter(i -> IA[input.charAt(i)] == -1).forEach(i -> invalidChars.add(input.charAt(i)));
         if (invalidChars.size() > 0) {
-            logger.error("String input is not valid DH1080 Base64, found invalid characters: '{}'", Arrays.toString(invalidChars.toArray())+"]");
+            logger.error("String input is not valid DH1080 Base64 MIME, found invalid characters: '{}'", Arrays.toString(invalidChars.toArray()));
             return new byte[0];
         }
 
