@@ -23,8 +23,12 @@ import org.apache.logging.log4j.Logger;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.IntStream;
 
 /**
  * @author djb61
@@ -37,7 +41,14 @@ public class DH1080 {
     private static final char[] CA = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".toCharArray();
 
     private static final int[] IA = new int[256];
+
+    // DH1080 'p' value
     private static final String PRIME = "++ECLiPSE+is+proud+to+present+latest+FiSH+release+featuring+even+more+security+for+you+++shouts+go+out+to+TMG+for+helping+to+generate+this+cool+sophie+germain+prime+number++++/C32L";
+
+    // DH1080 'g' value
+    private static final String GENERATOR = "2";
+
+    private static final int KEY_BYTE_LENGTH = 135;
 
     static {
         Arrays.fill(IA, -1);
@@ -52,12 +63,15 @@ public class DH1080 {
 
     public DH1080() {
         try {
-            SecureRandom sRNG = SecureRandom.getInstance("SHA1PRNG");
-            _privateInt = new BigInteger(1080, sRNG);
+            // We do not need to reseed as this is only used during handshake
+            SecureRandom sRNG = SecureRandom.getInstance("SHA1PRNG", "SUN");
+            // we clear bit position '0' to mimic what fish for mIRC does
+            // We clear bit 1079 and set 1078 to ensure 'strong' private key
+            _privateInt = new BigInteger(1080, sRNG).clearBit(0).clearBit(1079).setBit(1078);
             BigInteger primeInt = new BigInteger(1, decodeB64(PRIME));
-            _publicInt = (new BigInteger("2")).modPow(_privateInt, primeInt);
-        } catch (NoSuchAlgorithmException e) {
-            logger.debug("Algorithm for DH1080 random number generator not available", e);
+            _publicInt = new BigInteger(GENERATOR).modPow(_privateInt, primeInt);
+        } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
+            logger.warn("Algorithm and/or Provider for DH1080 random number generator not available", e);
         }
     }
 
@@ -69,13 +83,18 @@ public class DH1080 {
      * implements the broken version used by DH1080 and should
      * not be used for anything else.
      */
-    private static byte[] decodeB64(String input) {
+    public static byte[] decodeB64(String input) {
+        // We check here if the incoming key is actually valid according to our MIME (CA / IA)
+        List<Character> invalidChars = new ArrayList<>();
+        IntStream.range(0, input.length()).filter(i -> IA[input.charAt(i)] == -1).forEach(i -> invalidChars.add(input.charAt(i)));
+        if (invalidChars.size() > 0) {
+            logger.error("String input is not valid DH1080 Base64 MIME, found invalid characters: '{}'", Arrays.toString(invalidChars.toArray()));
+            return new byte[0];
+        }
+
         byte[] dArr = new byte[input.length() * 6 >> 3];
 
         for (int i = 0, z = 0; z < dArr.length; ) {
-            if (z >= dArr.length) {
-                break;
-            }
             dArr[z++] = (byte) ((IA[input.charAt(i)] << 2) | (IA[input.charAt(i + 1)] >> 4));
             i++;
             if (z >= dArr.length) {
@@ -100,7 +119,7 @@ public class DH1080 {
      * implements the broken version used by DH1080 and should
      * not be used for anything else.
      */
-    private static String encodeB64(byte[] input) {
+    public static String encodeB64(byte[] input) {
         int i;
         int p = 0;
         char m, t;
@@ -124,19 +143,52 @@ public class DH1080 {
         m = (char) (5 - (i % 6));
         t <<= m;
         if (m != 0) {
-            dArr[p++] = CA[t];
+            dArr[p] = CA[t];
         }
         return new String(dArr);
     }
 
+    /**
+     *
+     * @return The Base64 string representing the (bytes) public key, and will always be 135 bytes
+     */
     public String getPublicKey() {
         return encodeB64(getBytes(_publicInt));
     }
 
-    public String getSharedSecret(String peerPubKey) {
+    /**
+     * Function to check if a key is not valid
+     *
+     * @param publicKey The public key to check
+     * @return false if the key is valid, otherwise true as it is invalid
+     */
+    public boolean isNotAValidPublicKey(String publicKey) {
+        byte[] peerPublicKeyDecoded = decodeB64(publicKey);
+        if (peerPublicKeyDecoded.length != KEY_BYTE_LENGTH) {
+            logger.warn("Received a peer DH1080 public key that does not conform to the correct specifications, received {} bytes", peerPublicKeyDecoded.length);
+            return true;
+        }
+        BigInteger peerPublicKeyInt = new BigInteger(1, peerPublicKeyDecoded);
+        if (peerPublicKeyInt.bitCount() <= 1) {
+            logger.warn("Received a peer DH1080 public key that does not conform to the correct specifications, need at least 2 bits set");
+            return true;
+        }
         BigInteger primeInt = new BigInteger(1, decodeB64(PRIME));
-        BigInteger peerPubInt = new BigInteger(1, decodeB64(peerPubKey));
-        BigInteger shareInt = peerPubInt.modPow(_privateInt, primeInt);
+        // Strictly speaking the "2 < " part would be handled above by hitCount. But we need to make sure!
+        if (peerPublicKeyInt.compareTo(BigInteger.TWO) <= 0 || peerPublicKeyInt.compareTo(primeInt.subtract(BigInteger.ONE)) >= 0) {
+            logger.warn("Received a peer DH1080 public key that does not conform to the correct specifications, out of bounds '2 < (public key) < PRIME'");
+            return true;
+        }
+        return false;
+    }
+
+    public String getSharedSecret(String peerPublicKey) {
+        if (isNotAValidPublicKey(peerPublicKey)) {
+            return null;
+        }
+        BigInteger peerPublicKeyInt = new BigInteger(1, decodeB64(peerPublicKey));
+        BigInteger primeInt = new BigInteger(1, decodeB64(PRIME));
+        BigInteger shareInt = peerPublicKeyInt.modPow(_privateInt, primeInt);
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
             byte[] hashed = md.digest(getBytes(shareInt));
@@ -157,11 +209,20 @@ public class DH1080 {
      */
     private byte[] getBytes(BigInteger big) {
         byte[] bigBytes = big.toByteArray();
-        if ((big.bitLength() % 8) != 0) {
-            return bigBytes;
+        // Fix sign mis interpretation here (adds an extra byte)
+        if ((big.bitLength() % 8) == 0) {
+            byte[] smallerBytes = new byte[big.bitLength() / 8];
+            System.arraycopy(bigBytes, 1, smallerBytes, 0, smallerBytes.length);
+            bigBytes = smallerBytes;
         }
-        byte[] smallerBytes = new byte[big.bitLength() / 8];
-        System.arraycopy(bigBytes, 1, smallerBytes, 0, smallerBytes.length);
-        return smallerBytes;
+        // bigInteger strips leading bytes that represent '0', which we not wish... so we add them here.
+        if (bigBytes.length != KEY_BYTE_LENGTH) {
+            int missing = KEY_BYTE_LENGTH - bigBytes.length;
+            logger.debug("Restoring leading '0' byte bytes, we need to add {} extra '0' byte bytes to get to {}", missing, KEY_BYTE_LENGTH);
+            byte[] missingBytes = new byte[KEY_BYTE_LENGTH];
+            System.arraycopy(bigBytes, 0, missingBytes, missing, bigBytes.length);
+            bigBytes = missingBytes;
+        }
+        return bigBytes;
     }
 }
