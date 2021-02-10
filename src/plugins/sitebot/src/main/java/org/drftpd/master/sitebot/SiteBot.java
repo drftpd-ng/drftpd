@@ -1173,7 +1173,7 @@ public class SiteBot implements ReplyConstants, Runnable {
      * @since PircBot 1.0.0
      */
     protected void onUserList(String channel, IrcUser[] users) {
-        logger.debug("Ignoreing onUserList for {} with users: {}", channel, Arrays.toString(users));
+        logger.debug("Ignoring onUserList for {} with users: {}", channel, Arrays.toString(users));
     }
 
     /**
