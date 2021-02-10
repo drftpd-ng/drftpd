@@ -845,7 +845,7 @@ public class SiteBot implements ReplyConstants, Runnable {
             this.onPrivateMessage(sourceNick, sourceLogin, sourceHostname, line.substring(line.indexOf(" :") + 2));
         } else if (command.equals("JOIN")) {
             // Someone is joining a channel.
-            // taget = channel name
+            // target = channel name
             this.addUser(target, new IrcUser("", sourceNick));
             this.onJoin(target, sourceNick, sourceLogin, sourceHostname);
         } else if (command.equals("PART")) {
