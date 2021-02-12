@@ -49,43 +49,51 @@ public class SiteBotManagement extends CommandInterface {
     public void initialize(String method, String pluginName, StandardCommandManager cManager) {
         super.initialize(method, pluginName, cManager);
         _bundle = cManager.getResourceBundle();
-
     }
 
-    public CommandResponse doSITE_BLOWFISH(CommandRequest request) {
+    public CommandResponse doSITE_BLOWFISH(CommandRequest request) throws ImproperUsageException {
         Session session = request.getSession();
+        // We require a secure session
         if (!session.isSecure()) {
-            return new CommandResponse(530,
-                    session.jprintf(_bundle, "blowfish.reject", request.getUser()));
+            return new CommandResponse(530, session.jprintf(_bundle, "blowfish.reject", request.getUser()));
         }
-        SiteBotWrapper wrapper = null;
-        for (PluginInterface plugin : GlobalContext.getGlobalContext().getPlugins()) {
-            if (plugin instanceof SiteBotWrapper) {
-                wrapper = (SiteBotWrapper) plugin;
-                break;
-            }
-        }
+
+        // Get our sitebot(s) and inform if we have no bots loaded
+        SiteBotWrapper wrapper = getSiteBotWrapper();
         if (wrapper == null) {
             return new CommandResponse(500, "No SiteBots loaded");
         }
-        String botName = null;
-        if (request.hasArgument()) {
-            StringTokenizer st = new StringTokenizer(request.getArgument());
-            botName = st.nextToken();
-        } else {
-            botName = wrapper.getBots().get(0).getBotName();
-        }
+
         User user = session.getUserNull(request.getUser());
+
+        String botName = wrapper.getBots().get(0).getBotName();
+        if (request.hasArgument()) {
+            if (wrapper.getBots().size() > 1) {
+                StringTokenizer st = new StringTokenizer(request.getArgument());
+                if (st.countTokens() != 1) {
+                    throw new ImproperUsageException();
+                }
+                botName = st.nextToken();
+            } else {
+                throw new ImproperUsageException();
+            }
+        }
+
+        // Find the requested bot
         SiteBot bot = null;
         for (SiteBot currBot : wrapper.getBots()) {
-            if (currBot.getBotName().equalsIgnoreCase(botName)) {
+            String currBotName = currBot.getBotName();
+            if (currBotName != null && currBotName.equalsIgnoreCase(botName)) {
                 bot = currBot;
                 break;
             }
         }
+
+        // Bot is not found or correctly loaded
         if (bot == null) {
-            return new CommandResponse(500, "No Blowfish keys found");
+            return new CommandResponse(500, "SiteBot could not be found or failed to load");
         }
+
         ArrayList<String> outputKeys = new ArrayList<>();
         for (ChannelConfig chan : bot.getConfig().getChannels()) {
             if (chan.getBlowKey() != null) {
@@ -107,54 +115,64 @@ public class SiteBotManagement extends CommandInterface {
     }
 
     public CommandResponse doSITE_SETBLOWFISH(CommandRequest request) throws ImproperUsageException {
+        // We expect arguments
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
         }
+
         Session session = request.getSession();
+        // We require a secure session
         if (!session.isSecure()) {
-            return new CommandResponse(530,
-                    session.jprintf(_bundle, "blowfish.reject", request.getUser()));
+            return new CommandResponse(530, session.jprintf(_bundle, "blowfish.reject", request.getUser()));
         }
-        SiteBotWrapper wrapper = null;
-        for (PluginInterface plugin : GlobalContext.getGlobalContext().getPlugins()) {
-            if (plugin instanceof SiteBotWrapper) {
-                wrapper = (SiteBotWrapper) plugin;
-                break;
-            }
-        }
+
+        // Get our sitebot(s) and inform if we have no bots loaded
+        SiteBotWrapper wrapper = getSiteBotWrapper();
         if (wrapper == null) {
             return new CommandResponse(500, "No SiteBots loaded");
         }
+
         StringTokenizer st = new StringTokenizer(request.getArgument());
-        String botName = null;
-        if (st.countTokens() > 1) {
+        // Which bot (name) are we looking for
+        String botName = wrapper.getBots().get(0).getBotName();
+        if (wrapper.getBots().size() > 1) {
+            // Make sure the bot name has been provided
+            if (st.countTokens() < 2) {
+                return new CommandResponse(500, "Not enough arguments");
+            }
             botName = st.nextToken();
-        } else {
-            botName = wrapper.getBots().get(0).getBotName();
         }
-        String blowKey = st.nextToken();
-        User user = session.getUserNull(request.getUser());
+
+        // Find the requested bot
         SiteBot bot = null;
         for (SiteBot currBot : wrapper.getBots()) {
-            if (currBot.getBotName().equalsIgnoreCase(botName)) {
+            String currBotName = currBot.getBotName();
+            if (currBotName != null && currBotName.equalsIgnoreCase(botName)) {
                 bot = currBot;
                 break;
             }
         }
+
+        // Bot is not found or correctly loaded
         if (bot == null) {
-            return new CommandResponse(500, "SiteBot could not be found");
+            return new CommandResponse(500, "SiteBot could not be found or failed to load");
         }
+
+        String blowKey = st.nextToken();
+        User user = session.getUserNull(request.getUser());
+
         String userKeysString = "";
         try {
             userKeysString = user.getKeyedMap().getObject(UserDetails.BLOWKEY);
-        } catch (KeyNotFoundException e1) {
+        } catch (KeyNotFoundException ignore) {
             // Means this user has never set a blowfish key, is safe to proceed
         }
         String[] userKeys = userKeysString.split(",");
         boolean foundOld = false;
         StringBuilder userKey = new StringBuilder();
         for (int i = 0; i < userKeys.length; i++) {
-            if (userKeys[i].startsWith(bot.getBotName())) {
+            // Try to match the bot name include the separator
+            if (userKeys[i].startsWith(bot.getBotName()+"|")) {
                 userKey.append(bot.getBotName());
                 userKey.append("|");
                 userKey.append(blowKey);
@@ -162,11 +180,14 @@ public class SiteBotManagement extends CommandInterface {
             } else {
                 userKey.append(userKeys[i]);
             }
+            // Append the delimiter
             if (i < userKeys.length - 1) {
                 userKey.append(",");
             }
         }
+        // No entry found to replace, so append it as new
         if (!foundOld) {
+            // Make sure we add the delimiter first
             if (userKey.length() > 0) {
                 userKey.append(",");
             }
@@ -174,6 +195,7 @@ public class SiteBotManagement extends CommandInterface {
             userKey.append("|");
             userKey.append(blowKey);
         }
+        // Store the new blowfish key data for the user
         user.getKeyedMap().setObject(UserDetails.BLOWKEY, userKey.toString());
         user.commit();
         return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
@@ -183,37 +205,38 @@ public class SiteBotManagement extends CommandInterface {
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
         }
-        SiteBotWrapper wrapper = null;
-        for (PluginInterface plugin : GlobalContext.getGlobalContext().getPlugins()) {
-            if (plugin instanceof SiteBotWrapper) {
-                wrapper = (SiteBotWrapper) plugin;
-                break;
-            }
-        }
+        SiteBotWrapper wrapper = getSiteBotWrapper();
         if (wrapper == null) {
             return new CommandResponse(500, "No SiteBots loaded");
         }
-        boolean multipleBots = wrapper.getBots().size() > 1;
         StringTokenizer st = new StringTokenizer(request.getArgument());
-        if (multipleBots && st.countTokens() < 2) {
-            return new CommandResponse(500, "Not enough arguments");
+
+        // Which bot (name) are we looking for
+        String botName = wrapper.getBots().get(0).getBotName();
+        if (wrapper.getBots().size() > 1) {
+            // Make sure the bot name has been provided
+            if (st.countTokens() < 2) {
+                return new CommandResponse(500, "Not enough arguments");
+            }
+            botName = st.nextToken();
         }
-        String botname = null;
-        if (multipleBots) {
-            botname = st.nextToken();
-        } else {
-            botname = wrapper.getBots().get(0).getBotName();
-        }
+
+        // Find the requested bot
         SiteBot bot = null;
         for (SiteBot currBot : wrapper.getBots()) {
-            if (currBot.getBotName().equalsIgnoreCase(botname)) {
+            String currBotName = currBot.getBotName();
+            if (currBotName != null && currBotName.equalsIgnoreCase(botName)) {
                 bot = currBot;
                 break;
             }
         }
+
+        // Bot is not found or correctly loaded
         if (bot == null) {
-            return new CommandResponse(500, "SiteBot could not be found");
+            return new CommandResponse(500, "SiteBot could not be found or failed to load");
         }
+
+        // Get the command name
         String command = st.nextToken();
         if (command.equalsIgnoreCase("connect")) {
             try {
@@ -227,35 +250,51 @@ public class SiteBotManagement extends CommandInterface {
                 logger.warn("Error connecting to IRC server", e);
                 return new CommandResponse(500, "Error when connecting to IRC server");
             }
-        } else {
-            if (command.equalsIgnoreCase("disconnect")) {
-                bot.setDisconnected(true);
-                bot.quitServer("Disconnected by " + request.getUser());
+        } else if (command.equalsIgnoreCase("disconnect")) {
+            bot.setDisconnected(true);
+            if (st.hasMoreTokens()) {
+                bot.quitServer("Disconnected by " + request.getUser() + " - " + st.nextToken());
             } else {
-                if (command.equalsIgnoreCase("reconnect")) {
-                    bot.quitServer("Reconnect requested by " + request.getUser());
-                } else {
-                    StringBuilder commandArgs = new StringBuilder();
-                    while (st.hasMoreTokens()) {
-                        commandArgs.append(st.nextToken());
-                        if (st.hasMoreTokens()) {
-                            commandArgs.append(" ");
-                        }
-                    }
-                    if (command.equalsIgnoreCase("say")) {
-                        for (OutputWriter writer : bot.getWriters().values()) {
-                            writer.sendMessage(commandArgs.toString());
-                        }
-                    } else {
-                        if (command.equalsIgnoreCase("raw")) {
-                            bot.sendRawLine(commandArgs.toString());
-                        } else {
-                            throw new ImproperUsageException();
-                        }
-                    }
+                bot.quitServer("Disconnected by " + request.getUser());
+            }
+        } else if (command.equalsIgnoreCase("reconnect")) {
+            if (st.hasMoreTokens()) {
+                bot.quitServer("Reconnect requested by " + request.getUser() + " - " + st.nextToken());
+            } else {
+                bot.quitServer("Reconnect requested by " + request.getUser());
+            }
+        } else {
+            // We require more arguments here, complain if they are missing
+            if (!st.hasMoreTokens()) {
+                return new CommandResponse(500, "Not enough arguments");
+            }
+            StringBuilder commandArgs = new StringBuilder();
+            while (st.hasMoreTokens()) {
+                commandArgs.append(st.nextToken());
+                if (st.hasMoreTokens()) {
+                    commandArgs.append(" ");
                 }
+            }
+            if (command.equalsIgnoreCase("say")) {
+                for (OutputWriter writer : bot.getWriters().values()) {
+                    writer.sendMessage(commandArgs.toString());
+                }
+            } else if (command.equalsIgnoreCase("raw")) {
+                bot.sendRawLine(commandArgs.toString());
+            } else {
+                // If we get here the command we got is unsupported
+                throw new ImproperUsageException();
             }
         }
         return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
+    }
+
+    public SiteBotWrapper getSiteBotWrapper() {
+        for (PluginInterface plugin : GlobalContext.getGlobalContext().getPlugins()) {
+            if (plugin instanceof SiteBotWrapper) {
+                return (SiteBotWrapper) plugin;
+            }
+        }
+        return null;
     }
 }
