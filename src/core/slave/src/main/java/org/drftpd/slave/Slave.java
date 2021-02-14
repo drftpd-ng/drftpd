@@ -45,6 +45,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLHandshakeException;
 import javax.net.ssl.SSLSocket;
 import java.io.*;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
@@ -109,7 +110,7 @@ public class Slave {
 
     private boolean _concurrentRootIteration;
 
-    private String _bindIP = null;
+    private InetAddress _bindIP = null;
 
     private boolean _online;
 
@@ -231,7 +232,7 @@ public class Slave {
         if (PropertyHelper.getProperty(p, "bind.ip", null) != null) {
             try {
                 _socket.bind(new InetSocketAddress(PropertyHelper.getProperty(p, "bind.ip"), 0));
-                _bindIP = PropertyHelper.getProperty(p, "bind.ip", null);
+                _bindIP = InetAddress.getByName(PropertyHelper.getProperty(p, "bind.ip", null));
             } catch (IOException e) {
                 throw new IOException("Unable To Bind Port Correctly");
             }
@@ -686,7 +687,7 @@ public class Slave {
         return _portRange;
     }
 
-    public String getBindIP() {
+    public InetAddress getBindIP() {
         return _bindIP;
     }
 

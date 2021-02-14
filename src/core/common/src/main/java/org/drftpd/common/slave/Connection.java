@@ -31,7 +31,9 @@ public abstract class Connection {
 
     protected void setSockOpts(Socket sock) throws IOException {
         /*
-         * IPTOS_LOWCOST (0x02) IPTOS_RELIABILITY (0x04) IPTOS_THROUGHPUT (0x08)
+         * IPTOS_LOWCOST (0x02)
+         * IPTOS_RELIABILITY (0x04)
+         * IPTOS_THROUGHPUT (0x08)
          * IPTOS_LOWDELAY (0x10)
          */
         sock.setTrafficClass(0x08);

@@ -25,6 +25,7 @@ import javax.net.SocketFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocket;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
@@ -43,10 +44,9 @@ public class ActiveConnection extends Connection {
 
     private final boolean _useSSLClientHandshake;
 
-    private final String _bindIP;
+    private final InetAddress _bindIP;
 
-    public ActiveConnection(SSLContext ctx, InetSocketAddress addr,
-                            boolean useSSLClientHandshake, String bindIP) {
+    public ActiveConnection(SSLContext ctx, InetSocketAddress addr, boolean useSSLClientHandshake, InetAddress bindIP) {
         _addr = addr;
         _ctx = ctx;
         _bindIP = bindIP;

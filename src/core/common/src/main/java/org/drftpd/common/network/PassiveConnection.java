@@ -26,6 +26,7 @@ import javax.net.ServerSocketFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocket;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
@@ -43,13 +44,16 @@ public class PassiveConnection extends Connection {
     private final boolean _useSSLClientMode;
 
     /**
-     * @param ctx
-     * @param portRange
-     * @throws IOException Creates a PassiveConnection - If ctx==null, the Connection
-     *                     will not use SSL
+     * Insert text here
+     *
+     * @param ctx The SSL/TLS Security Context
+     * @param portRange The port range we can use to get a local port
+     * @param useSSLClientMode Whether this will be a server connection or client connection
+     * @param bindIP The InetAddress representing the ip we need to bind to or null in which case we bind to all interfaces
+     *
+     * @throws IOException Creates a PassiveConnection - If ctx==null, the Connection will not use SSL
      */
-    public PassiveConnection(SSLContext ctx, PortRange portRange,
-                             boolean useSSLClientMode, String bindIP) throws IOException {
+    public PassiveConnection(SSLContext ctx, PortRange portRange, boolean useSSLClientMode, InetAddress bindIP) throws IOException {
         _useSSLClientMode = useSSLClientMode;
         if (ctx != null) {
             _serverSocket = portRange.getPort(ctx.getServerSocketFactory(), bindIP);
@@ -69,7 +73,7 @@ public class PassiveConnection extends Connection {
                     "abort() was called before connect()");
         }
 
-        Socket sock = null;
+        Socket sock;
         try {
             sock = _serverSocket.accept();
         } finally {

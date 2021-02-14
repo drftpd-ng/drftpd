@@ -33,6 +33,7 @@ import org.drftpd.master.usermanager.User;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -53,7 +54,7 @@ public class Master {
     private static final String themeDir = "config/themes/ftp";
 
     private static Master _master = null;
-    private static String _bindIP;
+    private static InetAddress _bindIP;
     private HashMap<String, Properties> _cmds;
     private CommandManagerInterface _commandManager = null;
     private final List<BaseFtpConnection> _conns = new Vector<>();
@@ -64,6 +65,7 @@ public class Master {
      * you're not doing it correctly, ConnectionManager is a Singleton
      */
     protected Master() {
+        _bindIP = null;
         getGlobalContext().getSlaveManager().addShutdownHook();
         // Subscribe to events
         AnnotationProcessor.process(this);
@@ -80,7 +82,7 @@ public class Master {
         return _master;
     }
 
-    public static String getBindIP() {
+    public static InetAddress getBindIP() {
         return _bindIP;
     }
 
@@ -99,39 +101,43 @@ public class Master {
 
             getConnectionManager().loadCommands();
             Properties cfg = GlobalContext.getConfig().getMainProperties();
-            /** initialise command manager before accepting connections **/
+
+            // initialise command manager before accepting connections
             getConnectionManager().initCommandManager();
 
-            /** listen for connections * */
-            String bindip = null;
+            // listen for connections
+            String bindIP = null;
             ServerSocket server;
             boolean useIP;
 
             try {
-                bindip = PropertyHelper.getProperty(cfg, "master.ip");
-                useIP = !bindip.equals("");
+                bindIP = PropertyHelper.getProperty(cfg, "master.ip");
+                useIP = !bindIP.equals("");
             } catch (NullPointerException e) {
                 useIP = false;
             }
 
             if (useIP) {
+                _bindIP = InetAddress.getByName(bindIP);
                 server = new ServerSocket();
-                server.bind(new InetSocketAddress(bindip, Integer
-                        .parseInt(PropertyHelper
-                                .getProperty(cfg, "master.port"))));
-                _bindIP = bindip;
+                server.bind(new InetSocketAddress(_bindIP, Integer.parseInt(PropertyHelper.getProperty(cfg, "master.port"))));
                 logger.info("Listening on {}:{}", server.getInetAddress(), server.getLocalPort());
             } else {
-                server = new ServerSocket(Integer.parseInt(PropertyHelper
-                        .getProperty(cfg, "master.port")));
+                server = new ServerSocket(Integer.parseInt(PropertyHelper.getProperty(cfg, "master.port")));
                 logger.info("Listening on port {}", server.getLocalPort());
             }
 
             getConnectionManager().createThreadPool();
 
             while (true) {
-                getConnectionManager().start(server.accept());
+                try {
+                    getConnectionManager().start(server.accept());
+                } catch(IOException e) {
+                    logger.error("Caught IOException while accepting new connection", e);
+                    break;
+                }
             }
+            logger.error("Reached the end of 'main' thread");
 
             // catches subclasses of Error and Exception
         } catch (Throwable th) {
@@ -146,8 +152,7 @@ public class Master {
     }
 
     public void createThreadPool() {
-        int maxUserConnected = GlobalContext.getConfig().getMaxUsersTotal();
-        int maxAliveThreads = maxUserConnected + GlobalContext.getConfig().getMaxUsersExempt();
+        int maxAliveThreads = GlobalContext.getConfig().getMaxUsersTotal() + GlobalContext.getConfig().getMaxUsersExempt();
         int minAliveThreads = (int) Math.round(maxAliveThreads * 0.25);
 
         _pool = new ThreadPoolExecutor(minAliveThreads, maxAliveThreads, 3 * 60, TimeUnit.SECONDS,
@@ -162,7 +167,7 @@ public class Master {
         logger.debug("Current # of threads: {}", _pool.getPoolSize());
     }
 
-    public FtpReply canLogin(BaseFtpConnection baseconn, User user) {
+    public FtpReply canLogin(BaseFtpConnection baseConn, User user) {
         int count = GlobalContext.getConfig().getMaxUsersTotal();
 
         // Math.max if the integer wraps
@@ -170,7 +175,7 @@ public class Master {
             count = Math.max(count, count + GlobalContext.getConfig().getMaxUsersExempt());
         }
 
-        // not >= because baseconn is already included
+        // not >= because baseConn is already included
         if (_conns.size() > count) {
             return new FtpReply(550, "The site is full, try again later.");
         }
@@ -185,13 +190,12 @@ public class Master {
 
                     if (tempUser.getName().equals(user.getName())) {
                         userCount++;
-                        if (tempConnection.getClientAddress().equals(baseconn.getClientAddress())) {
+                        if (tempConnection.getClientAddress().equals(baseConn.getClientAddress())) {
                             ipCount++;
                         }
                     }
                 } catch (NoSuchUserException ex) {
-                    // do nothing, we found our current connection, baseconn =
-                    // tempConnection
+                    // do nothing, we found our current connection, baseConn = tempConnection
                 }
             }
         }
@@ -199,28 +203,25 @@ public class Master {
         int maxLogins = user.getKeyedMap().getObjectInteger(UserManagement.MAXLOGINS);
         if (maxLogins > 0) {
             if (maxLogins <= userCount) {
-                return new FtpReply(530, "Sorry, your account is restricted to "
-                        + maxLogins + " simultaneous logins.");
+                return new FtpReply(530, "Sorry, your account is restricted to " + maxLogins + " simultaneous logins.");
             }
         }
 
         int maxLoginsIP = user.getKeyedMap().getObjectInteger(UserManagement.MAXLOGINSIP);
         if (maxLoginsIP > 0) {
             if (maxLoginsIP <= ipCount) {
-                return new FtpReply(530, "Sorry, your maximum number of connections from this IP ("
-                        + maxLoginsIP + ") has been reached.");
+                return new FtpReply(530, "Sorry, your maximum number of connections from this IP (" + maxLoginsIP + ") has been reached.");
             }
         }
 
         Date banTime = user.getKeyedMap().getObject(UserManagement.BANTIME, new Date());
         if (banTime.getTime() > System.currentTimeMillis()) {
-            return new FtpReply(530, "Sorry you are banned until "
-                    + banTime + "! (" + user.getKeyedMap().getObjectString(UserManagement.BANREASON) + ")");
+            return new FtpReply(530, "Sorry you are banned until " + banTime + "! (" + user.getKeyedMap().getObjectString(UserManagement.BANREASON) + ")");
         }
 
-        if (!baseconn.isSecure() && GlobalContext.getConfig().checkPermission("userrejectinsecure", user)) {
+        if (!baseConn.isSecure() && GlobalContext.getConfig().checkPermission("userrejectinsecure", user)) {
             return new FtpReply(530, "USE SECURE CONNECTION");
-        } else if (baseconn.isSecure() && GlobalContext.getConfig().checkPermission("userrejectsecure", user)) {
+        } else if (baseConn.isSecure() && GlobalContext.getConfig().checkPermission("userrejectsecure", user)) {
             return new FtpReply(530, "USE INSECURE CONNECTION");
         }
 
@@ -261,17 +262,17 @@ public class Master {
 
     public void start(Socket sock) throws IOException {
         if (getGlobalContext().isShutdown()) {
-            new PrintWriter(sock.getOutputStream()).println("421 "
-                    + getGlobalContext().getShutdownMessage());
+            new PrintWriter(sock.getOutputStream()).println("421 " + getGlobalContext().getShutdownMessage());
             sock.close();
             return;
         }
 
         /*
-         * Reserved for Implicit SSL,
-         * SSLSocket sslsock = (SSLSocket) sock;
-         * sslsock.setUseClientMode(false); sslsock.startHandshake(); sock =
-         * sslsock; }
+         * TODO: Reserved for Implicit SSL:
+         * SSLSocket sslSock = (SSLSocket) sock;
+         * sslSock.setUseClientMode(false);
+         * sslSock.startHandshake();
+         * sock = sslSock;
          */
 
         BaseFtpConnection conn = new BaseFtpConnection(sock);
@@ -295,10 +296,12 @@ public class Master {
     }
 
     /**
-     * The HashMap should look like this:<br><code>
-     * Key -> Value<br>
-     * "AUTH" -> Properties Object for AUTH<br>
-     * "LIST" -> Properties Object for LIST</code>
+     * The HashMap should look like this:
+     * Key -> Value
+     * "AUTH" -> Properties Object for AUTH
+     * "LIST" -> Properties Object for LIST
+     *
+     * @return Mapping of command (string) to properties
      */
     public HashMap<String, Properties> getCommands() {
         return _cmds;
