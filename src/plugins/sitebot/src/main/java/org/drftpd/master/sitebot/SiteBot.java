@@ -1323,9 +1323,19 @@ public class SiteBot implements ReplyConstants, Runnable {
             if (st.hasMoreTokens()) {
                 String modeRequested = st.nextToken();
                 if (modeRequested.equalsIgnoreCase(BlowfishManager.ECB)) {
-                    blowfishMode = BlowfishManager.ECB;
+                    if (_config.getDH1080ECBEnabled()) {
+                        blowfishMode = BlowfishManager.ECB;
+                    } else {
+                        logger.warn("Ignoring ECB DH1080 exchange as it is disabled");
+                        return;
+                    }
                 } else if (modeRequested.equalsIgnoreCase(BlowfishManager.CBC)) {
-                    blowfishMode = BlowfishManager.CBC;
+                    if (_config.getDH1080CBCEnabled()) {
+                        blowfishMode = BlowfishManager.CBC;
+                    } else {
+                        logger.warn("Ignoring CBC DH1080 exchange as it is disabled");
+                        return;
+                    }
                 } else
                 {
                     logger.error("Unknown DH1080_INIT mode requested: {}", modeRequested);

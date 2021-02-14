@@ -145,8 +145,15 @@ public class UserDetails {
                             }
                         }
                     }
-                    if (!userKey.equals("")) {
-                        setBlowCipher(userKey, userKeyMode);
+                    if(userKey.length() > 0) {
+                        if (userKeyMode.equalsIgnoreCase(BlowfishManager.ECB) && _bot.getConfig().getDH1080ECBEnabled()) {
+                            setBlowCipher(userKey, userKeyMode);
+                        } else if (userKeyMode.equalsIgnoreCase(BlowfishManager.CBC) && _bot.getConfig().getDH1080CBCEnabled()) {
+                            setBlowCipher(userKey, userKeyMode);
+                        } else {
+                            logger.warn("Unknown blowfish cipher configured: [{}], Initiating new DH1080 exchange", userKeyMode);
+                            _bot.initiateDH1080(_nick);
+                        }
                     } else {
                         _bot.initiateDH1080(_nick);
                     }
