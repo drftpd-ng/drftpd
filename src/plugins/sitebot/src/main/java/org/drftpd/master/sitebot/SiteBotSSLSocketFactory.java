@@ -26,6 +26,7 @@ import javax.net.ssl.TrustManager;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.Arrays;
 
 /**
  * @author djb61
@@ -41,6 +42,8 @@ public class SiteBotSSLSocketFactory extends SSLSocketFactory {
         try {
             SSLContext sslcontext = SSLContext.getInstance("TLSv1.3");
             sslcontext.init(null, new TrustManager[]{trustManager}, null);
+            logger.debug("Supported ciphers are as follows: '{}'", Arrays.toString(sslcontext.createSSLEngine().getSupportedCipherSuites()));
+            logger.debug("Supported protocols are as follows: '{}'", Arrays.toString(sslcontext.createSSLEngine().getSupportedProtocols()));
             _factory = sslcontext.getSocketFactory();
         } catch (Exception e) {
             logger.error("Exception creating socket factory", e);
