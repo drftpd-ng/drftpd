@@ -85,7 +85,7 @@ public class BasicHandler extends AbstractHandler {
     /**
      * Simply delegates the request to the Slave object.
      *
-     * @param path
+     * @param path The path to map
      */
     private String mapPathToRenameQueue(String path) {
         return getSlaveObject().mapPathToRenameQueue(path);
@@ -125,8 +125,7 @@ public class BasicHandler extends AbstractHandler {
 
         getSlaveObject().addTransfer(t);
 
-        return new AsyncResponseTransfer(ac.getIndex(), new ConnectInfo(port, t
-                .getTransferIndex(), t.getTransferStatus()));
+        return new AsyncResponseTransfer(ac.getIndex(), new ConnectInfo(port, t.getTransferIndex(), t.getTransferStatus()));
     }
 
     public AsyncResponse handleDelete(AsyncCommandArgument ac) {
@@ -135,8 +134,7 @@ public class BasicHandler extends AbstractHandler {
                 getSlaveObject().delete(mapPathToRenameQueue(ac.getArgs()));
             } catch (PermissionDeniedException e) {
                 if (Slave.isWin32) {
-                    getSlaveObject().getRenameQueue()
-                            .add(new QueuedOperation(ac.getArgs(), null));
+                    getSlaveObject().getRenameQueue().add(new QueuedOperation(ac.getArgs(), null));
                 } else {
                     throw e;
                 }
@@ -165,8 +163,7 @@ public class BasicHandler extends AbstractHandler {
         Transfer t = new Transfer(c, getSlaveObject(), new TransferIndex());
         getSlaveObject().addTransfer(t);
 
-        return new AsyncResponseTransfer(ac.getIndex(), new ConnectInfo(c
-                .getLocalPort(), t.getTransferIndex(), t.getTransferStatus()));
+        return new AsyncResponseTransfer(ac.getIndex(), new ConnectInfo(c.getLocalPort(), t.getTransferIndex(), t.getTransferStatus()));
     }
 
     public AsyncResponse handleMaxpath(AsyncCommandArgument ac) {
@@ -190,15 +187,11 @@ public class BasicHandler extends AbstractHandler {
         Transfer t = getSlaveObject().getTransfer(transferIndex);
         t.setMinSpeed(minSpeed);
         t.setMaxSpeed(maxSpeed);
-        getSlaveObject().sendResponse(new AsyncResponse(ac.getIndex())); // return calling thread
-        // on master
+        getSlaveObject().sendResponse(new AsyncResponse(ac.getIndex())); // return calling thread on master
         try {
-            return new AsyncResponseTransferStatus(t.receiveFile(dirName, type,
-                    fileName, position, inetAddress));
-        } catch (IOException e) {
-            return (new AsyncResponseTransferStatus(new TransferStatus(transferIndex, e)));
-        } catch (TransferDeniedException e) {
-            return (new AsyncResponseTransferStatus(new TransferStatus(transferIndex, e)));
+            return new AsyncResponseTransferStatus(t.receiveFile(dirName, type, fileName, position, inetAddress));
+        } catch (IOException | TransferDeniedException e) {
+            return new AsyncResponseTransferStatus(new TransferStatus(transferIndex, e));
         }
     }
 

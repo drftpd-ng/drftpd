@@ -28,61 +28,54 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
+import java.util.Arrays;
 
 /**
  * @author mog
  * @version $Id$
  */
 public class SSLGetContext {
+
     private static final Logger logger = LogManager.getLogger(SSLGetContext.class);
-    static SSLContext ctx = null;
+
+    static SSLContext _context = null;
 
     public static SSLContext getSSLContext() throws GeneralSecurityException, IOException {
-        // Create a trust manager that does not validate certificate chains
-        TrustManager[] trustAllCerts = new TrustManager[]{new X509TrustManager() {
-            public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-                return null;
-            }
+        // Setup a new context if we do not have one already
+        if (_context == null) {
+            // Create a trust manager that does not validate certificate chains
+            // TODO: Maybe we should make this a configurable option so that if users want to load official keys it supports it OK?
+            TrustManager[] trustAllCerts = new TrustManager[]{new X509TrustManager() {
+                public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                    return null;
+                }
 
-            public void checkClientTrusted(
+                public void checkClientTrusted(
                     java.security.cert.X509Certificate[] certs, String authType) {
-            }
+                }
 
-            public void checkServerTrusted(
+                public void checkServerTrusted(
                     java.security.cert.X509Certificate[] certs, String authType) {
+                }
+            }};
+
+            KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
+
+            KeyStore ks = KeyStore.getInstance("PKCS12");
+            try (FileInputStream fis = new FileInputStream("config/drftpd.key")) {
+                ks.load(fis, "drftpd".toCharArray());
             }
-        }};
-        if (ctx != null)
-            return ctx; // reuse previous SSLContext
 
-        ctx = SSLContext.getInstance("TLSv1.3");
+            kmf.init(ks, "drftpd".toCharArray());
 
-        KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
-
-        KeyStore ks = KeyStore.getInstance("PKCS12");
-        FileInputStream fis = null;
-        try {
-            fis = new FileInputStream("config/drftpd.key");
-            ks.load(fis, "drftpd".toCharArray());
-        } finally {
-            if (fis != null) {
-                fis.close();
-            }
+            _context = SSLContext.getInstance("TLSv1.3");
+            _context.init(kmf.getKeyManagers(), trustAllCerts, null);
+            String[] ciphers = _context.createSSLEngine().getSupportedCipherSuites();
+            logger.debug("Supported ciphers are as follows: '{}'", Arrays.toString(ciphers));
+            String[] protocols = _context.createSSLEngine().getSupportedProtocols();
+            logger.debug("Supported protocols are as follows: '{}'", Arrays.toString(protocols));
         }
 
-        kmf.init(ks, "drftpd".toCharArray());
-
-        ctx.init(kmf.getKeyManagers(), trustAllCerts, null);
-        String[] ciphers = ctx.createSSLEngine().getSupportedCipherSuites();
-        logger.trace("Supported ciphers are as follows:");
-        for (String cipher : ciphers) {
-            logger.trace(cipher);
-        }
-        String[] protocols = ctx.createSSLEngine().getSupportedProtocols();
-        logger.trace("Supported protocols are as follows:");
-        for (String protocol : protocols) {
-            logger.trace(protocol);
-        }
-        return ctx;
+        return _context;
     }
 }
