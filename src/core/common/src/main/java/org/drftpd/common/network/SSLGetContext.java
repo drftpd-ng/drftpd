@@ -70,8 +70,8 @@ public class SSLGetContext {
 
             _context = SSLContext.getInstance("TLSv1.3");
             _context.init(kmf.getKeyManagers(), trustAllCerts, null);
-            logger.debug("Supported ciphers are as follows: '{}'", Arrays.toString(_context.createSSLEngine().getSupportedCipherSuites()));
-            logger.debug("Supported protocols are as follows: '{}'", Arrays.toString(_context.createSSLEngine().getSupportedProtocols()));
+            logger.debug("Globally supported ciphers on this host are as follows: '{}'", Arrays.toString(_context.createSSLEngine().getSupportedCipherSuites()));
+            logger.debug("Globally supported protocols on this host are as follows: '{}'", Arrays.toString(_context.createSSLEngine().getSupportedProtocols()));
         }
 
         return _context;
