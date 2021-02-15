@@ -59,16 +59,14 @@ public class SlaveManager implements Runnable, TimeEventInterface {
     // on a SocketTimeout
     private static AbstractBasicIssuer _basicIssuer = null;
 
-    protected Map<String, RemoteSlave> _rslaves = new ConcurrentHashMap<>();
+    protected Map<String, RemoteSlave> _rSlaves = new ConcurrentHashMap<>();
     protected ServerSocket _serverSocket;
     protected MasterProtocolCentral _central;
     private int _port;
     private boolean _sslSlaves;
     private boolean _listForSlaves = true;
 
-    public SlaveManager() {
-
-    }
+    protected SlaveManager() {}
 
     public SlaveManager(Properties p) throws SlaveFileException {
         _sslSlaves = p.getProperty("master.slaveSSL", "false").equalsIgnoreCase("true");
@@ -86,7 +84,8 @@ public class SlaveManager implements Runnable, TimeEventInterface {
     }
 
     public static AbstractBasicIssuer getBasicIssuer() {
-        if (_basicIssuer == null) { // avoid unecessary lookups.
+        // avoid unnecessary lookups.
+        if (_basicIssuer == null) {
             _basicIssuer = (AbstractBasicIssuer) GlobalContext.getGlobalContext().getSlaveManager().
                     getProtocolCentral().getIssuerForClass(AbstractBasicIssuer.class);
         }
@@ -96,93 +95,92 @@ public class SlaveManager implements Runnable, TimeEventInterface {
     private void loadSlaves() throws SlaveFileException {
         File slavePathFile = new File(slavePath);
         if (!slavePathFile.exists() && !slavePathFile.mkdirs()) {
-            throw new SlaveFileException(new IOException(
-                    "Error creating directories: " + slavePathFile));
+            throw new SlaveFileException(new IOException("Error creating directories: " + slavePathFile));
         }
 
-        for (String slavepath : slavePathFile.list()) {
+        String[] names = slavePathFile.list();
+        if (names == null) {
+            throw new SlaveFileException("Unable to list directory: "+slavePathFile);
+        }
+        for (String slavePath : names) {
 
-            if (!slavepath.endsWith(".xml") && !slavepath.endsWith(".json")) {
+            // Ignore anything that does not end with these extensions
+            if (!slavePath.endsWith(".xml") && !slavePath.endsWith(".json")) {
                 continue;
             }
 
-            String slavename = slavepath.substring(0, slavepath.lastIndexOf('.'));
+            String slaveName = slavePath.substring(0, slavePath.lastIndexOf('.'));
 
             try {
-                getSlaveByNameUnchecked(slavename);
+                getSlaveByNameUnchecked(slaveName);
             } catch (ObjectNotFoundException e) {
                 throw new SlaveFileException(e);
             }
-
-            // throws IOException
         }
     }
 
-    public void newSlave(String slavename) {
-        addSlave(new RemoteSlave(slavename));
+    public void newSlave(String slaveName) {
+        addSlave(new RemoteSlave(slaveName));
     }
 
-    public synchronized void addSlave(RemoteSlave rslave) {
-        _rslaves.put(rslave.getName(), rslave);
+    public synchronized void addSlave(RemoteSlave rSlave) {
+        _rSlaves.put(rSlave.getName(), rSlave);
     }
 
-    private RemoteSlave getSlaveByNameUnchecked(String slavename)
-            throws ObjectNotFoundException {
-        if (slavename == null) {
+    private RemoteSlave getSlaveByNameUnchecked(String slaveName) throws ObjectNotFoundException {
+        if (slaveName == null) {
             throw new NullPointerException();
         }
-        try (InputStream in = new FileInputStream(getSlaveFile(slavename));
-             JsonReader reader = new JsonReader(in)) {
-            logger.debug("Loading slave '{}' Json data from disk.", slavename);
-            RemoteSlave rslave = (RemoteSlave) reader.readObject();
-            if (rslave.getName().equals(slavename)) {
-                _rslaves.put(slavename, rslave);
-                return rslave;
+        try (InputStream in = new FileInputStream(getSlaveFile(slaveName)); JsonReader reader = new JsonReader(in)) {
+            logger.debug("Loading slave '{}' Json data from disk.", slaveName);
+            RemoteSlave rSlave = (RemoteSlave) reader.readObject();
+            if (rSlave.getName().equals(slaveName)) {
+                _rSlaves.put(slaveName, rSlave);
+                return rSlave;
             }
             logger.warn("Tried to lookup a slave with the same name, different case", new Throwable());
             throw new ObjectNotFoundException();
         } catch (FileNotFoundException e) {
             // Lets see if there is a legacy xml slave file to load
-            return getSlaveByXMLNameUnchecked(slavename);
+            return getSlaveByXMLNameUnchecked(slaveName);
         } catch (Exception e) {
-            throw new FatalException("Error loading " + slavename + " : " + e.getMessage(), e);
+            throw new FatalException("Error loading " + slaveName + " : " + e.getMessage(), e);
         }
     }
 
-    private RemoteSlave getSlaveByXMLNameUnchecked(String slavename)
-            throws ObjectNotFoundException {
-        RemoteSlave rslave;
-        File xmlSlaveFile = getXMLSlaveFile(slavename);
+    private RemoteSlave getSlaveByXMLNameUnchecked(String slaveName) throws ObjectNotFoundException {
+        RemoteSlave rSlave;
+        File xmlSlaveFile = getXMLSlaveFile(slaveName);
         try (XMLDecoder in = new XMLDecoder(new BufferedInputStream(new FileInputStream(xmlSlaveFile)))) {
-            logger.debug("Loading slave '{}' XML data from disk.", slavename);
+            logger.debug("Loading slave '{}' XML data from disk.", slaveName);
             ClassLoader prevCL = Thread.currentThread().getContextClassLoader();
-            rslave = (RemoteSlave) in.readObject();
+            rSlave = (RemoteSlave) in.readObject();
             Thread.currentThread().setContextClassLoader(prevCL);
 
-            if (rslave.getName().equals(slavename)) {
-                _rslaves.put(slavename, rslave);
+            if (rSlave.getName().equals(slaveName)) {
+                _rSlaves.put(slaveName, rSlave);
                 // Commit new json slave file and delete old xml
-                rslave.commit();
+                rSlave.commit();
                 if (!xmlSlaveFile.delete()) {
                     logger.error("Failed to delete old xml slave file: {}", xmlSlaveFile.getName());
                 }
-                return rslave;
+                return rSlave;
             }
             logger.warn("Tried to lookup a slave with the same name, different case", new Throwable());
             throw new ObjectNotFoundException();
         } catch (FileNotFoundException e) {
             throw new ObjectNotFoundException(e);
         } catch (Exception e) {
-            throw new FatalException("Error loading " + slavename, e);
+            throw new FatalException("Error loading " + slaveName, e);
         }
     }
 
-    protected File getSlaveFile(String slavename) {
-        return new File(slavePath + slavename + ".json");
+    protected File getSlaveFile(String slaveName) {
+        return new File(slavePath + slaveName + ".json");
     }
 
-    protected File getXMLSlaveFile(String slavename) {
-        return new File(slavePath + slavename + ".xml");
+    protected File getXMLSlaveFile(String slaveName) {
+        return new File(slavePath + slaveName + ".xml");
     }
 
     public void addShutdownHook() {
@@ -190,21 +188,24 @@ public class SlaveManager implements Runnable, TimeEventInterface {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             getGlobalContext().getSlaveManager().listForSlaves(false);
             logger.info("Running shutdown hook");
-            for (RemoteSlave rslave : _rslaves.values()) {
-                rslave.shutdown();
+            for (RemoteSlave rSlave : _rSlaves.values()) {
+                rSlave.shutdown();
             }
         }));
     }
 
     public void delSlave(String slaveName) {
-        RemoteSlave rslave;
+        RemoteSlave rSlave;
 
         try {
-            rslave = getRemoteSlave(slaveName);
-            getSlaveFile(rslave.getName()).delete();
-            rslave.setOffline("Slave has been deleted");
-            _rslaves.remove(slaveName);
-            getGlobalContext().getRoot().removeSlave(rslave);
+            rSlave = getRemoteSlave(slaveName);
+            File rSlaveFile = getSlaveFile(rSlave.getName());
+            if (!rSlaveFile.delete()) {
+                logger.error("Something did not go right while deleting {}", rSlaveFile);
+            }
+            rSlave.setOffline("Slave has been deleted");
+            _rSlaves.remove(slaveName);
+            getGlobalContext().getRoot().removeSlave(rSlave);
         } catch (ObjectNotFoundException e) {
             throw new IllegalArgumentException("Slave not found");
         } catch (FileNotFoundException e) {
@@ -212,25 +213,24 @@ public class SlaveManager implements Runnable, TimeEventInterface {
         }
     }
 
-    public HashSet<RemoteSlave> findSlavesBySpace(int numOfSlaves,
-                                                  Set<RemoteSlave> exemptSlaves, boolean ascending) {
+    public HashSet<RemoteSlave> findSlavesBySpace(int numOfSlaves, Set<RemoteSlave> exemptSlaves, boolean ascending) {
         Collection<RemoteSlave> slaveList = getSlaves();
         HashMap<Long, RemoteSlave> map = new HashMap<>();
 
-        for (RemoteSlave rslave : slaveList) {
-            if (exemptSlaves.contains(rslave)) {
+        for (RemoteSlave rSlave : slaveList) {
+            if (exemptSlaves.contains(rSlave)) {
                 continue;
             }
 
             Long size;
 
             try {
-                size = rslave.getSlaveStatusAvailable().getDiskSpaceAvailable();
+                size = rSlave.getSlaveStatusAvailable().getDiskSpaceAvailable();
             } catch (SlaveUnavailableException e) {
                 continue;
             }
 
-            map.put(size, rslave);
+            map.put(size, rSlave);
         }
 
         ArrayList<Long> sorted = new ArrayList<>(map.keySet());
@@ -248,8 +248,8 @@ public class SlaveManager implements Runnable, TimeEventInterface {
                 break;
             }
             Long key = iter.next();
-            RemoteSlave rslave = map.get(key);
-            returnMe.add(rslave);
+            RemoteSlave rSlave = map.get(key);
+            returnMe.add(rSlave);
         }
 
         return returnMe;
@@ -260,18 +260,18 @@ public class SlaveManager implements Runnable, TimeEventInterface {
         long smallSize = Integer.MAX_VALUE;
         RemoteSlave smallSlave = null;
 
-        for (RemoteSlave rslave : slaveList) {
+        for (RemoteSlave rSlave : slaveList) {
             long size = Integer.MAX_VALUE;
 
             try {
-                size = rslave.getSlaveStatusAvailable().getDiskSpaceAvailable();
+                size = rSlave.getSlaveStatusAvailable().getDiskSpaceAvailable();
             } catch (SlaveUnavailableException e) {
                 continue;
             }
 
             if (size < smallSize) {
                 smallSize = size;
-                smallSlave = rslave;
+                smallSlave = rSlave;
             }
         }
 
@@ -284,9 +284,9 @@ public class SlaveManager implements Runnable, TimeEventInterface {
     public SlaveStatus getAllStatus() {
         SlaveStatus allStatus = new SlaveStatus();
 
-        for (RemoteSlave rslave : getSlaves()) {
+        for (RemoteSlave rSlave : getSlaves()) {
             try {
-                allStatus = allStatus.append(rslave.getSlaveStatusAvailable());
+                allStatus = allStatus.append(rSlave.getSlaveStatusAvailable());
             } catch (SlaveUnavailableException e) {
                 // slave is offline, continue
             }
@@ -299,11 +299,11 @@ public class SlaveManager implements Runnable, TimeEventInterface {
         HashMap<String, SlaveStatus> ret = new HashMap<>(
                 getSlaves().size());
 
-        for (RemoteSlave rslave : getSlaves()) {
+        for (RemoteSlave rSlave : getSlaves()) {
             try {
-                ret.put(rslave.getName(), rslave.getSlaveStatus());
+                ret.put(rSlave.getName(), rSlave.getSlaveStatus());
             } catch (SlaveUnavailableException e) {
-                ret.put(rslave.getName(), null);
+                ret.put(rSlave.getName(), null);
             }
         }
 
@@ -313,16 +313,15 @@ public class SlaveManager implements Runnable, TimeEventInterface {
     /**
      * Returns a modifiable list of available RemoteSlave's
      */
-    public Collection<RemoteSlave> getAvailableSlaves()
-            throws NoAvailableSlaveException {
+    public Collection<RemoteSlave> getAvailableSlaves() throws NoAvailableSlaveException {
         ArrayList<RemoteSlave> availableSlaves = new ArrayList<>();
 
-        for (RemoteSlave rslave : getSlaves()) {
-            if (!rslave.isAvailable()) {
+        for (RemoteSlave rSlave : getSlaves()) {
+            if (!rSlave.isAvailable()) {
                 continue;
             }
 
-            availableSlaves.add(rslave);
+            availableSlaves.add(rSlave);
         }
 
         if (availableSlaves.isEmpty()) {
@@ -337,18 +336,18 @@ public class SlaveManager implements Runnable, TimeEventInterface {
     }
 
     public RemoteSlave getRemoteSlave(String s) throws ObjectNotFoundException {
-        RemoteSlave rslave = _rslaves.get(s);
-        if (rslave == null) {
+        RemoteSlave rSlave = _rSlaves.get(s);
+        if (rSlave == null) {
             return getSlaveByNameUnchecked(s);
         }
-        return rslave;
+        return rSlave;
     }
 
     public List<RemoteSlave> getSlaves() {
-        if (_rslaves == null) {
+        if (_rSlaves == null) {
             throw new NullPointerException();
         }
-        List<RemoteSlave> slaveList = new ArrayList<>(_rslaves.values());
+        List<RemoteSlave> slaveList = new ArrayList<>(_rSlaves.values());
         Collections.sort(slaveList);
         return slaveList;
     }
@@ -359,7 +358,7 @@ public class SlaveManager implements Runnable, TimeEventInterface {
      * @return true if one or more slaves are online, false otherwise.
      */
     public boolean hasAvailableSlaves() {
-        for (RemoteSlave remoteSlave : _rslaves.values()) {
+        for (RemoteSlave remoteSlave : _rSlaves.values()) {
             if (remoteSlave.isAvailable()) {
                 return true;
             }
@@ -387,12 +386,13 @@ public class SlaveManager implements Runnable, TimeEventInterface {
         Socket socket = null;
 
         while (_listForSlaves) {
-            RemoteSlave rslave;
+            RemoteSlave rSlave;
             ObjectInputStream in;
             ObjectOutputStream out;
 
             try {
                 socket = _serverSocket.accept();
+                logger.debug("[{}] Accepted new connection", socket.getRemoteSocketAddress());
                 socket.setSoTimeout(socketTimeout);
                 if (socket instanceof SSLSocket) {
                     if (GlobalContext.getConfig().getCipherSuites() != null) {
@@ -401,33 +401,36 @@ public class SlaveManager implements Runnable, TimeEventInterface {
                     if (GlobalContext.getConfig().getSSLProtocols() != null) {
                         ((SSLSocket) socket).setEnabledProtocols(GlobalContext.getConfig().getSSLProtocols());
                     }
+                    logger.debug("[{}] Enabled ciphers for this new connection are as follows: '{}'",
+                            socket.getRemoteSocketAddress(), Arrays.toString(((SSLSocket) socket).getEnabledCipherSuites()));
+                    logger.debug("[{}] Enabled protocols for this new connection are as follows: '{}'",
+                            socket.getRemoteSocketAddress(), Arrays.toString(((SSLSocket) socket).getEnabledProtocols()));
                     ((SSLSocket) socket).setUseClientMode(false);
                     ((SSLSocket) socket).startHandshake();
                 }
-                logger.debug("Slave connected from {}", socket.getRemoteSocketAddress());
 
                 out = new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()));
                 out.flush();
                 in = new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));
 
-                String slavename = RemoteSlave.getSlaveNameFromObjectInput(in);
+                String slaveName = RemoteSlave.getSlaveNameFromObjectInput(in);
 
                 try {
-                    rslave = getRemoteSlave(slavename);
+                    rSlave = getRemoteSlave(slaveName);
                 } catch (ObjectNotFoundException e) {
-                    out.writeObject(new AsyncCommandArgument("error", "error", slavename
+                    out.writeObject(new AsyncCommandArgument("error", "error", slaveName
                             + " does not exist, use \"site addslave\""));
-                    logger.error("Slave {} does not exist, use \"site addslave\"", slavename);
+                    logger.error("Slave {} does not exist, use \"site addslave\"", slaveName);
                     socket.close();
                     continue;
                 }
 
-                if (rslave.isOnline()) {
+                if (rSlave.isOnline()) {
                     out.writeObject(new AsyncCommandArgument("", "error",
                             "Already online"));
                     out.flush();
                     socket.close();
-                    throw new IOException("Already online: " + slavename);
+                    throw new IOException("Already online: " + slaveName);
                 }
             } catch (Exception e) {
                 if (socket != null) {
@@ -443,20 +446,17 @@ public class SlaveManager implements Runnable, TimeEventInterface {
             }
 
             try {
-                if (!rslave.checkConnect(socket)) {
-                    out.writeObject(new AsyncCommandArgument("", "error",
-                            socket.getInetAddress()
-                                    + " is not a valid mask for "
-                                    + rslave.getName()));
-                    logger.error("{} is not a valid ip for {}", socket.getInetAddress(), rslave.getName());
+                if (!rSlave.checkConnect(socket)) {
+                    out.writeObject(new AsyncCommandArgument("", "error", socket.getInetAddress() + " is not a valid mask for " + rSlave.getName()));
+                    logger.error("{} is not a valid ip for {}", socket.getInetAddress(), rSlave.getName());
                     socket.close();
 
                     continue;
                 }
 
-                rslave.connect(socket, in, out);
+                rSlave.connect(socket, in, out);
             } catch (Exception e) {
-                rslave.setOffline(e);
+                rSlave.setOffline(e);
                 logger.error(e);
             } catch (Throwable t) {
                 logger.fatal("Throwable in SlaveManager loop", t);
@@ -492,41 +492,40 @@ public class SlaveManager implements Runnable, TimeEventInterface {
      */
     public void deleteOnAllSlaves(DirectoryHandle directory) {
         HashMap<RemoteSlave, String> slaveMap = new HashMap<>();
-        Collection<RemoteSlave> slaves = new ArrayList<>(_rslaves.values());
-        for (RemoteSlave rslave : slaves) {
+        Collection<RemoteSlave> slaves = new ArrayList<>(_rSlaves.values());
+        for (RemoteSlave rSlave : slaves) {
             String index;
             try {
                 AbstractBasicIssuer basicIssuer = (AbstractBasicIssuer) getIssuerForClass(AbstractBasicIssuer.class);
-                index = basicIssuer.issueDeleteToSlave(rslave, directory.getPath());
-                slaveMap.put(rslave, index);
+                index = basicIssuer.issueDeleteToSlave(rSlave, directory.getPath());
+                slaveMap.put(rSlave, index);
             } catch (SlaveUnavailableException e) {
-                rslave.addQueueDelete(directory.getPath());
+                rSlave.addQueueDelete(directory.getPath());
             }
         }
         for (Entry<RemoteSlave, String> slaveEntry : slaveMap.entrySet()) {
-            RemoteSlave rslave = slaveEntry.getKey();
+            RemoteSlave rSlave = slaveEntry.getKey();
             String index = slaveEntry.getValue();
             try {
-                rslave.fetchResponse(index, 300000);
+                rSlave.fetchResponse(index, 300000);
             } catch (SlaveUnavailableException e) {
-                rslave.addQueueDelete(directory.getPath());
+                rSlave.addQueueDelete(directory.getPath());
             } catch (RemoteIOException e) {
                 if (e.getCause() instanceof FileNotFoundException) {
                     continue;
                 }
-                rslave.setOffline("IOException deleting file, check logs for specific error");
-                rslave.addQueueDelete(directory.getPath());
+                rSlave.setOffline("IOException deleting file, check logs for specific error");
+                rSlave.addQueueDelete(directory.getPath());
                 logger.error("IOException deleting file, file will be deleted when slave comes online", e);
-                rslave.addQueueDelete(directory.getPath());
+                rSlave.addQueueDelete(directory.getPath());
             }
         }
     }
 
-    public void renameOnAllSlaves(String fromPath, String toDirPath,
-                                  String toName) {
+    public void renameOnAllSlaves(String fromPath, String toDirPath, String toName) {
         synchronized (this) {
-            for (RemoteSlave rslave : _rslaves.values()) {
-                rslave.simpleRename(fromPath, toDirPath, toName);
+            for (RemoteSlave rSlave : _rSlaves.values()) {
+                rSlave.simpleRename(fromPath, toDirPath, toName);
             }
         }
     }
@@ -540,35 +539,35 @@ public class SlaveManager implements Runnable, TimeEventInterface {
     }
 
     public void resetDay(Date d) {
-        for (RemoteSlave rs : _rslaves.values()) {
+        for (RemoteSlave rs : _rSlaves.values()) {
             rs.resetDay(d);
             rs.commit();
         }
     }
 
     public void resetHour(Date d) {
-        for (RemoteSlave rs : _rslaves.values()) {
+        for (RemoteSlave rs : _rSlaves.values()) {
             rs.resetHour(d);
             rs.commit();
         }
     }
 
     public void resetMonth(Date d) {
-        for (RemoteSlave rs : _rslaves.values()) {
+        for (RemoteSlave rs : _rSlaves.values()) {
             rs.resetMonth(d);
             rs.commit();
         }
     }
 
     public void resetWeek(Date d) {
-        for (RemoteSlave rs : _rslaves.values()) {
+        for (RemoteSlave rs : _rSlaves.values()) {
             rs.resetWeek(d);
             rs.commit();
         }
     }
 
     public void resetYear(Date d) {
-        for (RemoteSlave rs : _rslaves.values()) {
+        for (RemoteSlave rs : _rSlaves.values()) {
             rs.resetYear(d);
             rs.commit();
         }

@@ -37,14 +37,16 @@ public class DummySlaveManager extends SlaveManager {
         _central = new MasterProtocolCentral();
     }
 
-    public void setSlaves(HashMap<String, RemoteSlave> rslaves) {
-        _rslaves = rslaves;
+    public void setSlaves(HashMap<String, RemoteSlave> rSlaves) {
+        this._rSlaves = rSlaves;
     }
 
+    @Override
     public Collection<RemoteSlave> getAvailableSlaves() throws NoAvailableSlaveException {
         return getSlaves();
     }
 
+    @Override
     public RemoteSlave getRemoteSlave(String s) throws ObjectNotFoundException {
         return new DummyRemoteSlave(s);
     }

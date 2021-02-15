@@ -115,7 +115,7 @@ public class MoveReleaseOffMultipleSlavesToSpecificSlavesTest {
         }
 
         public void setSlaves(HashMap<String, RemoteSlave> rslaves) {
-            _rslaves = rslaves;
+            _rSlaves = rslaves;
         }
 
         @Override
