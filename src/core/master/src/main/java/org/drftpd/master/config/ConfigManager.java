@@ -169,16 +169,28 @@ public class ConfigManager implements ConfigInterface {
         boolean whitelist = false;
         for (int x = 1; ; x++) {
             String whitelistPattern = _mainCfg.getProperty("cipher.whitelist." + x);
+
+            // If this is null it means the there is no configuration entry for cipher.whitelist.(x) and thus need to break the loop
             if (whitelistPattern == null) {
                 break;
-            } else if (whitelistPattern.trim().length() == 0) {
+            }
+            logger.debug("Found cipher.whitelist.{} as {}", x, whitelistPattern);
+            if (whitelistPattern.trim().isEmpty()) {
                 continue;
             }
-            if (!whitelist) whitelist = true;
+            if (!whitelist) {
+                whitelist = true;
+            }
+            boolean found = false;
             for (String cipherSuite : supportedCipherSuites) {
                 if (cipherSuite.matches(whitelistPattern)) {
+                    logger.debug("Adding {} as it matches whitelist pattern {}", cipherSuite, whitelistPattern);
                     cipherSuites.add(cipherSuite);
+                    found = true;
                 }
+            }
+            if (!found) {
+               logger.warn("Did not find a match for whitelist {} in supported cipher suites", whitelistPattern);
             }
         }
         if (cipherSuites.isEmpty()) {
@@ -193,9 +205,13 @@ public class ConfigManager implements ConfigInterface {
         // Parse cipher suite blacklist rules and remove matching ciphers from set
         for (int x = 1; ; x++) {
             String blacklistPattern = _mainCfg.getProperty("cipher.blacklist." + x);
+
+            // If this is null it means the there is no configuration entry for cipher.blacklist.(x) and thus need to break the loop
             if (blacklistPattern == null) {
                 break;
-            } else if (blacklistPattern.trim().isEmpty()) {
+            }
+            logger.debug("Found cipher.blacklist.{} as {}", x, blacklistPattern);
+            if (blacklistPattern.trim().isEmpty()) {
                 continue;
             }
             cipherSuites.removeIf(cipherSuite -> cipherSuite.matches(blacklistPattern));
@@ -216,7 +232,11 @@ public class ConfigManager implements ConfigInterface {
                 String sslProtocol = _mainCfg.getProperty("protocol." + x);
                 if (sslProtocol == null) {
                     break;
-                } else if (supportedSSLProtocols.contains(sslProtocol)) {
+                }
+                logger.debug("Found protocol.{} as {}", x, sslProtocol);
+                if (!supportedSSLProtocols.contains(sslProtocol)) {
+                    logger.warn("Found unsupported protocol configuration: protocol.{} -> {}", x, sslProtocol);
+                } else {
                     sslProtocols.add(sslProtocol);
                 }
             }
