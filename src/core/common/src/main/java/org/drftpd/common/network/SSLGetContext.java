@@ -59,7 +59,7 @@ public class SSLGetContext {
                 }
             }};
 
-            KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
+            KeyManagerFactory kmf = KeyManagerFactory.getInstance("PKIX");
 
             KeyStore ks = KeyStore.getInstance("PKCS12");
             try (FileInputStream fis = new FileInputStream("config/drftpd.key")) {
