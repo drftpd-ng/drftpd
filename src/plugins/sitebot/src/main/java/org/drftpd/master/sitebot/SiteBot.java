@@ -241,7 +241,7 @@ public class SiteBot implements ReplyConstants, Runnable {
                         ((SSLSocket) socket).getRemoteSocketAddress(), Arrays.toString(((SSLSocket) socket).getEnabledCipherSuites()));
                 logger.debug("[{}] Enabled protocols for this new connection are as follows: '{}'",
                         ((SSLSocket) socket).getRemoteSocketAddress(), Arrays.toString(((SSLSocket) socket).getEnabledProtocols()));
-                ((SSLSocket) socket).setUseClientMode(false);
+                ((SSLSocket) socket).setUseClientMode(true);
                 ((SSLSocket) socket).startHandshake();
             }
             logger.info("*** Connected to server [{}:{}]", _server, _port);
