@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.Arrays;
 
 /**
  * @author mog
@@ -57,27 +58,30 @@ public class ActiveConnection extends Connection {
         logger.debug("Connecting to {}:{}", _addr.getAddress().getHostAddress(), _addr.getPort());
 
         if (_ctx != null) {
-            SSLSocket sslsock;
-            sslsock = (SSLSocket) _ctx.getSocketFactory().createSocket();
+            SSLSocket sslSock = (SSLSocket) _ctx.getSocketFactory().createSocket();
             if (bufferSize > 0) {
-                sslsock.setReceiveBufferSize(bufferSize);
+                sslSock.setReceiveBufferSize(bufferSize);
             }
 
             if (_bindIP != null) {
-                sslsock.bind(new InetSocketAddress(_bindIP, sslsock.getPort()));
+                sslSock.bind(new InetSocketAddress(_bindIP, sslSock.getPort()));
             }
 
-            sslsock.connect(_addr, TIMEOUT);
-            setSockOpts(sslsock);
+            sslSock.connect(_addr, TIMEOUT);
+            setSockOpts(sslSock);
             if (cipherSuites != null && cipherSuites.length != 0) {
-                sslsock.setEnabledCipherSuites(cipherSuites);
+                sslSock.setEnabledCipherSuites(cipherSuites);
             }
             if (sslProtocols != null && sslProtocols.length != 0) {
-                sslsock.setEnabledProtocols(sslProtocols);
+                sslSock.setEnabledProtocols(sslProtocols);
             }
-            sslsock.setUseClientMode(_useSSLClientHandshake);
-            sslsock.startHandshake();
-            _sock = sslsock;
+            logger.debug("[{}] Enabled ciphers for this new connection are as follows: '{}'",
+                    sslSock.getRemoteSocketAddress(), Arrays.toString(sslSock.getEnabledCipherSuites()));
+            logger.debug("[{}] Enabled protocols for this new connection are as follows: '{}'",
+                    sslSock.getRemoteSocketAddress(), Arrays.toString(sslSock.getEnabledProtocols()));
+            sslSock.setUseClientMode(_useSSLClientHandshake);
+            sslSock.startHandshake();
+            _sock = sslSock;
         } else {
             _sock = SocketFactory.getDefault().createSocket();
             if (bufferSize > 0) {

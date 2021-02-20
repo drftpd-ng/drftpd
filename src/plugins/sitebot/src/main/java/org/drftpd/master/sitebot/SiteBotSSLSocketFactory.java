@@ -42,8 +42,8 @@ public class SiteBotSSLSocketFactory extends SSLSocketFactory {
         try {
             SSLContext sslcontext = SSLContext.getInstance("TLSv1.3");
             sslcontext.init(null, new TrustManager[]{trustManager}, null);
-            logger.debug("Supported ciphers are as follows: '{}'", Arrays.toString(sslcontext.createSSLEngine().getSupportedCipherSuites()));
-            logger.debug("Supported protocols are as follows: '{}'", Arrays.toString(sslcontext.createSSLEngine().getSupportedProtocols()));
+            logger.debug("Globally supported ciphers on this host are as follows: '{}'", Arrays.toString(sslcontext.createSSLEngine().getSupportedCipherSuites()));
+            logger.debug("Globally supported protocols on this host are as follows: '{}'", Arrays.toString(sslcontext.createSSLEngine().getSupportedProtocols()));
             _factory = sslcontext.getSocketFactory();
         } catch (Exception e) {
             logger.error("Exception creating socket factory", e);

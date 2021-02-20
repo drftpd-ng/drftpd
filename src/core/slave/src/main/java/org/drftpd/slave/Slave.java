@@ -252,6 +252,10 @@ public class Slave {
             if (getSSLProtocols() != null) {
                 ((SSLSocket) _socket).setEnabledProtocols(getSSLProtocols());
             }
+            logger.debug("[{}] Enabled ciphers for this new connection are as follows: '{}'",
+                    _socket.getRemoteSocketAddress(), Arrays.toString(((SSLSocket) _socket).getEnabledCipherSuites()));
+            logger.debug("[{}] Enabled protocols for this new connection are as follows: '{}'",
+                    _socket.getRemoteSocketAddress(), Arrays.toString(((SSLSocket) _socket).getEnabledProtocols()));
             ((SSLSocket) _socket).setUseClientMode(true);
 
             try {

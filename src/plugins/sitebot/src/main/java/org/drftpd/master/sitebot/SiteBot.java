@@ -231,7 +231,11 @@ public class SiteBot implements ReplyConstants, Runnable {
             }
             String[] sslProtocols = GlobalContext.getConfig().getSSLProtocols();
             if (isSSL && sslProtocols != null && sslProtocols.length > 0) {
-                ((SSLSocket) socket).setEnabledProtocols(GlobalContext.getConfig().getSSLProtocols());
+                ((SSLSocket) socket).setEnabledProtocols(sslProtocols);
+                logger.debug("[{}] Enabled ciphers for this new connection are as follows: '{}'",
+                        socket.getRemoteSocketAddress(), Arrays.toString(((SSLSocket) socket).getEnabledCipherSuites()));
+                logger.debug("[{}] Enabled protocols for this new connection are as follows: '{}'",
+                        socket.getRemoteSocketAddress(), Arrays.toString(((SSLSocket) socket).getEnabledProtocols()));
             }
             logger.info("*** Connected to server [{}:{}]", _server, _port);
         } catch (IOException e) {

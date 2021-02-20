@@ -30,6 +30,7 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.Arrays;
 
 /**
  * @author mog
@@ -93,17 +94,20 @@ public class PassiveConnection extends Connection {
         setSockOpts(sock);
 
         if (sock instanceof SSLSocket) {
-            SSLSocket sslsock = (SSLSocket) sock;
+            SSLSocket sslSock = (SSLSocket) sock;
             if (cipherSuites != null && cipherSuites.length != 0) {
-                sslsock.setEnabledCipherSuites(cipherSuites);
+                sslSock.setEnabledCipherSuites(cipherSuites);
             }
             if (sslProtocols != null && sslProtocols.length != 0) {
-                sslsock.setEnabledProtocols(sslProtocols);
+                sslSock.setEnabledProtocols(sslProtocols);
             }
-            sslsock.setUseClientMode(_useSSLClientMode);
-            sslsock.startHandshake();
+            logger.debug("[{}] Enabled ciphers for this new connection are as follows: '{}'",
+                    sslSock.getRemoteSocketAddress(), Arrays.toString(sslSock.getEnabledCipherSuites()));
+            logger.debug("[{}] Enabled protocols for this new connection are as follows: '{}'",
+                    sslSock.getRemoteSocketAddress(), Arrays.toString(sslSock.getEnabledProtocols()));
+            sslSock.setUseClientMode(_useSSLClientMode);
+            sslSock.startHandshake();
         }
-
 
         return sock;
     }
