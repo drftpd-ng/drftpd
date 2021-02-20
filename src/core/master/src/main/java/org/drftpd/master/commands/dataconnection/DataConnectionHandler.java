@@ -58,10 +58,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.ResourceBundle;
-import java.util.StringTokenizer;
+import java.util.*;
 
 
 /**
@@ -73,8 +70,7 @@ public class DataConnectionHandler extends CommandInterface {
     public static final Key<Long> CHECKSUM = new Key<>(DataConnectionHandler.class, "checksum");
     public static final Key<FileHandle> TRANSFER_FILE = new Key<>(DataConnectionHandler.class, "transfer_file");
     public static final Key<RemoteSlave> TRANSFER_SLAVE = new Key<>(DataConnectionHandler.class, "transfer_slave");
-    public static final Key<InetAddress> TRANSFER_SLAVE_INET_ADDRESS =
-            new Key<>(DataConnectionHandler.class, "transfer_slave_inetAddress");
+    public static final Key<InetAddress> TRANSFER_SLAVE_INET_ADDRESS = new Key<>(DataConnectionHandler.class, "transfer_slave_inetAddress");
     public static final Key<Character> TRANSFER_TYPE = new Key<>(DataConnectionHandler.class, "transfer_type");
     public static final Key<String> INET_ADDRESS = new Key<>(DataConnectionHandler.class, "inetAddress");
     public static final Key<TransferStatus> XFER_STATUS = new Key<>(DataConnectionHandler.class, "transferStatus");
@@ -100,39 +96,38 @@ public class DataConnectionHandler extends CommandInterface {
         Socket s = conn.getControlSocket();
 
         //reply success
-        conn.printOutput(new FtpReply(234, request.getCommand()
-                + " " + request.getArgument() + " successful").toString());
-        SSLSocket s2 = null;
+        conn.printOutput(new FtpReply(234, request.getCommand() + " " + request.getArgument() + " successful").toString());
+        SSLSocket sslSock = null;
         try {
-            s2 = (SSLSocket) ctx.getSocketFactory().createSocket(s,
-                    s.getInetAddress().getHostAddress(), s.getPort(), true);
-            conn.setControlSocket(s2);
-            s2.setUseClientMode(false);
-            s2.setSoTimeout(10000);
+            sslSock = (SSLSocket) ctx.getSocketFactory().createSocket(s, s.getInetAddress().getHostAddress(), s.getPort(), true);
+            conn.setControlSocket(sslSock);
+            sslSock.setUseClientMode(false);
+            sslSock.setSoTimeout(10000);
             String[] cipherSuites = GlobalContext.getConfig().getCipherSuites();
-            if (cipherSuites != null && cipherSuites.length > 0) {
-                s2.setEnabledCipherSuites(GlobalContext.getConfig().getCipherSuites());
+            if (cipherSuites != null) {
+                sslSock.setEnabledCipherSuites(cipherSuites);
             }
             String[] sslProtocols = GlobalContext.getConfig().getSSLProtocols();
-            if (sslProtocols != null && sslProtocols.length > 0) {
-                s2.setEnabledProtocols(GlobalContext.getConfig().getSSLProtocols());
+            if (sslProtocols != null) {
+                sslSock.setEnabledProtocols(sslProtocols);
             }
-            s2.startHandshake();
+            logger.debug("[{}] Enabled ciphers for this new connection are as follows: '{}'",
+                    sslSock.getRemoteSocketAddress(), Arrays.toString(sslSock.getEnabledCipherSuites()));
+            logger.debug("[{}] Enabled protocols for this new connection are as follows: '{}'",
+                    sslSock.getRemoteSocketAddress(), Arrays.toString(sslSock.getEnabledProtocols()));
+            sslSock.startHandshake();
             conn.authDone();
         } catch (IOException e) {
             logger.warn("", e);
-            if (s2 != null) {
+            if (sslSock != null) {
                 try {
-                    s2.close();
+                    sslSock.close();
                 } catch (IOException e2) {
                     logger.debug("error closing SSLSocket connection");
                 }
             }
             conn.stop(e.getMessage());
-
-            return null;
         }
-        s2 = null;
 
         return null;
     }

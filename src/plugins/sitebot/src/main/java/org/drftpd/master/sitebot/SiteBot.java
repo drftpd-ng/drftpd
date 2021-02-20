@@ -204,7 +204,6 @@ public class SiteBot implements ReplyConstants, Runnable {
         _server = serverConfig.getHostName();
         _port = serverConfig.getPort();
         _password = serverConfig.getPassword();
-        boolean isSSL = serverConfig.isSsl();
         SocketFactory factory = serverConfig.getSocketFactory();
         _inputThread = null;
         _outputThread = null;
@@ -229,13 +228,21 @@ public class SiteBot implements ReplyConstants, Runnable {
             } else {
                 socket = factory.createSocket(_server, _port, InetAddress.getByName(bindAddress), 0);
             }
-            String[] sslProtocols = GlobalContext.getConfig().getSSLProtocols();
-            if (isSSL && sslProtocols != null && sslProtocols.length > 0) {
-                ((SSLSocket) socket).setEnabledProtocols(sslProtocols);
+            if (serverConfig.isSsl()) {
+                String[] cipherSuites = GlobalContext.getConfig().getCipherSuites();
+                if (cipherSuites != null) {
+                    ((SSLSocket) socket).setEnabledCipherSuites(cipherSuites);
+                }
+                String[] sslProtocols = GlobalContext.getConfig().getSSLProtocols();
+                if (sslProtocols != null) {
+                    ((SSLSocket) socket).setEnabledProtocols(sslProtocols);
+                }
                 logger.debug("[{}] Enabled ciphers for this new connection are as follows: '{}'",
-                        socket.getRemoteSocketAddress(), Arrays.toString(((SSLSocket) socket).getEnabledCipherSuites()));
+                        ((SSLSocket) socket).getRemoteSocketAddress(), Arrays.toString(((SSLSocket) socket).getEnabledCipherSuites()));
                 logger.debug("[{}] Enabled protocols for this new connection are as follows: '{}'",
-                        socket.getRemoteSocketAddress(), Arrays.toString(((SSLSocket) socket).getEnabledProtocols()));
+                        ((SSLSocket) socket).getRemoteSocketAddress(), Arrays.toString(((SSLSocket) socket).getEnabledProtocols()));
+                ((SSLSocket) socket).setUseClientMode(false);
+                ((SSLSocket) socket).startHandshake();
             }
             logger.info("*** Connected to server [{}:{}]", _server, _port);
         } catch (IOException e) {

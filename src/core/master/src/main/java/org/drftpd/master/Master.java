@@ -270,6 +270,10 @@ public class Master {
         /*
          * TODO: Reserved for Implicit SSL:
          * SSLSocket sslSock = (SSLSocket) sock;
+         * logger.debug("[{}] Enabled ciphers for this new connection are as follows: '{}'",
+         *           sslSock.getRemoteSocketAddress(), Arrays.toString(sslSock.getEnabledCipherSuites()));
+         * logger.debug("[{}] Enabled protocols for this new connection are as follows: '{}'",
+         *           sslSock.getRemoteSocketAddress(), Arrays.toString(sslSock.getEnabledProtocols()));
          * sslSock.setUseClientMode(false);
          * sslSock.startHandshake();
          * sock = sslSock;

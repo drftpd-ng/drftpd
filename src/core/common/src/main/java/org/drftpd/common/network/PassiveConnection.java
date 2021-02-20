@@ -70,8 +70,7 @@ public class PassiveConnection extends Connection {
 
         if (_serverSocket == null) {
             // can happen if abort() is called before connect()
-            throw new SocketException(
-                    "abort() was called before connect()");
+            throw new SocketException("abort() was called before connect()");
         }
 
         Socket sock;
