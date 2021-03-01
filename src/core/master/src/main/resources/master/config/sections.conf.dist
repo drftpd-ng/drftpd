@@ -16,7 +16,6 @@ make.section.dirs=true
 2.type=dated
 2.path=/MP3
 2.name=MP3
-2.type=dated
 2.dated=MMdd
 2.now=-today
 2.color=10
