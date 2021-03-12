@@ -3,7 +3,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
                       http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-	
+
     <groupId>org.drftpd</groupId>
     <artifactId>drftpd-dev</artifactId>
     <packaging>pom</packaging>
@@ -72,6 +72,11 @@
         </dependency>
         <dependency>
             <groupId>org.drftpd</groupId>
+            <artifactId>drftpd-links-master</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.drftpd</groupId>
             <artifactId>drftpd-mediainfo-common</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -121,8 +126,18 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+        <groupId>org.drftpd</groupId>
+            <artifactId>drftpd-speedtestnet-common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.drftpd</groupId>
-            <artifactId>drftpd-speedtest-net</artifactId>
+            <artifactId>drftpd-speedtestnet-master</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.drftpd</groupId>
+            <artifactId>drftpd-speedtestnet-slave</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
