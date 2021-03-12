@@ -13,12 +13,6 @@ master.bindport=1099
 #master.ip=xxx.xxx.xxx.xxx
 master.port=2121
 
-# If you want master to establish a secure connection with the slaves
-#  set this option to 'true'. 
-# (You must have a valid 'drftpd.key' in config folder).
-# Default: [true]
-master.slaveSSL=true
-
 # Show offline files?
 # Default: [true]
 files.offline.enabled=true
@@ -124,3 +118,17 @@ disk.commit.delay=10000
 # By default this is drftpd/drftpd and if you rename this user, update it here aswell
 # default.pre.user=drftpd
 # default.pre.group=drftpd
+
+# This next section defines how the slave manager allows ssl/tls connections.
+slavemanager.ssl.supported_protocols.1=TLSv1.3
+slavemanager.ssl.cipher_suites.1=TLS_AES_128_GCM_SHA256
+slavemanager.ssl.cipher_suites.2=TLS_AES_256_GCM_SHA384
+slavemanager.ssl.cipher_suites.3=TLS_CHACHA20_POLY1305_SHA256
+slavemanager.ssl.verification_mode=none
+slavemanager.ssl.client_authentication=optional
+# slavemanager.ssl.certificate_authorities=(empty)
+# slavemanager.ssl.truststore.path=(empty)
+# slavemanager.ssl.certificate=
+# slavemanager.ssl.key=
+slavemanager.ssl.keystore.path=config/drftpd.key
+slavemanager.ssl.keystore.password=drftpd

@@ -34,6 +34,7 @@ import java.util.HashMap;
  */
 public class DummySlaveManager extends SlaveManager {
     public DummySlaveManager() {
+        super("Test Framework");
         _central = new MasterProtocolCentral();
     }
 

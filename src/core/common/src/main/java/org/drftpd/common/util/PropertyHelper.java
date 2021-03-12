@@ -18,6 +18,11 @@
 
 package org.drftpd.common.util;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -25,6 +30,8 @@ import java.util.Properties;
  * @version $Id$
  */
 public class PropertyHelper {
+    private static final Logger logger = LogManager.getLogger(PropertyHelper.class);
+
     private PropertyHelper() {
     }
 
@@ -41,5 +48,24 @@ public class PropertyHelper {
     public static String getProperty(Properties p, String name, String defaultValue) throws NullPointerException {
         // result can't be null
         return p.getProperty(name, defaultValue);
+    }
+
+    /**
+     * Function create a List of Strings representing key.x (where x is 1 -> infinity)
+     *
+     * @param p The properties configuration that holds the key we are looking for
+     * @param key The key to look for
+     * @return a new List of strings or null if no config items were found
+     */
+    public static List<String> getStringListedProperty(Properties p, String key) {
+        List<String> items = new ArrayList<>();
+        int x = 1;
+        String item;
+        while((item = p.getProperty(key + "." + x)) != null) {
+            logger.debug("Checking out {} with value: {}", key+"."+x, item);
+            items.add(item);
+            x++;
+        }
+        return items.size() > 0 ? items : null;
     }
 }

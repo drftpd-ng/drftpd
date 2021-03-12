@@ -87,3 +87,11 @@ threadedremerge=true
 # Default: [false]
 concurrent.root.iteration=false
 
+master.ssl.supported_protocols.1=TLSv1.3
+master.ssl.cipher_suites.1=TLS_AES_128_GCM_SHA256
+master.ssl.cipher_suites.2=TLS_AES_256_GCM_SHA384
+master.ssl.cipher_suites.3=TLS_CHACHA20_POLY1305_SHA256
+master.ssl.verification_mode=none
+master.ssl.client_authentication=optional
+master.ssl.keystore.path=config/drftpd.key
+master.ssl.keystore.password=drftpd

@@ -345,9 +345,9 @@ public class GlobalContext {
     /**
      * Depends on root loaded if any slaves connect early.
      */
-    private void loadSlaveManager(Properties cfg) throws SlaveFileException {
+    private void loadSlaveManager() throws SlaveFileException {
         // register slavemanager
-        _slaveManager = new SlaveManager(cfg);
+        _slaveManager = new SlaveManager();
     }
 
     private void listenForSlaves() {
@@ -419,7 +419,7 @@ public class GlobalContext {
         }
 
         try {
-            loadSlaveManager(getConfig().getMainProperties());
+            loadSlaveManager();
         } catch (SlaveFileException e) {
             throw new RuntimeException(e);
         }

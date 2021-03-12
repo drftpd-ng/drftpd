@@ -20,10 +20,14 @@ package org.drftpd.master.slavemanagement;
 import com.cedarsoftware.util.io.JsonReader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.drftpd.common.exceptions.SSLServiceException;
+import org.drftpd.common.network.SSLService;
+import org.drftpd.master.Master;
+import org.elasticsearch.common.ssl.SslConfiguration;
+import org.elasticsearch.common.ssl.SslConfigurationLoader;
+
 import org.drftpd.common.exceptions.RemoteIOException;
-import org.drftpd.common.exceptions.SSLUnavailableException;
 import org.drftpd.common.network.AsyncCommandArgument;
-import org.drftpd.common.network.SSLGetContext;
 import org.drftpd.common.protocol.AbstractIssuer;
 import org.drftpd.common.util.PropertyHelper;
 import org.drftpd.master.GlobalContext;
@@ -38,11 +42,12 @@ import org.drftpd.master.protocol.MasterProtocolCentral;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.slave.exceptions.ObjectNotFoundException;
 
+import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLSocket;
 import java.beans.XMLDecoder;
 import java.io.*;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.net.InetSocketAddress;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
@@ -51,43 +56,53 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author mog
  * @version $Id$
  */
-public class SlaveManager implements Runnable, TimeEventInterface {
+public class SlaveManager extends SslConfigurationLoader implements Runnable, TimeEventInterface {
     protected static final int actualTimeout = 60000; // one minute, evaluated
+
+    private static final String SETTING_PREFIX = "slavemanager.ssl.";
+    private static final List<String> DEFAULT_SSL_PROTOCOLS = Collections.singletonList("TLSv1.3");
+
     private static final Logger logger = LogManager.getLogger(SlaveManager.class.getName());
     private static final String slavePath = "userdata/slaves/";
     private static final int socketTimeout = 10000; // 10 seconds, for Socket
     // on a SocketTimeout
     private static AbstractBasicIssuer _basicIssuer = null;
 
+    private SslConfiguration _sslConfig;
     protected Map<String, RemoteSlave> _rSlaves = new ConcurrentHashMap<>();
-    protected ServerSocket _serverSocket;
+    protected SSLServerSocket _serverSocket;
     protected MasterProtocolCentral _central;
     private int _port;
-    private boolean _sslSlaves;
     private boolean _listForSlaves = true;
 
-    protected SlaveManager() {}
-
-    public SlaveManager(Properties p) throws SlaveFileException {
-        _sslSlaves = p.getProperty("master.slaveSSL", "false").equalsIgnoreCase("true");
+    public SlaveManager() throws SlaveFileException {
+        super(SETTING_PREFIX);
         try {
-            if (_sslSlaves && GlobalContext.getGlobalContext().getSSLContext() == null) {
-                throw new SSLUnavailableException("Secure connections to slave required but SSL isn't available");
-            }
+            _sslConfig = load(Paths.get(""));
+            SSLService.getSSLService().registerSSLConfiguration(SETTING_PREFIX, _sslConfig);
         } catch (Exception e) {
             throw new FatalException(e);
         }
 
-        _port = Integer.parseInt(PropertyHelper.getProperty(p, "master.bindport"));
+        _port = Integer.parseInt(PropertyHelper.getProperty(GlobalContext.getConfig().getMainProperties(), "master.bindport"));
         _central = new MasterProtocolCentral();
         loadSlaves();
+    }
+
+    /**
+     * Constructor to be used in unit tests
+     *
+     * @param reason For debugging purposes to tell someone reading logs why we used this constructor
+     */
+    protected SlaveManager(String reason) {
+        super(SETTING_PREFIX);
+        logger.warn("Initialized a SlaveManager using a indirect route - {}", reason);
     }
 
     public static AbstractBasicIssuer getBasicIssuer() {
         // avoid unnecessary lookups.
         if (_basicIssuer == null) {
-            _basicIssuer = (AbstractBasicIssuer) GlobalContext.getGlobalContext().getSlaveManager().
-                    getProtocolCentral().getIssuerForClass(AbstractBasicIssuer.class);
+            _basicIssuer = (AbstractBasicIssuer) GlobalContext.getGlobalContext().getSlaveManager().getProtocolCentral().getIssuerForClass(AbstractBasicIssuer.class);
         }
         return _basicIssuer;
     }
@@ -261,7 +276,7 @@ public class SlaveManager implements Runnable, TimeEventInterface {
         RemoteSlave smallSlave = null;
 
         for (RemoteSlave rSlave : slaveList) {
-            long size = Integer.MAX_VALUE;
+            long size;
 
             try {
                 size = rSlave.getSlaveStatusAvailable().getDiskSpaceAvailable();
@@ -353,7 +368,7 @@ public class SlaveManager implements Runnable, TimeEventInterface {
     }
 
     /**
-     * Returns true if one or more slaves are online, false otherwise.
+     * Function to check if we have at least one slave online
      *
      * @return true if one or more slaves are online, false otherwise.
      */
@@ -372,18 +387,12 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 
     public void run() {
         try {
-            if (_sslSlaves) {
-                _serverSocket = SSLGetContext.getSSLContext().getServerSocketFactory().createServerSocket(_port);
-            } else {
-                _serverSocket = new ServerSocket(_port);
-            }
-            // _serverSocket.setReuseAddress(true);
-            logger.info("Listening for slaves on port {}", _port);
-        } catch (Exception e) {
-            throw new FatalException(e);
+            _serverSocket = (SSLServerSocket) SSLService.getSSLService().sslServerSocketFactory(_sslConfig).createServerSocket(_port, 0, Master.getBindIP());
+        } catch (IOException | SSLServiceException e) {
+            throw new RuntimeException("Something went wrong connecting to master", e);
         }
 
-        Socket socket = null;
+        SSLSocket socket = null;
 
         while (_listForSlaves) {
             RemoteSlave rSlave;
@@ -391,23 +400,15 @@ public class SlaveManager implements Runnable, TimeEventInterface {
             ObjectOutputStream out;
 
             try {
-                socket = _serverSocket.accept();
+                socket = (SSLSocket) _serverSocket.accept();
                 logger.debug("[{}] Accepted new connection", socket.getRemoteSocketAddress());
                 socket.setSoTimeout(socketTimeout);
-                if (socket instanceof SSLSocket) {
-                    if (GlobalContext.getConfig().getCipherSuites() != null) {
-                        ((SSLSocket) socket).setEnabledCipherSuites(GlobalContext.getConfig().getCipherSuites());
-                    }
-                    if (GlobalContext.getConfig().getSSLProtocols() != null) {
-                        ((SSLSocket) socket).setEnabledProtocols(GlobalContext.getConfig().getSSLProtocols());
-                    }
-                    logger.debug("[{}] Enabled ciphers for this new connection are as follows: '{}'",
-                            socket.getRemoteSocketAddress(), Arrays.toString(((SSLSocket) socket).getEnabledCipherSuites()));
-                    logger.debug("[{}] Enabled protocols for this new connection are as follows: '{}'",
-                            socket.getRemoteSocketAddress(), Arrays.toString(((SSLSocket) socket).getEnabledProtocols()));
-                    ((SSLSocket) socket).setUseClientMode(false);
-                    ((SSLSocket) socket).startHandshake();
-                }
+                logger.debug("[{}] Enabled ciphers for this new connection are as follows: '{}'",
+                        socket.getRemoteSocketAddress(), Arrays.toString(socket.getEnabledCipherSuites()));
+                logger.debug("[{}] Enabled protocols for this new connection are as follows: '{}'",
+                        socket.getRemoteSocketAddress(), Arrays.toString(socket.getEnabledProtocols()));
+                socket.setUseClientMode(false);
+                socket.startHandshake();
 
                 out = new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()));
                 out.flush();
@@ -418,16 +419,14 @@ public class SlaveManager implements Runnable, TimeEventInterface {
                 try {
                     rSlave = getRemoteSlave(slaveName);
                 } catch (ObjectNotFoundException e) {
-                    out.writeObject(new AsyncCommandArgument("error", "error", slaveName
-                            + " does not exist, use \"site addslave\""));
+                    out.writeObject(new AsyncCommandArgument("error", "error", slaveName + " does not exist, use \"site addslave\""));
                     logger.error("Slave {} does not exist, use \"site addslave\"", slaveName);
                     socket.close();
                     continue;
                 }
 
                 if (rSlave.isOnline()) {
-                    out.writeObject(new AsyncCommandArgument("", "error",
-                            "Already online"));
+                    out.writeObject(new AsyncCommandArgument("", "error", "Already online"));
                     out.flush();
                     socket.close();
                     throw new IOException("Already online: " + slaveName);
@@ -571,5 +570,20 @@ public class SlaveManager implements Runnable, TimeEventInterface {
             rs.resetYear(d);
             rs.commit();
         }
+    }
+
+    protected String getSettingAsString(String key) throws Exception {
+        logger.debug("Looking up key: {} as String", key);
+        return GlobalContext.getConfig().getMainProperties().getProperty(key);
+    }
+
+    protected char[] getSecureSetting(String key) throws Exception {
+        logger.error("!!NOT IMPLEMENTED!! Looking up key: {} as char[] - !!NOT IMPLEMENTED!!", key);
+        return null;
+    }
+
+    protected List<String> getSettingAsList(String key) throws Exception {
+        logger.debug("Looking up key: {} as List<String>", key);
+        return PropertyHelper.getStringListedProperty(GlobalContext.getConfig().getMainProperties(), key);
     }
 }

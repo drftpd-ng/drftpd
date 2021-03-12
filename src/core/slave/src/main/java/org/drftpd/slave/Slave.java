@@ -19,13 +19,18 @@ package org.drftpd.slave;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.drftpd.common.exceptions.SSLServiceException;
+import org.drftpd.common.network.SSLGetContext;
+import org.drftpd.common.network.SSLService;
+import org.elasticsearch.common.ssl.SslConfiguration;
+import org.elasticsearch.common.ssl.SslConfigurationLoader;
+
 import org.drftpd.common.exceptions.AsyncResponseException;
 import org.drftpd.common.exceptions.SSLUnavailableException;
 import org.drftpd.common.io.PermissionDeniedException;
 import org.drftpd.common.io.PhysicalFile;
 import org.drftpd.common.network.AsyncCommandArgument;
 import org.drftpd.common.network.AsyncResponse;
-import org.drftpd.common.network.SSLGetContext;
 import org.drftpd.common.slave.DiskStatus;
 import org.drftpd.common.slave.TransferIndex;
 import org.drftpd.common.util.ConfigLoader;
@@ -47,10 +52,11 @@ import javax.net.ssl.SSLSocket;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.security.GeneralSecurityException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.CRC32;
@@ -61,10 +67,11 @@ import java.util.zip.CheckedInputStream;
  * @author zubov
  * @version $Id$
  */
-public class Slave {
+public class Slave extends SslConfigurationLoader {
     private static final Object _lock = new Object();
 
     public static final boolean isWin32 = System.getProperty("os.name").startsWith("Windows");
+    private static final String SETTING_PREFIX = "master.ssl.";
 
     private static final Logger logger = LogManager.getLogger(Slave.class);
 
@@ -78,13 +85,14 @@ public class Slave {
 
     private String[] _sslProtocols;
 
-    private SSLContext _ctx;
+    private SslConfiguration _sslConfig;
+    //private SSLContext _ctx;
 
     private boolean _downloadChecksums;
 
     private RootCollection _roots;
 
-    private Socket _socket;
+    private SSLSocket _socket;
 
     private ObjectInputStream _sin;
 
@@ -114,9 +122,19 @@ public class Slave {
 
     private boolean _online;
 
-    protected Slave() {}
+    //protected Slave() {}
+    private Properties _cfg;
 
     public Slave(Properties p) throws IOException, SSLUnavailableException {
+        super(SETTING_PREFIX);
+        _cfg = p;
+        try {
+            _sslConfig = load(Paths.get(""));
+            SSLService.getSSLService().registerSSLConfiguration(SETTING_PREFIX, _sslConfig);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        logger.info("Master connection SSL/TLS initialized as: {}", _sslConfig.toString());
         String masterHost = PropertyHelper.getProperty(p, "master.host");
         int masterPort;
         try {
@@ -125,7 +143,7 @@ public class Slave {
             logger.error("Unable to parse port from configuration", e);
             throw new RuntimeException(e);
         }
-        InetSocketAddress isa = new InetSocketAddress(masterHost, masterPort);
+        InetSocketAddress masterIsa = new InetSocketAddress(masterHost, masterPort);
 
         // Whatever interface the slave uses to connect to the master, is the
         // interface that the master will report to clients requesting PASV
@@ -133,137 +151,42 @@ public class Slave {
         // slave
         String slaveName = PropertyHelper.getProperty(p, "slave.name");
 
-        logger.info("Slave {} connecting to master at {}", slaveName, isa);
+        logger.info("Slave {} connecting to master at {}", slaveName, masterIsa);
 
         if (isWin32) {
             _renameQueue = Collections.newSetFromMap(new ConcurrentHashMap<>());
         }
 
+        _bindIP = InetAddress.getByName(PropertyHelper.getProperty(p, "bind.ip", null));
+        _timeout = Integer.parseInt(PropertyHelper.getProperty(p, "slave.timeout", String.valueOf(actualTimeout)));
+
         try {
-            _ctx = SSLGetContext.getSSLContext();
-        } catch (Exception e) {
-            logger.warn("Error loading SSLContext, no secure connections will be available.");
-            _cipherSuites = null;
-            _sslProtocols = null;
+            _socket = (SSLSocket) SSLService.getSSLService().sslSocketFactory(_sslConfig).createSocket();
+        } catch (IOException | SSLServiceException e) {
+            throw new RuntimeException("Something went wrong connecting to master", e);
         }
 
-        List<String> cipherSuites = new ArrayList<>();
-        List<String> supportedCipherSuites = new ArrayList<>();
-        try {
-            supportedCipherSuites.addAll(Arrays.asList(SSLContext.getDefault().getSupportedSSLParameters().getCipherSuites()));
-        } catch (Exception e) {
-            logger.error("Unable to get supported cipher suites, using default.", e);
-        }
-
-        // Parse cipher suite whitelist rules
-        boolean whitelist = false;
-        for (int x = 1; ; x++) {
-            String whitelistPattern = p.getProperty("cipher.whitelist." + x);
-            if (whitelistPattern == null) {
-                break;
-            } else if (whitelistPattern.trim().length() == 0) {
-                continue;
-            }
-            if (!whitelist)
-                whitelist = true;
-            for (String cipherSuite : supportedCipherSuites) {
-                if (cipherSuite.matches(whitelistPattern)) {
-                    cipherSuites.add(cipherSuite);
-                }
-            }
-        }
-        if (cipherSuites.isEmpty()) {
-            // No whitelist rule or whitelist pattern bad, add default set
-            cipherSuites.addAll(supportedCipherSuites);
-            if (whitelist) {
-                // There are at least one whitelist pattern specified
-                logger.warn("Bad whitelist pattern, no matching ciphers found. "
-                        + "Adding default cipher set before continuing with blacklist check");
-            }
-        }
-        // Parse cipher suite blacklist rules and remove matching ciphers from set
-        for (int x = 1; ; x++) {
-            String blacklistPattern = p.getProperty("cipher.blacklist." + x);
-            if (blacklistPattern == null) {
-                break;
-            } else if (blacklistPattern.trim().isEmpty()) {
-                continue;
-            }
-            cipherSuites.removeIf(cipherSuite -> cipherSuite.matches(blacklistPattern));
-        }
-        if (cipherSuites.isEmpty()) {
-            _cipherSuites = null;
-        } else {
-            _cipherSuites = cipherSuites.toArray(new String[0]);
-        }
-
-        List<String> sslProtocols = new ArrayList<>();
-        List<String> supportedSSLProtocols;
-        try {
-            supportedSSLProtocols = Arrays.asList(SSLContext.getDefault().getSupportedSSLParameters().getProtocols());
-            for (int x = 1; ; x++) {
-                String sslProtocol = p.getProperty("protocol." + x);
-                if (sslProtocol == null) {
-                    break;
-                } else if (supportedSSLProtocols.contains(sslProtocol)) {
-                    sslProtocols.add(sslProtocol);
-                }
-            }
-        } catch (Exception e) {
-            logger.error("Unable to get supported SSL protocols, using default.", e);
-        }
-        if (sslProtocols.size() == 0) {
-            _sslProtocols = null;
-        } else {
-            _sslProtocols = sslProtocols.toArray(new String[0]);
-        }
-
-        boolean sslMaster = p.getProperty("slave.masterSSL", "false").equalsIgnoreCase("true");
-        if (sslMaster && _ctx == null) {
-            throw new SSLUnavailableException("Secure connection to master enabled but SSL isn't ready");
-        }
-
-        if (sslMaster) {
-            _socket = _ctx.getSocketFactory().createSocket();
-        } else {
-            _socket = new Socket();
-        }
-
-        if (PropertyHelper.getProperty(p, "bind.ip", null) != null) {
+        if (getBindIP() != null) {
             try {
-                _socket.bind(new InetSocketAddress(PropertyHelper.getProperty(p, "bind.ip"), 0));
-                _bindIP = InetAddress.getByName(PropertyHelper.getProperty(p, "bind.ip", null));
+                _socket.bind(new InetSocketAddress(getBindIP(), 0));
             } catch (IOException e) {
-                throw new IOException("Unable To Bind Port Correctly");
+                throw new IOException("Unable to bind to ["+getBindIP()+":0]", e);
             }
         }
+
+        _socket.setSoTimeout(socketTimeout);
+        _socket.connect(masterIsa);
+        _socket.setUseClientMode(true);
+
+        logger.debug("[{}] Enabled ciphers for this new connection are as follows: '{}'", _socket.getRemoteSocketAddress(), Arrays.toString(_socket.getEnabledCipherSuites()));
+        logger.debug("[{}] Enabled protocols for this new connection are as follows: '{}'", _socket.getRemoteSocketAddress(), Arrays.toString(_socket.getEnabledProtocols()));
 
         try {
-            _timeout = Integer.parseInt(PropertyHelper.getProperty(p, "slave.timeout"));
-        } catch (NullPointerException e) {
-            _timeout = actualTimeout;
+            _socket.startHandshake();
+        } catch (SSLHandshakeException e) {
+            throw new SSLUnavailableException("Handshake failure, maybe master isn't SSL ready or SSL is disabled.", e);
         }
-        _socket.setSoTimeout(socketTimeout);
-        _socket.connect(isa);
-        if (_socket instanceof SSLSocket) {
-            if (getCipherSuites() != null) {
-                ((SSLSocket) _socket).setEnabledCipherSuites(getCipherSuites());
-            }
-            if (getSSLProtocols() != null) {
-                ((SSLSocket) _socket).setEnabledProtocols(getSSLProtocols());
-            }
-            logger.debug("[{}] Enabled ciphers for this new connection are as follows: '{}'",
-                    _socket.getRemoteSocketAddress(), Arrays.toString(((SSLSocket) _socket).getEnabledCipherSuites()));
-            logger.debug("[{}] Enabled protocols for this new connection are as follows: '{}'",
-                    _socket.getRemoteSocketAddress(), Arrays.toString(((SSLSocket) _socket).getEnabledProtocols()));
-            ((SSLSocket) _socket).setUseClientMode(true);
 
-            try {
-                ((SSLSocket) _socket).startHandshake();
-            } catch (SSLHandshakeException e) {
-                throw new SSLUnavailableException("Handshake failure, maybe master isn't SSL ready or SSL is disabled.", e);
-            }
-        }
         _sout = new ObjectOutputStream(new BufferedOutputStream(_socket.getOutputStream()));
         _sout.flush();
         _sin = new ObjectInputStream(new BufferedInputStream(_socket.getInputStream()));
@@ -294,6 +217,10 @@ public class Slave {
 
         _ignorePartialRemerge = p.getProperty("ignore.partialremerge", "false").equalsIgnoreCase("true");
         _threadedRemerge = p.getProperty("threadedremerge", "false").equalsIgnoreCase("true");
+    }
+
+    public Properties getConfig() {
+        return _cfg;
     }
 
     public static void main(String... args) throws Exception {
@@ -680,7 +607,11 @@ public class Slave {
     }
 
     public SSLContext getSSLContext() {
-        return _ctx;
+        try {
+            return SSLGetContext.getSSLContext();
+        } catch(GeneralSecurityException | IOException e) {
+            return null;
+        }
     }
 
     public Set<QueuedOperation> getRenameQueue() {
@@ -717,6 +648,26 @@ public class Slave {
 
     public boolean concurrentRootIteration() {
         return _concurrentRootIteration;
+    }
+
+    protected String getSettingAsString(String key) throws Exception {
+        logger.debug("Looking up key: {} as String", key);
+        return getConfig().getProperty(key);
+    }
+
+    protected char[] getSecureSetting(String key) throws Exception {
+        logger.error("!!NOT IMPLEMENTED!! Looking up key: {} as char[] - !!NOT IMPLEMENTED!!", key);
+        return null;
+    }
+
+    protected List<String> getSettingAsList(String key) throws Exception {
+        logger.debug("Looking up key: {} as List<String>", key);
+        List<String> data = PropertyHelper.getStringListedProperty(getConfig(), key);
+        if (data == null) {
+            return null;
+        }
+        logger.debug("Got List<String> for {} as -> [{}]", key, Arrays.toString(data.toArray()));
+        return data;
     }
 
     public class FileLockRunnable implements Runnable {
