@@ -72,7 +72,7 @@ Check generated runtime directory
 
 ### For dev (unstable)
 Checkout the project from https://github.com/drftpd-ng/drftpd.git 
-- Open pom.xml with intellij
+- Open pom.xml from .dev folder with IntelliJ IDEA Community
 - Compile and mvn package
 - Create starter for master and slave
 
