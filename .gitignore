@@ -6,7 +6,9 @@
 .idea
 .dev
 target
+config
 build
+drftpd.key
 
 site
 runtime

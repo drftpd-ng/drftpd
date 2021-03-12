@@ -12,13 +12,10 @@ import java.util.*;
 
 public class AutoFreeSpaceSettings {
     private static final Logger logger = LogManager.getLogger(AutoFreeSpaceSettings.class);
-
-    private static AutoFreeSpaceSettings ref;
-
     public static String MODE_DISABLED = "Disabled";
     public static String MODE_DATE = "Date";
     public static String MODE_SPACE = "Space";
-
+    private static AutoFreeSpaceSettings ref;
     private Map<String, Section> _sections;
     private List<String> _excludeFiles;
     private List<String> _excludeSlaves;
@@ -48,7 +45,7 @@ public class AutoFreeSpaceSettings {
     }
 
     public void reload() {
-        logger.debug("Loading configation");
+        logger.debug("Loading configuration");
         Properties p = ConfigLoader.loadPluginConfig("autofreespace.conf");
 
         // Quickly set the ones that are single:
@@ -65,21 +62,26 @@ public class AutoFreeSpaceSettings {
         } else if (mode.equalsIgnoreCase(MODE_DATE)) {
             _mode = MODE_DATE;
         } else {
-            logger.error("Incorrect mode ["+mode+"] detected for AutoFreeSpace, plugin disabled!!!");
+            logger.error("Incorrect mode [" + mode + "] detected for AutoFreeSpace, plugin disabled!!!");
             _mode = MODE_DISABLED;
         }
 
         // Handle excludeSlaves
-        List<String> excludeSlaves = new ArrayList<>(Arrays.asList(p.getProperty("excluded.slaves", "").trim().split("\\s")));
-        for (String slaveName : excludeSlaves) {
-            try {
-                GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(slaveName);
-            } catch(ObjectNotFoundException e) {
-                logger.error("Slave with name ["+slaveName+"] does not exist, config error", e);
+        _excludeSlaves = new ArrayList<>();
+        String slavesExcluded = p.getProperty("excluded.slaves", "").trim();
+        if (!slavesExcluded.isEmpty()) {
+            List<String> excludeSlaves = new ArrayList<>(Arrays.asList(slavesExcluded.split("\\s")));
+            for (String slaveName : excludeSlaves) {
+                try {
+                    GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(slaveName);
+                    _excludeSlaves.add(slaveName);
+                } catch (ObjectNotFoundException e) {
+                    logger.error("Slave with name [" + slaveName + "] does not exist, config error", e);
+                }
             }
         }
-        _excludeSlaves = excludeSlaves;
-        logger.debug("excluded Slaves set to "+_excludeSlaves.toString());
+
+        logger.debug("excluded Slaves set to " + _excludeSlaves.toString());
 
         Map<String, Section> sections = new HashMap<>();
         int id = 1;
@@ -88,7 +90,7 @@ public class AutoFreeSpaceSettings {
         // Handle sections
         while ((name = PropertyHelper.getProperty(p, id + ".section", null)) != null) {
             if (!GlobalContext.getGlobalContext().getSectionManager().getSection(name).getName().equalsIgnoreCase(name)) {
-                logger.error("Section ["+name+"] Does not exist, not creating configuration items");
+                logger.error("Section [" + name + "] Does not exist, not creating configuration items");
             } else {
                 long wipeAfter = Long.parseLong(p.getProperty(id + ".wipeAfter")) * 60000L;
                 sections.put(name, new Section(id, name, wipeAfter));
@@ -108,7 +110,7 @@ public class AutoFreeSpaceSettings {
         }
         excludeFiles.trimToSize();
         _excludeFiles = excludeFiles;
-        logger.debug("excluded Files set to "+_excludeFiles.toString());
+        logger.debug("excluded Files set to " + _excludeFiles.toString());
     }
 
     public Map<String, Section> getSections() {
