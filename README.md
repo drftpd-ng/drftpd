@@ -78,28 +78,27 @@ Checkout the project from https://github.com/drftpd-ng/drftpd.git
 - Compile and mvn package
 
 #### Master 
-- Create new Application via Run -> Edit Configurations
+Create new Application via Run -> Edit Configurations
 
-Name: `Master`
-JDK: `java 15 SDK of 'drftpd-dev' module`
-Main class: org.drftpd.master.Master
-eg. Working Directory: `C:\Users\Administrator\Documents\GitHub\drftpd\runtime\master`
-eg. Environment variables: `DRFTPD_CONFIG_PATH=C:\Users\Administrator\Documents\GitHub\drftpd\runtime\master`
-Use `org.drftpd.master.Master`
+- Name: `Master`
+- JDK: `java 15 SDK of 'drftpd-dev' module`
+- Main class: org.drftpd.master.Master
+- eg. Working Directory: `C:\Users\Administrator\Documents\GitHub\drftpd\runtime\master`
+- eg. Environment variables: `DRFTPD_CONFIG_PATH=C:\Users\Administrator\Documents\GitHub\drftpd\runtime\master`
+- Use `org.drftpd.master.Master`
 
-- Start debug Master
+Start debug Master
 
 #### Slave 
-- Create new Application via Run -> Edit Configurations
+Create new Application via Run -> Edit Configurations
 
-Name: `Slave`
-JDK: `java 15 SDK of 'drftpd-dev' module`
-Main class: org.drftpd.master.Master
-eg. Working Directory: `C:\Users\Administrator\Documents\GitHub\drftpd\runtime\slave`
-eg. Environment variables: `DRFTPD_CONFIG_PATH=C:\Users\Administrator\Documents\GitHub\drftpd\runtime\slave`
-Use `org.drftpd.slave.Slave`
+- Name: `Slave`
+- JDK: `java 15 SDK of 'drftpd-dev' module`
+- Main class: org.drftpd.slave.Slave
+- eg. Working Directory: `C:\Users\Administrator\Documents\GitHub\drftpd\runtime\slave`
+- eg. Environment variables: `DRFTPD_CONFIG_PATH=C:\Users\Administrator\Documents\GitHub\drftpd\runtime\slave`
 
-- Start debug Slave
+Start debug Slave
 
 ## Documentation (incomplete)
 You can find the documention online at: https://github.com/drftpd-ng/drftpd/wiki
