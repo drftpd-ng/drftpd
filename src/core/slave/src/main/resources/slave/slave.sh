@@ -20,16 +20,15 @@
 ####################################################
 #
 # DrFTPD service example:
-#
-# nano ~/.config/systemd/user/drftpd-slave.service
-#
+# Put the below unit into: ~/.config/systemd/user/drftpd-slave.service
 #
 # [Unit]
 # Description=DrFTPD Slave
 # After=network.target
 # StartLimitIntervalSec=500
 # StartLimitBurst=5
-# Requires=mnt-ftp1.mount mnt-ftp2.mount
+# #If disk is in fstab or systemd you can require them to be mounted before starting slave (optional)
+# #Requires=mnt-ftp1.mount mnt-ftp2.mount
 #
 # [Service]
 # Restart=on-failure
@@ -42,10 +41,11 @@
 # [Install]
 # WantedBy=multi-user.target
 #
-#
+####################################################
 # systemctl daemon-reload --user
-# systemctl enable --now --user drftpd-slave.service
-#
+# systemctl enable --user drftpd-slave.service
+# To start the slave: systemctl start --user drftpd-slave.service
+# To stop the slave: systemctl stop --user drftpd-slave.service
 ####################################################
 
 CLASSPATH="lib/*:build/*"
