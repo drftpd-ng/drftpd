@@ -17,35 +17,36 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-################################################################
+####################################################
 #
 # DrFTPD service example:
 #
-# nano /etc/systemd/system/slave-drftpd.service
+# nano ~/.config/systemd/user/drftpd-slave.service
+#
 #
 # [Unit]
 # Description=DrFTPD Slave
 # After=network.target
 # StartLimitIntervalSec=500
 # StartLimitBurst=5
+# Requires=mnt-ftp1.mount mnt-ftp2.mount
 #
 # [Service]
 # Restart=on-failure
 # RestartSec=5s
 # Type=simple
-# User=drftpd-service
-# Group=drftpd-service
 # UMask=007
-# WorkingDirectory=/home/drftpd-service/drftpd/runtime/slave
-# ExecStart=/home/drftpd-service/drftpd/runtime/slave/slave.sh
+# WorkingDirectory=/home/slaveusername/slave
+# ExecStart=/home/slaveusername/slave/slave.sh
 #
 # [Install]
 # WantedBy=multi-user.target
 #
-# systemctl daemon-reload
-# systemctl enable --now drftpd-slave.service
 #
-################################################################
+# systemctl daemon-reload --user
+# systemctl enable --now --user drftpd-slave.service
+#
+####################################################
 
 CLASSPATH="lib/*:build/*"
 # Add JVM Options here however you see fit and please check if the max memory Xmx is good enough for your slave.
