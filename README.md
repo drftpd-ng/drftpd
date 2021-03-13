@@ -72,7 +72,7 @@ Check generated runtime directory
 - Run `./slave.sh` for Linux or `slave.bat` for Windows
 - Optional: Create Slave Service (systemd, sc.exe ...)
 
-### For dev (unstable)
+### For dev (unstable/debug)
 Checkout the project from https://github.com/drftpd-ng/drftpd.git 
 - Open pom.xml from .dev folder with IntelliJ IDEA Community
 - Compile and mvn package
@@ -82,7 +82,7 @@ Create new Application via Run -> Edit Configurations
 
 - Name: `Master`
 - JDK: `java 15 SDK of 'drftpd-dev' module`
-- Main class: org.drftpd.master.Master
+- Main class: `org.drftpd.master.Master`
 - eg. Working Directory: `C:\Users\Administrator\Documents\GitHub\drftpd\runtime\master`
 - eg. Environment variables: `DRFTPD_CONFIG_PATH=C:\Users\Administrator\Documents\GitHub\drftpd\runtime\master`
 - Use `org.drftpd.master.Master`
@@ -94,7 +94,7 @@ Create new Application via Run -> Edit Configurations
 
 - Name: `Slave`
 - JDK: `java 15 SDK of 'drftpd-dev' module`
-- Main class: org.drftpd.slave.Slave
+- Main class: `org.drftpd.slave.Slave`
 - eg. Working Directory: `C:\Users\Administrator\Documents\GitHub\drftpd\runtime\slave`
 - eg. Environment variables: `DRFTPD_CONFIG_PATH=C:\Users\Administrator\Documents\GitHub\drftpd\runtime\slave`
 
