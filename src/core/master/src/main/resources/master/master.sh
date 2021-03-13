@@ -17,31 +17,38 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-####################################################################################################
-#                                                                                                  #
-# DrFTPD service example:                                                                          #
-#                                                                                                  #
-# nano /etc/systemd/system/master.service                                                          #
-#                                                                                                  #
-# [Unit]                                                                                           #
-# Description=DrFTPD Master                                                                        #
-# [Service]                                                                                        #
-# Type=simple                                                                                      #
-# User=drftpd-service                                                                              #
-# Group=drftpd-service                                                                             #
-# UMask=007                                                                                        #
-# WorkingDirectory=/home/drftpd-service/drftpd/runtime/master                                      #
-# RemainAfterExit=yes                                                                              #
-# ExecStart=/home/drftpd-service/drftpd/runtime/master/master.sh                                   #
-# [Install]                                                                                        #
-# WantedBy=multi-user.target                                                                       #
-#                                                                                                  #
-# systemctl enable master                                                                          #
-#                                                                                                  #
-####################################################################################################
+################################################################
+#
+# DrFTPD service example:
+#
+# nano /etc/systemd/system/master-drftpd.service
+#
+# [Unit]
+# Description=DrFTPD Master
+# After=network.target
+# StartLimitIntervalSec=500
+# StartLimitBurst=5
+#
+# [Service]
+# Restart=on-failure
+# RestartSec=5s
+# Type=simple
+# User=drftpd-service
+# Group=drftpd-service
+# UMask=007
+# WorkingDirectory=/home/drftpd-service/drftpd/runtime/master
+# ExecStart=/home/drftpd-service/drftpd/runtime/master/master.sh
+#
+# [Install]
+# WantedBy=multi-user.target
+#
+# systemctl daemon-reload
+# systemctl enable --now drftpd-master.service
+#
+################################################################
 
 CLASSPATH="lib/*:build/*"
-# Add JVM Options here however you see fit and please check if the max memory Xmx is good enough for your master
+# Add JVM Options here however you see fit and please check if the max memory Xmx is good enough for your master.
 JVM_OPTS="-Xmx3G -XX:+UseZGC"
 OPTIONS="-Dlog4j.configurationFile=config/log4j2-master.xml"
 PROGRAM="org.drftpd.master.Master"
