@@ -46,7 +46,7 @@ On the master you will need to:
 - Install Java JDK or OpenJDK 15 and Apache Maven
 
 On the slaves you will need to:
-- Install Java SE or OpenJDK 15 
+- Install Java SE or OpenJDK 15.
 - Add needed deps that are not present :
   - MediaInfo (CLI): https://mediaarea.net/en/MediaInfo
   - mkvalidator tool: https://github.com/Matroska-Org/foundation-source
@@ -61,30 +61,45 @@ Check generated runtime directory
 
 #### Master
 - Copy .dist files to .conf only if you change the settings
-- Optional : Run `./genkey.sh` for Linux or `genkey.bat` for Windows (if you want to use SSL (Master & Slave))
+- Optional: Run `./genkey.sh` for Linux or `genkey.bat` for Windows (if you want to use SSL (Master & Slave))
 - Run `./master.sh` for Linux or `master.bat` for Windows
 - Connect to `127.0.0.1:2121` with `drftpd:drftpd`
+- Optional: Create Master Service (systemd, sc.exe ...)
 
 #### Slave
 - Copy .dist files to .conf only if you change the settings
-- Optional : Copy the `drftpd.key` from the master to the config directory
+- Optional: Copy the `drftpd.key` from the master to the config directory
 - Run `./slave.sh` for Linux or `slave.bat` for Windows
+- Optional: Create Slave Service (systemd, sc.exe ...)
 
 ### For dev (unstable)
 Checkout the project from https://github.com/drftpd-ng/drftpd.git 
 - Open pom.xml from .dev folder with IntelliJ IDEA Community
 - Compile and mvn package
-- Create starter for master and slave
 
 #### Master 
+- Create new Application via Run -> Edit Configurations
+
+Name: `Master`
+JDK: `java 15 SDK of 'drftpd-dev' module`
+Main class: org.drftpd.master.Master
+eg. Working Directory: `C:\Users\Administrator\Documents\GitHub\drftpd\runtime\master`
+eg. Environment variables: `DRFTPD_CONFIG_PATH=C:\Users\Administrator\Documents\GitHub\drftpd\runtime\master`
 Use `org.drftpd.master.Master`
 
-- Start with env var: `DRFTPD_CONFIG_PATH=$PROJECT_DIR$/runtime/master`
+- Start debug Master
 
 #### Slave 
+- Create new Application via Run -> Edit Configurations
+
+Name: `Slave`
+JDK: `java 15 SDK of 'drftpd-dev' module`
+Main class: org.drftpd.master.Master
+eg. Working Directory: `C:\Users\Administrator\Documents\GitHub\drftpd\runtime\slave`
+eg. Environment variables: `DRFTPD_CONFIG_PATH=C:\Users\Administrator\Documents\GitHub\drftpd\runtime\slave`
 Use `org.drftpd.slave.Slave`
 
-- Start with env var: `DRFTPD_CONFIG_PATH=$PROJECT_DIR$/runtime/slave`
+- Start debug Slave
 
 ## Documentation (incomplete)
 You can find the documention online at: https://github.com/drftpd-ng/drftpd/wiki
