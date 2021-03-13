@@ -20,18 +20,19 @@ cycleTime=10080
 # Default: [true]
 announce.only=true
 
-# On which mode should autofreespace work
+# On which mode should autofreespace work.
 # Possible options: disabled, date, space
 # disabled: Do nothing (plugin disabled)
 # date: Delete files based on wipeAfter per section
 # space: Delete files based on keepFree
+# Default: [disabled]
 mode=disabled
 
-# AutoFreeSpace will try to keep each slave above this number (Only used if mode = space)
+# AutoFreeSpace will try to keep each slave above this number (Only used if mode = space).
 # Default: [100GB]
 keepFree=100GB
 
-# Do not delete releases younger than X minutes (wipeAfter only used if mode = date)
-1.section=SECTION
-1.wipeAfter=43200
+# Do not delete releases younger than X minutes (wipeAfter only used if mode = date).
+#1.section=SECTION1
+#1.wipeAfter=43200
 
