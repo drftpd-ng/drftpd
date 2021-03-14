@@ -7,7 +7,7 @@
     <groupId>org.drftpd</groupId>
     <artifactId>drftpd-dev</artifactId>
     <packaging>pom</packaging>
-    <version>4.0-SNAPSHOT</version>
+    <version>4.0.1-SNAPSHOT</version>
 
     <dependencies>
         <dependency>
