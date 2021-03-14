@@ -5,12 +5,12 @@ import org.apache.logging.log4j.Logger;
 
 import org.drftpd.common.exceptions.SSLServiceException;
 import org.elasticsearch.common.ssl.DiagnosticTrustManager;
+import org.elasticsearch.common.ssl.SslClientAuthenticationMode;
 import org.elasticsearch.common.ssl.SslConfiguration;
 
 import javax.net.ssl.*;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.security.KeyManagementException;
@@ -70,7 +70,7 @@ public class SSLService {
 
     public void registerSSLConfiguration(String prefix, SslConfiguration conf) throws SSLServiceException {
         if (_sslConfigurations.containsKey(prefix)) {
-            throw new SSLServiceException("Prefix "+prefix+" already registered");
+            throw new SSLServiceException("Prefix " + prefix + " already registered");
         }
         _sslConfigurations.put(prefix, conf);
         _sslContexts.put(conf, createSslContext(conf));
@@ -86,7 +86,7 @@ public class SSLService {
         SSLContext context = sslContext(configuration);
         SSLSocketFactory socketFactory = context.getSocketFactory();
         return new SecuritySSLSocketFactory(context::getSocketFactory, configuration.getSupportedProtocols().toArray(new String[0]),
-                supportedCiphers(socketFactory.getSupportedCipherSuites(), configuration.getCipherSuites(), false));
+                supportedCiphers(socketFactory.getSupportedCipherSuites(), configuration.getCipherSuites(), false), configuration.getClientAuth());
     }
 
     /**
@@ -99,7 +99,7 @@ public class SSLService {
         SSLContext context = sslContext(configuration);
         SSLServerSocketFactory socketFactory = context.getServerSocketFactory();
         return new SecuritySSLServerSocketFactory(context::getServerSocketFactory, configuration.getSupportedProtocols().toArray(new String[0]),
-                supportedCiphers(socketFactory.getSupportedCipherSuites(), configuration.getCipherSuites(), false));
+                supportedCiphers(socketFactory.getSupportedCipherSuites(), configuration.getCipherSuites(), false), configuration.getClientAuth());
     }
 
     /**
@@ -133,6 +133,7 @@ public class SSLService {
         // many SSLEngine options can be configured using either SSLParameters or direct methods on the engine itself, but there is one
         // tricky aspect; if you set a value directly on the engine and then later set the SSLParameters the value set directly on the
         // engine will be overwritten by the value in the SSLParameters
+        logger.debug("SSLEngine SSLParameters have been setup as {}", SSLParametersToString(parameters));
         sslEngine.setSSLParameters(parameters);
         return sslEngine;
     }
@@ -253,6 +254,7 @@ public class SSLService {
                     default -> "(shared)";
                 };
             };
+            logger.info("Enabling diagnose of trust exceptions for configuration: [{}]", configuration);
             trustManager = new DiagnosticTrustManager(trustManager, contextName, diagnosticLogger::warn);
         }
         return trustManager;
@@ -265,80 +267,84 @@ public class SSLService {
      */
     private static class SecuritySSLSocketFactory extends SSLSocketFactory {
 
-        private final Supplier<SSLSocketFactory> delegateSupplier;
-        private final String[] supportedProtocols;
-        private final String[] ciphers;
+        private final Supplier<SSLSocketFactory> _delegateSupplier;
+        private final String[] _supportedProtocols;
+        private final String[] _ciphers;
+        private final SslClientAuthenticationMode _clientAuthMode;
 
-        private volatile SSLSocketFactory delegate;
+        private volatile SSLSocketFactory _delegate;
 
-        SecuritySSLSocketFactory(Supplier<SSLSocketFactory> delegateSupplier, String[] supportedProtocols, String[] ciphers) {
-            this.delegateSupplier = delegateSupplier;
-            this.delegate = this.delegateSupplier.get();
-            this.supportedProtocols = supportedProtocols;
-            this.ciphers = ciphers;
+        SecuritySSLSocketFactory(Supplier<SSLSocketFactory> delegateSupplier, String[] supportedProtocols, String[] ciphers, SslClientAuthenticationMode clientAuthMode) {
+            _delegateSupplier = delegateSupplier;
+            _delegate = _delegateSupplier.get();
+            _supportedProtocols = supportedProtocols;
+            _ciphers = ciphers;
+            _clientAuthMode = clientAuthMode;
         }
 
         @Override
         public String[] getDefaultCipherSuites() {
-            return ciphers;
+            return _ciphers;
         }
 
         @Override
         public String[] getSupportedCipherSuites() {
-            return delegate.getSupportedCipherSuites();
+            return _delegate.getSupportedCipherSuites();
         }
 
         @Override
         public Socket createSocket() throws IOException {
             //SSLSocket sslSocket = createWithPermissions(delegate::createSocket);
-            SSLSocket sslSocket = (SSLSocket) delegate.createSocket();
+            SSLSocket sslSocket = (SSLSocket) _delegate.createSocket();
             configureSSLSocket(sslSocket);
             return sslSocket;
         }
 
         @Override
         public Socket createSocket(Socket socket, String host, int port, boolean autoClose) throws IOException {
-            SSLSocket sslSocket = (SSLSocket) delegate.createSocket(socket, host, port, autoClose);
+            SSLSocket sslSocket = (SSLSocket) _delegate.createSocket(socket, host, port, autoClose);
             configureSSLSocket(sslSocket);
             return sslSocket;
         }
 
         @Override
         public Socket createSocket(String host, int port) throws IOException {
-            SSLSocket sslSocket = (SSLSocket) delegate.createSocket(host, port);
+            SSLSocket sslSocket = (SSLSocket) _delegate.createSocket(host, port);
             configureSSLSocket(sslSocket);
             return sslSocket;
         }
 
         @Override
         public Socket createSocket(String host, int port, InetAddress localHost, int localPort) throws IOException {
-            SSLSocket sslSocket = (SSLSocket) delegate.createSocket(host, port, localHost, localPort);
+            SSLSocket sslSocket = (SSLSocket) _delegate.createSocket(host, port, localHost, localPort);
             configureSSLSocket(sslSocket);
             return sslSocket;
         }
 
         @Override
         public Socket createSocket(InetAddress host, int port) throws IOException {
-            SSLSocket sslSocket = (SSLSocket) delegate.createSocket(host, port);
+            SSLSocket sslSocket = (SSLSocket) _delegate.createSocket(host, port);
             configureSSLSocket(sslSocket);
             return sslSocket;
         }
 
         @Override
         public Socket createSocket(InetAddress address, int port, InetAddress localAddress, int localPort) throws IOException {
-            SSLSocket sslSocket = (SSLSocket) delegate.createSocket(address, port, localAddress, localPort);
+            SSLSocket sslSocket = (SSLSocket) _delegate.createSocket(address, port, localAddress, localPort);
             configureSSLSocket(sslSocket);
             return sslSocket;
         }
 
         public void reload() {
-            this.delegate = delegateSupplier.get();
+            _delegate = _delegateSupplier.get();
         }
 
         private void configureSSLSocket(SSLSocket socket) {
-            SSLParameters parameters = new SSLParameters(ciphers, supportedProtocols);
+            SSLParameters parameters = new SSLParameters(_ciphers, _supportedProtocols);
             // we use the cipher suite order so that we can prefer the ciphers we set first in the list
             parameters.setUseCipherSuitesOrder(true);
+            _clientAuthMode.configure(parameters);
+            logger.debug("Socket SSLParameters have been setup as {}", SSLParametersToString(parameters));
             socket.setSSLParameters(parameters);
         }
     }
@@ -350,58 +356,62 @@ public class SSLService {
      */
     private static class SecuritySSLServerSocketFactory extends SSLServerSocketFactory {
 
-        private final Supplier<SSLServerSocketFactory> delegateSupplier;
-        private final String[] supportedProtocols;
-        private final String[] ciphers;
+        private final Supplier<SSLServerSocketFactory> _delegateSupplier;
+        private final String[] _supportedProtocols;
+        private final String[] _ciphers;
+        private final SslClientAuthenticationMode _clientAuthMode;
 
-        private volatile SSLServerSocketFactory delegate;
+        private volatile SSLServerSocketFactory _delegate;
 
-        SecuritySSLServerSocketFactory(Supplier<SSLServerSocketFactory> delegateSupplier, String[] supportedProtocols, String[] ciphers) {
-            this.delegateSupplier = delegateSupplier;
-            this.delegate = this.delegateSupplier.get();
-            this.supportedProtocols = supportedProtocols;
-            this.ciphers = ciphers;
+        SecuritySSLServerSocketFactory(Supplier<SSLServerSocketFactory> delegateSupplier, String[] supportedProtocols, String[] ciphers, SslClientAuthenticationMode clientAuthMode) {
+            _delegateSupplier = delegateSupplier;
+            _delegate = _delegateSupplier.get();
+            _supportedProtocols = supportedProtocols;
+            _ciphers = ciphers;
+            _clientAuthMode = clientAuthMode;
         }
 
         @Override
         public String[] getDefaultCipherSuites() {
-            return ciphers;
+            return _ciphers;
         }
 
         @Override
         public String[] getSupportedCipherSuites() {
-            return delegate.getSupportedCipherSuites();
+            return _delegate.getSupportedCipherSuites();
         }
 
         @Override
         public ServerSocket createServerSocket(int port) throws IOException {
-            SSLServerSocket sslServerSocket = (SSLServerSocket) delegate.createServerSocket(port);
+            SSLServerSocket sslServerSocket = (SSLServerSocket) _delegate.createServerSocket(port);
             configureSSLServerSocket(sslServerSocket);
             return sslServerSocket;
         }
 
         @Override
         public ServerSocket createServerSocket(int port, int backlog) throws IOException {
-            SSLServerSocket sslServerSocket = (SSLServerSocket) delegate.createServerSocket(port, backlog);
+            SSLServerSocket sslServerSocket = (SSLServerSocket) _delegate.createServerSocket(port, backlog);
             configureSSLServerSocket(sslServerSocket);
             return sslServerSocket;
         }
 
         @Override
         public ServerSocket createServerSocket(int port, int backlog, InetAddress ifAddress) throws IOException {
-            SSLServerSocket sslServerSocket = (SSLServerSocket) delegate.createServerSocket(port, backlog, ifAddress);
+            SSLServerSocket sslServerSocket = (SSLServerSocket) _delegate.createServerSocket(port, backlog, ifAddress);
             configureSSLServerSocket(sslServerSocket);
             return sslServerSocket;
         }
 
         public void reload() {
-            this.delegate = delegateSupplier.get();
+            this._delegate = _delegateSupplier.get();
         }
 
         private void configureSSLServerSocket(SSLServerSocket socket) {
-            SSLParameters parameters = new SSLParameters(ciphers, supportedProtocols);
+            SSLParameters parameters = new SSLParameters(_ciphers, _supportedProtocols);
             // we use the cipher suite order so that we can prefer the ciphers we set first in the list
             parameters.setUseCipherSuitesOrder(true);
+            _clientAuthMode.configure(parameters);
+            logger.debug("ServerSocket SSLParameters have been setup as {}", SSLParametersToString(parameters));
             socket.setSSLParameters(parameters);
         }
     }
@@ -435,5 +445,19 @@ public class SSLService {
         }
         throw new IllegalArgumentException("no supported SSL/TLS protocol was found in the configured supported protocols: "
                 + supportedProtocols);
+    }
+
+    public static String SSLParametersToString(SSLParameters params) {
+        return params.getClass().getSimpleName() + '{' +
+                "CipherSuites=" + Arrays.toString(params.getCipherSuites()) +
+                ", Protocols=" + Arrays.toString(params.getProtocols()) +
+                ", ApplicationProtocols=" + Arrays.toString(params.getApplicationProtocols()) +
+                ", EndpointIdentificationAlgorithm=" + params.getEndpointIdentificationAlgorithm() +
+                ", EnableRetransmissions=" + params.getEnableRetransmissions() +
+                ", NeedClientAuth=" + params.getNeedClientAuth() +
+                ", UseCipherSuitesOrder=" + params.getUseCipherSuitesOrder() +
+                ", WantClientAuth=" + params.getWantClientAuth() +
+                ", MaximumPacketSize=" + params.getMaximumPacketSize() +
+                '}';
     }
 }
