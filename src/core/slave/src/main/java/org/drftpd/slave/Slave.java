@@ -287,7 +287,7 @@ public class Slave {
         try {
             int minport = Integer.parseInt(p.getProperty("slave.portfrom"));
             int maxport = Integer.parseInt(p.getProperty("slave.portto"));
-            _portRange = new PortRange(minport, maxport, _bufferSize);
+            _portRange = new PortRange(minport, maxport);
         } catch (NumberFormatException e) {
             _portRange = new PortRange(_bufferSize);
         }

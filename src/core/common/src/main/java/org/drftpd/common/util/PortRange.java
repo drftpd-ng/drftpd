@@ -47,17 +47,12 @@ public class PortRange {
         _bufferSize = bufferSize;
     }
 
-    public PortRange(int minPort, int maxPort, int bufferSize) {
+    public PortRange(int minPort, int maxPort) {
         if (0 >= minPort || minPort > maxPort || maxPort > 65535) {
             throw new RuntimeException("0 < minPort <= maxPort <= 65535");
         }
-        if (bufferSize < 0) {
-            throw new RuntimeException("BufferSize cannot be < 0");
-        }
-
         _minPort = minPort;
         _maxPort = maxPort;
-        _bufferSize = bufferSize;
     }
 
     private ServerSocket createServerSocket(int port, ServerSocketFactory ssf, InetAddress bindIP) throws IOException {

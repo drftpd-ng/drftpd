@@ -37,7 +37,7 @@ public class PortRangeTest {
 
     @Test
     public void testGetPort() throws IOException {
-        PortRange pr = new PortRange(45300, 45310, 0);
+        PortRange pr = new PortRange(45300, 45310);
         ArrayList<Integer> ports = new ArrayList<>();
         ArrayList<ServerSocket> sockets = new ArrayList<>();
 

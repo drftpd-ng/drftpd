@@ -60,7 +60,7 @@ public class Transfer {
     private Connection _conn;
     private char _direction;
     private long _finished = 0;
-    private ThrottledInputStream _int;
+    // private ThrottledInputStream _int;
     private InputStream _in;
     private OutputStream _out;
     private Socket _sock;
@@ -102,9 +102,9 @@ public class Transfer {
     public synchronized void abort(String reason) {
         try {
             _abortReason = reason;
-            if (_int != null) {
-                _int.wake();
-            }
+            // if (_int != null) {
+            //     _int.wake();
+            // }
 
         } finally {
             if (_conn != null) {
@@ -387,7 +387,7 @@ public class Transfer {
             int count;
             long currentTime = System.currentTimeMillis();
             //max speed buffer
-            _int = new ThrottledInputStream(_in, _maxSpeed);
+            // _int = new ThrottledInputStream(_in, _maxSpeed);
 
             boolean first = true;
             long lastCheck = 0;
@@ -397,7 +397,7 @@ public class Transfer {
                     if (_abortReason != null) {
                         throw new TransferFailedException("Transfer was aborted - " + _abortReason, getTransferStatus());
                     }
-                    count = _int.read(buff);
+                    count = _in.read(buff);
                     if (count == -1) {
                         if (associatedUpload == null) {
                             break; // done transferring
@@ -436,7 +436,7 @@ public class Transfer {
                     }
 
                     _transfered += count;
-                    _out.write(buff, 0, count);
+                    _out.write(buff);
                 }
 
                 _out.flush();
