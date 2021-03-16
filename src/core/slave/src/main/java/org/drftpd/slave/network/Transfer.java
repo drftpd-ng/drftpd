@@ -436,10 +436,10 @@ public class Transfer {
                     }
 
                     _transfered += count;
-                    _out.write(buff, 0, count);
+                    // _out.write(buff, 0, count);
                 }
 
-                _out.flush();
+                // _out.flush();
             } catch (IOException e) {
                 if (e instanceof TransferFailedException) {
                     throw e;
