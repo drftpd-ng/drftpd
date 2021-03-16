@@ -52,9 +52,6 @@ public class Transfer {
     public static final char TRANSFER_UNKNOWN = 'U';
     private static final Logger logger = LogManager.getLogger(Transfer.class);
     private static final String separator = "/";
-    private final char _mode = 'I';
-    private final Slave _slave;
-    private final TransferIndex _transferIndex;
     private String _abortReason = null;
     private CRC32 _checksum = null;
     private Connection _conn;
@@ -62,10 +59,13 @@ public class Transfer {
     private long _finished = 0;
     // private ThrottledInputStream _int;
     private InputStream _in;
+    private final char _mode = 'I';
     private OutputStream _out;
+    private final Slave _slave;
     private Socket _sock;
     private long _started = 0;
     private long _transfered = 0;
+    private final TransferIndex _transferIndex;
     private String _pathForUpload = null;
     private long _minSpeed = 0L;
 
@@ -239,8 +239,8 @@ public class Transfer {
         String root = _slave.getRoots().getARootFileDir(dirname).getPath();
 
         try {
-            FileOutputStream out = new FileOutputStream(new File(root + separator + filename));
-            _out = new BufferedOutputStream(out);
+            _out = new FileOutputStream(new File(root + separator
+                    + filename));
 
             if (_slave.getUploadChecksums()) {
                 _checksum = new CRC32();
@@ -436,7 +436,7 @@ public class Transfer {
                     }
 
                     _transfered += count;
-                    _out.write(buff);
+                    _out.write(buff, 0, count);
                 }
 
                 _out.flush();
