@@ -393,8 +393,8 @@ public class Transfer {
             byte[] buff = new byte[bufferSize];
             int count;
             long currentTime = System.currentTimeMillis();
-            //max speed buffer
-            _in = new ThrottledInputStream(_in, _maxSpeed);
+            // max speed buffer
+            // _in = new ThrottledInputStream(_in, _maxSpeed);
             boolean first = true;
             long lastCheck = 0;
             try {
