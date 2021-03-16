@@ -17,6 +17,7 @@
  */
 package org.drftpd.slave.network;
 
+import org.apache.commons.codec.digest.PureJavaCrc32;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.drftpd.common.exceptions.TransferDeniedException;
@@ -37,11 +38,8 @@ import javax.net.ssl.SSLSocket;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.nio.MappedByteBuffer;
 import java.nio.channels.Channels;
-import java.nio.channels.FileChannel;
 import java.util.regex.PatternSyntaxException;
-import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 import java.util.zip.CheckedOutputStream;
 
@@ -56,7 +54,7 @@ public class Transfer {
     private static final Logger logger = LogManager.getLogger(Transfer.class);
     private static final String separator = "/";
     private String _abortReason = null;
-    private CRC32 _checksum = null;
+    private PureJavaCrc32 _checksum = null;
     private Connection _conn;
     private char _direction;
     private long _finished = 0;
@@ -243,12 +241,9 @@ public class Transfer {
         try {
             RandomAccessFile file = new RandomAccessFile(root + separator + filename, "rw");
             OutputStream out = Channels.newOutputStream(file.getChannel());
-            // MappedByteBuffer out = file.getChannel().map(FileChannel.MapMode.READ_WRITE, 0, length);
-            // FileOutputStream out = new FileOutputStream(root + separator + filename);
             _out = new BufferedOutputStream(out);
-            // _out = new FileOutputStream(new File(root + separator + filename));
             if (_slave.getUploadChecksums()) {
-                _checksum = new CRC32();
+                _checksum = new PureJavaCrc32();
                 _out = new CheckedOutputStream(_out, _checksum);
             }
             accept(_slave.getCipherSuites(), _slave.getSSLProtocols(), 0);
@@ -295,7 +290,7 @@ public class Transfer {
             _in = new FileInputStream(new PhysicalFile(_slave.getRoots().getFile(path)));
 
             if (_slave.getDownloadChecksums()) {
-                _checksum = new CRC32();
+                _checksum = new PureJavaCrc32();
                 _in = new CheckedInputStream(_in, _checksum);
             }
 
