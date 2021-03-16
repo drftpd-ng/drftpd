@@ -312,7 +312,7 @@ public class ConfigManager implements ConfigInterface {
                         break;
                     case "pasv_ports":
                         String[] temp = st.nextToken().split("-");
-                        _portRange = new PortRange(Integer.parseInt(temp[0]), Integer.parseInt(temp[1]));
+                        _portRange = new PortRange(Integer.parseInt(temp[0]), Integer.parseInt(temp[1]), 0);
                         break;
                     case "hide_ips":
                         _hideIps = st.nextToken().equalsIgnoreCase("true");
