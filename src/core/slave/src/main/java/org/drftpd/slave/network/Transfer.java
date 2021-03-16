@@ -232,21 +232,18 @@ public class Transfer {
         _pathForUpload = dirname + separator + filename;
         try {
             _slave.getRoots().getFile(_pathForUpload);
-            throw new FileExistsException("File " + dirname
-                    + separator + filename + " exists");
+            throw new FileExistsException("File " + dirname + separator + filename + " exists");
         } catch (FileNotFoundException ex) {
         }
         String root = _slave.getRoots().getARootFileDir(dirname).getPath();
 
         try {
-            _out = new FileOutputStream(new File(root + separator
-                    + filename));
-
-            if (_slave.getUploadChecksums()) {
-                _checksum = new CRC32();
-                _out = new CheckedOutputStream(_out, _checksum);
-            }
-            accept(_slave.getCipherSuites(), _slave.getSSLProtocols(), _slave.getBufferSize());
+            _out = new FileOutputStream(new File(root + separator + filename));
+            // if (_slave.getUploadChecksums()) {
+            //     _checksum = new CRC32();
+            //     _out = new CheckedOutputStream(_out, _checksum);
+            // }
+            accept(_slave.getCipherSuites(), _slave.getSSLProtocols(), 0);
 
             if (!checkMasks(inetAddress, _sock.getInetAddress())) {
                 throw new TransferDeniedException("The IP that connected to the Socket was not the one that was expected.");
@@ -295,7 +292,7 @@ public class Transfer {
             }
 
             _in.skip(resumePosition);
-            accept(_slave.getCipherSuites(), _slave.getSSLProtocols(), _slave.getBufferSize());
+            accept(_slave.getCipherSuites(), _slave.getSSLProtocols(), 0);
 
             if (!checkMasks(inetAddress, _sock.getInetAddress())) {
                 throw new TransferDeniedException("The IP that connected to the Socket was not the one that was expected.");
@@ -436,10 +433,10 @@ public class Transfer {
                     }
 
                     _transfered += count;
-                    // _out.write(buff, 0, count);
+                    _out.write(buff, 0, count);
                 }
 
-                // _out.flush();
+                _out.flush();
             } catch (IOException e) {
                 if (e instanceof TransferFailedException) {
                     throw e;
