@@ -380,7 +380,12 @@ public class Transfer {
                 _out = new AddAsciiOutputStream(_out);
             }
 
-            byte[] buff = new byte[Math.max(_slave.getBufferSize(), 65535)];
+            int bufferSize = _slave.getBufferSize();
+            if (bufferSize <= 0) {
+                bufferSize = 65535;
+            }
+            
+            byte[] buff = new byte[bufferSize];
             int count;
             long currentTime = System.currentTimeMillis();
             //max speed buffer
@@ -433,7 +438,7 @@ public class Transfer {
                     }
 
                     _transfered += count;
-                    _out.write(buff, 0, count);
+                    // _out.write(buff, 0, count);
                 }
 
                 _out.flush();
