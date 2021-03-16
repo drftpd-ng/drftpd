@@ -238,7 +238,9 @@ public class Transfer {
         String root = _slave.getRoots().getARootFileDir(dirname).getPath();
 
         try {
-            _out = new FileOutputStream(new File(root + separator + filename));
+            FileOutputStream out = new FileOutputStream(root + separator + filename);
+            _out = new BufferedOutputStream(out);
+            // _out = new FileOutputStream(new File(root + separator + filename));
             // if (_slave.getUploadChecksums()) {
             //     _checksum = new CRC32();
             //     _out = new CheckedOutputStream(_out, _checksum);
