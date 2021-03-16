@@ -37,6 +37,9 @@ import javax.net.ssl.SSLSocket;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.Channels;
+import java.nio.channels.FileChannel;
 import java.util.regex.PatternSyntaxException;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
@@ -238,7 +241,10 @@ public class Transfer {
         String root = _slave.getRoots().getARootFileDir(dirname).getPath();
 
         try {
-            FileOutputStream out = new FileOutputStream(root + separator + filename);
+            RandomAccessFile file = new RandomAccessFile(root + separator + filename, "rw");
+            OutputStream out = Channels.newOutputStream(file.getChannel());
+            // MappedByteBuffer out = file.getChannel().map(FileChannel.MapMode.READ_WRITE, 0, length);
+            // FileOutputStream out = new FileOutputStream(root + separator + filename);
             _out = new BufferedOutputStream(out);
             // _out = new FileOutputStream(new File(root + separator + filename));
             // if (_slave.getUploadChecksums()) {
@@ -453,8 +459,6 @@ public class Transfer {
         } finally {
             _finished = System.currentTimeMillis();
             _slave.removeTransfer(this); // transfers are added in setting up
-            // the transfer,
-            // issueListenToSlave()/issueConnectToSlave()
         }
     }
 
