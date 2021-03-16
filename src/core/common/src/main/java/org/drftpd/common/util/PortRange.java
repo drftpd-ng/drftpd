@@ -62,9 +62,9 @@ public class PortRange {
 
     private ServerSocket createServerSocket(int port, ServerSocketFactory ssf, InetAddress bindIP) throws IOException {
         ServerSocket ss = ssf.createServerSocket();
-        if (_bufferSize > 0) {
-            ss.setReceiveBufferSize(_bufferSize);
-        }
+        // if (_bufferSize > 0) {
+        //     ss.setReceiveBufferSize(_bufferSize);
+        // }
         if (bindIP == null) {
             ss.bind(new InetSocketAddress(port), 1);
         } else {
@@ -82,7 +82,7 @@ public class PortRange {
      * @return A newly initialize ServerSocket or null
      */
     public ServerSocket getPort(ServerSocketFactory ssf, InetAddress bindIP) {
-        ServerSocket ss = null;
+        ServerSocket ss;
         if (_minPort != 0) {
             int pos = rand.nextInt(_maxPort - _minPort + 1) + _minPort;
             int initPos = pos;
