@@ -239,10 +239,10 @@ public class Transfer {
 
         try {
             _out = new FileOutputStream(new File(root + separator + filename));
-            // if (_slave.getUploadChecksums()) {
-            //     _checksum = new CRC32();
-            //     _out = new CheckedOutputStream(_out, _checksum);
-            // }
+            if (_slave.getUploadChecksums()) {
+                _checksum = new CRC32();
+                _out = new CheckedOutputStream(_out, _checksum);
+            }
             accept(_slave.getCipherSuites(), _slave.getSSLProtocols(), 0);
 
             if (!checkMasks(inetAddress, _sock.getInetAddress())) {
@@ -384,7 +384,7 @@ public class Transfer {
             if (bufferSize <= 0) {
                 bufferSize = 65535;
             }
-            
+
             byte[] buff = new byte[bufferSize];
             int count;
             long currentTime = System.currentTimeMillis();
