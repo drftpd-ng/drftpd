@@ -35,9 +35,13 @@ enableuploadchecksums=true
 # Default: [true]
 enabledownloadchecksums=true
 
-# BufferSize set at 0 lets the kernel handle the buffer sizes.
+# networkBufferSize set at 0 lets the kernel handle the socket buffer sizes.
 # Default: [0]
-bufferSize=0
+networkBufferSize=0
+
+# writeBufferSize set at 0 will be default to 65535
+# Default: [0]
+writeBufferSize=0
 
 # This is the maximum the slave will wait for the master.
 # Timeout on the slave (on the master side) should be equal.

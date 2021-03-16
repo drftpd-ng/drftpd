@@ -190,7 +190,6 @@ public class TransferState {
                 dataSocket = ac.connect(GlobalContext.getConfig().getCipherSuites(), GlobalContext.getConfig().getSSLProtocols(), 0);
             } catch (IOException ex) {
                 logger.warn("Error opening data socket", ex);
-                dataSocket = null;
                 throw ex;
             }
         } else if (isPasv()) {

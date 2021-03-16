@@ -36,7 +36,7 @@ public class PortRange {
     SecureRandom rand = new SecureRandom();
     private final int _minPort;
     private final int _maxPort;
-    private int _bufferSize = 0;
+    private int _networkBufferSize = 0;
 
     /**
      * Creates a default port range for port 49152 to 65535.
@@ -44,27 +44,27 @@ public class PortRange {
     public PortRange(int bufferSize) {
         _minPort = 0;
         _maxPort = 0;
-        _bufferSize = bufferSize;
+        _networkBufferSize = bufferSize;
     }
 
-    public PortRange(int minPort, int maxPort, int bufferSize) {
+    public PortRange(int minPort, int maxPort, int networkBufferSize) {
         if (0 >= minPort || minPort > maxPort || maxPort > 65535) {
             throw new RuntimeException("0 < minPort <= maxPort <= 65535");
         }
-        if (bufferSize < 0) {
-            throw new RuntimeException("BufferSize cannot be < 0");
+        if (networkBufferSize < 0) {
+            throw new RuntimeException("networkBufferSize cannot be < 0");
         }
 
         _minPort = minPort;
         _maxPort = maxPort;
-        _bufferSize = bufferSize;
+        _networkBufferSize = networkBufferSize;
     }
 
     private ServerSocket createServerSocket(int port, ServerSocketFactory ssf, InetAddress bindIP) throws IOException {
         ServerSocket ss = ssf.createServerSocket();
-        // if (_bufferSize > 0) {
-        //     ss.setReceiveBufferSize(_bufferSize);
-        // }
+        if (_networkBufferSize > 0) {
+            ss.setReceiveBufferSize(_networkBufferSize);
+        }
         if (bindIP == null) {
             ss.bind(new InetSocketAddress(port), 1);
         } else {

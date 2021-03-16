@@ -54,13 +54,13 @@ public class ActiveConnection extends Connection {
         _useSSLClientHandshake = useSSLClientHandshake;
     }
 
-    public Socket connect(String[] cipherSuites, String[] sslProtocols, int bufferSize) throws IOException {
+    public Socket connect(String[] cipherSuites, String[] sslProtocols, int networkBufferSize) throws IOException {
         logger.debug("Connecting to {}:{}", _addr.getAddress().getHostAddress(), _addr.getPort());
 
         if (_ctx != null) {
             SSLSocket sslSock = (SSLSocket) _ctx.getSocketFactory().createSocket();
-            if (bufferSize > 0) {
-                sslSock.setReceiveBufferSize(bufferSize);
+            if (networkBufferSize > 0) {
+                sslSock.setReceiveBufferSize(networkBufferSize);
             }
 
             if (_bindIP != null) {
@@ -84,8 +84,8 @@ public class ActiveConnection extends Connection {
             _sock = sslSock;
         } else {
             _sock = SocketFactory.getDefault().createSocket();
-            if (bufferSize > 0) {
-                _sock.setReceiveBufferSize(bufferSize);
+            if (networkBufferSize > 0) {
+                _sock.setReceiveBufferSize(networkBufferSize);
             }
 
             if (_bindIP != null) {

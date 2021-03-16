@@ -72,7 +72,9 @@ public class Slave {
 
     private static final int actualTimeout = 60000; // one minute, evaluated on a SocketTimeout
 
-    private int _bufferSize;
+    private int _networkBufferSize;
+
+    private int _writeBufferSize;
 
     private String[] _cipherSuites;
 
@@ -276,7 +278,8 @@ public class Slave {
 
         _uploadChecksums = p.getProperty("enableuploadchecksums", "true").equals("true");
         _downloadChecksums = p.getProperty("enabledownloadchecksums", "true").equals("true");
-        _bufferSize = Integer.parseInt(p.getProperty("bufferSize", "0"));
+        _writeBufferSize = Integer.parseInt(p.getProperty("writeBufferSize", "0"));
+        _networkBufferSize = Integer.parseInt(p.getProperty("networkBufferSize", "0"));
 
         _concurrentRootIteration = p.getProperty("concurrent.root.iteration", "false").equalsIgnoreCase("true");
         _roots = getDefaultRootBasket(p);
@@ -287,9 +290,9 @@ public class Slave {
         try {
             int minport = Integer.parseInt(p.getProperty("slave.portfrom"));
             int maxport = Integer.parseInt(p.getProperty("slave.portto"));
-            _portRange = new PortRange(minport, maxport, _bufferSize);
+            _portRange = new PortRange(minport, maxport, _networkBufferSize);
         } catch (NumberFormatException e) {
-            _portRange = new PortRange(_bufferSize);
+            _portRange = new PortRange(_networkBufferSize);
         }
 
         _ignorePartialRemerge = p.getProperty("ignore.partialremerge", "false").equalsIgnoreCase("true");
@@ -489,8 +492,12 @@ public class Slave {
         }
     }
 
-    public int getBufferSize() {
-        return _bufferSize;
+    public int getWriteBufferSize() {
+        return _writeBufferSize;
+    }
+
+    public int getNetworkBufferSize() {
+        return _networkBufferSize;
     }
 
     public boolean getDownloadChecksums() {

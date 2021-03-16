@@ -39,6 +39,7 @@ import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.nio.channels.Channels;
+import java.util.Date;
 import java.util.regex.PatternSyntaxException;
 import java.util.zip.CheckedInputStream;
 import java.util.zip.CheckedOutputStream;
@@ -53,6 +54,9 @@ public class Transfer {
     public static final char TRANSFER_UNKNOWN = 'U';
     private static final Logger logger = LogManager.getLogger(Transfer.class);
     private static final String separator = "/";
+    private char _mode = 'I';
+    private final Slave _slave;
+    private final TransferIndex _transferIndex;
     private String _abortReason = null;
     private PureJavaCrc32 _checksum = null;
     private Connection _conn;
@@ -60,13 +64,10 @@ public class Transfer {
     private long _finished = 0;
     // private ThrottledInputStream _int;
     private InputStream _in;
-    private final char _mode = 'I';
     private OutputStream _out;
-    private final Slave _slave;
     private Socket _sock;
     private long _started = 0;
     private long _transfered = 0;
-    private final TransferIndex _transferIndex;
     private String _pathForUpload = null;
     private long _minSpeed = 0L;
 
@@ -230,11 +231,13 @@ public class Transfer {
 
     public TransferStatus receiveFile(String dirname, char mode,
                                       String filename, long offset, String inetAddress) throws IOException, TransferDeniedException {
+        _mode = mode;
         _pathForUpload = dirname + separator + filename;
         try {
             _slave.getRoots().getFile(_pathForUpload);
             throw new FileExistsException("File " + dirname + separator + filename + " exists");
         } catch (FileNotFoundException ex) {
+            // This is the expected behavior
         }
         String root = _slave.getRoots().getARootFileDir(dirname).getPath();
 
@@ -244,9 +247,9 @@ public class Transfer {
             _out = new BufferedOutputStream(out);
             if (_slave.getUploadChecksums()) {
                 _checksum = new PureJavaCrc32();
-                _out = new CheckedOutputStream(_out, _checksum);
+                _out = new TestChecksumStream(_out, _checksum);
             }
-            accept(_slave.getCipherSuites(), _slave.getSSLProtocols(), 0);
+            accept(_slave.getCipherSuites(), _slave.getSSLProtocols(), _slave.getNetworkBufferSize());
 
             if (!checkMasks(inetAddress, _sock.getInetAddress())) {
                 throw new TransferDeniedException("The IP that connected to the Socket was not the one that was expected.");
@@ -286,7 +289,7 @@ public class Transfer {
     public TransferStatus sendFile(String path, char type, long resumePosition, String inetAddress)
             throws IOException, TransferDeniedException {
         try {
-
+            _mode = type;
             _in = new FileInputStream(new PhysicalFile(_slave.getRoots().getFile(path)));
 
             if (_slave.getDownloadChecksums()) {
@@ -295,7 +298,7 @@ public class Transfer {
             }
 
             _in.skip(resumePosition);
-            accept(_slave.getCipherSuites(), _slave.getSSLProtocols(), 0);
+            accept(_slave.getCipherSuites(), _slave.getSSLProtocols(), _slave.getNetworkBufferSize());
 
             if (!checkMasks(inetAddress, _sock.getInetAddress())) {
                 throw new TransferDeniedException("The IP that connected to the Socket was not the one that was expected.");
@@ -345,9 +348,8 @@ public class Transfer {
         return finalSSLNegotiation;
     }
 
-    private void accept(String[] cipherSuites, String[] sslProtocols, int bufferSize) throws IOException {
-        _sock = _conn.connect(cipherSuites, sslProtocols, bufferSize);
-
+    private void accept(String[] cipherSuites, String[] sslProtocols, int networkBufferSize) throws IOException {
+        _sock = _conn.connect(cipherSuites, sslProtocols, networkBufferSize);
         _conn = null;
     }
 
@@ -383,7 +385,7 @@ public class Transfer {
                 _out = new AddAsciiOutputStream(_out);
             }
 
-            int bufferSize = _slave.getBufferSize();
+            int bufferSize = _slave.getWriteBufferSize();
             if (bufferSize <= 0) {
                 bufferSize = 65535;
             }
@@ -392,12 +394,11 @@ public class Transfer {
             int count;
             long currentTime = System.currentTimeMillis();
             //max speed buffer
-            // _int = new ThrottledInputStream(_in, _maxSpeed);
-
+            _in = new ThrottledInputStream(_in, _maxSpeed);
             boolean first = true;
             long lastCheck = 0;
-
             try {
+                long start = new Date().getTime();
                 while (true) {
                     if (_abortReason != null) {
                         throw new TransferFailedException("Transfer was aborted - " + _abortReason, getTransferStatus());
@@ -411,7 +412,7 @@ public class Transfer {
                             break; // done transferring
                         }
                         try {
-                            Thread.sleep(500);
+                            Thread.sleep(5);
                         } catch (InterruptedException e) {
                         }
                         continue; // waiting for upload to catch up
@@ -425,7 +426,6 @@ public class Transfer {
                         _slave.sendResponse(new AsyncResponseTransferStatus(ts));
                         currentTime = System.currentTimeMillis();
                     }
-
                     // Min Speed Check
                     if (_minSpeed > 0) {
                         lastCheck = (lastCheck == 0 ? System.currentTimeMillis() : lastCheck);
@@ -439,12 +439,11 @@ public class Transfer {
                             }
                         }
                     }
-
                     _transfered += count;
-                    _out.write(buff);
+                    _out.write(buff, 0, count);
                 }
-
                 _out.flush();
+                System.out.println("TIME TO WRITE ON DISK " + (new Date().getTime() - start) + " ms");
             } catch (IOException e) {
                 if (e instanceof TransferFailedException) {
                     throw e;
