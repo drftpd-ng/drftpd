@@ -4,7 +4,7 @@
 <p align="center">
   <a href="https://circleci.com/gh/drftpd-ng" alt="Build"><img src="https://circleci.com/gh/drftpd-ng/drftpd/tree/master.svg?style=shield" /></a>
   <a href="http://drftpd.org/" alt="Website"><img src="https://img.shields.io/badge/website-drftpd.org-blue.svg" /></a>
-  <a href="https://github.com/drftpd-ng/drftpd3/wiki/Documentation" alt="Documentation"><img src="https://img.shields.io/badge/Documentation-RTFM-orange.svg" /></a>
+  <a href="https://github.com/drftpd-ng/drftpd/wiki/Documentation" alt="Documentation"><img src="https://img.shields.io/badge/Documentation-RTFM-orange.svg" /></a>
 </p>
 
 ## About DrFTPD
@@ -16,7 +16,7 @@ What is unique with DrFTPD is that it works with existing FTP client software, y
 The only exception to DrFTPD is with passive (PASV) mode. For this the client needs to support the PRET command. PRET is already supported in several of the most widely used FTP clients.
 You can often do without PASV mode unless you are behind a firewall which you don't have access to or you need to FXP with another DrFTPD server or a server which doesn't support PASV.
 
-If you merge 10*100mbit sites, you don't get a 1gbit site but you get a 10x100mbit site. What this means is that the aggregate bandwidth is 1000 mbit but a single transfer will never go above 100mbit.
+If you merge 10*1gbit sites, you don't get a 10gbit site but you get a 10x1gbit site. What this means is that the aggregate bandwidth is 10gbit but a single transfer will never go above 1gbit.
 
 DrFTPD's approach to the file system and file transfers is what makes it unique. Each file can, and will, end up on a different transfer slave.
 
@@ -39,49 +39,102 @@ This is an advantage as it simplifies administration of the slaves.
 ## How to get started
 
 ### Requirements
-DrFTPD 4.0.1-git installation requires a number of steps before you can utilize the software to its full extend.
+DrFTPD 4.x installation requires a number of steps before you can utilize the software to its full extend.
 To give an overview of the installation process the different steps are listed below in this section.
 
 On the master you will need to:
-- Install Java JDK or OpenJDK 15 and Apache Maven
+- Install Java JDK or OpenJDK 16, Apache Maven, Git
 
 On the slaves you will need to:
-- Install Java SE or OpenJDK 15.
-- Add needed deps that are not present :
+- Install Java SE or OpenJDK 16.
+- Add needed deps that are not present:
   - MediaInfo (CLI): https://mediaarea.net/en/MediaInfo
   - mkvalidator tool: https://github.com/Matroska-Org/foundation-source
 
-### For early users (stable)
-Checkout the project from https://github.com/drftpd-ng/drftpd.git 
+### Stable version
+## Git or Release
+Clone the project from https://github.com/drftpd-ng/drftpd.git or Download release from https://github.com/drftpd-ng/drftpd/releases
 
-- Run `mvn validate`
-- Run `mvn install`
+- Git:
+Run `git clone https://github.com/drftpd-ng/drftpd.git`
+Run `cd drftpd`
+Run `git checkout tags/4.0.0`
+
+- Release:
+Run `wget https://github.com/drftpd-ng/drftpd/archive/4.0.0.tar.gz`
+Run `tar xvzf 4.0.0.tar.gz`
+Run `cd drftpd-4.0.0`
+
+## Compile
+
+- Maven:
+Optional (Upgrade only), Run `mvn clean` and delete all files from build and lib folders (Master & Slave)
+Run `mvn validate`
+Run `mvn install`
 
 Check generated runtime directory
 
 #### Master
-- Copy .dist files to .conf only if you change the settings
+- Copy .dist files to .conf only if you change the settings from confi and plugins folders (at least master.conf)
+- Optional: Run `./genkey.sh` for Linux or `genkey.bat` for Windows (if you want to use SSL (Master & Slave))
+- Run `./master.sh` for Linux or `master.bat` for Windows
+- Connect to `127.0.0.1:2121` with `drftpd:drftpd`
+- Execute remote commands: `SITE ADD SLAVE SLAVENAME` and `SITE SLAVE SLAVENAME ADDMASK *@IP.MASK`
+- Optional: Create Master Service (systemd, sc.exe ...)
+
+#### Slave
+- Copy .dist files to .conf only if you change the settings from config folder (at least slave.conf)
+- Optional: Copy the `drftpd.key` from the master to the config directory
+- Run `./slave.sh` for Linux or `slave.bat` for Windows
+- Optional: Create Slave Service (systemd, sc.exe ...)
+
+### Unstable version
+## Git
+Clone the project from https://github.com/drftpd-ng/drftpd.git
+
+- Git:
+Run `git clone https://github.com/drftpd-ng/drftpd.git`
+Run `cd drftpd`
+
+## Compile
+
+- Maven:
+Optional (Upgrade only), Run `mvn clean` and delete all files from build and lib folders (Master & Slave)
+Run `mvn validate`
+Run `mvn install`
+
+Check generated runtime directory
+
+#### Master
+- Copy .dist files to .conf only if you change the settings from confi and plugins folders (at least master.conf)
 - Optional: Run `./genkey.sh` for Linux or `genkey.bat` for Windows (if you want to use SSL (Master & Slave))
 - Run `./master.sh` for Linux or `master.bat` for Windows
 - Connect to `127.0.0.1:2121` with `drftpd:drftpd`
 - Optional: Create Master Service (systemd, sc.exe ...)
 
 #### Slave
-- Copy .dist files to .conf only if you change the settings
+- Copy .dist files to .conf only if you change the settings from config folder (at least slave.conf)
 - Optional: Copy the `drftpd.key` from the master to the config directory
 - Run `./slave.sh` for Linux or `slave.bat` for Windows
 - Optional: Create Slave Service (systemd, sc.exe ...)
 
-### For dev (unstable/debug)
-Checkout the project from https://github.com/drftpd-ng/drftpd.git 
+### For dev (debug only)
+## Git
+Clone the project from https://github.com/drftpd-ng/drftpd.git
+
+- Git:
+Run `git clone https://github.com/drftpd-ng/drftpd.git`
+Run `cd drftpd`
+
 - Open pom.xml from .dev folder with IntelliJ IDEA Community
-- Compile and mvn package
+- IntelliJ:
+Run `mvn package`
 
 #### Master 
 Create new Application via Run -> Edit Configurations
 
 - Name: `Master`
-- JDK: `java 15 SDK of 'drftpd-dev' module`
+- JDK: `java 16 SDK of 'drftpd-dev' module`
 - Main class: `org.drftpd.master.Master`
 - eg. Working Directory: `C:\Users\Administrator\Documents\GitHub\drftpd\runtime\master`
 - eg. Environment variables: `DRFTPD_CONFIG_PATH=C:\Users\Administrator\Documents\GitHub\drftpd\runtime\master`
@@ -93,7 +146,7 @@ Start debug Master
 Create new Application via Run -> Edit Configurations
 
 - Name: `Slave`
-- JDK: `java 15 SDK of 'drftpd-dev' module`
+- JDK: `java 16 SDK of 'drftpd-dev' module`
 - Main class: `org.drftpd.slave.Slave`
 - eg. Working Directory: `C:\Users\Administrator\Documents\GitHub\drftpd\runtime\slave`
 - eg. Environment variables: `DRFTPD_CONFIG_PATH=C:\Users\Administrator\Documents\GitHub\drftpd\runtime\slave`
@@ -105,4 +158,5 @@ You can find the documention online at: https://github.com/drftpd-ng/drftpd/wiki
 
 ## Support & Bug tracker
 - ircs://irc.efnet.org:6697/drftpd - IRC support
+- ircs://irc.efnet.org:6697/drftpd-devel - IRC support (too ;-))
 - https://github.com/drftpd-ng/drftpd/issues - Bug tracker
