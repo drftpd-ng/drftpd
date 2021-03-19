@@ -106,7 +106,7 @@ Run `mvn install`
 Check generated runtime directory
 
 #### Master
-- Copy .dist files to .conf only if you change the settings from confi and plugins folders (at least master.conf)
+- Copy .dist files to .conf only if you change the settings from config and plugins folders (at least master.conf)
 - Optional: Run `./genkey.sh` for Linux or `genkey.bat` for Windows (if you want to use SSL (Master & Slave))
 - Run `./master.sh` for Linux or `master.bat` for Windows
 - Connect to `127.0.0.1:2121` with `drftpd:drftpd`
