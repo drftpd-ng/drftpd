@@ -3,7 +3,7 @@ version: 2.1
 jobs:
   build:
     docker:
-      - image: maven:3.6.3-openjdk-15
+      - image: maven:3.6.3-openjdk-16
     steps:
       - checkout
       - run:
