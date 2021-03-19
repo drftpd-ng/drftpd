@@ -39,6 +39,7 @@ This is an advantage as it simplifies administration of the slaves.
 ## How to get started
 
 ### Requirements
+
 DrFTPD 4.x installation requires a number of steps before you can utilize the software to its full extend.
 To give an overview of the installation process the different steps are listed below in this section.
 
@@ -51,82 +52,88 @@ On the slaves you will need to:
   - MediaInfo (CLI): https://mediaarea.net/en/MediaInfo
   - mkvalidator tool: https://github.com/Matroska-Org/foundation-source
 
-### Stable version
-## Git or Release
+## Stable version
+### Git (better way) or Release
+
 Clone the project from https://github.com/drftpd-ng/drftpd.git or Download release from https://github.com/drftpd-ng/drftpd/releases
 
-- Git:
-Run `git clone https://github.com/drftpd-ng/drftpd.git`
-Run `cd drftpd`
-Run `git checkout tags/4.0.0`
+Git:
+- Run `git clone https://github.com/drftpd-ng/drftpd.git`
+- Run `cd drftpd`
+- Run `git checkout tags/4.0.0`
 
-- Release:
-Run `wget https://github.com/drftpd-ng/drftpd/archive/4.0.0.tar.gz`
-Run `tar xvzf 4.0.0.tar.gz`
-Run `cd drftpd-4.0.0`
+Release:
+- Run `wget https://github.com/drftpd-ng/drftpd/archive/4.0.0.tar.gz`
+- Run `tar xvzf 4.0.0.tar.gz`
+- Run `cd drftpd-4.0.0`
 
-## Compile
+### Compile
 
-- Maven:
-Optional (Upgrade only), Run `mvn clean` and delete all files from build and lib folders (Master & Slave)
-Run `mvn validate`
-Run `mvn install`
+Maven:
+- Optional (Upgrade only), Run `mvn clean` and delete all files from build and lib folders (Master & Slave)
+- Run `mvn validate`
+- Run `mvn install`
 
 Check generated runtime directory
 
-#### Master
-- Copy .dist files to .conf only if you change the settings from confi and plugins folders (at least master.conf)
+### Master
+
+- Copy .dist files to .conf only if you change the settings from confi and plugins folders (at least `master.conf`)
 - Optional: Run `./genkey.sh` for Linux or `genkey.bat` for Windows (if you want to use SSL (Master & Slave))
 - Run `./master.sh` for Linux or `master.bat` for Windows
 - Connect to `127.0.0.1:2121` with `drftpd:drftpd`
 - Execute remote commands: `SITE ADD SLAVE SLAVENAME` and `SITE SLAVE SLAVENAME ADDMASK *@IP.MASK`
-- Optional: Create Master Service (systemd, sc.exe ...)
+- Optional: Create Master Service (`systemd`, `sc.exe` ...)
 
-#### Slave
-- Copy .dist files to .conf only if you change the settings from config folder (at least slave.conf)
+### Slave
+
+- Copy .dist files to .conf only if you change the settings from config folder (at least `slave.conf`)
 - Optional: Copy the `drftpd.key` from the master to the config directory
 - Run `./slave.sh` for Linux or `slave.bat` for Windows
-- Optional: Create Slave Service (systemd, sc.exe ...)
+- Optional: Create Slave Service (`systemd`, `sc.exe` ...)
 
-### Unstable version
-## Git
+## Unstable version
+### Git
+
 Clone the project from https://github.com/drftpd-ng/drftpd.git
 
-- Git:
-Run `git clone https://github.com/drftpd-ng/drftpd.git`
-Run `cd drftpd`
+Git:
+- Run `git clone https://github.com/drftpd-ng/drftpd.git`
+- Run `cd drftpd`
 
-## Compile
+### Compile
 
-- Maven:
-Optional (Upgrade only), Run `mvn clean` and delete all files from build and lib folders (Master & Slave)
-Run `mvn validate`
-Run `mvn install`
+Maven:
+- Optional (Upgrade only), Run `mvn clean` and delete all files from build and lib folders (Master & Slave)
+- Run `mvn validate`
+- Run `mvn install`
 
 Check generated runtime directory
 
-#### Master
-- Copy .dist files to .conf only if you change the settings from config and plugins folders (at least master.conf)
+### Master
+
+- Copy .dist files to .conf only if you change the settings from config and plugins folders (at least `master.conf`)
 - Optional: Run `./genkey.sh` for Linux or `genkey.bat` for Windows (if you want to use SSL (Master & Slave))
 - Run `./master.sh` for Linux or `master.bat` for Windows
 - Connect to `127.0.0.1:2121` with `drftpd:drftpd`
-- Optional: Create Master Service (systemd, sc.exe ...)
+- Optional: Create Master Service (`systemd`, `sc.exe` ...)
 
-#### Slave
-- Copy .dist files to .conf only if you change the settings from config folder (at least slave.conf)
+### Slave
+
+- Copy .dist files to .conf only if you change the settings from config folder (at least `slave.conf`)
 - Optional: Copy the `drftpd.key` from the master to the config directory
 - Run `./slave.sh` for Linux or `slave.bat` for Windows
-- Optional: Create Slave Service (systemd, sc.exe ...)
+- Optional: Create Slave Service (`systemd`, `sc.exe` ...)
 
 ### For dev (debug only)
 ## Git
+
 Clone the project from https://github.com/drftpd-ng/drftpd.git
 
-- Git:
-Run `git clone https://github.com/drftpd-ng/drftpd.git`
-Run `cd drftpd`
-
-- Open pom.xml from .dev folder with IntelliJ IDEA Community
+Git:
+- Run `git clone https://github.com/drftpd-ng/drftpd.git`
+- Run `cd drftpd`
+- Open `pom.xml` from .dev folder with IntelliJ IDEA Community
 - IntelliJ:
 Run `mvn package`
 
