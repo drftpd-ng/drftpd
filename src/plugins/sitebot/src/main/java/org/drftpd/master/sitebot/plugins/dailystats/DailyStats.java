@@ -127,6 +127,52 @@ public class DailyStats implements UserResetPreHookInterface {
             outputUsers.add(new UserStats(name, files, bytes));
         }
 
+        int totalFiles = 0;
+        long totalBytes = 0;
+
+        for (int i=0; i < initialUsers.size(); ++i) {
+            switch (type) {
+                case "dayup":
+                    if (initialUsers.get(i).getUploadedBytesDay() > 0) {
+                        totalFiles += initialUsers.get(i).getUploadedFilesDay();
+                        totalBytes += initialUsers.get(i).getUploadedBytesDay();
+                    }
+                    break;
+                case "daydn":
+                    if (initialUsers.get(i).getDownloadedBytesDay() > 0) {
+                        totalFiles += initialUsers.get(i).getDownloadedFilesDay();
+                        totalBytes += initialUsers.get(i).getDownloadedBytesDay();
+                    }
+                    break;
+                case "wkup":
+                    if (initialUsers.get(i).getUploadedBytesWeek() > 0) {
+                        totalFiles += initialUsers.get(i).getUploadedFilesWeek();
+                        totalBytes += initialUsers.get(i).getUploadedBytesWeek();
+                    }
+                    break;
+                case "wkdn":
+                    if (initialUsers.get(i).getDownloadedBytesWeek() > 0) {
+                        totalFiles += initialUsers.get(i).getDownloadedFilesWeek();
+                        totalBytes += initialUsers.get(i).getDownloadedBytesWeek();
+                    }
+                    break;
+                case "monthup":
+                    if (initialUsers.get(i).getUploadedBytesMonth() > 0) {
+                        totalFiles += initialUsers.get(i).getUploadedFilesMonth();
+                        totalBytes += initialUsers.get(i).getUploadedBytesMonth();
+                    }
+                    break;
+                case "monthdn":
+                    if (initialUsers.get(i).getDownloadedBytesMonth() > 0) {
+                        totalFiles += initialUsers.get(i).getDownloadedFilesMonth();
+                        totalBytes += initialUsers.get(i).getDownloadedBytesMonth();
+                    }
+                    break;
+            }
+        }
+
+        outputUsers.add(new UserStats("totalStats", String.valueOf(totalFiles), Bytes.formatBytes(totalBytes)));
+
         return outputUsers;
     }
 
@@ -160,9 +206,9 @@ public class DailyStats implements UserResetPreHookInterface {
     public void resetHour(Date d) {
         // No need for this interval
         // Uncomment the rest to test output
-		/*resetDay(d);
-		resetWeek(d);
-		resetMonth(d);*/
+        /*resetDay(d);
+        resetWeek(d);
+        resetMonth(d);*/
     }
 
     @EventSubscriber

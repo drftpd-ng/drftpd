@@ -1,23 +1,35 @@
 dailystats.daydn=${color}04${bold}Top Downloaders For The Day:
 dailystats.daydn.item=${color} - ${color}04${bold}[${coloroff}${num}${color}04${bold}]${coloroff} - ${name} - (${files} Files) - (${bytes})${color}04${bold}
 dailystats.daydn.none=${color}04${bold}Nobody Downloaded Anything Today!
+dailystats.daydn.toptotal=${color}04${bold}Top Total Downloads For the Day: ${bold}${coloroff}(${topTotalFiles} Files) - (${topTotalBytes})
+dailystats.daydn.total=${color}04${bold}Total Downloads For the Day: ${bold}${coloroff}(${totalFiles} Files) - (${totalBytes})
 
 dailystats.dayup=${color}04${bold}Top Uploaders For The Day:
 dailystats.dayup.item=${color} - ${color}04${bold}[${coloroff}${num}${color}04${bold}]${coloroff} - ${name} - (${files} Files) - (${bytes})${color}04${bold}
 dailystats.dayup.none=${color}04${bold}Nobody Uploaded Anything Today!
+dailystats.dayup.toptotal=${color}04${bold}Top Total Uploads For the Day: ${bold}${coloroff}(${topTotalFiles} Files) - (${topTotalBytes})
+dailystats.dayup.total=${color}04${bold}Total Uploads For the Day: ${bold}${coloroff}(${totalFiles} Files) - (${totalBytes})
 
 dailystats.monthup=${color}04${bold}Top Uploaders For The Month:
 dailystats.monthup.item=${color} - ${color}04${bold}[${coloroff}${num}${color}04${bold}]${coloroff} - ${name} - (${files} Files) - (${bytes})${color}04${bold}
 dailystats.monthup.none=${color}04${bold}Nobody Uploaded Anything This Month!
+dailystats.monthup.toptotal=${color}04${bold}Top Total Uploads For the Month: ${bold}${coloroff}(${topTotalFiles} Files) - (${topTotalBytes})
+dailystats.monthup.total=${color}04${bold}Total Uploads For the Month: ${bold}${coloroff}(${totalFiles} Files) - (${totalBytes})
 
 dailystats.monthdn=${color}04${bold}Top Downloaders For The Month:
 dailystats.monthdn.item=${color} - ${color}04${bold}[${coloroff}${num}${color}04${bold}]${coloroff} - ${name} - (${files} Files) - (${bytes})${color}04${bold}
 dailystats.monthdn.none=${color}04${bold}Nobody Downloaded Anything This Month!
+dailystats.monthdn.toptotal=${color}04${bold}Top Total Downloads For the Month: ${bold}${coloroff}(${topTotalFiles} Files) - (${topTotalBytes})
+dailystats.monthdn.total=${color}04${bold}Total Downloads For the Month: ${bold}${coloroff}(${totalFiles} Files) - (${totalBytes})
 
 dailystats.wkup=${color}04${bold}Top Uploaders For The Week:
 dailystats.wkup.item=${color} - ${color}04${bold}[${coloroff}${num}${color}04${bold}]${coloroff} - ${name} - (${files} Files) - (${bytes})${color}04${bold}
 dailystats.wkup.none=${color}04${bold}Nobody Uploaded Anything This Week!
+dailystats.wkup.toptotal=${color}04${bold}Top Total Uploads For the Week: ${bold}${coloroff}(${topTotalFiles} Files) - (${topTotalBytes})
+dailystats.wkup.total=${color}04${bold}Total Uploads For the Week: ${bold}${coloroff}(${totalFiles} Files) - (${totalBytes})
 
 dailystats.wkdn=${color}04${bold}Top Downloaders For The Week:
 dailystats.wkdn.item=${color} - ${color}04${bold}[${coloroff}${num}${color}04${bold}]${coloroff} - ${name} - (${files} Files) - (${bytes})${color}04${bold}
 dailystats.wkdn.none=${color}04${bold}Nobody Downloaded Anything This Week!
+dailystats.wkdn.toptotal=${color}04${bold}Top Total Downloads For the Week: ${bold}${coloroff}(${topTotalFiles} Files) - (${topTotalBytes})
+dailystats.wkdn.total=${color}04${bold}Total Downloads For the Week: ${bold}${coloroff}(${totalFiles} Files) - (${totalBytes})

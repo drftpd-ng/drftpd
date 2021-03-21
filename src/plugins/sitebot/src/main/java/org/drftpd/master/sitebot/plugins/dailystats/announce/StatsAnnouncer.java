@@ -19,10 +19,12 @@ package org.drftpd.master.sitebot.plugins.dailystats.announce;
 
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
+import org.drftpd.common.util.Bytes;
 import org.drftpd.master.sitebot.AbstractAnnouncer;
 import org.drftpd.master.sitebot.AnnounceWriter;
 import org.drftpd.master.sitebot.SiteBot;
 import org.drftpd.master.sitebot.config.AnnounceConfig;
+import org.drftpd.master.sitebot.plugins.dailystats.DailyStats;
 import org.drftpd.master.sitebot.plugins.dailystats.UserStats;
 import org.drftpd.master.sitebot.plugins.dailystats.event.StatsEvent;
 import org.drftpd.master.util.ReplacerUtils;
@@ -32,10 +34,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
 
-/**
- * @author djb61
- * @version $Id: StatsAnnouncer.java 2393 2011-04-11 20:47:51Z cyber1331 $
- */
 public class StatsAnnouncer extends AbstractAnnouncer {
 
     private AnnounceConfig _config;
@@ -83,16 +81,34 @@ public class StatsAnnouncer extends AbstractAnnouncer {
             String announceKey = "dailystats." + statsType;
             sayOutput(ReplacerUtils.jprintf(announceKey, env, _bundle), writer);
             int count = 1;
+            long topTotalFiles = 0;
+            long topTotalBytes = 0;
+            String totalFiles = "";
+            String totalBytes = "";
             for (UserStats line : outputStats) {
-                env.put("num", count);
-                env.put("name", line.getName());
-                env.put("files", line.getFiles());
-                env.put("bytes", line.getBytes());
-                sayOutput(ReplacerUtils.jprintf(announceKey + ".item", env, _bundle), writer);
-                count++;
+                if (line.getName().equals("totalStats") ) {
+                    totalFiles = line.getFiles();
+                    totalBytes = line.getBytes();
+                } else {
+                    env.put("num", count);
+                    env.put("name", line.getName());
+                    env.put("files", line.getFiles());
+                    env.put("bytes", line.getBytes());
+                    topTotalFiles += Long.parseLong(line.getFiles());
+                    topTotalBytes += Bytes.parseBytes(line.getBytes());
+                    sayOutput(ReplacerUtils.jprintf(announceKey + ".item", env, _bundle), writer);
+                    count++;
+                }
             }
             if (count == 1) {
                 sayOutput(ReplacerUtils.jprintf(announceKey + ".none", env, _bundle), writer);
+            } else {
+                env.put("topTotalFiles", topTotalFiles);
+                env.put("topTotalBytes", Bytes.formatBytes(topTotalBytes));
+                sayOutput(ReplacerUtils.jprintf(announceKey + ".toptotal", env, _bundle), writer);
+                env.put("totalFiles", totalFiles);
+                env.put("totalBytes", totalBytes);
+                sayOutput(ReplacerUtils.jprintf(announceKey + ".total", env, _bundle), writer);
             }
         }
     }
