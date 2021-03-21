@@ -1,4 +1,3 @@
-# $Id$
 request.success=${request.name} added to requests
 request.exists=${request.name} has already been requested
 request.error=Error while creating request directory inside ${request.root}, check your logs
@@ -10,7 +9,7 @@ reqfilled.notfound=Can't fill an unexisting request - ${request.name}
 reqfilled.root.notfound=${request.root} doesn't exist, unable to fill request
 
 requests.header=REQUESTS:
-requests.list=[${num}] ${request.name} by ${request.user}
+requests.list=[${num}] ${request.name} by ${request.user} on ${request.date}
 requests.footer=Use SITE REQFILLED <name> after you fill a request.
 
 reqdel.success=${request.name} was deleted

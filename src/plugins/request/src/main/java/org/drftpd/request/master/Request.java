@@ -34,6 +34,7 @@ import org.drftpd.master.vfs.ListUtils;
 import org.drftpd.slave.exceptions.FileExistsException;
 
 import java.io.FileNotFoundException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -52,6 +53,7 @@ public class Request extends CommandInterface {
 
     private String _reqFilledPrefix;
     private String _requestPrefix;
+    private String _requestDateFormat;
 
     private ArrayList<Pattern> _requestDenyRegex;
 
@@ -81,6 +83,7 @@ public class Request extends CommandInterface {
 
         _reqFilledPrefix = props.getProperty("reqfilled.prefix", "FILLED-for.");
         _requestPrefix = props.getProperty("request.prefix", "REQUEST-by.");
+        _requestDateFormat = props.getProperty("request.dateformat", "yyyy-MM-dd @ HH:mm");
 
         _requestDenyRegex.clear();
         int i = 1;
@@ -236,18 +239,32 @@ public class Request extends CommandInterface {
 
         User user = request.getSession().getUserNull(request.getUser());
 
+        SimpleDateFormat sdf = new SimpleDateFormat(_requestDateFormat);
+
         try {
-            for (DirectoryHandle dir : getRequestDirectory(request).getDirectories(user)) {
+
+                ArrayList<RequestsSort> ReqSort = new ArrayList<>();
+
+                for (DirectoryHandle dir : getRequestDirectory(request).getDirectories(user)) {
                 if (!dir.getName().startsWith(_requestPrefix)) {
                     continue;
                 }
 
                 RequestParser parser = new RequestParser(dir.getName(), dir.getUsername());
 
-                env.put("num", Integer.toString(i));
-                env.put("request.user", dir.getUsername());
-                env.put("request.name", parser.getRequestName());
+                ReqSort.add(new RequestsSort(parser.getRequestName(), dir.getUsername(), dir.getInode().getCreationTime()));
+                
+            }
 
+            Collections.sort(ReqSort);
+            for(RequestsSort rs:ReqSort){
+
+                Date requestDate = new Date(rs.getRequestTime());
+
+                env.put("num", Integer.toString(i));
+                env.put("request.user", rs.getRequestUser());
+                env.put("request.name", rs.getRequestName());
+                env.put("request.date", sdf.format(requestDate));
                 i++;
 
                 response.addComment(request.getSession().jprintf(_bundle, "requests.list", env, request.getUser()));
@@ -319,6 +336,39 @@ public class Request extends CommandInterface {
         }
 
         return response;
+    }
+
+    private class RequestsSort implements Comparable<RequestsSort> {
+        private String _requestName;
+        private String _requestUser;
+        private Long _requestTime;
+
+        RequestsSort(String requestName, String requestUser, Long requestTime){
+            _requestName = requestName;
+            _requestUser = requestUser;
+            _requestTime = requestTime;
+        }
+
+        public String getRequestUser() {
+            return _requestUser;
+        }
+
+        public String getRequestName() {
+            return _requestName;
+        }
+
+        public Long getRequestTime()  {
+            return _requestTime;
+        }
+
+        public int compareTo(RequestsSort rs){
+            if(_requestTime==rs._requestTime)
+                return 0;
+            else if(_requestTime>rs._requestTime)
+                return 1;
+            else
+                return -1;
+        }
     }
 
     @EventSubscriber

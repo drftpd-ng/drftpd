@@ -26,3 +26,5 @@ request.deny.1=[^\\p{ASCII}]
 reqfilled.prefix=FILLED-for.
 request.prefix=REQUEST-by.
 
+# Define date format.
+request.dateformat=yyyy-MM-dd @ HH:mm

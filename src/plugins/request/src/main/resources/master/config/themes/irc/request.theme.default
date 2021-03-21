@@ -1,4 +1,3 @@
-# $Id$
 request.exists=${color}15${bold}REQUEST${bold}${coloroff} -> ${bold}${request.name}${bold} has already been requested
 request.error=${color}15${bold}REQUEST${bold}${coloroff} -> Error while creating request directory inside ${bold}${request.root}${bold}, check your logs
 
@@ -8,7 +7,7 @@ reqfilled.notfound=${color}15${bold}REQUEST${bold}${coloroff} -> Can't fill an u
 reqfilled.root.notfound=${color}15${bold}REQUEST${bold}${coloroff} -> ${bold}${request.root}${bold} doesn't exist, unable to fill request
 
 requests.header=${color}15${bold}REQUESTS${bold}${coloroff}:
-requests.list=${color}15[${coloroff}${num}${color}15]${coloroff} ${request.name} by ${bold}${request.user}${bold}
+requests.list=${color}15[${coloroff}${num}${color}15]${coloroff} ${request.name} by ${bold}${request.user}${bold} on ${bold}${request.date}${bold}
 requests.footer=${color}15${bold}REQUESTS${bold}${coloroff}: Use !reqfilled <name> after you fill a request.
 
 reqdel.notfound=${color}15${bold}REQDEL${bold}${coloroff} -> ${bold}${request.name}${bold} was not found.
