@@ -55,15 +55,12 @@ public class AutoFreeSpaceSettings {
 
         // Handle operating mode
         String mode = p.getProperty("mode", MODE_DISABLED);
-        if (mode.equalsIgnoreCase(MODE_DISABLED)) {
-            _mode = MODE_DISABLED;
-        } else if (mode.equalsIgnoreCase(MODE_SPACE)) {
+        if (mode.equalsIgnoreCase(MODE_SPACE)) {
             _mode = MODE_SPACE;
         } else if (mode.equalsIgnoreCase(MODE_DATE)) {
             _mode = MODE_DATE;
-        } else {
+        } else if (!mode.equalsIgnoreCase(MODE_DISABLED)) {
             logger.error("Incorrect mode [" + mode + "] detected for AutoFreeSpace, plugin disabled!!!");
-            _mode = MODE_DISABLED;
         }
 
         // Handle excludeSlaves
