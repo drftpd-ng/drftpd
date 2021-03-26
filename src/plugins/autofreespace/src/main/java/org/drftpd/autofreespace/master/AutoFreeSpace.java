@@ -309,7 +309,11 @@ public class AutoFreeSpace implements PluginInterface {
                         if (update) {
                             // Guard for announce.only setting
                             if (!checkedReleases.contains(file.getName())) {
-                                logger.debug("AUTODELETE: New oldest file: {}. Found in section {}", oldest.getName(), si.getName());
+                                if (oldest == null) {
+                                    logger.debug("AUTODELETE: Oldest file: {}. Found in section {}", file.getName(), si.getName());
+                                } else {
+                                    logger.debug("AUTODELETE: New oldest file: {} (previous oldest: {}). Found in section {}", file.getName(), oldest.getName(), si.getName());
+                                }
                                 oldest = file;
                             }
                         }
