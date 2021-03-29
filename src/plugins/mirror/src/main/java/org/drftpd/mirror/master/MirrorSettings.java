@@ -110,8 +110,8 @@ public class MirrorSettings {
 
             // Handle slaves
             List<String> slaves = new ArrayList<>();
-            if (cfg.getProperty(id + ".slaves", null) != null) {
-                slaves = Arrays.asList(cfg.getProperty(id + ".slaves", null).trim().split("\\s"));
+            if (cfg.getProperty(id + ".slaves") != null) {
+                slaves = Arrays.asList(cfg.getProperty(id + ".slaves").trim().split("\\s"));
                 for (String slaveName : slaves) {
                     try {
                         GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(slaveName);
@@ -123,8 +123,8 @@ public class MirrorSettings {
 
             // Handle excludeSlaves
             List<String> excludeSlaves = new ArrayList<>();
-            if (cfg.getProperty(id + ".excludeSlaves", null) != null) {
-                excludeSlaves = Arrays.asList(cfg.getProperty(id + ".excludeSlaves", null).trim().split("\\s"));
+            if (cfg.getProperty(id + ".excludeSlaves") != null) {
+                excludeSlaves = Arrays.asList(cfg.getProperty(id + ".excludeSlaves").trim().split("\\s"));
                 for (String slaveName : excludeSlaves) {
                     try {
                         GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(slaveName);
