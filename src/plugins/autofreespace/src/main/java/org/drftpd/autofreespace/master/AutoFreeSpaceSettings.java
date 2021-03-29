@@ -68,7 +68,7 @@ public class AutoFreeSpaceSettings {
 
         // Handle excludeSlaves
         if (p.getProperty("excluded.slaves") != null) {
-            for (String slaveName : p.getProperty("excluded.slaves").split("\\s")) {
+            for (String slaveName : p.getProperty("excluded.slaves").trim().split("\\s")) {
                 try {
                     GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(slaveName);
                     _excludeSlaves.add(slaveName);
