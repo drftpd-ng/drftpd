@@ -56,7 +56,7 @@ public class MirrorSettings {
     }
 
     public void reload() {
-        logger.debug("Loading configation");
+        logger.debug("Loading configuration");
         Properties cfg = ConfigLoader.loadPluginConfig("mirror.conf");
 
         _unmirrorTime = Long.parseLong(cfg.getProperty("pre.unmirror.time", "60")) * 60000L;
@@ -69,7 +69,6 @@ public class MirrorSettings {
 
         // Handle sections
         while ((nbrOfMirrors = PropertyHelper.getProperty(cfg, id + ".nbrOfMirrors", null)) != null) {
-            id++;
             int nbrOfMirrorsInt;
             try {
                 nbrOfMirrorsInt = Integer.parseInt(nbrOfMirrors);
@@ -110,22 +109,28 @@ public class MirrorSettings {
             }
 
             // Handle slaves
-            List<String> slaves = new ArrayList<>(Arrays.asList(cfg.getProperty(id + ".slaves", "").trim().split("\\s")));
-            for (String slaveName : slaves) {
-                try {
-                    GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(slaveName);
-                } catch(ObjectNotFoundException e) {
-                    logger.error("Slave with name [{}] does not exist, config error for id {}", slaveName, id, e);
+            List<String> slaves = new ArrayList<>();
+            if (cfg.getProperty(id + ".slaves") != null) {
+                slaves = Arrays.asList(cfg.getProperty(id + ".slaves").trim().split("\\s"));
+                for (String slaveName : slaves) {
+                    try {
+                        GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(slaveName);
+                    } catch(ObjectNotFoundException e) {
+                        logger.error("Slave with name [{}] does not exist, config error for id {}", slaveName, id, e);
+                    }
                 }
             }
 
             // Handle excludeSlaves
-            List<String> excludeSlaves = new ArrayList<>(Arrays.asList(cfg.getProperty(id + "excludeSlaves", "").trim().split("\\s")));
-            for (String slaveName : excludeSlaves) {
-                try {
-                    GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(slaveName);
-                } catch(ObjectNotFoundException e) {
-                    logger.error("Slave with name [{}] does not exist, config error for id {}", slaveName, id, e);
+            List<String> excludeSlaves = new ArrayList<>();
+            if (cfg.getProperty(id + ".excludeSlaves") != null) {
+                excludeSlaves = Arrays.asList(cfg.getProperty(id + ".excludeSlaves").trim().split("\\s"));
+                for (String slaveName : excludeSlaves) {
+                    try {
+                        GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(slaveName);
+                    } catch(ObjectNotFoundException e) {
+                        logger.error("Slave with name [{}] does not exist, config error for id {}", slaveName, id, e);
+                    }
                 }
             }
             configurations.add(new MirrorConfiguration(nbrOfMirrorsInt, priority, paths, excludedPaths, slaves, excludeSlaves));
