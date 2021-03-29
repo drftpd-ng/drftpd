@@ -17,6 +17,8 @@
  */
 package org.drftpd.mediainfo.slave;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.drftpd.common.exceptions.AsyncResponseException;
 import org.drftpd.common.network.AsyncCommandArgument;
 import org.drftpd.common.network.AsyncResponse;
@@ -34,8 +36,15 @@ import java.io.IOException;
  * @author scitz0
  */
 public class MediaInfoHandler extends AbstractHandler {
+
+    private static final Logger logger = LogManager.getLogger(MediaInfo.class);
+
     public MediaInfoHandler(SlaveProtocolCentral central) {
         super(central);
+        if (!MediaInfo.hasWorkingMediaInfo()) {
+            throw new RuntimeException("Unable to find a functioning mediainfo binary");
+        }
+        logger.info("Handler initialized");
     }
 
     @Override

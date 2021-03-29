@@ -36,6 +36,7 @@ import java.util.regex.Pattern;
 public class MediaInfo implements Serializable {
     public static final Key<MediaInfo> MEDIAINFO = new Key<>(MediaInfo.class, "mediainfo");
     private static final Logger logger = LogManager.getLogger(MediaInfo.class);
+    private static final String MEDIAINFO_COMMAND = "mediainfo";
     private String _fileName = "";
     private long _checksum;
     private boolean _sampleOk = true;
@@ -55,6 +56,21 @@ public class MediaInfo implements Serializable {
      */
     public MediaInfo() { }
 
+    public static boolean hasWorkingMediaInfo() {
+        try {
+            ProcessBuilder builder = new ProcessBuilder(MEDIAINFO_COMMAND, "--version");
+            Process proc = builder.start();
+            int status = proc.waitFor();
+            if (status != 0) {
+                throw new RuntimeException("Exist code of " + MEDIAINFO_COMMAND + " --version yielded exit code " + status);
+            }
+            return true;
+        } catch(Exception e) {
+            logger.fatal("Something went wrong trying to see if " + MEDIAINFO_COMMAND + " binary exists and works", e);
+        }
+        return false;
+    }
+
     public static MediaInfo getMediaInfoFromFile(File file) throws IOException {
         MediaInfo mediaInfo = new MediaInfo();
 
@@ -64,7 +80,7 @@ public class MediaInfo implements Serializable {
         Pattern pSection = Pattern.compile("^(General|Video|Audio|Text|Chapters)( #\\d+)?$", Pattern.CASE_INSENSITIVE);
         Pattern pValue = Pattern.compile("^(.*?)\\s+: (.*)$", Pattern.CASE_INSENSITIVE);
 
-        ProcessBuilder builder = new ProcessBuilder("mediainfo", filePath);
+        ProcessBuilder builder = new ProcessBuilder(MEDIAINFO_COMMAND, filePath);
         Process pDD = builder.start();
         BufferedReader stdout = new BufferedReader(new InputStreamReader(pDD.getInputStream()));
 
