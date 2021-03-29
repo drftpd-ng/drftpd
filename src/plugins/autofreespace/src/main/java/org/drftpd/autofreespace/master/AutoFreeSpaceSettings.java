@@ -55,23 +55,20 @@ public class AutoFreeSpaceSettings {
 
         // Handle operating mode
         String mode = p.getProperty("mode", MODE_DISABLED);
-        if (mode.equalsIgnoreCase(MODE_DISABLED)) {
-            _mode = MODE_DISABLED;
-        } else if (mode.equalsIgnoreCase(MODE_SPACE)) {
+        if (mode.equalsIgnoreCase(MODE_SPACE)) {
             _mode = MODE_SPACE;
         } else if (mode.equalsIgnoreCase(MODE_DATE)) {
             _mode = MODE_DATE;
         } else {
-            logger.error("Incorrect mode [" + mode + "] detected for AutoFreeSpace, plugin disabled!!!");
+            if (!mode.equalsIgnoreCase(MODE_DISABLED)) {
+                logger.error("Incorrect mode [" + mode + "] detected for AutoFreeSpace, plugin disabled!!!");
+            }
             _mode = MODE_DISABLED;
         }
 
         // Handle excludeSlaves
-        _excludeSlaves = new ArrayList<>();
-        String slavesExcluded = p.getProperty("excluded.slaves", "").trim();
-        if (!slavesExcluded.isEmpty()) {
-            List<String> excludeSlaves = new ArrayList<>(Arrays.asList(slavesExcluded.split("\\s")));
-            for (String slaveName : excludeSlaves) {
+        if (p.getProperty("excluded.slaves") != null) {
+            for (String slaveName : p.getProperty("excluded.slaves").trim().split("\\s")) {
                 try {
                     GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(slaveName);
                     _excludeSlaves.add(slaveName);
