@@ -1,9 +1,8 @@
 <h1 align="center">
-  <a href="http://drftpd.org/"><img src="http://drftpd.org/images/Drftpd-logo-4-resize.jpg" alt="DrFTPD"></a>
+  <a href="http://drftpd.org/"><img src="https://github.com/drftpd-ng/drftpd-ng.github.io/blob/2611e3c1010b6c3c9185a542fb6075eb3c697128/docs/resources/logo.jpg" alt="DrFTPD"></a>
 </h1>
 <p align="center">
   <a href="https://circleci.com/gh/drftpd-ng" alt="Build"><img src="https://circleci.com/gh/drftpd-ng/drftpd/tree/master.svg?style=shield" /></a>
-  <a href="http://drftpd.org/" alt="Website"><img src="https://img.shields.io/badge/website-drftpd.org-blue.svg" /></a>
   <a href="https://github.com/drftpd-ng/drftpd/wiki/Documentation" alt="Documentation"><img src="https://img.shields.io/badge/Documentation-RTFM-orange.svg" /></a>
 </p>
 
