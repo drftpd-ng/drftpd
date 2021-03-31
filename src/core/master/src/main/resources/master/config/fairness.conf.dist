@@ -2,19 +2,19 @@
 ## Fairness Settings ##
 #######################
 #
-# This configuration file configures the ratio's that the "site fairness" command adheres too
+# This configuration file configures the ratio's that the "site fairness" command adheres too.
 #
-# Fairness is calculated by dividing the uploaded bytes by the downloaded bytes by a user
+# Fairness is calculated by dividing the uploaded bytes by the downloaded bytes by a user.
 #
 
-# What would we consider a ok fairness ratio
+# What would we consider a ok fairness ratio.
 # Default: [0.5]
-# fairness.ok=0.5
+#fairness.ok=0.5
 
-# What would we consider a good fairness ratio
+# What would we consider a good fairness ratio.
 # Default: [1.0]
-# fairness.good=1.0
+#fairness.good=1.0
 
-# What would we consider a awesome fairness ratio
+# What would we consider a awesome fairness ratio.
 # Default: [2.0]
-# fairness.awesome=2.0
+#fairness.awesome=2.0
