@@ -53,6 +53,10 @@ public class UserManagementHandler extends CommandInterface {
     private static final UserCaseInsensitiveComparator USER_CASE_INSENSITIVE_COMPARATOR = new UserCaseInsensitiveComparator();
     private ResourceBundle _bundle;
 
+    private static final double FAIRNESS_DEFAULT_RATIO_OK = 0.5;
+    private static final double FAIRNESS_DEFAULT_RATIO_GOOD = 1.0;
+    private static final double FAIRNESS_DEFAULT_RATIO_AWESOME = 2.0;
+
     public void initialize(String method, String pluginName, StandardCommandManager cManager) {
         super.initialize(method, pluginName, cManager);
         _bundle = cManager.getResourceBundle();
@@ -937,40 +941,65 @@ public class UserManagementHandler extends CommandInterface {
 
     public CommandResponse doSITE_FAIRNESS(CommandRequest request) {
 
-        Collection<User> myUsers = GlobalContext.getGlobalContext().getUserManager().getAllUsers();
+        Collection<User> users;
+        if (request.hasArgument()) {
+            StringTokenizer st = new StringTokenizer(request.getArgument());
+            if (st.countTokens() != 1) {
+                return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+            }
+            String arg = st.nextToken();
+            if(arg.charAt(0) == '=') {
+                try {
+                    users = GlobalContext.getGlobalContext().getUserManager().getAllUsersByGroup(GlobalContext.getGlobalContext().getUserManager().getGroupByName(arg.substring(1)));
+                } catch (NoSuchGroupException | GroupFileException e) {
+                    return new CommandResponse(550, "Requested group " + arg.substring(1) + " does not exist");
+                }
+            } else
+            {
+                users = new ArrayList<>();
+                try {
+                    users.add(GlobalContext.getGlobalContext().getUserManager().getUserByName(arg));
+                } catch (NoSuchUserException | UserFileException e) {
+                    return new CommandResponse(550, "Requested user " + arg + " does not exist");
+                }
+            }
+        } else {
+            users = GlobalContext.getGlobalContext().getUserManager().getAllUsers();
+        }
+
+        // If we get here we are supposed to have at least 1 entry in our users collection
+        if (users.size() <= 0) {
+            return new CommandResponse(550, "An unexpected situation has occurred. Stopping execution");
+        }
+        FairnessConfig cfg = new FairnessConfig();
+
         CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
         Map<String, Object> env = new HashMap<>();
 
-        for (User user : myUsers) {
+        for (User user : users) {
+            env.put("username", user.getName());
+            env.put("bytesup", Bytes.formatBytes(user.getUploadedBytes()));
+            env.put("bytesdn", Bytes.formatBytes(user.getDownloadedBytes()));
 
-                double RATIO_OK = 0.5;
-                double RATIO_GOOD = 1.0;
-                double RATIO_AWESOME = 2.0;
-                double fairnessratio = 0;
+            if (user.getDownloadedBytes() <= 0 || user.getUploadedBytes() <= 0) {
+                response.addComment(request.getSession().jprintf(_bundle, "fairness.noratio", env, user.getName()));
+            } else {
 
-                env.put("username", user.getName());
-                env.put("bytesup", Bytes.formatBytes(user.getUploadedBytes()));
-                env.put("bytesdn", Bytes.formatBytes(user.getDownloadedBytes()));
+                double fairnessratio = (double) user.getUploadedBytes() / (double) user.getDownloadedBytes();
+                env.put("fairnessratio", new DecimalFormat("0.00").format(fairnessratio));
 
-                if (user.getDownloadedBytes() <= 0 || user.getUploadedBytes() <= 0) {
-                    response.addComment(request.getSession().jprintf(_bundle, "fairness.noratio", env, user.getName()));
+                if (fairnessratio < cfg.getOk()) {
+                    response.addComment(request.getSession().jprintf(_bundle, "fairness.bad", env, user.getName()));
+                } else if (fairnessratio < cfg.getGood()) {
+                    response.addComment(request.getSession().jprintf(_bundle, "fairness.ok", env, user.getName()));
+                } else if (fairnessratio < cfg.getAwesome()) {
+                    response.addComment(request.getSession().jprintf(_bundle, "fairness.good", env, user.getName()));
                 } else {
-
-                    fairnessratio = (double)user.getUploadedBytes()/(double)user.getDownloadedBytes();
-                    env.put("fairnessratio", new DecimalFormat("0.00").format(fairnessratio));
-
-                    if (fairnessratio < RATIO_OK) {
-                        response.addComment(request.getSession().jprintf(_bundle, "fairness.bad", env, user.getName()));
-                    } else if (fairnessratio < RATIO_GOOD) {
-                        response.addComment(request.getSession().jprintf(_bundle, "fairness.ok", env, user.getName()));
-                    } else if (fairnessratio < RATIO_AWESOME) {
-                        response.addComment(request.getSession().jprintf(_bundle, "fairness.good", env, user.getName()));
-                    } else if (fairnessratio >= RATIO_AWESOME) {
-                        response.addComment(request.getSession().jprintf(_bundle, "fairness.awesome", env, user.getName()));
-                    }
+                    response.addComment(request.getSession().jprintf(_bundle, "fairness.awesome", env, user.getName()));
                 }
+            }
         }
-    return response;
+        return response;
     }
 
     public CommandResponse doSITE_SWAP(CommandRequest request) throws ImproperUsageException {
@@ -1982,5 +2011,49 @@ public class UserManagementHandler extends CommandInterface {
         public int compare(User user0, User user1) {
             return String.CASE_INSENSITIVE_ORDER.compare(user0.getName(), user1.getName());
         }
+    }
+
+    private static class FairnessConfig {
+        private double _ok;
+        private double _good;
+        private double _awesome;
+
+        public FairnessConfig() {
+            Properties p = ConfigLoader.loadConfig("fairness.conf");
+
+            try {
+                _ok = Double.parseDouble(p.getProperty("fairness.ok"));
+            } catch(NumberFormatException e) {
+                logger.error("Failed at parsing 'fairness.ok'", e);
+                _ok = FAIRNESS_DEFAULT_RATIO_OK;
+            } catch(Exception e) {
+                logger.debug("A generic exception happened while trying to get 'fairness.ok', we should be able to ignore this");
+                _ok = FAIRNESS_DEFAULT_RATIO_OK;
+            }
+
+            try {
+                _good = Double.parseDouble(p.getProperty("fairness.good"));
+            } catch(NumberFormatException e) {
+                logger.error("Failed at parsing 'fairness.good'", e);
+                _good = FAIRNESS_DEFAULT_RATIO_GOOD;
+            } catch(Exception e) {
+                logger.debug("A generic exception happened while trying to get 'fairness.good', we should be able to ignore this");
+                _good = FAIRNESS_DEFAULT_RATIO_GOOD;
+            }
+
+            try {
+                _awesome = Double.parseDouble(p.getProperty("fairness.awesome"));
+            } catch(NumberFormatException e) {
+                logger.error("Failed at parsing 'fairness.awesome'", e);
+                _awesome = FAIRNESS_DEFAULT_RATIO_AWESOME;
+            } catch(Exception e) {
+                logger.debug("A generic exception happened while trying to get 'fairness.awesome', we should be able to ignore this");
+                _awesome = FAIRNESS_DEFAULT_RATIO_AWESOME;
+            }
+        }
+
+        public double getOk() { return _ok; }
+        public double getGood() { return _good; }
+        public double getAwesome() { return _awesome; }
     }
 }
