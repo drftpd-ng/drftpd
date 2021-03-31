@@ -949,6 +949,10 @@ public class UserManagementHandler extends CommandInterface {
             }
             String arg = st.nextToken();
             if(arg.charAt(0) == '=') {
+                // Deal with the scenario where we only get a '='
+                if (arg.length() <= 1) {
+                    return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+                }
                 try {
                     users = GlobalContext.getGlobalContext().getUserManager().getAllUsersByGroup(GlobalContext.getGlobalContext().getUserManager().getGroupByName(arg.substring(1)));
                 } catch (NoSuchGroupException | GroupFileException e) {
@@ -958,7 +962,7 @@ public class UserManagementHandler extends CommandInterface {
             {
                 users = new ArrayList<>();
                 try {
-                    users.add(GlobalContext.getGlobalContext().getUserManager().getUserByName(arg));
+                    users.add(GlobalContext.getGlobalContext().getUserManager().getUserByNameIncludeDeleted(arg));
                 } catch (NoSuchUserException | UserFileException e) {
                     return new CommandResponse(550, "Requested user " + arg + " does not exist");
                 }
