@@ -948,7 +948,6 @@ public class UserManagementHandler extends CommandInterface {
                 double RATIO_AWESOME = 2.0;
                 double fairnessratio = 0;
 
-                env.put("fairnessratio", new DecimalFormat("0.00").format(fairnessratio));
                 env.put("username", user.getName());
                 env.put("bytesup", Bytes.formatBytes(user.getUploadedBytes()));
                 env.put("bytesdn", Bytes.formatBytes(user.getDownloadedBytes()));
@@ -958,6 +957,7 @@ public class UserManagementHandler extends CommandInterface {
                 } else {
 
                     fairnessratio = (double)user.getUploadedBytes()/(double)user.getDownloadedBytes();
+                    env.put("fairnessratio", new DecimalFormat("0.00").format(fairnessratio));
 
                     if (fairnessratio < RATIO_OK) {
                         response.addComment(request.getSession().jprintf(_bundle, "fairness.bad", env, user.getName()));
