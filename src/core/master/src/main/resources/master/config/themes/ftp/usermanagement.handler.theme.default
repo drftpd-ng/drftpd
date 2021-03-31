@@ -54,6 +54,12 @@ deluser.success=User ${targetuser} deleted.
 
 download.empty=No active download connections found.
 
+fairness.noratio=[user] ${username} [Totally DN: ${bytesdn}] [Totally UL: ${bytesup}]
+fairness.bad=[user] {username} [Totally DN: ${bytesdn}] [Totally UL: ${bytesup}] [Fairness-Ratio: ${fairnessratio} :(]
+fairness.ok=[user] ${username} [Totally DN: ${bytesdn}] [Totally UL: ${bytesup}] [Fairness-Ratio: ${fairnessratio} :/]
+fairness.good=[user] ${username} [Totally DN: ${bytesdn}] [Totally UL: ${bytesup}] [Fairness-Ratio: ${fairnessratio} :)]
+fairness.awesome=[user] ${username} [Totally DN: ${bytesdn}] [Totally UL: ${bytesup}] [Fairness-Ratio: ${fairnessratio} :D]
+
 ginfo.head=\
  _____________.______________________________\\\\     _/___________\n\
 \\\\      _     |     _      /    _       /    \\\\     \\\\      _   \\ GINFO\n\
