@@ -54,6 +54,12 @@ deluser.success=${color}15${bold}DELUSER${coloroff}: User ${targetuser} deleted.
 
 download.empty=${color}15${bold}DOWNLOAD${coloroff}: No active download connections found.
 
+fairness.noratio= ${color}02[user]${coloroff} ${username} [Totally DN: ${bytesdn}] [Totally UL: ${bytesup}]
+fairness.bad= ${color}02[user]${coloroff} ${color}04${username}${coloroff} [Totally DN: ${bytesdn}] [Totally UL: ${bytesup}] ${color}04[Fairness-Ratio: ${fairnessratio} :(]${coloroff}
+fairness.ok= ${color}02[user]${coloroff} ${color}07${username}${coloroff} [Totally DN: ${bytesdn}] [Totally UL: ${bytesup}] ${color}07[Fairness-Ratio: ${fairnessratio} :/]${coloroff}
+fairness.good= ${color}02[user]${coloroff} ${color}03${username}${coloroff} [Totally DN: ${bytesdn}] [Totally UL: ${bytesup}] ${color}03[Fairness-Ratio: ${fairnessratio} :) ]${coloroff}
+fairness.awesome= ${color}02[user]${coloroff} ${color}09${username}${coloroff} [Totally DN: ${bytesdn}] [Totally UL: ${bytesup}] ${color}09[Fairness-Ratio: ${fairnessratio} :D]${coloroff}
+
 ginfo.head=\
 .-----------------------------------------------------------------------.\n\
 |  Username |     Up |     Megs |     Dn |     Megs | Ratio   |    Wkly |\n\

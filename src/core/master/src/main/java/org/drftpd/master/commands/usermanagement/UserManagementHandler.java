@@ -37,6 +37,7 @@ import org.drftpd.slave.exceptions.FileExistsException;
 import org.drftpd.slave.network.Transfer;
 
 import java.io.FileNotFoundException;
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -932,6 +933,44 @@ public class UserManagementHandler extends CommandInterface {
         }
 
         return response;
+    }
+
+    public CommandResponse doSITE_FAIRNESS(CommandRequest request) {
+
+        Collection<User> myUsers = GlobalContext.getGlobalContext().getUserManager().getAllUsers();
+        CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
+        Map<String, Object> env = new HashMap<>();
+
+        for (User user : myUsers) {
+
+                double RATIO_OK = 0.5;
+                double RATIO_GOOD = 1.0;
+                double RATIO_AWESOME = 2.0;
+                double fairnessratio = 0;
+
+                env.put("fairnessratio", new DecimalFormat("0.00").format(fairnessratio));
+                env.put("username", user.getName());
+                env.put("bytesup", Bytes.formatBytes(user.getUploadedBytes()));
+                env.put("bytesdn", Bytes.formatBytes(user.getDownloadedBytes()));
+
+                if (user.getDownloadedBytes() <= 0 || user.getUploadedBytes() <= 0) {
+                    response.addComment(request.getSession().jprintf(_bundle, "fairness.noratio", env, user.getName()));
+                } else {
+
+                    fairnessratio = (double)user.getUploadedBytes()/(double)user.getDownloadedBytes();
+
+                    if (fairnessratio < RATIO_OK) {
+                        response.addComment(request.getSession().jprintf(_bundle, "fairness.bad", env, user.getName()));
+                    } else if (fairnessratio < RATIO_GOOD) {
+                        response.addComment(request.getSession().jprintf(_bundle, "fairness.ok", env, user.getName()));
+                    } else if (fairnessratio < RATIO_AWESOME) {
+                        response.addComment(request.getSession().jprintf(_bundle, "fairness.good", env, user.getName()));
+                    } else if (fairnessratio >= RATIO_AWESOME) {
+                        response.addComment(request.getSession().jprintf(_bundle, "fairness.awesome", env, user.getName()));
+                    }
+                }
+        }
+    return response;
     }
 
     public CommandResponse doSITE_SWAP(CommandRequest request) throws ImproperUsageException {
