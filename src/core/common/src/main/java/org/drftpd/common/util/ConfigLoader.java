@@ -27,7 +27,7 @@ import java.util.Properties;
 public class ConfigLoader {
 
     public static String configPath(String confDirectory) {
-        String configPath = System.getenv("DRFTPD_CONFIG_PATH"); // TODO: Do we even use this? or is this a feature we forgot about?
+        String configPath = System.getenv("DRFTPD_CONFIG_PATH");
         return configPath != null ? (configPath + "/" + confDirectory) : confDirectory;
     }
 
