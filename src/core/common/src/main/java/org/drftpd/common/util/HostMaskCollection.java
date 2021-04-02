@@ -17,6 +17,8 @@
  */
 package org.drftpd.common.util;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.drftpd.common.exceptions.DuplicateElementException;
 import org.drftpd.common.socks.Ident;
 
@@ -34,6 +36,7 @@ import java.util.regex.PatternSyntaxException;
  */
 @SuppressWarnings("serial")
 public class HostMaskCollection extends ArrayList<HostMask> {
+    private static final Logger logger = LogManager.getLogger(HostMaskCollection.class);
 
     public HostMaskCollection() {
     }
@@ -74,9 +77,9 @@ public class HostMaskCollection extends ArrayList<HostMask> {
         return check(null, s.getInetAddress(), s);
     }
 
-    public boolean check(String ident, InetAddress a, Socket s)
-            throws PatternSyntaxException {
+    public boolean check(String ident, InetAddress a, Socket s) throws PatternSyntaxException {
         if (a == null) {
+            logger.error("InetAddress cannot be empty!");
             throw new NullPointerException();
         }
         for (HostMask mask : this) {

@@ -21,6 +21,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
+import org.drftpd.common.socks.Ident;
 import org.drftpd.common.util.PropertyHelper;
 import org.drftpd.master.commands.CommandManagerInterface;
 import org.drftpd.master.commands.usermanagement.UserManagement;
@@ -278,6 +279,35 @@ public class Master {
          * sslSock.startHandshake();
          * sock = sslSock;
          */
+
+        // Check hostmasks before we move further unless we expect a bouncer to connect (which is handled during doIDNT)
+        if (!GlobalContext.getConfig().getBouncerIps().contains(sock.getInetAddress())) {
+            String ident = "";
+            try {
+                ident = new Ident(sock).getUserName();
+            } catch (IOException e) {
+                if (GlobalContext.getConfig().getHideIps()) {
+                    logger.warn("Failed to get ident for <iphidden>");
+                } else {
+                    logger.warn("Failed to get ident for {}", sock.getInetAddress().getHostAddress());
+                }
+            }
+            boolean allowedConnection = false;
+            for (User u : GlobalContext.getGlobalContext().getUserManager().getAllUsers()) {
+                // Skip if user is deleted
+                if (!u.isDeleted()) {
+                    if (u.getHostMaskCollection().check(ident, sock.getInetAddress(), null)) {
+                        allowedConnection = true;
+                        break;
+                    }
+                }
+            }
+            if (!allowedConnection) {
+                logger.warn("Closing connecting as it is not allowed based on existing hostmasks");
+                sock.close();
+                return;
+            }
+        }
 
         BaseFtpConnection conn = new BaseFtpConnection(sock);
         _conns.add(conn);

@@ -305,19 +305,15 @@ public class BaseFtpConnection extends Session implements Runnable {
         GlobalContext.getConnectionManager().dumpThreadPool();
 
         _lastActive = System.currentTimeMillis();
-        if (!GlobalContext.getConfig().getHideIps()) {
-            logger.info("Handling new request from {}", getClientAddress().getHostAddress());
-            _thread.setName("FtpConn thread " + _thread.getId() + " from "
-                    + getClientAddress().getHostAddress());
-        } else {
+        if (GlobalContext.getConfig().getHideIps()) {
             logger.info("Handling new request from <iphidden>");
-            _thread.setName("FtpConn thread " + _thread.getId()
-                    + " from <iphidden>");
+            _thread.setName("FtpConn thread " + _thread.getId() + " from <iphidden>");
+        } else {
+            logger.info("Handling new request from {}", getClientAddress().getHostAddress());
+            _thread.setName("FtpConn thread " + _thread.getId() + " from " + getClientAddress().getHostAddress());
         }
 
-        _pool = new ThreadPoolExecutor(1, Integer.MAX_VALUE,
-                60L, TimeUnit.SECONDS, new SynchronousQueue<>(),
-                new CommandThreadFactory(_thread.getName()));
+        _pool = new ThreadPoolExecutor(1, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<>(), new CommandThreadFactory(_thread.getName()));
 
         try {
             _controlSocket.setSoTimeout(1000);
