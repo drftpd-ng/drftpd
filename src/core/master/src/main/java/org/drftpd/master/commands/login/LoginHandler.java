@@ -251,7 +251,7 @@ public class LoginHandler extends CommandInterface {
         try {
             InetAddress address = request.getSession().getObject(BaseFtpConnection.ADDRESS, null);
             String ident = request.getSession().getObject(BaseFtpConnection.IDENT, null);
-            if(ident == null) {
+            if (ident == null) {
                 logger.error("Somehow we got here with an empty IDENT, this should not be possible");
                 return new CommandResponse(530, "Internal server error");
             }
