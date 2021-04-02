@@ -17,6 +17,8 @@
  */
 package org.drftpd.common.util;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.drftpd.common.exceptions.DuplicateElementException;
 import org.drftpd.common.socks.Ident;
 
@@ -32,17 +34,16 @@ import java.util.regex.PatternSyntaxException;
  * @author mog
  * @version $Id$
  */
-@SuppressWarnings("serial")
 public class HostMaskCollection extends ArrayList<HostMask> {
+    private static final Logger logger = LogManager.getLogger(HostMaskCollection.class);
 
     public HostMaskCollection() {
     }
 
     /**
-     * Converts an existing Collection of String-based masks to a
-     * HostMaskCollection
+     * Converts an existing Collection of String-based masks to a HostMaskCollection
      *
-     * @param masks
+     * @param masks The collection of type String that contains the masks
      */
     public HostMaskCollection(Collection<String> masks) {
         for (String mask : masks) {
@@ -71,28 +72,26 @@ public class HostMaskCollection extends ArrayList<HostMask> {
     }
 
     public boolean check(Socket s) throws PatternSyntaxException {
-        return check(null, s.getInetAddress(), s);
+        String ident = "";
+        // Try to get an ident for the slave connection
+        try {
+            ident = new Ident(s).getUserName();
+        } catch (IOException ignore) {}
+        return check(ident, s.getInetAddress());
     }
 
-    public boolean check(String ident, InetAddress a, Socket s)
-            throws PatternSyntaxException {
+    public boolean check(String ident, InetAddress a) throws PatternSyntaxException {
+        if (ident == null ) {
+            logger.error("ident cannot be null!");
+            throw new NullPointerException();
+        }
         if (a == null) {
+            logger.error("InetAddress cannot be null!");
             throw new NullPointerException();
         }
         for (HostMask mask : this) {
             if (!mask.matchesHost(a)) {
                 continue;
-            }
-
-            // host matched
-            // request ident if no IDNT, ident hasn't been requested
-            // and ident matters in this hostmask
-            if (mask.isIdentMaskSignificant() && (ident == null)) {
-                try {
-                    ident = new Ident(s).getUserName();
-                } catch (IOException e) {
-                    ident = "";
-                }
             }
 
             if (mask.matchesIdent(ident)) {
