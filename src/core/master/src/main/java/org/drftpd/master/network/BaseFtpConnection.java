@@ -52,17 +52,18 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author mog
  * @version $Id$
  */
-@SuppressWarnings("serial")
 public class BaseFtpConnection extends Session implements Runnable {
 
-    public static final Key<InetAddress> ADDRESS = new Key<>(BaseFtpConnection.class, "address");
-    public static final Key<String> IDENT = new Key<>(BaseFtpConnection.class, "ident");
-    public static final Key<Boolean> FAILEDLOGIN = new Key<>(BaseFtpConnection.class, "failedlogin");
-    public static final Key<String> FAILEDREASON = new Key<>(BaseFtpConnection.class, "failedreason");
-    public static final Key<String> FAILEDUSERNAME = new Key<>(BaseFtpConnection.class, "failedusername");
-    public static final Key<Boolean> KILLGHOSTS = new Key<>(BaseFtpConnection.class, "killghosts");
-    public static final String NEWLINE = "\r\n";
+    // Keys for our BaseFtpConnection KeyedMap
+    public static final Key<InetAddress>    ADDRESS = new Key<>(BaseFtpConnection.class, "address");
+    public static final Key<String>         IDENT = new Key<>(BaseFtpConnection.class, "ident");
+    public static final Key<Boolean>        FAILEDLOGIN = new Key<>(BaseFtpConnection.class, "failedlogin");
+    public static final Key<String>         FAILEDREASON = new Key<>(BaseFtpConnection.class, "failedreason");
+    public static final Key<String>         FAILEDUSERNAME = new Key<>(BaseFtpConnection.class, "failedusername");
+    public static final Key<Boolean>        KILLGHOSTS = new Key<>(BaseFtpConnection.class, "killghosts");
+
     private static final Logger logger = LogManager.getLogger(BaseFtpConnection.class);
+
     /**
      * Is the current password authenticated?
      */
@@ -226,11 +227,10 @@ public class BaseFtpConnection extends Session implements Runnable {
         }
         try {
             return getGlobalContext().getUserManager().getUserByNameUnchecked(_user);
-        } catch (NoSuchUserException e) {
-            return null;
-        } catch (UserFileException e) {
-            return null;
+        } catch (NoSuchUserException | UserFileException e) {
+            logger.debug("[getUserNull] User {} does not exist or cannot be loaded", _user);
         }
+        return null;
     }
 
     public User getUserNullUnchecked() {
@@ -239,11 +239,10 @@ public class BaseFtpConnection extends Session implements Runnable {
         }
         try {
             return getGlobalContext().getUserManager().getUserByNameUnchecked(_user);
-        } catch (NoSuchUserException e) {
-            return null;
-        } catch (UserFileException e) {
-            return null;
+        } catch (NoSuchUserException | UserFileException e) {
+            logger.debug("[getUserNullUnchecked] User {} does not exist or cannot be loaded", _user);
         }
+        return null;
     }
 
     /**
@@ -267,17 +266,12 @@ public class BaseFtpConnection extends Session implements Runnable {
             try {
                 // If hideips is on, hide ip but not user/group
                 if (GlobalContext.getConfig().getHideIps()) {
-                    _thread.setName("FtpConn thread " + _thread.getId()
-                            + " servicing " + _user + "/"
-                            + getUser().getGroup());
+                    _thread.setName("FtpConn thread " + _thread.getId() + " servicing " + _user + "/" + getUser().getGroup());
                 } else {
-                    _thread.setName("FtpConn thread " + _thread.getId()
-                            + " from " + getClientAddress().getHostAddress()
-                            + " " + _user + "/" + getUser().getGroup());
+                    _thread.setName("FtpConn thread " + _thread.getId() + " from " + getClientAddress().getHostAddress() + " " + _user + "/" + getUser().getGroup());
                 }
             } catch (NoSuchUserException e) {
-                logger
-                        .error("User does not exist, yet user is authenticated, this is a bug");
+                logger.error("User does not exist, yet user is authenticated, this is a bug");
             }
         }
     }
@@ -328,7 +322,7 @@ public class BaseFtpConnection extends Session implements Runnable {
             while (!_stopRequest) {
                 _out.flush();
 
-                String commandLine = null;
+                String commandLine;
 
                 try {
                     commandLine = _in.readLine();
@@ -456,19 +450,17 @@ public class BaseFtpConnection extends Session implements Runnable {
         StringBuilder buf = new StringBuilder("[BaseFtpConnection");
 
         if (_user != null) {
-            buf.append("[user: " + _user + "]");
+            buf.append("[user: ").append(_user).append("]");
         }
 
         if (_request != null) {
-            buf.append("[command: " + _request.getCommand() + "]");
+            buf.append("[command: ").append(_request.getCommand()).append("]");
         }
 
         if (isExecuting()) {
             buf.append("[executing]");
         } else {
-            buf.append("[idle: "
-                    + Time.formatTime(System.currentTimeMillis()
-                    - getLastActive()));
+            buf.append("[idle: ").append(Time.formatTime(System.currentTimeMillis() - getLastActive())).append("]");
         }
 
         buf.append("]");
@@ -491,8 +483,8 @@ public class BaseFtpConnection extends Session implements Runnable {
     }
 
     public void poolStatus() {
-        //logger.debug("pool size: "+_pool.getPoolSize());
-        //logger.debug("active threads: "+_pool.getActiveCount());
+        logger.debug("pool size: {}", _pool.getPoolSize());
+        logger.debug("active threads: {}", _pool.getActiveCount());
     }
 
     @Override

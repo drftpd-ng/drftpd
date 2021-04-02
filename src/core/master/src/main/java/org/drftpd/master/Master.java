@@ -281,6 +281,7 @@ public class Master {
          */
 
         // Check hostmasks before we move further unless we expect a bouncer to connect (which is handled during doIDNT)
+        BaseFtpConnection conn;
         if (!GlobalContext.getConfig().getBouncerIps().contains(sock.getInetAddress())) {
             String ident = "";
             try {
@@ -296,7 +297,7 @@ public class Master {
             for (User u : GlobalContext.getGlobalContext().getUserManager().getAllUsers()) {
                 // Skip if user is deleted
                 if (!u.isDeleted()) {
-                    if (u.getHostMaskCollection().check(ident, sock.getInetAddress(), null)) {
+                    if (u.getHostMaskCollection().check(ident, sock.getInetAddress())) {
                         allowedConnection = true;
                         break;
                     }
@@ -307,9 +308,13 @@ public class Master {
                 sock.close();
                 return;
             }
+            conn = new BaseFtpConnection(sock);
+            // Store the ident
+            conn.setObject(BaseFtpConnection.IDENT, ident);
+        } else {
+            conn = new BaseFtpConnection(sock);
         }
 
-        BaseFtpConnection conn = new BaseFtpConnection(sock);
         _conns.add(conn);
         try {
             _pool.execute(conn);

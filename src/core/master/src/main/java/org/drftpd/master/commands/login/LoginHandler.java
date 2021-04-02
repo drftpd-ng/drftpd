@@ -251,14 +251,18 @@ public class LoginHandler extends CommandInterface {
         try {
             InetAddress address = request.getSession().getObject(BaseFtpConnection.ADDRESS, null);
             String ident = request.getSession().getObject(BaseFtpConnection.IDENT, null);
+            if(ident == null) {
+                logger.error("Somehow we got here with an empty IDENT, this should not be possible");
+                return new CommandResponse(530, "Internal server error");
+            }
 
             boolean hostMaskPassed;
             if (address != null) {
                 // this means that the user is connecting from a BNC.
-                hostMaskPassed = newUser.getHostMaskCollection().check(ident, address, null);
+                hostMaskPassed = newUser.getHostMaskCollection().check(ident, address);
             } else {
                 // this mean that the user is connecting to the ftp directly.
-                hostMaskPassed = newUser.getHostMaskCollection().check(null, conn.getClientAddress(), conn.getControlSocket());
+                hostMaskPassed = newUser.getHostMaskCollection().check(ident, conn.getClientAddress());
 
                 // ADDRESS is null, let's set it.
                 request.getSession().setObject(BaseFtpConnection.ADDRESS, conn.getClientAddress());
