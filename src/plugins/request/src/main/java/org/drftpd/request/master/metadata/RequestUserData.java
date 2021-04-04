@@ -25,7 +25,6 @@ import java.io.Serializable;
  * @author scitz0
  * @version $id$
  */
-@SuppressWarnings("serial")
 public class RequestUserData implements Serializable {
 
     public static final Key<Integer> REQUESTSFILLED = new Key<>(RequestUserData.class, "requestsFilled");

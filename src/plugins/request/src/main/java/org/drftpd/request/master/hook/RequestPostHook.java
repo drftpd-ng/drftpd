@@ -15,22 +15,17 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.drftpd.request.master;
+package org.drftpd.request.master.hook;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.bushe.swing.event.annotation.AnnotationProcessor;
-import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.common.extensibility.CommandHook;
 import org.drftpd.common.extensibility.HookType;
-import org.drftpd.common.util.ConfigLoader;
 import org.drftpd.master.commands.CommandRequest;
 import org.drftpd.master.commands.CommandResponse;
-import org.drftpd.master.event.ReloadEvent;
 import org.drftpd.master.usermanager.User;
+import org.drftpd.request.master.RequestSettings;
 import org.drftpd.request.master.metadata.RequestUserData;
-
-import java.util.Properties;
 
 /**
  * @author scitz0
@@ -40,14 +35,6 @@ public class RequestPostHook {
 
     private static final Logger logger = LogManager.getLogger(RequestPostHook.class);
 
-    private boolean _decreaseWeekReqs;
-
-    public void RequestPostHook() {
-        readConfig();
-        // Subscribe to events
-        AnnotationProcessor.process(this);
-    }
-
     @CommandHook(commands = "doSITE_REQUEST", priority = 10, type = HookType.POST)
     public void doREQUESTIncrement(CommandRequest request, CommandResponse response) {
         if (response.getCode() != 257 && response.getCode() != 200) {
@@ -55,6 +42,10 @@ public class RequestPostHook {
             return;
         }
         User user = request.getSession().getUserNull(request.getUser());
+        if (user == null) {
+            logger.error("[doSITE_REQUEST::doREQUESTIncrement][Post-hook] User {} does not exists, this should not be possible", request.getUser());
+            return;
+        }
         user.getKeyedMap().incrementInt(RequestUserData.REQUESTS);
         user.getKeyedMap().incrementInt(RequestUserData.WEEKREQS);
         user.commit();
@@ -67,6 +58,10 @@ public class RequestPostHook {
             return;
         }
         User user = request.getSession().getUserNull(request.getUser());
+        if (user == null) {
+            logger.error("[doSITE_REQUEST::doREQFILLEDIncrement][Post-hook] User {} does not exists, this should not be possible", request.getUser());
+            return;
+        }
         user.getKeyedMap().incrementInt(RequestUserData.REQUESTSFILLED);
         user.commit();
     }
@@ -78,23 +73,13 @@ public class RequestPostHook {
             return;
         }
         User user = request.getSession().getUserNull(request.getUser());
-        if (_decreaseWeekReqs && user.getKeyedMap().getObjectInteger(RequestUserData.WEEKREQS) > 0) {
+        if (user == null) {
+            logger.error("[doSITE_REQUEST::doWklyAllotmentDecrease][Post-hook] User {} does not exists, this should not be possible", request.getUser());
+            return;
+        }
+        if (RequestSettings.getSettings().getRequestDecreaseWeekReqs() && user.getKeyedMap().getObjectInteger(RequestUserData.WEEKREQS) > 0) {
             user.getKeyedMap().incrementInt(RequestUserData.WEEKREQS, -1);
             user.commit();
         }
-    }
-
-    /**
-     * Reads 'config/plugins/request.conf'
-     */
-    private void readConfig() {
-        Properties props = ConfigLoader.loadPluginConfig("request.conf");
-        _decreaseWeekReqs = Boolean.parseBoolean(props.getProperty("request.weekdecrease", "false"));
-    }
-
-    @EventSubscriber
-    public void onReloadEvent(ReloadEvent event) {
-        logger.info("Received reload event, reloading");
-        readConfig();
     }
 }

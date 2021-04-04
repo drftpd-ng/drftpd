@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.drftpd.request.master;
+package org.drftpd.request.master.event;
 
 import org.drftpd.master.event.Event;
 import org.drftpd.master.usermanager.User;
@@ -28,10 +28,6 @@ import org.drftpd.master.vfs.DirectoryHandle;
  * @version $Id$
  */
 public class RequestEvent extends Event {
-
-    protected static final String REQUEST = "request";
-    protected static final String REQFILLED = "reqfilled";
-    protected static final String REQDELETE = "reqdelete";
 
     private final User _issuer;
     private final User _requestOwner;
