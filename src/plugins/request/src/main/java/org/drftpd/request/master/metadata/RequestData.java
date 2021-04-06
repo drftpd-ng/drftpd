@@ -21,32 +21,35 @@ import org.drftpd.common.dynamicdata.Key;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.List;
 
 public class RequestData implements Serializable {
 
     public static final Key<org.drftpd.request.master.metadata.RequestData> REQUESTS = new Key<>(org.drftpd.request.master.metadata.RequestData.class, "requests");
 
-    private ArrayList<String> _requests;
+    private List<RequestEntry> _requests;
 
-    public ArrayList<String> getRequests() {
+    public RequestData() {
+        _requests = new ArrayList<>();
+    }
+
+    public List<RequestEntry> getRequests() {
         return _requests;
     }
 
-    public void setRequests(ArrayList<String> requests) {
+    public void setRequests(List<RequestEntry> requests) {
         _requests = requests;
     }
 
-    public void addRequest(String request) {
+    public void addRequest(RequestEntry request) {
         if (_requests == null) {
             _requests = new ArrayList<>();
         }
         _requests.add(request);
     }
 
-    public void delRequest(int request) throws IndexOutOfBoundsException {
-        if (_requests != null) {
-            _requests.remove(request);
-        }
+    public void delRequest(RequestEntry request) {
+        _requests.remove(request);
     }
 
     public String toString() {
@@ -56,8 +59,8 @@ public class RequestData implements Serializable {
 
         StringBuilder output = new StringBuilder();
         int cnt = 1;
-        for (String request : _requests) {
-            output.append("Request #").append(cnt++).append(" - ").append(request).append("\n");
+        for (RequestEntry request : _requests) {
+            output.append("Request #").append(cnt++).append(" - ").append(request.getName()).append("\n");
         }
         return output.toString();
     }

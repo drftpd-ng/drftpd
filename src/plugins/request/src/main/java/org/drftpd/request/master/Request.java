@@ -24,7 +24,6 @@ import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.commands.*;
-import org.drftpd.master.commands.usermanagement.notes.metadata.NotesData;
 import org.drftpd.master.event.ReloadEvent;
 import org.drftpd.master.network.BaseFtpConnection;
 import org.drftpd.master.network.Session;
@@ -32,12 +31,15 @@ import org.drftpd.master.permissions.Permission;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.ListUtils;
+import org.drftpd.master.vfs.ObjectNotValidException;
 import org.drftpd.request.master.event.RequestEvent;
 import org.drftpd.request.master.metadata.RequestData;
+import org.drftpd.request.master.metadata.RequestEntry;
 import org.drftpd.slave.exceptions.FileExistsException;
 
 import java.io.FileNotFoundException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -106,7 +108,6 @@ public class Request extends CommandInterface {
      */
     private DirectoryHandle getRequestDirectory(CommandRequest request) {
         String requestDirProp = request.getProperties().getProperty("request.dirpath");
-        DirectoryHandle dirHandle;
         if (requestDirProp == null) {
             requestDirProp = getSettings().getRequestPath();
         }
@@ -119,7 +120,7 @@ public class Request extends CommandInterface {
      * @return a {@link RequestData} Representing all requests registered in the VFS for this directory Handle
      */
     private RequestData getRequestData(DirectoryHandle dirHandle) {
-        RequestData reqData = null;
+        RequestData reqData;
         try {
             try {
                 reqData = dirHandle.getPluginMetaData(RequestData.REQUESTS);
@@ -165,43 +166,43 @@ public class Request extends CommandInterface {
         env.put("user", user);
         env.put("request.name", requestName);
 
-        try {
-            for (DirectoryHandle dir : requestDir.getDirectoriesUnchecked()) {
-
-                if (!dir.getName().startsWith(getSettings().getRequestPrefix())) {
-                    continue;
-                }
-
-                RequestParser parser = new RequestParser(dir.getName(), dir.getUsername());
-
-                env.put("request.owner", parser.getUser());
-
-                if (parser.getRequestName().equals(requestName)) {
-                    String filledname = getSettings().getRequestFilledPrefix() + parser.getUser() + "-" + parser.getRequestName();
-
-                    try {
-                        dir.renameToUnchecked(requestDir.getNonExistentDirectoryHandle(filledname));
-                    } catch (FileExistsException e) {
-                        return new CommandResponse(500, session.jprintf(_bundle, "reqfilled.exists", env, request.getUser()));
-                    } catch (FileNotFoundException e) {
-                        logger.error("File was just here but it vanished", e);
-                        return new CommandResponse(500, session.jprintf(_bundle, "reqfilled.error", env, request.getUser()));
-                    }
-
-                    GlobalContext.getEventService().publishAsync(new RequestEvent("reqfilled", user, requestDir, session.getUserNull(parser.getUser()), requestName));
-
-                    if (session instanceof BaseFtpConnection) {
-                        return new CommandResponse(200, session.jprintf(_bundle, "reqfilled.success", env, request.getUser()));
-                    }
-                    // Return ok status to IRC so we know the command was successful
-                    return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-                }
-            }
-        } catch (FileNotFoundException e) {
-            return new CommandResponse(500, session.jprintf(_bundle, "reqfilled.root.notfound", env, request.getUser()));
+        RequestEntry reqEntry = findRequestByName(requests, requestName);
+        if (reqEntry == null) {
+            return new CommandResponse(500, session.jprintf(_bundle, "reqfilled.notfound", env, request.getUser()));
         }
 
-        return new CommandResponse(500, session.jprintf(_bundle, "reqfilled.notfound", env, request.getUser()));
+        DirectoryHandle reqEntryDirHandle;
+        try {
+            reqEntryDirHandle = requestDir.getDirectoryUnchecked(reqEntry.getDirectoryName());
+        } catch (FileNotFoundException e) {
+            logger.error("Request {} exists in metadata, but not in VFS", reqEntry.getDirectoryName(), e);
+            return new CommandResponse(500, "Internal Server error occurred, stopping execution");
+        } catch (ObjectNotValidException e) {
+            logger.error("Request {} exists in metadata, but has an error in VFS", reqEntry.getDirectoryName(), e);
+            return new CommandResponse(500, "Internal Server error occurred, stopping execution");
+        }
+        env.put("request.owner", reqEntry.getUser());
+        String filledDirectoryName = reqEntry.getFilledDirectoryName(getSettings().getRequestFilledPrefix());
+        logger.debug("Request {} is being filled. Moving directory from {} to {}", reqEntry.getName(), reqEntryDirHandle.getName(), filledDirectoryName);
+
+        try {
+            reqEntryDirHandle.renameToUnchecked(requestDir.getNonExistentDirectoryHandle(filledDirectoryName));
+        } catch (FileExistsException e) {
+            return new CommandResponse(500, session.jprintf(_bundle, "reqfilled.exists", env, request.getUser()));
+        } catch (FileNotFoundException e) {
+            logger.error("File was just here but it vanished", e);
+            return new CommandResponse(500, session.jprintf(_bundle, "reqfilled.error", env, request.getUser()));
+        }
+
+        GlobalContext.getEventService().publishAsync(new RequestEvent("reqfilled", user, requestDir, session.getUserNull(reqEntry.getUser()), requestName));
+
+        if (session instanceof BaseFtpConnection) {
+            return new CommandResponse(200, session.jprintf(_bundle, "reqfilled.success", env, request.getUser()));
+        }
+
+        // Return ok status to IRC so we know the command was successful
+        return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
+
     }
 
     public CommandResponse doSITE_REQUEST(CommandRequest request) throws ImproperUsageException {
@@ -237,7 +238,11 @@ public class Request extends CommandInterface {
             }
         }
 
-        String createdDirName = getSettings().getRequestPrefix() + user.getName() + "-" + requestName;
+        RequestEntry reqEntry = findRequestByName(requests, requestName);
+        if (reqEntry != null) {
+            return new CommandResponse(500, "Request already exists");
+        }
+        reqEntry = new RequestEntry(requestName, user.getName(), getSettings().getRequestPrefix(), Instant.now().getEpochSecond());
 
         Map<String, Object> env = new HashMap<>();
         env.put("user", request.getUser());
@@ -245,8 +250,9 @@ public class Request extends CommandInterface {
         env.put("request.root", requestDir.getPath());
 
         try {
-            requestDir.createDirectoryUnchecked(createdDirName, user.getName(), user.getGroup().getName());
-            requests.addRequest(createdDirName);
+            logger.debug("Creating directory: {}", reqEntry.getDirectoryName());
+            requestDir.createDirectoryUnchecked(reqEntry.getDirectoryName(), user.getName(), user.getGroup().getName());
+            requests.addRequest(reqEntry);
             storeRequestData(requestDir, requests);
         } catch (FileExistsException e) {
             return new CommandResponse(550, session.jprintf(_bundle, "request.exists", env, user.getName()));
@@ -272,45 +278,29 @@ public class Request extends CommandInterface {
             throw new ImproperUsageException();
         }
 
-        Map<String, Object> env = new HashMap<>();
-        CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-        response.addComment(request.getSession().jprintf(_bundle, "requests.header", env, request.getUser()));
-        int i = 1;
+        DirectoryHandle requestDir = getRequestDirectory(request);
+        RequestData requests = getRequestData(requestDir);
 
-        User user = request.getSession().getUserNull(request.getUser());
+        if (requests == null) {
+            return new CommandResponse(500, "Internal Server error occurred, stopping execution");
+        }
+
+        CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
+        response.addComment(request.getSession().jprintf(_bundle, "requests.header", request.getUser()));
 
         SimpleDateFormat sdf = new SimpleDateFormat(getSettings().getRequestDateFormat());
 
-        try {
-            ArrayList<RequestsSort> ReqSort = new ArrayList<>();
-
-            for (DirectoryHandle dir : getRequestDirectory(request).getDirectories(user)) {
-                if (!dir.getName().startsWith(getSettings().getRequestPrefix())) {
-                    continue;
-                }
-
-                RequestParser parser = new RequestParser(dir.getName(), dir.getUsername());
-
-                ReqSort.add(new RequestsSort(parser.getRequestName(), dir.getUsername(), dir.getInode().getCreationTime()));
-            }
-
-            Collections.sort(ReqSort);
-            for (RequestsSort rs:ReqSort) {
-                Date requestDate = new Date(rs.getRequestTime());
-
-                env.put("num", Integer.toString(i));
-                env.put("request.user", rs.getRequestUser());
-                env.put("request.name", rs.getRequestName());
-                env.put("request.date", sdf.format(requestDate));
-                i++;
-
-                response.addComment(request.getSession().jprintf(_bundle, "requests.list", env, request.getUser()));
-            }
-
-        } catch (FileNotFoundException e) {
-            response.addComment(request.getSession().jprintf(_bundle, "request.error", env, request.getUser()));
+        int i = 1;
+        for (RequestEntry reqEntry : requests.getRequests()) {
+            Map<String, Object> env = new HashMap<>();
+            env.put("num", Integer.toString(i++));
+            env.put("request.name", reqEntry.getName());
+            env.put("request.user", reqEntry.getUser());
+            env.put("request.date", sdf.format(reqEntry.getCreationTime()));
+            response.addComment(request.getSession().jprintf(_bundle, "requests.list", env, request.getUser()));
         }
-        response.addComment(request.getSession().jprintf(_bundle, "requests.footer", env, request.getUser()));
+
+        response.addComment(request.getSession().jprintf(_bundle, "requests.footer", request.getUser()));
 
         return response;
     }
@@ -321,127 +311,154 @@ public class Request extends CommandInterface {
             throw new ImproperUsageException();
         }
 
+        StringTokenizer st = new StringTokenizer(request.getArgument());
+        if (st.countTokens() != 1) {
+            throw new ImproperUsageException();
+        }
+
         Session session = request.getSession();
         User user = session.getUserNull(request.getUser());
-        String requestName = request.getArgument().trim();
-        String deleteOthers = request.getProperties().getProperty("request.deleteOthers", "=siteop");
         DirectoryHandle requestDir = getRequestDirectory(request);
+        RequestData requests = getRequestData(requestDir);
+
+        if (requests == null) {
+            return new CommandResponse(500, "Internal Server error occurred, stopping execution");
+        }
+
+        String requestName = st.nextToken();
+
+        Permission deleteOthersPerm = new Permission(request.getProperties().getProperty("request.deleteOthers", "=siteop"));
 
         Map<String, Object> env = new HashMap<>();
         env.put("user", user.getName());
         env.put("request.name", requestName);
         env.put("request.root", requestDir.getPath());
 
-        boolean requestNotFound = true;
+        RequestEntry reqEntry = findRequestByName(requests, requestName);
+        if (reqEntry == null) {
+            return new CommandResponse(500, session.jprintf(_bundle, "reqfilled.notfound", env, request.getUser()));
+        }
 
         CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 
-        try {
-            for (DirectoryHandle dir : requestDir.getDirectories(user)) {
-
-                if (!dir.getName().startsWith(getSettings().getRequestPrefix())) {
-                    continue;
-                }
-
-                RequestParser parser = new RequestParser(dir.getName(), dir.getUsername());
-
-                if (parser.getRequestName().equals(requestName)) {
-                    requestNotFound = false;
-
-                    // checking if the user trying to delete this request
-                    // is either the owner or has "super-powers"
-                    if (parser.getUser().equals(user.getName()) ||
-                            new Permission(deleteOthers).check(user)) {
-
-                        dir.deleteUnchecked();
-
-                        if (session instanceof BaseFtpConnection) {
-                            response.addComment(session.jprintf(_bundle, "reqdel.success", env, request.getUser()));
-                        }
-
-                        GlobalContext.getEventService().publishAsync(new RequestEvent("reqdel", user, requestDir, session.getUserNull(parser.getUser()), requestName));
-
-                        break;
-                    }
-                    return new CommandResponse(550, session.jprintf(_bundle, "reqdel.notowner", env, request.getUser()));
-                }
+        if (reqEntry.getUser().equals(user.getName()) || deleteOthersPerm.check(user)) {
+            try {
+                logger.debug("Deleting directory: {}", reqEntry.getDirectoryName());
+                requestDir.getDirectoryUnchecked(reqEntry.getDirectoryName()).deleteUnchecked();
+                requests.delRequest(reqEntry);
+                storeRequestData(requestDir, requests);
+            } catch (FileNotFoundException e) {
+                logger.error("Request {} exists in metadata, but not in VFS", reqEntry.getDirectoryName(), e);
+                return new CommandResponse(500, "Internal Server error occurred, stopping execution");
+            } catch (ObjectNotValidException e) {
+                logger.error("Request {} exists in metadata, but has an error in VFS", reqEntry.getDirectoryName(), e);
+                return new CommandResponse(500, "Internal Server error occurred, stopping execution");
             }
 
-            if (requestNotFound) {
-                return new CommandResponse(550, session.jprintf(_bundle, "reqdel.notfound", env, request.getUser()));
+            if (session instanceof BaseFtpConnection) {
+                response.addComment(session.jprintf(_bundle, "reqdel.success", env, request.getUser()));
             }
 
-        } catch (FileNotFoundException e) {
-            return new CommandResponse(550, session.jprintf(_bundle, "reqdel.root.notfound", env, request.getUser()));
+            GlobalContext.getEventService().publishAsync(new RequestEvent("reqdel", user, requestDir, session.getUserNull(reqEntry.getUser()), reqEntry.getName()));
+
+        } else {
+            return new CommandResponse(550, session.jprintf(_bundle, "reqdel.notowner", env, request.getUser()));
         }
 
         return response;
     }
 
-/*
-    private boolean hasRequest(RequestData requests, String requestName) {
-        for (String req : requests.getRequests()) {
+    public CommandResponse doSITE_FIXREQUESTS(CommandRequest request) throws ImproperUsageException {
 
+        // Command has no arguments
+        if (request.hasArgument()) {
+            throw new ImproperUsageException();
         }
+
+        Session session = request.getSession();
+        DirectoryHandle requestDir = getRequestDirectory(request);
+        RequestData requests = getRequestData(requestDir);
+
+        if (requests == null) {
+            return new CommandResponse(500, "Internal Server error occurred, stopping execution");
+        }
+
+        int fixed = 0;
+        logger.debug("Trying to fix request dirs in {}", requestDir.getName());
+        CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
+        List<String> dirNames = new ArrayList<>();
+        for (RequestEntry reqEntry : requests.getRequests()) {
+            try {
+                requestDir.getDirectoryUnchecked(reqEntry.getDirectoryName());
+            } catch (FileNotFoundException e) {
+                logger.debug("Creating directory: {}", reqEntry.getDirectoryName());
+                User u = session.getUserNull(reqEntry.getUser());
+                if (u == null) {
+                    logger.error("Request {} has been created by {}, which no longer seems to exist", reqEntry.getName(), reqEntry.getUser());
+                    response.addComment("Request " + reqEntry.getName() + " created by unknown user " + reqEntry.getUser() + ", deleting");
+                    requests.delRequest(reqEntry);
+                    try {
+                        storeRequestData(requestDir, requests);
+                    } catch(FileNotFoundException e2) {
+                        logger.error("Unable to update plugin metadata for request directory handle {}", reqEntry.getDirectoryName(), e2);
+                        return new CommandResponse(500, "Internal Server error occurred, stopping execution");
+                    }
+                    continue;
+                }
+                try {
+                    response.addComment("Found missing directory " + reqEntry.getDirectoryName() + ", Creating");
+                    requestDir.createDirectoryUnchecked(reqEntry.getDirectoryName(), u.getName(), u.getGroup().getName());
+                    fixed++;
+                } catch (FileNotFoundException | FileExistsException e2) {
+                    logger.error("Unable to create request dir {} in {}", reqEntry.getDirectoryName(), requestDir.getName(), e);
+                    return new CommandResponse(500, "Internal Server error occurred, stopping execution");
+                }
+            } catch (ObjectNotValidException e) {
+                logger.error("Unknown exception while trying to fix requests", e);
+                return new CommandResponse(500, "Internal Server error occurred, stopping execution");
+            }
+            dirNames.add(reqEntry.getDirectoryName());
+        }
+        try {
+            for (DirectoryHandle dirHandle : requestDir.getDirectoriesUnchecked()) {
+                if (!dirNames.contains(dirHandle.getName())) {
+                    logger.warn("Directory handle {} should not exist", dirHandle.getName());
+                    if (dirHandle.getSize() == 0L) {
+                        response.addComment("Found unexpected directory " + dirHandle.getName() + ", which is empty. Removing");
+                        try {
+                            requestDir.getDirectoryUnchecked(dirHandle.getName()).deleteUnchecked();
+                            fixed++;
+                        } catch (ObjectNotValidException e) {
+                            logger.error("Unknown exception happened during deletion of {}", dirHandle.getName(), e);
+                            return new CommandResponse(500, "Internal Server error occurred, stopping execution");
+                        }
+                    } else {
+                        response.addComment("Found unexpected directory " + dirHandle.getName() + ", which is not empty. Please check manually");
+                    }
+                }
+            }
+        } catch(FileNotFoundException e) {
+            logger.error("An unexpected error happened while browsing directories in {}", requestDir.getName(), e);
+            return new CommandResponse(500, "Internal Server error occurred, stopping execution");
+        }
+        response.addComment("We have successfully fixed " + fixed + " directories");
+        return response;
     }
-*/
+
+    private RequestEntry findRequestByName(RequestData requests, String requestName) {
+        logger.debug("Trying to find [{}] in {} requests", requestName, requests.getRequests().size());
+        for (RequestEntry req : requests.getRequests()) {
+            logger.debug("[{}] <=> [{}]", requestName, req.getName());
+            if (req.getName().equals(requestName)) {
+                return req;
+            }
+        }
+        return null;
+    }
 
     @EventSubscriber
     public void onReloadEvent(ReloadEvent event) {
         logger.info("Received reload event, reloading");
         getSettings().reload();
     }
-
-    private static class RequestsSort implements Comparable<RequestsSort> {
-        private final String _requestName;
-        private final String _requestUser;
-        private final Long _requestTime;
-
-        RequestsSort(String requestName, String requestUser, Long requestTime){
-            _requestName = requestName;
-            _requestUser = requestUser;
-            _requestTime = requestTime;
-        }
-
-        public String getRequestUser() {
-            return _requestUser;
-        }
-
-        public String getRequestName() {
-            return _requestName;
-        }
-
-        public Long getRequestTime()  {
-            return _requestTime;
-        }
-
-        public int compareTo(RequestsSort rs) {
-            return _requestTime.compareTo(rs._requestTime);
-        }
-    }
-
-    /**
-     * Class to centralize how requests are parsed.
-     *
-     * Transforms a 'request.prefix'-'user'-'requestname' in
-     * a nice looking data structure instead of simple strings.
-     */
-    private static class RequestParser {
-        private final String _user;
-        private final String _requestName;
-
-        public RequestParser(String dirname, String owner) {
-            _user = owner;
-            _requestName = dirname.substring(RequestSettings.getSettings().getRequestPrefix().length()).substring(owner.length()+1);
-        }
-
-        public String getUser() {
-            return _user;
-        }
-
-        public String getRequestName() {
-            return _requestName;
-        }
-    }
-
 }
