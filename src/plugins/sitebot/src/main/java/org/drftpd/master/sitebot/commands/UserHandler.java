@@ -200,7 +200,7 @@ public class UserHandler extends CommandInterface {
         return null;
     }
 
-    public CommandResponse doSITE_INVITE(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doINVITE(CommandRequest request) throws ImproperUsageException {
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
         }

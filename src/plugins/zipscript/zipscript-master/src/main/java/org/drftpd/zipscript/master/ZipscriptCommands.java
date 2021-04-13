@@ -77,7 +77,7 @@ public class ZipscriptCommands extends CommandInterface {
         }
     }
 
-    public CommandResponse doSITE_RESCAN(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doRESCAN(CommandRequest request) throws ImproperUsageException {
 
         Session session = request.getSession();
         User user = session.getUserNull(request.getUser());

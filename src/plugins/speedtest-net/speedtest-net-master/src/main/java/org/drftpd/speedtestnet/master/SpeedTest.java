@@ -85,13 +85,13 @@ public class SpeedTest extends CommandInterface {
         _servers = SpeedTestUtils.getClosetsServers();
     }
 
-    public CommandResponse doSITE_REFRESHSPEEDTEST(CommandRequest request) {
+    public CommandResponse doREFRESHSPEEDTEST(CommandRequest request) {
         refreshServers();
         return new CommandResponse(200, request.getSession().jprintf(_bundle, "speedtest.servers.refresh", null, request.getUser()));
     }
 
 
-    public CommandResponse doSITE_SPEEDTEST(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doSPEEDTEST(CommandRequest request) throws ImproperUsageException {
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
         }

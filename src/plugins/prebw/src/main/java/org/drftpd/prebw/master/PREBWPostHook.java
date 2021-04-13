@@ -84,7 +84,7 @@ public class PREBWPostHook {
         }
     }
 
-    @CommandHook(commands = "doSITE_PRE", type = HookType.POST)
+    @CommandHook(commands = "doPRE", type = HookType.POST)
     public void doPREPostHook(CommandRequest request, CommandResponse response) {
         if (response.getCode() != 250) {
             // PRE failed, abort

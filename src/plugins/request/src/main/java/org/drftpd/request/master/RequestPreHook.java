@@ -49,7 +49,7 @@ public class RequestPreHook {
         AnnotationProcessor.process(this);
     }
 
-    @CommandHook(commands = "doSITE_REQUEST", priority = 10, type = HookType.PRE)
+    @CommandHook(commands = "doREQUEST", priority = 10, type = HookType.PRE)
     public CommandRequestInterface doWklyAllotmentPreCheck(CommandRequest request) {
         User user = request.getSession().getUserNull(request.getUser());
         if (user != null) {

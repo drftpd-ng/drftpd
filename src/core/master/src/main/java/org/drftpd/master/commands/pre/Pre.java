@@ -80,7 +80,7 @@ public class Pre extends CommandInterface {
         super.initialize(method, pluginName, cManager);
     }
 
-    public CommandResponse doSITE_PRE(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doPRE(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
@@ -115,8 +115,8 @@ public class Pre extends CommandInterface {
 
         try {
             preDir = request.getCurrentDirectory().getDirectory(path, user);
-        } catch (FileNotFoundException | ObjectNotValidException e) {  // Handled correctly in doSITE_PRE based on PREDIR Object = null
-            logger.warn("[doSITE_PRE] Failed to find predir for [{}]", releaseName, e);
+        } catch (FileNotFoundException | ObjectNotValidException e) {  // Handled correctly in doPRE based on PREDIR Object = null
+            logger.warn("[doPRE] Failed to find predir for [{}]", releaseName, e);
             return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
         }
 

@@ -57,7 +57,7 @@ public class AutoNukeCommands extends CommandInterface {
 
     }
 
-    public CommandResponse doSITE_AUTONUKES(CommandRequest request) {
+    public CommandResponse doAUTONUKES(CommandRequest request) {
         Session session = request.getSession();
 
         SectionInterface section = GlobalContext.getGlobalContext().
@@ -105,7 +105,7 @@ public class AutoNukeCommands extends CommandInterface {
         return response;
     }
 
-    public CommandResponse doSITE_DELQUEUE(CommandRequest request) {
+    public CommandResponse doDELQUEUE(CommandRequest request) {
         Session session = request.getSession();
         Map<String, Object> env = new HashMap<>();
 
@@ -145,7 +145,7 @@ public class AutoNukeCommands extends CommandInterface {
                 _bundle, "autonukes.del.notfound", env, request.getUser()));
     }
 
-    public CommandResponse doSITE_AUTONUKESCAN(CommandRequest request) {
+    public CommandResponse doAUTONUKESCAN(CommandRequest request) {
         DirectoryHandle dir = request.getCurrentDirectory();
         if (request.hasArgument()) {
             SectionInterface section = GlobalContext.getGlobalContext().
@@ -203,7 +203,7 @@ public class AutoNukeCommands extends CommandInterface {
                             }
                         } catch (FileNotFoundException e) {
                             // Strange, dir was just here
-                            logger.warn("AutoNuke doSITE_AUTONUKESCAN: FileNotFoundException - {}", releaseDir.getName());
+                            logger.warn("AutoNuke doAUTONUKESCAN: FileNotFoundException - {}", releaseDir.getName());
                             continue;
                         }
                         if (foundExcludedSubDir) continue;

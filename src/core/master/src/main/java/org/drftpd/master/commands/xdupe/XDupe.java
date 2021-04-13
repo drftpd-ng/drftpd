@@ -34,7 +34,7 @@ public class XDupe extends CommandInterface {
         };
     }
 
-    public CommandResponse doSITE_XDUPE(CommandRequest request) {
+    public CommandResponse doXDUPE(CommandRequest request) {
         int xDupe = request.getSession().getObjectInteger(XDUPE);
 
         if (!request.hasArgument()) {

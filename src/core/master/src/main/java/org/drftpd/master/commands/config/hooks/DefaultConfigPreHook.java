@@ -43,7 +43,7 @@ public class DefaultConfigPreHook {
 
     protected static final Logger logger = LogManager.getLogger(DefaultConfigPreHook.class);
 
-    @CommandHook(commands = {"doBW", "doIdlers", "doLeechers", "doSITE_SWHO", "doSITE_WHO", "doSpeed", "doUploaders"},
+    @CommandHook(commands = {"doBW", "doIdlers", "doLeechers", "doSWHO", "doWHO", "doSpeed", "doUploaders"},
             priority = 2, type = HookType.PRE)
     public CommandRequestInterface hideInWhoHook(CommandRequest request) {
         List<BaseFtpConnection> conns = Master.getConnectionManager().getConnections();

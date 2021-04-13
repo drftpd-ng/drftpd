@@ -260,7 +260,7 @@ public class MoreStats extends CommandInterface {
         response.addComment(ReplacerUtils.jprintf("morestats.trafficstats", env, _bundle));
     }
 
-    public CommandResponse doSITE_TRAFFIC(CommandRequest request) {
+    public CommandResponse doTRAFFIC(CommandRequest request) {
         CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 
         Collection<User> users = GlobalContext.getGlobalContext().getUserManager().getAllUsers();
@@ -351,35 +351,35 @@ public class MoreStats extends CommandInterface {
         return response;
     }
 
-    public CommandResponse doSITE_GALUP(CommandRequest request) {
+    public CommandResponse doGALUP(CommandRequest request) {
         return doGroupStats(request, "galup");
     }
 
-    public CommandResponse doSITE_GALDN(CommandRequest request) {
+    public CommandResponse doGALDN(CommandRequest request) {
         return doGroupStats(request, "galdn");
     }
 
-    public CommandResponse doSITE_GMONTHUP(CommandRequest request) {
+    public CommandResponse doGMONTHUP(CommandRequest request) {
         return doGroupStats(request, "gmonthup");
     }
 
-    public CommandResponse doSITE_GMONTHDN(CommandRequest request) {
+    public CommandResponse doGMONTHDN(CommandRequest request) {
         return doGroupStats(request, "gmonthdn");
     }
 
-    public CommandResponse doSITE_GWKUP(CommandRequest request) {
+    public CommandResponse doGWKUP(CommandRequest request) {
         return doGroupStats(request, "gwkup");
     }
 
-    public CommandResponse doSITE_GWKDN(CommandRequest request) {
+    public CommandResponse doGWKDN(CommandRequest request) {
         return doGroupStats(request, "gwkdn");
     }
 
-    public CommandResponse doSITE_GDAYUP(CommandRequest request) {
+    public CommandResponse doGDAYUP(CommandRequest request) {
         return doGroupStats(request, "gdayup");
     }
 
-    public CommandResponse doSITE_GDAYDN(CommandRequest request) {
+    public CommandResponse doGDAYDN(CommandRequest request) {
         return doGroupStats(request, "gdaydn");
     }
 

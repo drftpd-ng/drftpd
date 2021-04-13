@@ -42,7 +42,7 @@ public class DupeCheckCommands extends CommandInterface {
      * This uses lucene's search to figure out if the file exist,
      * and then adds metadata to it so site knows its unduped.
      */
-    public CommandResponse doSITE_UNDUPE(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doUNDUPE(CommandRequest request) throws ImproperUsageException {
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
         }
@@ -65,7 +65,7 @@ public class DupeCheckCommands extends CommandInterface {
 
         try {
             IndexEngineInterface ie = GlobalContext.getGlobalContext().getIndexEngine();
-            Map<String, String> inodes = ie.advancedFind(GlobalContext.getGlobalContext().getRoot(), params, "doSITE_UNDUPE");
+            Map<String, String> inodes = ie.advancedFind(GlobalContext.getGlobalContext().getRoot(), params, "doUNDUPE");
 
             if (!inodes.isEmpty()) {
                 for (Map.Entry<String, String> item : inodes.entrySet()) {

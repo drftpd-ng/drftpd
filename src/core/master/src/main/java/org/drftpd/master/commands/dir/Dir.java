@@ -504,7 +504,7 @@ public class Dir extends CommandInterface {
         return new CommandResponse(250, request.getCommand().toUpperCase() + " command successful.");
     }
 
-    public CommandResponse doSITE_CHOWN(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doCHOWN(CommandRequest request) throws ImproperUsageException {
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
         }
@@ -584,7 +584,7 @@ public class Dir extends CommandInterface {
         }
     }
 
-    public CommandResponse doSITE_LINK(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doLINK(CommandRequest request) throws ImproperUsageException {
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
         }
@@ -652,7 +652,7 @@ public class Dir extends CommandInterface {
      *
      * @param request
      */
-    public CommandResponse doSITE_WIPE(CommandRequest request) {
+    public CommandResponse doWIPE(CommandRequest request) {
         if (!request.hasArgument()) {
             return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
         }
@@ -774,7 +774,7 @@ public class Dir extends CommandInterface {
         }
     }
 
-    public CommandResponse doSITE_FIXSIZE(CommandRequest request) {
+    public CommandResponse doFIXSIZE(CommandRequest request) {
         long difference = 0;
         try {
             difference = request.getCurrentDirectory().validateSizeRecursive();
@@ -786,7 +786,7 @@ public class Dir extends CommandInterface {
         return response;
     }
 
-    public CommandResponse doSITE_FIXSLAVECOUNT(CommandRequest request) {
+    public CommandResponse doFIXSLAVECOUNT(CommandRequest request) {
         try {
             request.getCurrentDirectory().recalcSlaveRefCounts();
         } catch (FileNotFoundException e) {

@@ -17,7 +17,7 @@ public class AutoFreeSpaceHooks {
 
     protected static final Logger logger = LogManager.getLogger(AutoFreeSpaceHooks.class);
 
-    @CommandHook(commands = "doSITE_DELSLAVE", priority = 100, type = HookType.PRE)
+    @CommandHook(commands = "doDELSLAVE", priority = 100, type = HookType.PRE)
     public CommandRequestInterface doAutoFreeSpacePreHook(CommandRequest request) {
         // First handle syntax errors cases which will be handled in the normal command execution
         if (!request.hasArgument()) {

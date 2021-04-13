@@ -215,7 +215,7 @@ public class ZipscriptZipPostHook extends ZipTools {
         }
     }
 
-    @CommandHook(commands = "doSITE_WIPE", priority = 13, type = HookType.POST)
+    @CommandHook(commands = "doWIPE", priority = 13, type = HookType.POST)
     public void doZipscriptWIPEDizCleanupHook(CommandRequest request, CommandResponse response) {
         if (response.getCode() != 200) {
             // WIPE failed, abort cleanup

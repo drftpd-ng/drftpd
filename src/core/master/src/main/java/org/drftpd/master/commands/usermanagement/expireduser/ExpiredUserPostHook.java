@@ -46,7 +46,7 @@ public class ExpiredUserPostHook {
 
     }
 
-    @CommandHook(commands = "doSITE_USER", priority = 1000, type = HookType.POST)
+    @CommandHook(commands = "doUSER", priority = 1000, type = HookType.POST)
     public void doExpiredUserPostHook(CommandRequest request, CommandResponse response) {
         User myUser;
         try {

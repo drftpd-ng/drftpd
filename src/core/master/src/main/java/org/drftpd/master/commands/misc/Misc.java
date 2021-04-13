@@ -131,7 +131,7 @@ public class Misc extends CommandInterface {
     //		out.write(ftpStatus.getResponse(214, tempRequest, user, args));
     //		return;
     //	}
-    public CommandResponse doSITE_STAT(CommandRequest request) {
+    public CommandResponse doSTAT(CommandRequest request) {
         if (request.hasArgument()) {
             return StandardCommandManager.genericResponse("RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM");
         }
@@ -147,7 +147,7 @@ public class Misc extends CommandInterface {
         return response;
     }
 
-    public CommandResponse doSITE_TIME(CommandRequest request) {
+    public CommandResponse doTIME(CommandRequest request) {
         if (request.hasArgument()) {
             return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
         }
@@ -155,7 +155,7 @@ public class Misc extends CommandInterface {
         return new CommandResponse(200, "Server time is: " + new Date());
     }
 
-    public CommandResponse doSITE_HELP(CommandRequest request) {
+    public CommandResponse doHELP(CommandRequest request) {
         /* TODO: the old implementation would check whether the issuing
          * user had permissions for the command before giving specific
          * help or listing that command in general help, this implementation
@@ -239,7 +239,7 @@ public class Misc extends CommandInterface {
         return response;
     }
 
-    public CommandResponse doSITE_VERS(CommandRequest request) {
+    public CommandResponse doVERS(CommandRequest request) {
         return new CommandResponse(200, GlobalContext.VERSION);
     }
 }

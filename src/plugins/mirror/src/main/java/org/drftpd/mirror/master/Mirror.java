@@ -43,7 +43,7 @@ public class Mirror extends CommandInterface {
         MirrorSettings.getSettings().reload();
     }
 
-    public CommandResponse doSITE_UNMIRROR(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doUNMIRROR(CommandRequest request) throws ImproperUsageException {
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
         }

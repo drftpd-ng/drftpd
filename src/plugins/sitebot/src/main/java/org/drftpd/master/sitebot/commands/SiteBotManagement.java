@@ -51,7 +51,7 @@ public class SiteBotManagement extends CommandInterface {
         _bundle = cManager.getResourceBundle();
     }
 
-    public CommandResponse doSITE_BLOWFISH(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doBLOWFISH(CommandRequest request) throws ImproperUsageException {
         Session session = request.getSession();
         // We require a secure session
         if (!session.isSecure()) {
@@ -114,7 +114,7 @@ public class SiteBotManagement extends CommandInterface {
         return response;
     }
 
-    public CommandResponse doSITE_SETBLOWFISH(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doSETBLOWFISH(CommandRequest request) throws ImproperUsageException {
         // We expect arguments
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
@@ -201,7 +201,7 @@ public class SiteBotManagement extends CommandInterface {
         return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
     }
 
-    public CommandResponse doSITE_IRC(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doIRC(CommandRequest request) throws ImproperUsageException {
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
         }

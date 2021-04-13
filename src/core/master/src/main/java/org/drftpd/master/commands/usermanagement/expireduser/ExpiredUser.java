@@ -36,7 +36,7 @@ public class ExpiredUser extends CommandInterface {
         super.initialize(method, pluginName, cManager);
     }
 
-    public CommandResponse doSITE_SETEXPIRE(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doSETEXPIRE(CommandRequest request) throws ImproperUsageException {
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
         }
@@ -73,7 +73,7 @@ public class ExpiredUser extends CommandInterface {
         return new CommandResponse(200, "Set Expiry Date For '" + user.getName() + "'");
     }
 
-    public CommandResponse doSITE_REMOVEEXPIRE(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doREMOVEEXPIRE(CommandRequest request) throws ImproperUsageException {
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
         }

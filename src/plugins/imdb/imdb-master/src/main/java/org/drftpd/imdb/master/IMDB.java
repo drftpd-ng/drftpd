@@ -72,7 +72,7 @@ public class IMDB extends CommandInterface {
         }
     }
 
-    public CommandResponse doSITE_IMDB(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doIMDB(CommandRequest request) throws ImproperUsageException {
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
         }
@@ -101,12 +101,12 @@ public class IMDB extends CommandInterface {
 
                 try {
                     for (SectionInterface section : IMDBConfig.getInstance().getHDSections()) {
-                        results.addAll(IMDBUtils.findReleases("doSITE_IMDB",
+                        results.addAll(IMDBUtils.findReleases("doIMDB",
                                 section.getBaseDirectory(), request.getSession().getUserNull(request.getUser()),
                                 imdb.getTitle(), imdb.getYear()));
                     }
                     for (SectionInterface section : IMDBConfig.getInstance().getSDSections()) {
-                        results.addAll(IMDBUtils.findReleases("doSITE_IMDB",
+                        results.addAll(IMDBUtils.findReleases("doIMDB",
                                 section.getBaseDirectory(), request.getSession().getUserNull(request.getUser()),
                                 imdb.getTitle(), imdb.getYear()));
                     }
@@ -133,7 +133,7 @@ public class IMDB extends CommandInterface {
         return response;
     }
 
-    public CommandResponse doSITE_CREATEIMDB(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doCREATEIMDB(CommandRequest request) throws ImproperUsageException {
         DirectoryHandle dir = request.getCurrentDirectory();
         if (request.hasArgument()) {
             try {
@@ -150,7 +150,7 @@ public class IMDB extends CommandInterface {
 
         Map<String, String> nfoFiles;
         try {
-            nfoFiles = IMDBUtils.getNFOFiles(dir, "doSITE_CREATEIMDB");
+            nfoFiles = IMDBUtils.getNFOFiles(dir, "doCREATEIMDB");
         } catch (IndexException e) {
             return new CommandResponse(500, "Index Exception: " + e.getMessage());
         }
@@ -226,7 +226,7 @@ public class IMDB extends CommandInterface {
         }
     }
 
-    public CommandResponse doSITE_REMOVEIMDB(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doREMOVEIMDB(CommandRequest request) throws ImproperUsageException {
         DirectoryHandle dir = request.getCurrentDirectory();
         if (request.hasArgument()) {
             try {
@@ -242,7 +242,7 @@ public class IMDB extends CommandInterface {
 
         Map<String, String> nfoFiles;
         try {
-            nfoFiles = IMDBUtils.getNFOFiles(dir, "doSITE_REMOVEIMDB");
+            nfoFiles = IMDBUtils.getNFOFiles(dir, "doREMOVEIMDB");
         } catch (IndexException e) {
             return new CommandResponse(500, "Index Exception: " + e.getMessage());
         }
@@ -292,7 +292,7 @@ public class IMDB extends CommandInterface {
         }
     }
 
-    public CommandResponse doSITE_IMDBQUEUE(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doIMDBQUEUE(CommandRequest request) throws ImproperUsageException {
         Map<String, Object> env = new HashMap<>();
         env.put("size", IMDBConfig.getInstance().getQueueSize());
         return new CommandResponse(200, request.getSession().jprintf(_bundle, "imdb.queue", env, request.getUser()));

@@ -62,7 +62,7 @@ public class UserManagementHandler extends CommandInterface {
         _bundle = cManager.getResourceBundle();
     }
 
-    public CommandResponse doSITE_ADDIP(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doADDIP(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
@@ -303,11 +303,11 @@ public class UserManagementHandler extends CommandInterface {
         return response;
     }
 
-    public CommandResponse doSITE_ADDUSER(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doADDUSER(CommandRequest request) throws ImproperUsageException {
         return doGenericAddUser(false, request);
     }
 
-    public CommandResponse doSITE_GADDUSER(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doGADDUSER(CommandRequest request) throws ImproperUsageException {
         return doGenericAddUser(true, request);
     }
 
@@ -413,7 +413,7 @@ public class UserManagementHandler extends CommandInterface {
      *
      * @throws ImproperUsageException
      */
-    public CommandResponse doSITE_CHANGEUSER(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doCHANGEUSER(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
@@ -743,7 +743,7 @@ public class UserManagementHandler extends CommandInterface {
      *                                Denotes any email-like password, ex. site chpass arch @ This will allow
      *                                arch to login with a@b.com but not ab.com
      */
-    public CommandResponse doSITE_CHPASS(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doCHPASS(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
@@ -789,7 +789,7 @@ public class UserManagementHandler extends CommandInterface {
      * @param request
      * @throws ImproperUsageException
      */
-    public CommandResponse doSITE_DELIP(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doDELIP(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
@@ -841,7 +841,7 @@ public class UserManagementHandler extends CommandInterface {
         return response;
     }
 
-    public CommandResponse doSITE_DELPURGE(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doDELPURGE(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
@@ -892,7 +892,7 @@ public class UserManagementHandler extends CommandInterface {
         return response;
     }
 
-    public CommandResponse doSITE_DELUSER(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doDELUSER(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
@@ -939,7 +939,7 @@ public class UserManagementHandler extends CommandInterface {
         return response;
     }
 
-    public CommandResponse doSITE_FAIRNESS(CommandRequest request) {
+    public CommandResponse doFAIRNESS(CommandRequest request) {
 
         Collection<User> users;
         if (request.hasArgument()) {
@@ -1006,7 +1006,7 @@ public class UserManagementHandler extends CommandInterface {
         return response;
     }
 
-    public CommandResponse doSITE_SWAP(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doSWAP(CommandRequest request) throws ImproperUsageException {
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
         }
@@ -1069,7 +1069,7 @@ public class UserManagementHandler extends CommandInterface {
         return new CommandResponse(200, "OK, gave " + Bytes.formatBytes(credits) + " of " + srcUser.getName() + "'s credits to " + destUser.getName());
     }
 
-    public CommandResponse doSITE_GIVE(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doGIVE(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
@@ -1128,7 +1128,7 @@ public class UserManagementHandler extends CommandInterface {
                 + " of your credits to " + myUser.getName());
     }
 
-    public CommandResponse doSITE_KICK(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doKICK(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
@@ -1162,7 +1162,7 @@ public class UserManagementHandler extends CommandInterface {
         return response;
     }
 
-    public CommandResponse doSITE_KICKALL(CommandRequest request) {
+    public CommandResponse doKICKALL(CommandRequest request) {
 
         Session session = request.getSession();
         String kicker = session.getUserNull(request.getUser()).getName();
@@ -1187,7 +1187,7 @@ public class UserManagementHandler extends CommandInterface {
         return response;
     }
 
-    public CommandResponse doSITE_KILL(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doKILL(CommandRequest request) throws ImproperUsageException {
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
         }
@@ -1216,7 +1216,7 @@ public class UserManagementHandler extends CommandInterface {
         return response;
     }
 
-    public CommandResponse doSITE_PASSWD(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doPASSWD(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
@@ -1233,7 +1233,7 @@ public class UserManagementHandler extends CommandInterface {
         return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
     }
 
-    public CommandResponse doSITE_PURGE(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doPURGE(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
@@ -1275,7 +1275,7 @@ public class UserManagementHandler extends CommandInterface {
         return response;
     }
 
-    public CommandResponse doSITE_READD(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doREADD(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
@@ -1314,7 +1314,7 @@ public class UserManagementHandler extends CommandInterface {
         return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
     }
 
-    public CommandResponse doSITE_RENUSER(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doRENUSER(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
@@ -1360,7 +1360,7 @@ public class UserManagementHandler extends CommandInterface {
         return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
     }
 
-    public CommandResponse doSITE_SEEN(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doSEEN(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
@@ -1383,7 +1383,7 @@ public class UserManagementHandler extends CommandInterface {
                 + user.getKeyedMap().getObject(UserManagement.LASTSEEN, new Date(0)));
     }
 
-    public CommandResponse doSITE_TAGLINE(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doTAGLINE(CommandRequest request) throws ImproperUsageException {
 
         Session session = request.getSession();
         if (!request.hasArgument()) {
@@ -1400,7 +1400,7 @@ public class UserManagementHandler extends CommandInterface {
         return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
     }
 
-    public CommandResponse doSITE_DEBUG(CommandRequest request) {
+    public CommandResponse doDEBUG(CommandRequest request) {
         Session session = request.getSession();
         User user = session.getUserNull(request.getUser());
         if (!request.hasArgument()) {
@@ -1427,7 +1427,7 @@ public class UserManagementHandler extends CommandInterface {
      *
      * @throws ImproperUsageException
      */
-    public CommandResponse doSITE_TAKE(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doTAKE(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
@@ -1487,7 +1487,7 @@ public class UserManagementHandler extends CommandInterface {
      *
      * @throws ImproperUsageException
      */
-    public CommandResponse doSITE_USER(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doUSER(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
@@ -1533,7 +1533,7 @@ public class UserManagementHandler extends CommandInterface {
         return response;
     }
 
-    public CommandResponse doSITE_USERS(CommandRequest request) {
+    public CommandResponse doUSERS(CommandRequest request) {
 
         CommandResponse response = new CommandResponse(200);
         ArrayList<User> myUsers = new ArrayList<>(GlobalContext.getGlobalContext().getUserManager().getAllUsers());
@@ -1696,11 +1696,11 @@ public class UserManagementHandler extends CommandInterface {
         return (ts.getTransfered() * 100) / size;
     }
 
-    public CommandResponse doSITE_SWHO(CommandRequest request) {
+    public CommandResponse doSWHO(CommandRequest request) {
         return doListConnections(request, "swho", true, true, true, true, true, true, false);
     }
 
-    public CommandResponse doSITE_WHO(CommandRequest request) {
+    public CommandResponse doWHO(CommandRequest request) {
         return doListConnections(request, "who", true, true, true, true, true, true, false);
     }
 
@@ -1812,7 +1812,7 @@ public class UserManagementHandler extends CommandInterface {
         return doListConnections(request, "speed", true, true, true, false, false, false, true);
     }
 
-    public CommandResponse doSITE_BAN(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doBAN(CommandRequest request) throws ImproperUsageException {
 
         Session session = request.getSession();
         if (!request.hasArgument()) {
@@ -1864,7 +1864,7 @@ public class UserManagementHandler extends CommandInterface {
         return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
     }
 
-    public CommandResponse doSITE_BANALL(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doBANALL(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
@@ -1904,7 +1904,7 @@ public class UserManagementHandler extends CommandInterface {
         return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
     }
 
-    public CommandResponse doSITE_UNBAN(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doUNBAN(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
@@ -1933,7 +1933,7 @@ public class UserManagementHandler extends CommandInterface {
         return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
     }
 
-    public CommandResponse doSITE_UNBANALL(CommandRequest request) {
+    public CommandResponse doUNBANALL(CommandRequest request) {
 
         for (User user : GlobalContext.getGlobalContext().getUserManager().getAllUsers()) {
             user.getKeyedMap().setObject(UserManagement.BANTIME, new Date());
@@ -1944,7 +1944,7 @@ public class UserManagementHandler extends CommandInterface {
         return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
     }
 
-    public CommandResponse doSITE_BANS(CommandRequest request) {
+    public CommandResponse doBANS(CommandRequest request) {
         Collection<User> myUsers = GlobalContext.getGlobalContext().getUserManager().getAllUsers();
 
         CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");

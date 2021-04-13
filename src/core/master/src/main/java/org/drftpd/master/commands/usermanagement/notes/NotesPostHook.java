@@ -43,7 +43,7 @@ public class NotesPostHook {
         _bundle = manager.getResourceBundle();
     }
 
-    @CommandHook(commands = "doSITE_USER", priority = 1000, type = HookType.POST)
+    @CommandHook(commands = "doUSER", priority = 1000, type = HookType.POST)
     public void doNotesPostHook(CommandRequest request, CommandResponse response) {
         User myUser;
         try {

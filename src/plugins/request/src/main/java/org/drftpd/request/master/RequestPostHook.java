@@ -48,7 +48,7 @@ public class RequestPostHook {
         AnnotationProcessor.process(this);
     }
 
-    @CommandHook(commands = "doSITE_REQUEST", priority = 10, type = HookType.POST)
+    @CommandHook(commands = "doREQUEST", priority = 10, type = HookType.POST)
     public void doREQUESTIncrement(CommandRequest request, CommandResponse response) {
         if (response.getCode() != 257 && response.getCode() != 200) {
             // Request failed, abort
@@ -60,7 +60,7 @@ public class RequestPostHook {
         user.commit();
     }
 
-    @CommandHook(commands = "doSITE_REQFILLED", priority = 10, type = HookType.POST)
+    @CommandHook(commands = "doREQFILLED", priority = 10, type = HookType.POST)
     public void doREQFILLEDIncrement(CommandRequest request, CommandResponse response) {
         if (response.getCode() != 200) {
             // Reqfilled failed, abort
@@ -71,7 +71,7 @@ public class RequestPostHook {
         user.commit();
     }
 
-    @CommandHook(commands = "doSITE_REQDELETE", priority = 10, type = HookType.POST)
+    @CommandHook(commands = "doREQDELETE", priority = 10, type = HookType.POST)
     public void doWklyAllotmentDecrease(CommandRequest request, CommandResponse response) {
         if (response.getCode() != 200) {
             // Reqdel failed, abort

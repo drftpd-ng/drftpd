@@ -52,11 +52,11 @@ public class ApproveCommands extends CommandInterface {
 
     }
 
-    public CommandResponse doSITE_REMAPPROVE(CommandRequest request) {
+    public CommandResponse doREMAPPROVE(CommandRequest request) {
         return doApprove(request, true);
     }
 
-    public CommandResponse doSITE_APPROVE(CommandRequest request) {
+    public CommandResponse doAPPROVE(CommandRequest request) {
         return doApprove(request, false);
     }
 
@@ -85,7 +85,7 @@ public class ApproveCommands extends CommandInterface {
                 params.setSortOrder(true);
 
                 try {
-                    String caller = doremove ? "doSITE_REMAPPROVE" : "doSITE_APPROVE";
+                    String caller = doremove ? "doREMAPPROVE" : "doAPPROVE";
                     inodes = ie.advancedFind(dir, params, caller);
                 } catch (IndexException e) {
                     logger.error("Index Exception: {}", e.getMessage());

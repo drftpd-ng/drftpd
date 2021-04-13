@@ -96,7 +96,7 @@ public class AutoNukeHook {
         DirsToCheck.getDirsToCheck().add(newDir);
     }
 
-    @CommandHook(commands = {"doRMD", "doSITE_WIPE"}, priority = 10, type = HookType.POST)
+    @CommandHook(commands = {"doRMD", "doWIPE"}, priority = 10, type = HookType.POST)
     public void doAutoNukeCleanupHook(CommandRequest request, CommandResponse response) {
         if (response.getCode() != 250 && response.getCode() != 200) {
             // DELE/WIPE failed, abort cleanup

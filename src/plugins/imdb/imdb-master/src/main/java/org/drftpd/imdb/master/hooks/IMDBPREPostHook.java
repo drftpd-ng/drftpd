@@ -34,7 +34,7 @@ import org.drftpd.master.vfs.DirectoryHandle;
  */
 public class IMDBPREPostHook {
 
-    @CommandHook(commands = "doSITE_PRE", priority = 100, type = HookType.POST)
+    @CommandHook(commands = "doPRE", priority = 100, type = HookType.POST)
     public void doPostHook(CommandRequest request, CommandResponse response) {
         if (response.getCode() != 250) {
             // PRE Failed, skip

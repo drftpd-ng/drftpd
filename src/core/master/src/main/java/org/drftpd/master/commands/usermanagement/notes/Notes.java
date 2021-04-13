@@ -33,7 +33,7 @@ public class Notes extends CommandInterface {
         super.initialize(method, pluginName, cManager);
     }
 
-    public CommandResponse doSITE_ADDNOTE(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doADDNOTE(CommandRequest request) throws ImproperUsageException {
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
         }
@@ -67,7 +67,7 @@ public class Notes extends CommandInterface {
         return new CommandResponse(200, "Note Added");
     }
 
-    public CommandResponse doSITE_DELNOTE(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doDELNOTE(CommandRequest request) throws ImproperUsageException {
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
         }

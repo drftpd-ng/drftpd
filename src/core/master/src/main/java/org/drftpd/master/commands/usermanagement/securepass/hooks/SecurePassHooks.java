@@ -95,7 +95,7 @@ public class SecurePassHooks {
     /*
      * Prehook method for CHPASS
      */
-    @CommandHook(commands = "doSITE_CHPASS", type = HookType.PRE)
+    @CommandHook(commands = "doCHPASS", type = HookType.PRE)
     public CommandRequestInterface doSecurePassCHPASSPreCheck(CommandRequest request) {
         return checkPASS(request, 1, 2, false);
     }
@@ -103,7 +103,7 @@ public class SecurePassHooks {
     /*
      * Prehook method for PASSWD
      */
-    @CommandHook(commands = "doSITE_PASSWD", type = HookType.PRE)
+    @CommandHook(commands = "doPASSWD", type = HookType.PRE)
     public CommandRequestInterface doSecurePassPASSWDPreCheck(CommandRequest request) {
         return checkPASS(request, 0, 1, false);
     }
@@ -111,7 +111,7 @@ public class SecurePassHooks {
     /*
      * Prehook method for ADDUSER
      */
-    @CommandHook(commands = "doSITE_ADDUSER", type = HookType.PRE)
+    @CommandHook(commands = "doADDUSER", type = HookType.PRE)
     public CommandRequestInterface doSecurePassADDUSERPreCheck(CommandRequest request) {
         return checkPASS(request, 1, 2, true);
     }
@@ -119,7 +119,7 @@ public class SecurePassHooks {
     /*
      * Prehook method for GADDUSER
      */
-    @CommandHook(commands = "doSITE_GADDUSER", type = HookType.PRE)
+    @CommandHook(commands = "doGADDUSER", type = HookType.PRE)
     public CommandRequestInterface doSecurePassGADDUSERPreCheck(CommandRequest request) {
         return checkPASS(request, 2, 3, true);
     }

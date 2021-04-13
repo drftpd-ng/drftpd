@@ -39,7 +39,7 @@ public class Sections extends CommandInterface {
 
     }
 
-    public CommandResponse doSITE_SECTIONS(CommandRequest request) {
+    public CommandResponse doSECTIONS(CommandRequest request) {
         CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 
         Map<String, Object> env = new HashMap<>();

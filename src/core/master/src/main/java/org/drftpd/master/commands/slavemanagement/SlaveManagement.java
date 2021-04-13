@@ -92,7 +92,7 @@ public class SlaveManagement extends CommandInterface {
 
     }
 
-    public CommandResponse doSITE_SLAVESELECT(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doSLAVESELECT(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
@@ -145,7 +145,7 @@ public class SlaveManagement extends CommandInterface {
         return response;
     }
 
-    public CommandResponse doSITE_KICKSLAVE(CommandRequest request) {
+    public CommandResponse doKICKSLAVE(CommandRequest request) {
         Session session = request.getSession();
 
         if (!request.hasArgument()) {
@@ -174,7 +174,7 @@ public class SlaveManagement extends CommandInterface {
      * Lists all slaves used by the master
      * USAGE: SITE SLAVES
      */
-    public CommandResponse doSITE_SLAVES(CommandRequest request) {
+    public CommandResponse doSLAVES(CommandRequest request) {
         boolean showMore = request.hasArgument() &&
                 (request.getArgument().equalsIgnoreCase("more"));
 
@@ -281,7 +281,7 @@ public class SlaveManagement extends CommandInterface {
         return response;
     }
 
-    public CommandResponse doSITE_REMERGE(CommandRequest request) {
+    public CommandResponse doREMERGE(CommandRequest request) {
         if (!request.hasArgument()) {
             return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
         }
@@ -353,7 +353,7 @@ public class SlaveManagement extends CommandInterface {
      *
      * @throws ImproperUsageException Thrown when the command is invoked with incorrect instructions
      */
-    public CommandResponse doSITE_SLAVE(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doSLAVE(CommandRequest request) throws ImproperUsageException {
         Session session = request.getSession();
 
         CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
@@ -486,7 +486,7 @@ public class SlaveManagement extends CommandInterface {
         throw new ImproperUsageException();
     }
 
-    public CommandResponse doSITE_DELSLAVE(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doDELSLAVE(CommandRequest request) throws ImproperUsageException {
         Session session = request.getSession();
 
         CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
@@ -529,7 +529,7 @@ public class SlaveManagement extends CommandInterface {
         return response;
     }
 
-    public CommandResponse doSITE_ADDSLAVE(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doADDSLAVE(CommandRequest request) throws ImproperUsageException {
         Session session = request.getSession();
 
         CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");

@@ -22,7 +22,7 @@ import java.util.StringTokenizer;
 public class ArchiveHooks {
     protected static final Logger logger = LogManager.getLogger(ArchiveHooks.class);
 
-    @CommandHook(commands = "doSITE_DELSLAVE", priority = 100, type = HookType.PRE)
+    @CommandHook(commands = "doDELSLAVE", priority = 100, type = HookType.PRE)
     public CommandRequestInterface doAutoFreeSpacePreHook(CommandRequest request) {
         // First handle syntax errors cases which will be handled in the normal command execution
         if (!request.hasArgument()) {

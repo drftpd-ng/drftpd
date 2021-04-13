@@ -135,7 +135,7 @@ public class TransferStatistics extends CommandInterface {
      * USAGE: site stats [<user>]
      * Display a user's upload/download statistics.
      */
-    public CommandResponse doSITE_STATS(CommandRequest request) {
+    public CommandResponse doSTATS(CommandRequest request) {
 
         Session session = request.getSession();
         if (!request.hasArgument()) {
@@ -196,35 +196,35 @@ public class TransferStatistics extends CommandInterface {
         return response;
     }
 
-    public CommandResponse doSITE_ALUP(CommandRequest request) {
+    public CommandResponse doALUP(CommandRequest request) {
         return execute(request, "alup");
     }
 
-    public CommandResponse doSITE_ALDN(CommandRequest request) {
+    public CommandResponse doALDN(CommandRequest request) {
         return execute(request, "aldn");
     }
 
-    public CommandResponse doSITE_MONTHUP(CommandRequest request) {
+    public CommandResponse doMONTHUP(CommandRequest request) {
         return execute(request, "monthup");
     }
 
-    public CommandResponse doSITE_MONTHDN(CommandRequest request) {
+    public CommandResponse doMONTHDN(CommandRequest request) {
         return execute(request, "monthdn");
     }
 
-    public CommandResponse doSITE_WKUP(CommandRequest request) {
+    public CommandResponse doWKUP(CommandRequest request) {
         return execute(request, "wkup");
     }
 
-    public CommandResponse doSITE_WKDN(CommandRequest request) {
+    public CommandResponse doWKDN(CommandRequest request) {
         return execute(request, "wkdn");
     }
 
-    public CommandResponse doSITE_DAYUP(CommandRequest request) {
+    public CommandResponse doDAYUP(CommandRequest request) {
         return execute(request, "dayup");
     }
 
-    public CommandResponse doSITE_DAYDN(CommandRequest request) {
+    public CommandResponse doDAYDN(CommandRequest request) {
         return execute(request, "daydn");
     }
 

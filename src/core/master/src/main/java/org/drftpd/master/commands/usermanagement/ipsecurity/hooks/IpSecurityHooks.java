@@ -105,7 +105,7 @@ public class IpSecurityHooks {
     /*
      * Prehook method for ADDIP
      */
-    @CommandHook(commands = "doSITE_ADDIP", type = HookType.PRE)
+    @CommandHook(commands = "doADDIP", type = HookType.PRE)
     public CommandRequestInterface doIpSecurityADDIPPreCheck(CommandRequest request) {
         return checkIP(request, 2, 1, false);
     }
@@ -113,7 +113,7 @@ public class IpSecurityHooks {
     /*
      * Prehook method for ADDUSER
      */
-    @CommandHook(commands = "doSITE_ADDUSER", type = HookType.PRE)
+    @CommandHook(commands = "doADDUSER", type = HookType.PRE)
     public CommandRequestInterface doIpSecurityADDUSERPreCheck(CommandRequest request) {
         return checkIP(request, 3, 2, true);
     }
@@ -121,7 +121,7 @@ public class IpSecurityHooks {
     /*
      * Prehook method for GADDUSER
      */
-    @CommandHook(commands = "doSITE_GADDUSER", type = HookType.PRE)
+    @CommandHook(commands = "doGADDUSER", type = HookType.PRE)
     public CommandRequestInterface doIpSecurityGADDUSERPreCheck(CommandRequest request) {
         return checkIP(request, 4, 3, true);
     }
@@ -130,7 +130,7 @@ public class IpSecurityHooks {
      * Prehook method for SLAVE ADDIP
      * Gets the ip, and preforms checks.
      */
-    @CommandHook(commands = "doSITE_SLAVE", type = HookType.PRE)
+    @CommandHook(commands = "doSLAVE", type = HookType.PRE)
     public CommandRequestInterface doIpSecuritySLAVEPreCheck(CommandRequest request) {
         if (!request.hasArgument()) {
             return request;

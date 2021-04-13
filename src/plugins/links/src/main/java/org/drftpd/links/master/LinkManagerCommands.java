@@ -40,7 +40,7 @@ public class LinkManagerCommands extends CommandInterface {
     /*
      * Used to fix links that are either missing or have been deleted.
      */
-    public CommandResponse doSITE_FIXLINKS(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doFIXLINKS(CommandRequest request) throws ImproperUsageException {
         if (request.hasArgument()) {
             throw new ImproperUsageException();
         }

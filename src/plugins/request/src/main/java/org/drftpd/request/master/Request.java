@@ -129,7 +129,7 @@ public class Request extends CommandInterface {
         return new DirectoryHandle(requestDirProp);
     }
 
-    public CommandResponse doSITE_REQFILLED(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doREQFILLED(CommandRequest request) throws ImproperUsageException {
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
         }
@@ -182,7 +182,7 @@ public class Request extends CommandInterface {
         return new CommandResponse(500, session.jprintf(_bundle, "reqfilled.notfound", env, request.getUser()));
     }
 
-    public CommandResponse doSITE_REQUEST(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doREQUEST(CommandRequest request) throws ImproperUsageException {
         Session session = request.getSession();
 
         if (!request.hasArgument()) {
@@ -227,7 +227,7 @@ public class Request extends CommandInterface {
         return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
     }
 
-    public CommandResponse doSITE_REQUESTS(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doREQUESTS(CommandRequest request) throws ImproperUsageException {
         if (request.hasArgument()) {
             throw new ImproperUsageException();
         }
@@ -276,7 +276,7 @@ public class Request extends CommandInterface {
         return response;
     }
 
-    public CommandResponse doSITE_REQDELETE(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doREQDELETE(CommandRequest request) throws ImproperUsageException {
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
         }

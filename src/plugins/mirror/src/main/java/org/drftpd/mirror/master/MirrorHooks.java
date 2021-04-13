@@ -62,7 +62,7 @@ public class MirrorHooks {
         MirrorSettings.getSettings().reload();
     }
 
-    @CommandHook(commands = "doSITE_DELSLAVE", priority = 100, type = HookType.PRE)
+    @CommandHook(commands = "doDELSLAVE", priority = 100, type = HookType.PRE)
     public CommandRequestInterface doMirrorPreHook(CommandRequest request) {
         // First handle syntax errors cases which will be handled in the normal command execution
         if (!request.hasArgument()) {
@@ -93,16 +93,16 @@ public class MirrorHooks {
         return request;
     }
 
-    @CommandHook(commands = "doSITE_PRE", type = HookType.PRE)
+    @CommandHook(commands = "doPRE", type = HookType.PRE)
     public CommandRequestInterface doPREPreHook(CommandRequest request) {
         // The actual command handles all error cases, this is just to make sure the PREDIR Object is set before we run any other pre hooks
-        if (request.hasArgument()) { // Handled correctly in doSITE_PRE
+        if (request.hasArgument()) { // Handled correctly in doPRE
             StringTokenizer st = new StringTokenizer(request.getArgument());
-            if (st.countTokens() == 2) { // Handled correctly in doSITE_PRE
+            if (st.countTokens() == 2) { // Handled correctly in doPRE
                 String sectionName = st.nextToken();
                 String releaseName = st.nextToken();
                 SectionInterface section = GlobalContext.getGlobalContext().getSectionManager().getSection(sectionName);
-                if (!section.getName().equals("")) { // Handled correctly in doSITE_PRE
+                if (!section.getName().equals("")) { // Handled correctly in doPRE
                     User user = request.getSession().getUserNull(request.getUser());
                     String path = VirtualFileSystem.fixPath(releaseName);
                     if (!(path.startsWith(VirtualFileSystem.separator))) {
@@ -138,7 +138,7 @@ public class MirrorHooks {
         return request;
     }
 
-    @CommandHook(commands = "doSITE_PRE", type = HookType.POST)
+    @CommandHook(commands = "doPRE", type = HookType.POST)
     public void doPREPostHook(CommandRequest request, CommandResponse response) {
         if (response.getCode() != 250) {
             // PRE failed, abort

@@ -56,11 +56,11 @@ public class SysopPostHook {
         }
     }
 
-    @CommandHook(commands = {"doSITE_ADDIP", "doSITE_ADDUSER", "doSITE_BAN", "doSITE_CHANGEUSER", "doSITE_CHGRP",
-            "doSITE_CHPASS", "doSITE_DELIP", "doSITE_DELUSER", "doSITE_GADDUSER", "doSITE_GIVE", "doSITE_GRPREN",
-            "doSITE_KICK", "doSITE_PASSWD", "doSITE_PURGE", "doSITE_READD", "doSITE_RENUSER", "doSITE_TAGLINE",
-            "doSITE_TAKE", "doSITE_UNBAN", "doSITE_CHANGEGROUP", "doSITE_ADDGROUP", "doSITE_DELGROUP",
-            "doSITE_CHANGEGROUPADMIN",}, type = HookType.POST)
+    @CommandHook(commands = {"doADDIP", "doADDUSER", "doBAN", "doCHANGEUSER", "doCHGRP",
+            "doCHPASS", "doDELIP", "doDELUSER", "doGADDUSER", "doGIVE", "doGRPREN",
+            "doKICK", "doPASSWD", "doPURGE", "doREADD", "doRENUSER", "doTAGLINE",
+            "doTAKE", "doUNBAN", "doCHANGEGROUP", "doADDGROUP", "doDELGROUP",
+            "doCHANGEGROUPADMIN",}, type = HookType.POST)
     public void doSITEPostHook(CommandRequest request, CommandResponse response) {
         String cmd = request.getCommand().toUpperCase();
         if (cmd.startsWith("SITE ")) {

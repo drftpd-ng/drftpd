@@ -50,7 +50,7 @@ public class TvMaze extends CommandInterface {
         AnnotationProcessor.process(this);
     }
 
-    public CommandResponse doSITE_TV(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doTV(CommandRequest request) throws ImproperUsageException {
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
         }
@@ -103,12 +103,12 @@ public class TvMaze extends CommandInterface {
 
                         try {
                             for (SectionInterface section : TvMazeConfig.getInstance().getHDSections()) {
-                                results.addAll(TvMazeUtils.findReleases("doSITE_TV",
+                                results.addAll(TvMazeUtils.findReleases("doTV",
                                         section.getCurrentDirectory(), request.getSession().getUserNull(request.getUser()),
                                         tvmaze.getTvShow().getName(), tvEP.getSeason(), tvEP.getNumber()));
                             }
                             for (SectionInterface section : TvMazeConfig.getInstance().getSDSections()) {
-                                results.addAll(TvMazeUtils.findReleases("doSITE_TV",
+                                results.addAll(TvMazeUtils.findReleases("doTV",
                                         section.getCurrentDirectory(), request.getSession().getUserNull(request.getUser()),
                                         tvmaze.getTvShow().getName(), tvEP.getSeason(), tvEP.getNumber()));
                             }
@@ -151,7 +151,7 @@ public class TvMaze extends CommandInterface {
         }
     }
 
-    public CommandResponse doSITE_CREATETV(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doCREATETV(CommandRequest request) throws ImproperUsageException {
         DirectoryHandle dir = request.getCurrentDirectory();
         if (request.hasArgument()) {
             try {
@@ -227,7 +227,7 @@ public class TvMaze extends CommandInterface {
         }
     }
 
-    public CommandResponse doSITE_REMOVETV(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doREMOVETV(CommandRequest request) throws ImproperUsageException {
         DirectoryHandle dir = request.getCurrentDirectory();
         if (request.hasArgument()) {
             try {
@@ -312,7 +312,7 @@ public class TvMaze extends CommandInterface {
         return dirsToCheck;
     }
 
-    public CommandResponse doSITE_TVQUEUE(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doTVQUEUE(CommandRequest request) throws ImproperUsageException {
         Map<String, Object> env = new HashMap<>();
         env.put("size", TvMazeConfig.getInstance().getQueueSize());
         return new CommandResponse(200, request.getSession().jprintf(_bundle, "tv.queue", env, request.getUser()));

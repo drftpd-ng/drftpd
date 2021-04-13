@@ -49,7 +49,7 @@ public class SiteManagementHandler extends CommandInterface {
         super.initialize(method, pluginName, cManager);
     }
 
-    public CommandResponse doSITE_LIST(CommandRequest request) {
+    public CommandResponse doLIST(CommandRequest request) {
 
         CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 
@@ -87,7 +87,7 @@ public class SiteManagementHandler extends CommandInterface {
         return response;
     }
 
-    public CommandResponse doSITE_RELOAD(CommandRequest request) {
+    public CommandResponse doRELOAD(CommandRequest request) {
         try {
             GlobalContext.getGlobalContext().getSectionManager().reload();
             GlobalContext.getGlobalContext().reloadFtpConfig();
@@ -104,7 +104,7 @@ public class SiteManagementHandler extends CommandInterface {
         return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
     }
 
-    public CommandResponse doSITE_SHUTDOWN(CommandRequest request) {
+    public CommandResponse doSHUTDOWN(CommandRequest request) {
 
         String message;
 

@@ -41,7 +41,7 @@ import java.io.FileNotFoundException;
 public class TvMazeHooks {
     private static final Logger logger = LogManager.getLogger(TvMazeHooks.class);
 
-    @CommandHook(commands = "doSITE_PRE", priority = 100, type = HookType.POST)
+    @CommandHook(commands = "doPRE", priority = 100, type = HookType.POST)
     public void doSitePrePostHook(CommandRequest request, CommandResponse response) {
         if (response.getCode() != 250) {
             // PRE Failed, skip

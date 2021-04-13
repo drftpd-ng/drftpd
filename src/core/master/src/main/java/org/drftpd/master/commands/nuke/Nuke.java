@@ -81,7 +81,7 @@ public class Nuke extends CommandInterface {
      *
      * @throws ImproperUsageException
      */
-    public CommandResponse doSITE_NUKE(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doNUKE(CommandRequest request) throws ImproperUsageException {
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
         }
@@ -112,7 +112,7 @@ public class Nuke extends CommandInterface {
                     // Get dirs from index system
                     ArrayList<DirectoryHandle> dirsToNuke;
                     try {
-                        dirsToNuke = NukeUtils.findNukeDirs(currentDir, requestUser, nukeDirPath, "doSITE_NUKE");
+                        dirsToNuke = NukeUtils.findNukeDirs(currentDir, requestUser, nukeDirPath, "doNUKE");
                     } catch (FileNotFoundException e) {
                         logger.warn(e);
                         return new CommandResponse(550, e.getMessage());
@@ -233,7 +233,7 @@ public class Nuke extends CommandInterface {
         return response;
     }
 
-    public CommandResponse doSITE_NUKES(CommandRequest request) {
+    public CommandResponse doNUKES(CommandRequest request) {
         CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 
         Map<String, Object> env = new HashMap<>();
@@ -286,7 +286,7 @@ public class Nuke extends CommandInterface {
      *
      * @throws ImproperUsageException
      */
-    public CommandResponse doSITE_UNNUKE(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doUNNUKE(CommandRequest request) throws ImproperUsageException {
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
         }
@@ -318,7 +318,7 @@ public class Nuke extends CommandInterface {
                     // Get dirs from index system
                     ArrayList<DirectoryHandle> dirsToUnNuke;
                     try {
-                        dirsToUnNuke = NukeUtils.findNukeDirs(currentDir, user, nukeName, "doSITE_UNNUKE");
+                        dirsToUnNuke = NukeUtils.findNukeDirs(currentDir, user, nukeName, "doUNNUKE");
                     } catch (FileNotFoundException e) {
                         logger.warn(e);
                         return new CommandResponse(550, e.getMessage());
@@ -444,7 +444,7 @@ public class Nuke extends CommandInterface {
         return response;
     }
 
-    public CommandResponse doSITE_NUKESCLEAN(CommandRequest request) {
+    public CommandResponse doNUKESCLEAN(CommandRequest request) {
         CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 
         if (NukeBeans.getNukeBeans().getAll().isEmpty()) {

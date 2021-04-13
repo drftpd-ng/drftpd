@@ -50,7 +50,7 @@ public class GroupManagementHandler extends CommandInterface {
         _bundle = cManager.getResourceBundle();
     }
 
-    public CommandResponse doSITE_ADDGROUP(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doADDGROUP(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
@@ -110,7 +110,7 @@ public class GroupManagementHandler extends CommandInterface {
         return response;
     }
 
-    public CommandResponse doSITE_DELGROUP(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doDELGROUP(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
@@ -261,7 +261,7 @@ public class GroupManagementHandler extends CommandInterface {
      *
      * @throws ImproperUsageException
      */
-    public CommandResponse doSITE_CHANGEGROUP(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doCHANGEGROUP(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
@@ -439,7 +439,7 @@ public class GroupManagementHandler extends CommandInterface {
      *
      * @throws ImproperUsageException
      */
-    public CommandResponse doSITE_CHGRP(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doCHGRP(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
@@ -493,7 +493,7 @@ public class GroupManagementHandler extends CommandInterface {
         return response;
     }
 
-    public CommandResponse doSITE_GINFO(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doGINFO(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
@@ -617,7 +617,7 @@ public class GroupManagementHandler extends CommandInterface {
         return response;
     }
 
-    public CommandResponse doSITE_GROUPS(CommandRequest request) {
+    public CommandResponse doGROUPS(CommandRequest request) {
 
         ArrayList<Group> groups = new ArrayList<>(GlobalContext.getGlobalContext().getUserManager().getAllGroups());
         groups.sort(GroupManagementHandler.GROUP_CASE_INSENSITIVE_COMPARATOR);
@@ -632,7 +632,7 @@ public class GroupManagementHandler extends CommandInterface {
         return response;
     }
 
-    public CommandResponse doSITE_GRPREN(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doGRPREN(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
@@ -710,7 +710,7 @@ public class GroupManagementHandler extends CommandInterface {
      *
      * @throws ImproperUsageException If there is something wrong with this request
      */
-    public CommandResponse doSITE_CHANGEGROUPADMIN(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doCHANGEGROUPADMIN(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
