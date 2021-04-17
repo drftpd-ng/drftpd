@@ -6,14 +6,6 @@
 .idea
 .dev
 target
-config
-build
-drftpd.key
-
-site
-runtime
-userdata
-index.bkp
 
 # More java
 .classpath
@@ -42,6 +34,9 @@ index.bkp
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 
-/dependencies/
-/lib/
-/core/master/userdata/vfs/.dirProperties
+# DrFTPD key
+drftpd.key
+
+# DrFTPD Runtime
+/runtime/master/
+/runtime/slave/
