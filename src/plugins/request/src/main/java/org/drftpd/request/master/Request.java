@@ -62,7 +62,7 @@ public class Request extends CommandInterface {
 
         _bundle = cManager.getResourceBundle();
 
-        // oad our config
+        // Load our config
         getSettings();
 
         createDirectory();
@@ -187,6 +187,8 @@ public class Request extends CommandInterface {
 
         try {
             reqEntryDirHandle.renameToUnchecked(requestDir.getNonExistentDirectoryHandle(filledDirectoryName));
+            requests.delRequest(reqEntry);
+            storeRequestData(requestDir, requests);
         } catch (FileExistsException e) {
             return new CommandResponse(500, session.jprintf(_bundle, "reqfilled.exists", env, request.getUser()));
         } catch (FileNotFoundException e) {
@@ -298,6 +300,11 @@ public class Request extends CommandInterface {
             env.put("request.user", reqEntry.getUser());
             env.put("request.date", sdf.format(reqEntry.getCreationTime()));
             response.addComment(request.getSession().jprintf(_bundle, "requests.list", env, request.getUser()));
+        }
+
+        // Make sure we report that we did not have find any requests
+        if (i == 1) {
+            response.addComment("Currently no requests");
         }
 
         response.addComment(request.getSession().jprintf(_bundle, "requests.footer", request.getUser()));

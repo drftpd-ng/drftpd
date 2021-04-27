@@ -19,13 +19,24 @@ package org.drftpd.request.master.hook;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.drftpd.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.common.extensibility.CommandHook;
 import org.drftpd.common.extensibility.HookType;
 import org.drftpd.master.commands.CommandRequest;
 import org.drftpd.master.commands.CommandResponse;
 import org.drftpd.master.usermanager.User;
+import org.drftpd.master.vfs.DirectoryHandle;
+import org.drftpd.master.vfs.ObjectNotValidException;
 import org.drftpd.request.master.RequestSettings;
+import org.drftpd.request.master.metadata.RequestData;
+import org.drftpd.request.master.metadata.RequestEntry;
 import org.drftpd.request.master.metadata.RequestUserData;
+import org.drftpd.slave.exceptions.FileExistsException;
+
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringTokenizer;
 
 /**
  * @author scitz0
@@ -80,6 +91,108 @@ public class RequestPostHook {
         if (RequestSettings.getSettings().getRequestDecreaseWeekReqs() && user.getKeyedMap().getObjectInteger(RequestUserData.WEEKREQS) > 0) {
             user.getKeyedMap().incrementInt(RequestUserData.WEEKREQS, -1);
             user.commit();
+        }
+    }
+
+    @CommandHook(commands = "doSITE_RENUSER", type = HookType.POST)
+    public void doPostRequestRenuser(CommandRequest request, CommandResponse response) {
+        if (response.getCode() != 200) {
+            // Renuser failed, abort
+            return;
+        }
+        User user = request.getSession().getUserNull(request.getUser());
+        if (user == null) {
+            logger.error("[doSITE_RENUSER::doPostRequestRenuser][Post-hook] User {} does not exists, this should not be possible", request.getUser());
+            return;
+        }
+        try {
+            String from = request.getSession().getObject(RequestUserData.RENUSER_FROM);
+            String to = request.getSession().getObject(RequestUserData.RENUSER_TO);
+            DirectoryHandle requestDirHandle = new DirectoryHandle(RequestSettings.getSettings().getRequestPath());
+            RequestData reqData = requestDirHandle.getPluginMetaData(RequestData.REQUESTS);
+            int requestsUpdated = 0;
+            for (RequestEntry reqEntry : reqData.getRequests()) {
+                if (reqEntry.getUser().equalsIgnoreCase(from)) {
+                    String srcDir = reqEntry.getDirectoryName();
+                    reqEntry.setUser(to);
+                    String destDir = reqEntry.getDirectoryName();
+                    logger.info("[doSITE_RENUSER::doPostRequestRenuser][Post-hook] Changing request directory name from [{}] to [{}]", srcDir, destDir);
+                    DirectoryHandle reqEntryDirHandle;
+                    try {
+                        reqEntryDirHandle = requestDirHandle.getDirectoryUnchecked(srcDir);
+                    } catch (FileNotFoundException e) {
+                        logger.error("Request {} exists in metadata, but not in VFS", reqEntry.getDirectoryName(), e);
+                        continue;
+                    } catch (ObjectNotValidException e) {
+                        logger.error("Request {} exists in metadata, but has an error in VFS", reqEntry.getDirectoryName(), e);
+                        continue;
+                    }
+                    try {
+                        reqEntryDirHandle.renameToUnchecked(requestDirHandle.getNonExistentDirectoryHandle(destDir));
+                    } catch (FileExistsException e) {
+                        logger.error("Destination directory [{}] exists, this should not be possible", destDir);
+                        continue;
+                    } catch (FileNotFoundException e) {
+                        logger.error("Request source directory [{}] was just here but it vanished", srcDir, e);
+                    }
+                    requestsUpdated++;
+                }
+            }
+            logger.debug("[doSITE_RENUSER::doPostRequestRenuser][Post-hook] Updated {} requests", requestsUpdated);
+            // Only store the requests data if we actually changed anything
+            if (requestsUpdated > 0) {
+                requestDirHandle.addPluginMetaData(RequestData.REQUESTS, reqData);
+            }
+        } catch (KeyNotFoundException e) {
+            logger.error("[doSITE_RENUSER::doPostRequestRenuser][Post-hook] Something went wrong in the pre hook as the Object are not registered");
+        } catch (FileNotFoundException e) {
+            logger.error("[doSITE_RENUSER::doPostRequestRenuser][Post-hook] Something went wrong While trying to fix user references or directory names");
+        }
+    }
+
+    @CommandHook(commands = "doSITE_DELUSER", type = HookType.POST)
+    public void doPostRequestDeluser(CommandRequest request, CommandResponse response) {
+        if (response.getCode() != 200) {
+            // Deluser failed, abort
+            return;
+        }
+        User user = request.getSession().getUserNull(request.getUser());
+        if (user == null) {
+            logger.error("[doSITE_DELUSER::doPostRequestDeluser][Post-hook] User {} does not exists, this should not be possible", request.getUser());
+            return;
+        }
+        StringTokenizer st = new StringTokenizer(request.getArgument());
+        String delUsername = st.nextToken();
+        try {
+            DirectoryHandle requestDirHandle = new DirectoryHandle(RequestSettings.getSettings().getRequestPath());
+            RequestData reqData = requestDirHandle.getPluginMetaData(RequestData.REQUESTS);
+            List<RequestEntry> deletedRequests = new ArrayList<>();
+            for (RequestEntry reqEntry : reqData.getRequests()) {
+                if (reqEntry.getUser().equalsIgnoreCase(delUsername)) {
+                    try {
+                        logger.debug("[doSITE_DELUSER::doPostRequestDeluser][Post-hook] Removing request {}", reqEntry.getDirectoryName());
+                        requestDirHandle.getDirectoryUnchecked(reqEntry.getDirectoryName()).deleteUnchecked();
+                        deletedRequests.add(reqEntry);
+                    } catch (FileNotFoundException e) {
+                        logger.error("Request {} exists in metadata, but not in VFS", reqEntry.getDirectoryName(), e);
+                    } catch (ObjectNotValidException e) {
+                        logger.error("Request {} exists in metadata, but has an error in VFS", reqEntry.getDirectoryName(), e);
+                    }
+                }
+            }
+            logger.debug("[doSITE_DELUSER::doPostRequestDeluser][Post-hook] Deleted {} requests", deletedRequests.size());
+
+            // Only update and store the requests data if we actually changed anything
+            if (deletedRequests.size() > 0) {
+                for (RequestEntry reqEntry : deletedRequests) {
+                    reqData.delRequest(reqEntry);
+                }
+                requestDirHandle.addPluginMetaData(RequestData.REQUESTS, reqData);
+            }
+        } catch (KeyNotFoundException e) {
+            logger.error("[doSITE_DELUSER::doPostRequestDeluser][Post-hook] Something went wrong in the pre hook as the Object are not registered");
+        } catch (FileNotFoundException e) {
+            logger.error("[doSITE_DELUSER::doPostRequestDeluser][Post-hook] Something went wrong While trying to fix user references or directory names");
         }
     }
 }

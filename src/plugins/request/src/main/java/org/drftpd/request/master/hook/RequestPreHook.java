@@ -21,12 +21,13 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.drftpd.common.extensibility.CommandHook;
 import org.drftpd.common.extensibility.HookType;
-import org.drftpd.master.commands.CommandRequest;
-import org.drftpd.master.commands.CommandRequestInterface;
-import org.drftpd.master.commands.CommandResponse;
+import org.drftpd.master.commands.*;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.request.master.RequestSettings;
+import org.drftpd.request.master.metadata.RequestData;
 import org.drftpd.request.master.metadata.RequestUserData;
+
+import java.util.StringTokenizer;
 
 /**
  * @author scitz0
@@ -59,6 +60,27 @@ public class RequestPreHook {
             request.setAllowed(false);
             request.setDeniedResponse(new CommandResponse(530, "Access denied - No Such User"));
         }
+        return request;
+    }
+
+    @CommandHook(commands = "doSITE_RENUSER", type = HookType.PRE)
+    public CommandRequestInterface doPreRequestRenuser(CommandRequest request) {
+
+        logger.debug("[doSITE_RENUSER::doPreRequestRenuser][Pre-hook] Invoked");
+        // If there are no arguments it will be handled by the actual function
+        if (request.hasArgument()) {
+            StringTokenizer st = new StringTokenizer(request.getArgument());
+
+            // If the argument count is wrong this will be handled in the actual function
+            if (st.countTokens() == 2) {
+                logger.debug("Setting RENUSER_FROM and RENUSER_TO");
+                request.getSession().setObject(RequestUserData.RENUSER_FROM, st.nextToken());
+                request.getSession().setObject(RequestUserData.RENUSER_TO, st.nextToken());
+
+            }
+        }
+
+        // return the request command
         return request;
     }
 }
