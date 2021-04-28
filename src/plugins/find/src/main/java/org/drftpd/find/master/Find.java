@@ -39,7 +39,6 @@ import org.reflections.Reflections;
 import java.io.FileNotFoundException;
 import java.util.*;
 
-
 /**
  * @author pyrrhic
  * @author mog
@@ -48,10 +47,10 @@ import java.util.*;
  * @version $Id$
  */
 public class Find extends CommandInterface {
+
     public static final Logger logger = LogManager.getLogger(Find.class);
 
     private ResourceBundle _bundle;
-
 
     private final CaseInsensitiveHashMap<String, OptionInterface> _optionsMap = new CaseInsensitiveHashMap<>();
     private final CaseInsensitiveHashMap<String, ActionInterface> _actionsMap = new CaseInsensitiveHashMap<>();
@@ -60,16 +59,15 @@ public class Find extends CommandInterface {
         super.initialize(method, pluginName, cManager);
         _bundle = cManager.getResourceBundle();
 
-
         // Subscribe to events
         AnnotationProcessor.process(this);
 
-        // TODO [DONE] @k2r Load all options and actions
         // Load all options
-        Set<Class<? extends OptionInterface>> options = new Reflections("org.drftpd")
-                .getSubTypesOf(OptionInterface.class);
+        Set<Class<? extends OptionInterface>> options = new Reflections("org.drftpd").getSubTypesOf(OptionInterface.class);
+        logger.debug("We have found [{}] OptionInterface SubTypes", options.size());
         try {
             for (Class<? extends OptionInterface> option : options) {
+                logger.debug("Loading OptionInterface {}", option.getName());
                 OptionInterface optionInterface = option.getConstructor().newInstance();
                 _optionsMap.put("-" + option.getSimpleName().replace("Option", ""), optionInterface);
             }
@@ -79,10 +77,11 @@ public class Find extends CommandInterface {
                     + " extension point definition has changed in the plugin.xml", e);
         }
 
-        Set<Class<? extends ActionInterface>> actions = new Reflections("org.drftpd")
-                .getSubTypesOf(ActionInterface.class);
+        Set<Class<? extends ActionInterface>> actions = new Reflections("org.drftpd").getSubTypesOf(ActionInterface.class);
+        logger.debug("We have found [{}] ActionInterface SubTypes", actions.size());
         try {
             for (Class<? extends ActionInterface> action : actions) {
+                logger.debug("Loading ActionInterface {}", action.getName());
                 ActionInterface actionInterface = action.getConstructor().newInstance();
                 _actionsMap.put("-" + actionInterface.name(), actionInterface);
             }

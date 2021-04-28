@@ -38,4 +38,5 @@ public interface ActionInterface {
     boolean execInFiles();
 
     boolean failed();
+
 }
