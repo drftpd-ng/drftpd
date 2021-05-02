@@ -51,13 +51,14 @@ public class FindUtils {
      * processed in the string array.
      */
     public static HashSet<RemoteSlave> parseSlaves(String[] slaves) {
-        List<String> destSlaveNames = Arrays.asList(slaves);
-        HashSet<RemoteSlave> destSlaves = new HashSet<>();
-        for (RemoteSlave rslave : GlobalContext.getGlobalContext().getSlaveManager().getSlaves()) {
-            if (destSlaveNames.contains(rslave.getName()))
-                destSlaves.add(rslave);
+        List<String> destinationSlaveNames = Arrays.asList(slaves);
+        HashSet<RemoteSlave> destinationSlaves = new HashSet<>();
+        for (RemoteSlave remoteSlave : GlobalContext.getGlobalContext().getSlaveManager().getSlaves()) {
+            if (destinationSlaveNames.contains(remoteSlave.getName())) {
+                destinationSlaves.add(remoteSlave);
+            }
         }
-        return destSlaves;
+        return destinationSlaves;
     }
 
     /**
@@ -96,6 +97,7 @@ public class FindUtils {
         for (String arg : args) {
             sb.append(delimiter).append(arg);
         }
-        return sb.toString().substring(delimiter.length());
+        return sb.substring(delimiter.length());
     }
+
 }

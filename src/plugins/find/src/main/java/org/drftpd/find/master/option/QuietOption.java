@@ -18,22 +18,22 @@
 package org.drftpd.find.master.option;
 
 import org.drftpd.find.master.FindSettings;
+import org.drftpd.find.master.FindUtils;
 import org.drftpd.master.commands.ImproperUsageException;
 import org.drftpd.master.indexation.AdvancedSearchParams;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Map;
 
 /**
  * @author scitz0
  * @version $Id$
  */
-public class TypeOption implements OptionInterface {
+public class QuietOption implements OptionInterface {
 
     private final Map<String, String> _options = Map.of(
-            "file", "Search for files",
-            "f", "Search for files",
-            "dir", "Search for directories",
-            "d", "Search for directories"
+            "quiet", "Do not output found items"
     );
 
     @Override
@@ -43,10 +43,6 @@ public class TypeOption implements OptionInterface {
 
     @Override
     public void executeOption(String option, String[] args, AdvancedSearchParams params, FindSettings settings) throws ImproperUsageException {
-        if (option.equalsIgnoreCase("-f") || option.equalsIgnoreCase("-file")) {
-            params.setInodeType(AdvancedSearchParams.InodeType.FILE);
-        } else if (option.equalsIgnoreCase("-d") || option.equalsIgnoreCase("-dir")) {
-            params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
-        }
+        settings.setQuiet(true);
     }
 }

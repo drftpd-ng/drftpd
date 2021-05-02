@@ -17,12 +17,14 @@
  */
 package org.drftpd.find.master.option;
 
+import org.drftpd.find.master.FindSettings;
 import org.drftpd.find.master.FindUtils;
 import org.drftpd.master.commands.ImproperUsageException;
 import org.drftpd.master.indexation.AdvancedSearchParams;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Map;
 
 /**
  * @author scitz0
@@ -30,32 +32,49 @@ import java.text.SimpleDateFormat;
  */
 public class AgeOption implements OptionInterface {
 
+    private final Map<String, String> _options = Map.of(
+            "age", "<start date>:<end date> # Valid date formats: <yyyy.MM.dd.HH.mm.ss> or <yyyy.MM.dd>"
+    );
+
     @Override
-    public void exec(String option, String[] args, AdvancedSearchParams params) throws ImproperUsageException {
+    public Map<String, String> getOptions() {
+        return _options;
+    }
+
+    @Override
+    public void executeOption(String option, String[] args, AdvancedSearchParams params, FindSettings settings) throws ImproperUsageException {
+        if (args == null) {
+            throw new ImproperUsageException("Missing argument for " + option + " option");
+        }
         SimpleDateFormat fullDate = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss");
         SimpleDateFormat shortDate = new SimpleDateFormat("yyyy.MM.dd");
+        String[] range = FindUtils.getRange(args[0], ":");
         try {
-            String[] range = FindUtils.getRange(args[0], ":");
-
             if (range[0] != null) {
-                if (range[0].length() == 10)
+                if (range[0].length() == 10) {
                     params.setMinAge(shortDate.parse(range[0]).getTime());
-                else if (range[0].length() == 19)
+                } else if (range[0].length() == 19) {
                     params.setMinAge(fullDate.parse(range[0]).getTime());
-                else
+                } else {
                     throw new ImproperUsageException("Invalid date format for min age.");
-            }
-
-            if (range[1] != null) {
-                if (range[1].length() == 10)
-                    params.setMaxAge(shortDate.parse(range[1]).getTime());
-                else if (range[1].length() == 19)
-                    params.setMaxAge(fullDate.parse(range[1]).getTime());
-                else
-                    throw new ImproperUsageException("Invalid date format for max age.");
+                }
             }
         } catch (ParseException e) {
-            throw new ImproperUsageException("Invalid date format", e);
+            throw new ImproperUsageException("Invalid start date format", e);
+        }
+
+        try {
+            if (range[1] != null) {
+                if (range[1].length() == 10) {
+                    params.setMaxAge(shortDate.parse(range[1]).getTime());
+                } else if (range[1].length() == 19) {
+                    params.setMaxAge(fullDate.parse(range[1]).getTime());
+                } else {
+                    throw new ImproperUsageException("Invalid date format for max age.");
+                }
+            }
+        } catch (ParseException e) {
+            throw new ImproperUsageException("Invalid end date format", e);
         }
     }
 }

@@ -17,8 +17,11 @@
  */
 package org.drftpd.find.master.option;
 
+import org.drftpd.find.master.FindSettings;
 import org.drftpd.master.commands.ImproperUsageException;
 import org.drftpd.master.indexation.AdvancedSearchParams;
+
+import java.util.Map;
 
 /**
  * @author scitz0
@@ -26,8 +29,18 @@ import org.drftpd.master.indexation.AdvancedSearchParams;
  */
 public class UserOption implements OptionInterface {
 
+    private final Map<String, String> _options = Map.of(
+            "user", "<user> # Search for entries that are owned by this user",
+            "group", "<group> # Search for entries that have this group attached to it"
+    );
+
     @Override
-    public void exec(String option, String[] args, AdvancedSearchParams params) throws ImproperUsageException {
+    public Map<String, String> getOptions() {
+        return _options;
+    }
+
+    @Override
+    public void executeOption(String option, String[] args, AdvancedSearchParams params, FindSettings settings) throws ImproperUsageException {
         if (args == null) {
             throw new ImproperUsageException("Missing argument for " + option + " option");
         }

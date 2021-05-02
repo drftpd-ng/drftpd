@@ -48,6 +48,7 @@ public class AdvancedSearchParams {
     private Boolean _sortOrder = false;
     private Integer _limit;
     private final KeyedMap<Key<?>, Object> _extensionMap;
+
     public AdvancedSearchParams() {
         _extensionMap = new KeyedMap<>();
     }

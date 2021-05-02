@@ -18,9 +18,12 @@
 package org.drftpd.find.master.option;
 
 import org.drftpd.common.util.Bytes;
+import org.drftpd.find.master.FindSettings;
 import org.drftpd.find.master.FindUtils;
 import org.drftpd.master.commands.ImproperUsageException;
 import org.drftpd.master.indexation.AdvancedSearchParams;
+
+import java.util.Map;
 
 /**
  * @author scitz0
@@ -28,8 +31,18 @@ import org.drftpd.master.indexation.AdvancedSearchParams;
  */
 public class SizeOption implements OptionInterface {
 
+    private final Map<String, String> _options = Map.of(
+            "size", "<min size>:<max size> # Search for entries that fall between min size and max size",
+            "0byte", "Search for 0byte files"
+    );
+
     @Override
-    public void exec(String option, String[] args, AdvancedSearchParams params) throws ImproperUsageException {
+    public Map<String, String> getOptions() {
+        return _options;
+    }
+
+    @Override
+    public void executeOption(String option, String[] args, AdvancedSearchParams params, FindSettings settings) throws ImproperUsageException {
         if (option.equalsIgnoreCase("-size")) {
             if (args == null) {
                 throw new ImproperUsageException("Missing argument for " + option + " option");

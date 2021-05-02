@@ -17,12 +17,14 @@
  */
 package org.drftpd.find.master.option;
 
+import org.drftpd.find.master.FindSettings;
 import org.drftpd.find.master.FindUtils;
 import org.drftpd.master.commands.ImproperUsageException;
 import org.drftpd.master.indexation.AdvancedSearchParams;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Map;
 
 /**
  * @author scitz0
@@ -30,8 +32,18 @@ import java.util.HashSet;
  */
 public class SlaveOption implements OptionInterface {
 
+    private final Map<String, String> _options = Map.of(
+            "slaves", "<slave[ slave ..]> # Slave(s) to include in the search",
+            "nbrofslaves", "<min>:<max> # The found entries need to have at least min slaves holding the files and max slaves"
+    );
+
     @Override
-    public void exec(String option, String[] args, AdvancedSearchParams params) throws ImproperUsageException {
+    public Map<String, String> getOptions() {
+        return _options;
+    }
+
+    @Override
+    public void executeOption(String option, String[] args, AdvancedSearchParams params, FindSettings settings) throws ImproperUsageException {
         if (args == null) {
             throw new ImproperUsageException("Missing argument for " + option + " option");
         }

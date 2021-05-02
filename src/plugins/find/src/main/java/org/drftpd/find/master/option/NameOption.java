@@ -17,9 +17,12 @@
  */
 package org.drftpd.find.master.option;
 
+import org.drftpd.find.master.FindSettings;
 import org.drftpd.find.master.FindUtils;
 import org.drftpd.master.commands.ImproperUsageException;
 import org.drftpd.master.indexation.AdvancedSearchParams;
+
+import java.util.Map;
 
 /**
  * @author scitz0
@@ -27,8 +30,20 @@ import org.drftpd.master.indexation.AdvancedSearchParams;
  */
 public class NameOption implements OptionInterface {
 
+    private final Map<String, String> _options = Map.of(
+            "name", "<word[ word ..]> # The word(s) to search for",
+            "regex", "<pattern> # The pattern you would like to search for",
+            "exact", "<name> # Results need to include this exact name(s)",
+            "endswith", "<name> # Results need to end with these name(s)"
+    );
+
     @Override
-    public void exec(String option, String[] args, AdvancedSearchParams params) throws ImproperUsageException {
+    public Map<String, String> getOptions() {
+        return _options;
+    }
+
+    @Override
+    public void executeOption(String option, String[] args, AdvancedSearchParams params, FindSettings settings) throws ImproperUsageException {
         if (args == null) {
             throw new ImproperUsageException("Missing argument for " + option + " option");
         }

@@ -17,8 +17,11 @@
  */
 package org.drftpd.find.master.option;
 
+import org.drftpd.find.master.FindSettings;
 import org.drftpd.master.commands.ImproperUsageException;
 import org.drftpd.master.indexation.AdvancedSearchParams;
+
+import java.util.Map;
 
 /**
  * @author scitz0
@@ -26,8 +29,18 @@ import org.drftpd.master.indexation.AdvancedSearchParams;
  */
 public class SortOption implements OptionInterface {
 
+    private final Map<String, String> _options = Map.of(
+            "sort", "<field> [asc|desc] # Sort on field either ascending or descending",
+            "random", "No sorting order, first come first serve"
+    );
+
     @Override
-    public void exec(String option, String[] args, AdvancedSearchParams params) throws ImproperUsageException {
+    public Map<String, String> getOptions() {
+        return _options;
+    }
+
+    @Override
+    public void executeOption(String option, String[] args, AdvancedSearchParams params, FindSettings settings) throws ImproperUsageException {
 
         if (option.equalsIgnoreCase("-sort")) {
             if (args == null) {

@@ -18,10 +18,13 @@
 package org.drftpd.tvmaze.master.find;
 
 import org.drftpd.common.dynamicdata.KeyNotFoundException;
+import org.drftpd.find.master.FindSettings;
 import org.drftpd.find.master.option.OptionInterface;
 import org.drftpd.master.commands.ImproperUsageException;
 import org.drftpd.master.indexation.AdvancedSearchParams;
 import org.drftpd.tvmaze.master.index.TvMazeQueryParams;
+
+import java.util.Map;
 
 /**
  * @author scitz0
@@ -29,9 +32,25 @@ import org.drftpd.tvmaze.master.index.TvMazeQueryParams;
  */
 public class TvMazeOption implements OptionInterface {
 
+    private final Map<String, String> _options = Map.of(
+            "tvname", "<name> # Search for tv releases matching provided name",
+            "tvgenre", "<name> # Search for tv releases matching provided genre",
+            "tvseason", "<number> # Search for tv releases that have the provided season number",
+            "tvnumber", "<number> # Search for tv releases that have the provided episode number",
+            "tvtype", "<type> # Search for tv releases that are the provided type",
+            "tvstatus", "<status> # Search for tv releases that match the provided status",
+            "tvlanguage", "<name> # Search for tv releases that have the provided language name",
+            "tvcountry", "<name> # Search for tv releases that originate from the provided country",
+            "tvnetwork", "<name> # Search for tv releases that originate from the provided network"
+    );
+
     @Override
-    public void exec(String option, String[] args,
-                     AdvancedSearchParams params) throws ImproperUsageException {
+    public Map<String, String> getOptions() {
+        return _options;
+    }
+
+    @Override
+    public void executeOption(String option, String[] args, AdvancedSearchParams params, FindSettings settings) throws ImproperUsageException {
         if (args == null) {
             throw new ImproperUsageException("Missing argument for " + option + " option");
         }
@@ -44,32 +63,24 @@ public class TvMazeOption implements OptionInterface {
         }
         if (option.equalsIgnoreCase("-tvname")) {
             queryParams.setName(args[0]);
-            params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
         } else if (option.equalsIgnoreCase("-tvgenre")) {
             queryParams.setGenre(args[0]);
-            params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
         } else if (option.equalsIgnoreCase("-tvseason")) {
             queryParams.setSeason(Integer.parseInt(args[0]));
-            params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
         } else if (option.equalsIgnoreCase("-tvnumber")) {
             queryParams.setNumber(Integer.parseInt(args[0]));
-            params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
         } else if (option.equalsIgnoreCase("-tvtype")) {
             queryParams.setType(args[0]);
-            params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
         } else if (option.equalsIgnoreCase("-tvstatus")) {
             queryParams.setStatus(args[0]);
-            params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
         } else if (option.equalsIgnoreCase("-tvlanguage")) {
             queryParams.setLanguage(args[0]);
-            params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
         } else if (option.equalsIgnoreCase("-tvcountry")) {
             queryParams.setCountry(args[0]);
-            params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
         } else if (option.equalsIgnoreCase("-tvnetwork")) {
             queryParams.setNetwork(args[0]);
-            params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
         }
+        params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
     }
 
 }
