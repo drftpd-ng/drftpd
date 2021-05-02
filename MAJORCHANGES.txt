@@ -1,3 +1,6 @@
+==== 4.0.1
+* request commands have been moved back to the plugin dir. This will mean that you will have duplicate command definitions. Either remove your core.conf for ftp and irc or do a complete clean install
+
 ==== 4.0
 * Java Plugin Framework has been removed and replaced by java reflections framework
 * Now compiles and runs on JDK14
