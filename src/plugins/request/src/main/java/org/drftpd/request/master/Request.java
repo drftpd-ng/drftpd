@@ -298,7 +298,7 @@ public class Request extends CommandInterface {
             env.put("num", Integer.toString(i++));
             env.put("request.name", reqEntry.getName());
             env.put("request.user", reqEntry.getUser());
-            env.put("request.date", sdf.format(reqEntry.getCreationTime()));
+            env.put("request.date", sdf.format(new Date(reqEntry.getCreationTime())));
             response.addComment(request.getSession().jprintf(_bundle, "requests.list", env, request.getUser()));
         }
 
