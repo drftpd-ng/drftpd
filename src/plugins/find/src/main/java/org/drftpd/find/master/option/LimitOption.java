@@ -27,13 +27,10 @@ import java.util.Map;
  * @author scitz0
  * @version $Id$
  */
-public class TypeOption implements OptionInterface {
+public class LimitOption implements OptionInterface {
 
     private final Map<String, String> _options = Map.of(
-            "file", "Search for files",
-            "f", "Search for files",
-            "dir", "Search for directories",
-            "d", "Search for directories"
+            "limit", "<amount> # The amount of items that should be shown"
     );
 
     @Override
@@ -43,10 +40,18 @@ public class TypeOption implements OptionInterface {
 
     @Override
     public void executeOption(String option, String[] args, AdvancedSearchParams params, FindSettings settings) throws ImproperUsageException {
-        if (option.equalsIgnoreCase("-f") || option.equalsIgnoreCase("-file")) {
-            params.setInodeType(AdvancedSearchParams.InodeType.FILE);
-        } else if (option.equalsIgnoreCase("-d") || option.equalsIgnoreCase("-dir")) {
-            params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
+        if (args == null) {
+            throw new ImproperUsageException("Missing argument for " + option + " option");
+        }
+        try {
+            int newLimit = Integer.parseInt(args[0]);
+            if (newLimit > 0 && newLimit < settings.getMaxLimit()) {
+                settings.setLimit(newLimit);
+            } else {
+                settings.setLimit(settings.getMaxLimit());
+            }
+        } catch (NumberFormatException e) {
+            throw new ImproperUsageException("Limit must be valid number.");
         }
     }
 }

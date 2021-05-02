@@ -18,11 +18,14 @@
 package org.drftpd.imdb.master.find;
 
 import org.drftpd.common.dynamicdata.KeyNotFoundException;
+import org.drftpd.find.master.FindSettings;
 import org.drftpd.find.master.FindUtils;
 import org.drftpd.find.master.option.OptionInterface;
 import org.drftpd.imdb.master.index.IMDBQueryParams;
 import org.drftpd.master.commands.ImproperUsageException;
 import org.drftpd.master.indexation.AdvancedSearchParams;
+
+import java.util.Map;
 
 /**
  * @author scitz0
@@ -30,9 +33,23 @@ import org.drftpd.master.indexation.AdvancedSearchParams;
  */
 public class IMDBOption implements OptionInterface {
 
+    private final Map<String, String> _options = Map.of(
+            "imdbtitle", "<name> # Search for imdb releases matching provided name",
+            "imdbdirector", "<name> # Search for imdb releases that are directed by provided name",
+            "imdbgenres", "<name> # Search for imdb releases that have provided genre name",
+            "imdbvotes", "<min votes>:<max votes> # Search for imdb releases that fall between min votes and max votes",
+            "imdbrating", "<min rating>:<max rating> # Search for imdb releases that fall between min rating and max rating",
+            "imdbyear", "<min year>:<max year> # Search for imdb releases that fall between min year and max year",
+            "imdbruntime", "<min runtime>:<max runtime> # Search for imdb releases that fall between min runtime and max runtime"
+    );
+
     @Override
-    public void exec(String option, String[] args,
-                     AdvancedSearchParams params) throws ImproperUsageException {
+    public Map<String, String> getOptions() {
+        return _options;
+    }
+
+    @Override
+    public void executeOption(String option, String[] args, AdvancedSearchParams params, FindSettings settings) throws ImproperUsageException {
         if (args == null) {
             throw new ImproperUsageException("Missing argument for " + option + " option");
         }
@@ -45,34 +62,28 @@ public class IMDBOption implements OptionInterface {
         }
         if (option.equalsIgnoreCase("-imdbtitle")) {
             queryParams.setTitle(args[0]);
-            params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
         } else if (option.equalsIgnoreCase("-imdbdirector")) {
             queryParams.setDirector(args[0]);
-            params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
         } else if (option.equalsIgnoreCase("-imdbgenres")) {
             queryParams.setGenres(args[0]);
-            params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
         } else if (option.equalsIgnoreCase("-imdbvotes")) {
             Integer[] range = getIntRange(args[0]);
             queryParams.setMinVotes(range[0]);
             queryParams.setMaxVotes(range[1]);
-            params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
         } else if (option.equalsIgnoreCase("-imdbrating")) {
             Integer[] range = getIntRange(args[0]);
             queryParams.setMinRating(range[0]);
             queryParams.setMaxRating(range[1]);
-            params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
         } else if (option.equalsIgnoreCase("-imdbyear")) {
             Integer[] range = getIntRange(args[0]);
             queryParams.setMinYear(range[0]);
             queryParams.setMaxYear(range[1]);
-            params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
         } else if (option.equalsIgnoreCase("-imdbruntime")) {
             Integer[] range = getIntRange(args[0]);
             queryParams.setMinRuntime(range[0]);
             queryParams.setMaxRuntime(range[1]);
-            params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
         }
+        params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
     }
 
     private Integer[] getIntRange(String arg) throws ImproperUsageException {
@@ -80,8 +91,8 @@ public class IMDBOption implements OptionInterface {
         try {
             String[] range = FindUtils.getRange(arg, ":");
             if (range[0] != null && range[1] != null) {
-                Integer from = Integer.valueOf(range[0].replaceAll("[,.]", ""));
-                Integer to = Integer.valueOf(range[1].replaceAll("[,.]", ""));
+                int from = Integer.parseInt(range[0].replaceAll("[,.]", ""));
+                int to = Integer.parseInt(range[1].replaceAll("[,.]", ""));
                 if (from > to) {
                     throw new ImproperUsageException("Range invalid, min value higher than max");
                 }

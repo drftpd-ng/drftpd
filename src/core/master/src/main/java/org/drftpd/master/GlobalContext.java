@@ -281,7 +281,6 @@ public class GlobalContext {
         try {
             Class<?> aClass = Class.forName(desiredCm);
             return (CommandManagerInterface) aClass.getConstructor().newInstance();
-            // TODO [DONE] @k2r Command Manager
         } catch (Exception e) {
             throw new FatalException(
                     "Cannot create instance of commandmanager, check 'commandmanager' in the configuration file",
@@ -290,8 +289,8 @@ public class GlobalContext {
     }
 
     private void loadPlugins() {
-        // TODO [DONE] @k2r Load plugins
         Set<Class<? extends PluginInterface>> plugins = new Reflections("org.drftpd").getSubTypesOf(PluginInterface.class);
+        logger.debug("We have found [{}] PluginInterface SubTypes", plugins.size());
         List<String> alreadyResolved = new ArrayList<>();
         try {
             boolean allResolve = false;

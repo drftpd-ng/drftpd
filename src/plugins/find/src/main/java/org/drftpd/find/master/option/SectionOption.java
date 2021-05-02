@@ -18,6 +18,7 @@
 package org.drftpd.find.master.option;
 
 import org.drftpd.find.master.FindSettings;
+import org.drftpd.master.GlobalContext;
 import org.drftpd.master.commands.ImproperUsageException;
 import org.drftpd.master.indexation.AdvancedSearchParams;
 
@@ -27,13 +28,10 @@ import java.util.Map;
  * @author scitz0
  * @version $Id$
  */
-public class TypeOption implements OptionInterface {
+public class SectionOption implements OptionInterface {
 
     private final Map<String, String> _options = Map.of(
-            "file", "Search for files",
-            "f", "Search for files",
-            "dir", "Search for directories",
-            "d", "Search for directories"
+            "section", "<Section name> # Search only in specified section"
     );
 
     @Override
@@ -43,10 +41,9 @@ public class TypeOption implements OptionInterface {
 
     @Override
     public void executeOption(String option, String[] args, AdvancedSearchParams params, FindSettings settings) throws ImproperUsageException {
-        if (option.equalsIgnoreCase("-f") || option.equalsIgnoreCase("-file")) {
-            params.setInodeType(AdvancedSearchParams.InodeType.FILE);
-        } else if (option.equalsIgnoreCase("-d") || option.equalsIgnoreCase("-dir")) {
-            params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
+        if (args == null) {
+            throw new ImproperUsageException("Missing argument for " + option + " option");
         }
+        settings.setDirectoryHandle(GlobalContext.getGlobalContext().getSectionManager().getSection(args[0]).getBaseDirectory());
     }
 }

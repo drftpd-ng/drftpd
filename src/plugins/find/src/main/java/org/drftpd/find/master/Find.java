@@ -38,7 +38,7 @@ import org.reflections.Reflections;
 
 import java.io.FileNotFoundException;
 import java.util.*;
-
+import java.util.stream.Collectors;
 
 /**
  * @author pyrrhic
@@ -48,30 +48,33 @@ import java.util.*;
  * @version $Id$
  */
 public class Find extends CommandInterface {
+
     public static final Logger logger = LogManager.getLogger(Find.class);
 
     private ResourceBundle _bundle;
 
-
     private final CaseInsensitiveHashMap<String, OptionInterface> _optionsMap = new CaseInsensitiveHashMap<>();
+    private final CaseInsensitiveHashMap<String, String> _optionsHelp = new CaseInsensitiveHashMap<>();
     private final CaseInsensitiveHashMap<String, ActionInterface> _actionsMap = new CaseInsensitiveHashMap<>();
 
     public void initialize(String method, String pluginName, StandardCommandManager cManager) {
         super.initialize(method, pluginName, cManager);
         _bundle = cManager.getResourceBundle();
 
-
         // Subscribe to events
         AnnotationProcessor.process(this);
 
-        // TODO [DONE] @k2r Load all options and actions
         // Load all options
-        Set<Class<? extends OptionInterface>> options = new Reflections("org.drftpd")
-                .getSubTypesOf(OptionInterface.class);
+        Set<Class<? extends OptionInterface>> options = new Reflections("org.drftpd").getSubTypesOf(OptionInterface.class);
+        logger.debug("We have found [{}] OptionInterface SubTypes", options.size());
         try {
             for (Class<? extends OptionInterface> option : options) {
+                logger.debug("Loading OptionInterface {}", option.getName());
                 OptionInterface optionInterface = option.getConstructor().newInstance();
-                _optionsMap.put("-" + option.getSimpleName().replace("Option", ""), optionInterface);
+                _optionsHelp.putAll(optionInterface.getOptions());
+                for (String optionName : optionInterface.getOptions().keySet()) {
+                    _optionsMap.put("-" + optionName, optionInterface);
+                }
             }
         } catch (Exception e) {
             logger.error("Failed to load options for org.drftpd.master.commands.find extension point 'Option'"
@@ -79,10 +82,11 @@ public class Find extends CommandInterface {
                     + " extension point definition has changed in the plugin.xml", e);
         }
 
-        Set<Class<? extends ActionInterface>> actions = new Reflections("org.drftpd")
-                .getSubTypesOf(ActionInterface.class);
+        Set<Class<? extends ActionInterface>> actions = new Reflections("org.drftpd").getSubTypesOf(ActionInterface.class);
+        logger.debug("We have found [{}] ActionInterface SubTypes", actions.size());
         try {
             for (Class<? extends ActionInterface> action : actions) {
+                logger.debug("Loading ActionInterface {}", action.getName());
                 ActionInterface actionInterface = action.getConstructor().newInstance();
                 _actionsMap.put("-" + actionInterface.name(), actionInterface);
             }
@@ -91,25 +95,24 @@ public class Find extends CommandInterface {
                     + ", possibly the org.drftpd.master.commands.find"
                     + " extension point definition has changed in the plugin.xml", e);
         }
+        logger.debug("We have {} options and {} actions registered", _optionsMap.size(), _actionsMap.size());
     }
 
     public CommandResponse doFIND(CommandRequest request) throws ImproperUsageException {
+
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
         }
 
         AdvancedSearchParams params = new AdvancedSearchParams();
 
-        DirectoryHandle dir = request.getCurrentDirectory();
+        Session session = request.getSession();
 
-        User user = request.getSession().getUserNull(request.getUser());
+        User user = session.getUserNull(request.getUser());
 
-        ArrayList<ActionInterface> actions = new ArrayList<>();
+        List<ActionInterface> actions = new ArrayList<>();
 
-        int limit = Integer.parseInt(request.getProperties().getProperty("limit.default", "5"));
-        int maxLimit = Integer.parseInt(request.getProperties().getProperty("limit.max", "20"));
-
-        boolean quiet = false;
+        FindSettings settings = new FindSettings(request);
 
         LinkedList<String> args = new LinkedList<>(Arrays.asList(request.getArgument().split("\\s+")));
 
@@ -117,36 +120,70 @@ public class Find extends CommandInterface {
             throw new ImproperUsageException();
         }
 
+        if (args.peek().equalsIgnoreCase("options")) {
+
+            // Remove the first argument
+            args.remove();
+
+
+            if (args.peek() != null) {
+                String option = args.poll();
+                if (_optionsHelp.containsKey(option)) {
+                    return new CommandResponse(200, _optionsHelp.get(option));
+                } else {
+                    throw new ImproperUsageException();
+                }
+            }
+            CommandResponse response = new CommandResponse(200, "The following options are available:");
+
+            StringBuilder line = new StringBuilder();
+            for (String optionName : _optionsMap.keySet().stream().sorted().collect(Collectors.toList())) {
+                if (line.length() > 0) {
+                    line.append(", ");
+                }
+                line.append(optionName);
+                if (line.length() > 80) {
+                    response.addComment(line);
+                    line.setLength(0);
+                }
+            }
+            if (line.length() > 0) {
+                response.addComment(line);
+            }
+            return response;
+        }
+        if (args.peek().equalsIgnoreCase("actions")) {
+
+            // Remove the first argument
+            args.remove();
+
+            CommandResponse response = new CommandResponse(200, "The following actions are available:");
+
+            StringBuilder line = new StringBuilder();
+            for (String actionName : _actionsMap.keySet().stream().sorted().collect(Collectors.toList())) {
+                if (line.length() > 0) {
+                    line.append(", ");
+                }
+                line.append(actionName);
+                if (line.length() > 80) {
+                    response.addComment(line);
+                    line.setLength(0);
+                }
+            }
+            if (line.length() > 0) {
+                response.addComment(line);
+            }
+            return response;
+        }
+
         while (!args.isEmpty()) {
             String arg = args.poll();
 
-            if (arg.equalsIgnoreCase("-quiet")) {
-                quiet = true;
-            } else if (arg.equalsIgnoreCase("-limit")) {
-                if (args.isEmpty()) {
-                    throw new ImproperUsageException();
-                }
-                try {
-                    int newLimit = Integer.parseInt(args.poll());
-                    if (newLimit > 0 && newLimit < maxLimit) {
-                        limit = newLimit;
-                    } else {
-                        limit = maxLimit;
-                    }
-                } catch (NumberFormatException e) {
-                    throw new ImproperUsageException("Limit must be valid number.");
-                }
-            } else if (arg.equalsIgnoreCase("-section")) {
-                if (args.isEmpty()) {
-                    throw new ImproperUsageException();
-                }
-                dir = GlobalContext.getGlobalContext().getSectionManager().
-                        getSection(args.poll()).getBaseDirectory();
-            } else if (_optionsMap.containsKey(arg)) {
+            if (_optionsMap.containsKey(arg)) {
                 // Check if arg matches any of the loaded options
                 try {
                     OptionInterface option = _optionsMap.get(arg);
-                    option.exec(arg, getArgs(args), params);
+                    option.executeOption(arg, getArgs(args), params, settings);
                 } catch (Exception e) {
                     logger.debug("Option = {}", arg, e);
                     return new CommandResponse(500, e.getMessage());
@@ -174,13 +211,14 @@ public class Find extends CommandInterface {
             throw new ImproperUsageException();
         }
 
-        params.setLimit(0); // Get all results, we filter out hidden inodes later
+        // Get all results, we filter out hidden inodes later
+        params.setLimit(0);
 
         IndexEngineInterface ie = GlobalContext.getGlobalContext().getIndexEngine();
         Map<String, String> inodes;
 
         try {
-            inodes = ie.advancedFind(dir, params, "doFIND");
+            inodes = ie.advancedFind(settings.getDirectoryHandle(), params, "doFIND");
         } catch (IndexException e) {
             logger.error(e.getMessage());
             return new CommandResponse(550, e.getMessage());
@@ -191,61 +229,56 @@ public class Find extends CommandInterface {
 
         Map<String, Object> env = new HashMap<>();
 
-        Session session = request.getSession();
-
         CommandResponse response = new CommandResponse(200, "Find complete!");
 
         if (inodes.isEmpty()) {
             response.addComment(session.jprintf(_bundle, "find.empty", env, user.getName()));
-            return response;
-        }
+        } else {
+            LinkedList<String> responses = new LinkedList<>();
+            int results = 0;
+            boolean observePrivPath = request.getProperties().getProperty("observe.privpath", "true").equalsIgnoreCase("true");
 
-        LinkedList<String> responses = new LinkedList<>();
-        int results = 0;
-        boolean observePrivPath = request.getProperties().
-                getProperty("observe.privpath", "true").equalsIgnoreCase("true");
-
-        InodeHandle inode;
-        for (Map.Entry<String, String> item : inodes.entrySet()) {
-            if (results == limit)
-                break;
-            try {
-                inode = item.getValue().equals("d") ? new DirectoryHandle(item.getKey().
-                        substring(0, item.getKey().length() - 1)) : new FileHandle(item.getKey());
-                if (observePrivPath ? inode.isHidden(user) : inode.isHidden(null)) {
-                    continue;
+            InodeHandle inode;
+            for (Map.Entry<String, String> item : inodes.entrySet()) {
+                if (results == settings.getLimit()) {
+                    break;
                 }
-                env.put("name", inode.getName());
-                env.put("path", inode.getPath());
-                env.put("owner", inode.getUsername());
-                env.put("group", inode.getGroup());
-                env.put("size", Bytes.formatBytes(inode.getSize()));
-                for (ActionInterface action : actions) {
-                    if ((inode.isFile() && action.execInFiles()) ||
-                            (inode.isDirectory() && action.execInDirs())) {
-                        logger.debug("Action {} executing on {}", action.getClass(), inode.getPath());
-                        String text = action.exec(request, inode);
-                        if (!quiet || action.failed())
-                            responses.add(text);
+                try {
+                    inode = item.getValue().equals("d") ? new DirectoryHandle(item.getKey().substring(0, item.getKey().length() - 1)) : new FileHandle(item.getKey());
+                    if (observePrivPath ? inode.isHidden(user) : inode.isHidden(null)) {
+                        continue;
                     }
+                    env.put("name", inode.getName());
+                    env.put("path", inode.getPath());
+                    env.put("owner", inode.getUsername());
+                    env.put("group", inode.getGroup());
+                    env.put("size", Bytes.formatBytes(inode.getSize()));
+                    for (ActionInterface action : actions) {
+                        if ((inode.isFile() && action.execInFiles()) || (inode.isDirectory() && action.execInDirs())) {
+                            logger.debug("Action {} executing on {}", action.getClass(), inode.getPath());
+                            String text = action.exec(request, inode);
+                            if (!settings.getQuiet() || action.failed()) {
+                                responses.add(text);
+                            }
+                        }
+                    }
+                    results++;
+                } catch (FileNotFoundException e) {
+                    logger.warn("Index contained an unexistent inode: {}", item.getKey());
                 }
-                results++;
-            } catch (FileNotFoundException e) {
-                logger.warn("Index contained an unexistent inode: {}", item.getKey());
             }
-        }
 
-        if (results == 0) {
-            response.addComment(session.jprintf(_bundle, "find.empty", env, user.getName()));
-            return response;
-        }
+            if (results == 0) {
+                response.addComment(session.jprintf(_bundle, "find.empty", env, user.getName()));
+            } else {
+                env.put("limit", settings.getLimit());
+                env.put("results", results);
+                response.addComment(session.jprintf(_bundle, "find.header", env, user.getName()));
 
-        env.put("limit", limit);
-        env.put("results", results);
-        response.addComment(session.jprintf(_bundle, "find.header", env, user.getName()));
-
-        for (String line : responses) {
-            response.addComment(line);
+                for (String line : responses) {
+                    response.addComment(line);
+                }
+            }
         }
 
         return response;
@@ -265,20 +298,21 @@ public class Find extends CommandInterface {
         if (text.isEmpty() || text.peek().startsWith("-")) {
             return null;
         }
-        String args = text.poll();
+        StringBuilder args = new StringBuilder(text.poll());
         if (args.charAt(0) == '"') {
-            args = args.substring(1);
+            args = new StringBuilder(args.substring(1));
             while (true) {
-                if (args.endsWith("\"")) {
-                    args = args.substring(0, args.length() - 1);
+                if (args.toString().endsWith("\"")) {
+                    args = new StringBuilder(args.substring(0, args.length() - 1));
                     break;
                 } else if (text.isEmpty()) {
                     throw new ImproperUsageException();
                 } else {
-                    args += " " + text.poll();
+                    args.append(" ").append(text.poll());
                 }
             }
         }
-        return args.split(" ");
+        return args.toString().split(" ");
     }
+
 }

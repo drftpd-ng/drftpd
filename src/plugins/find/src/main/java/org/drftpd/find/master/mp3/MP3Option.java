@@ -18,11 +18,14 @@
 package org.drftpd.find.master.mp3;
 
 import org.drftpd.common.dynamicdata.KeyNotFoundException;
+import org.drftpd.find.master.FindSettings;
 import org.drftpd.find.master.FindUtils;
 import org.drftpd.find.master.option.OptionInterface;
 import org.drftpd.master.commands.ImproperUsageException;
 import org.drftpd.master.indexation.AdvancedSearchParams;
 import org.drftpd.zipscript.master.mp3.indexation.MP3QueryParams;
+
+import java.util.Map;
 
 /**
  * @author scitz0
@@ -30,9 +33,21 @@ import org.drftpd.zipscript.master.mp3.indexation.MP3QueryParams;
  */
 public class MP3Option implements OptionInterface {
 
+    private final Map<String, String> _options = Map.of(
+            "mp3genre", "<name> # Search Mp3 releases that has the supplied genre",
+            "mp3title", "<name> # Search Mp3 releases that has the supplied title",
+            "mp3artist", "<name> # Search Mp3 releases that has the supplied artist",
+            "mp3album", "<name> # Search Flac releases that has the supplied album",
+            "mp3year", "<min year>:<max year> # Search Mp3 releases that fall within max and max year"
+    );
+
     @Override
-    public void exec(String option, String[] args,
-                     AdvancedSearchParams params) throws ImproperUsageException {
+    public Map<String, String> getOptions() {
+        return _options;
+    }
+
+    @Override
+    public void executeOption(String option, String[] args, AdvancedSearchParams params, FindSettings settings) throws ImproperUsageException {
         if (args == null) {
             throw new ImproperUsageException("Missing argument for " + option + " option");
         }

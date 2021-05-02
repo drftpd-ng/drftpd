@@ -18,20 +18,35 @@
 package org.drftpd.find.master.flac;
 
 import org.drftpd.common.dynamicdata.KeyNotFoundException;
+import org.drftpd.find.master.FindSettings;
 import org.drftpd.find.master.FindUtils;
 import org.drftpd.find.master.option.OptionInterface;
 import org.drftpd.master.commands.ImproperUsageException;
 import org.drftpd.master.indexation.AdvancedSearchParams;
 import org.drftpd.zipscript.master.flac.indexation.FlacQueryParams;
 
+import java.util.Map;
+
 /**
  * @author norox
  */
 public class FlacOption implements OptionInterface {
 
+    private final Map<String, String> _options = Map.of(
+            "flacgenre", "<name> # Search Flac releases that has the supplied genre",
+            "flactitle", "<name> # Search Flac releases that has the supplied title",
+            "flacartist", "<name> # Search Flac releases that has the supplied artist",
+            "flacalbum", "<name> # Search Flac releases that has the supplied album",
+            "flacyear", "<min year>:<max year> # Search Flac releases that fall within max and max year"
+    );
+
     @Override
-    public void exec(String option, String[] args,
-                     AdvancedSearchParams params) throws ImproperUsageException {
+    public Map<String, String> getOptions() {
+        return _options;
+    }
+
+    @Override
+    public void executeOption(String option, String[] args, AdvancedSearchParams params, FindSettings settings) throws ImproperUsageException {
         if (args == null) {
             throw new ImproperUsageException("Missing argument for " + option + " option");
         }
@@ -42,15 +57,15 @@ public class FlacOption implements OptionInterface {
             queryParams = new FlacQueryParams();
             params.addExtensionData(FlacQueryParams.FLACQUERYPARAMS, queryParams);
         }
-        if (option.equalsIgnoreCase("-flacGenre")) {
+        if (option.equalsIgnoreCase("-flacgenre")) {
             queryParams.setGenre(args[0]);
-        } else if (option.equalsIgnoreCase("-flacTitle")) {
+        } else if (option.equalsIgnoreCase("-flactitle")) {
             queryParams.setTitle(args[0]);
-        } else if (option.equalsIgnoreCase("-flacArtist")) {
+        } else if (option.equalsIgnoreCase("-flacartist")) {
             queryParams.setArtist(args[0]);
-        } else if (option.equalsIgnoreCase("-flacAlbum")) {
+        } else if (option.equalsIgnoreCase("-flacalbum")) {
             queryParams.setAlbum(args[0]);
-        } else if (option.equalsIgnoreCase("-flacYear")) {
+        } else if (option.equalsIgnoreCase("-flacyear")) {
             try {
                 String[] range = FindUtils.getRange(args[0], ":");
                 if (range[0] != null && range[1] != null) {

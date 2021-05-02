@@ -18,11 +18,14 @@
 package org.drftpd.find.master.zipscript;
 
 import org.drftpd.common.dynamicdata.KeyNotFoundException;
+import org.drftpd.find.master.FindSettings;
 import org.drftpd.find.master.FindUtils;
 import org.drftpd.find.master.option.OptionInterface;
 import org.drftpd.master.commands.ImproperUsageException;
 import org.drftpd.master.indexation.AdvancedSearchParams;
 import org.drftpd.zipscript.master.sfv.indexation.ZipscriptQueryParams;
+
+import java.util.Map;
 
 /**
  * @author scitz0
@@ -30,9 +33,20 @@ import org.drftpd.zipscript.master.sfv.indexation.ZipscriptQueryParams;
  */
 public class ZipscriptOption implements OptionInterface {
 
+    private final Map<String, String> _options = Map.of(
+            "incomplete", "Find incomplete zipscript enabled releases",
+            "present", "<min files>:<max files> # Find zipscript enabled releases that have between min and max files uploaded",
+            "missing", "<min files>:<max files> # Find zipscript enabled releases that have between min and max files missing",
+            "percent", "<min percentage>:<max percentage> # Find zipscript enabled releases that are between min and max percentage complete"
+    );
+
     @Override
-    public void exec(String option, String[] args,
-                     AdvancedSearchParams params) throws ImproperUsageException {
+    public Map<String, String> getOptions() {
+        return _options;
+    }
+
+    @Override
+    public void executeOption(String option, String[] args, AdvancedSearchParams params, FindSettings settings) throws ImproperUsageException {
         if (!option.equalsIgnoreCase("-incomplete") && args == null) {
             throw new ImproperUsageException("Missing argument for " + option + " option");
         }
@@ -69,8 +83,8 @@ public class ZipscriptOption implements OptionInterface {
         try {
             String[] range = FindUtils.getRange(arg, ":");
             if (range[0] != null && range[1] != null) {
-                Integer from = Integer.valueOf(range[0]);
-                Integer to = Integer.valueOf(range[1]);
+                int from = Integer.parseInt(range[0]);
+                int to = Integer.parseInt(range[1]);
                 if (from > to) {
                     throw new ImproperUsageException("Range invalid, min value higher than max");
                 }
