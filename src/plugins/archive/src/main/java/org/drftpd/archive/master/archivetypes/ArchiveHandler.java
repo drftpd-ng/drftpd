@@ -163,13 +163,17 @@ public class ArchiveHandler implements Runnable {
             } catch (Exception e) {
                 logger.warn("Caught an unexpected exception while trying to archive", e);
             } finally {
-                if (_archiveType._parent.removeArchiveHandler(this) == null) {
-                    logger.error("We were unable to remove this ArchiveHandler from the registered ArchiveHandlers");
-                }
+                // Make sure we always reset the directory to null
                 _archiveType.setDirectory(null);
             }
         }
+
         logger.debug("Finished this ArchiveHandler");
+
+        // Remove this archiveHandler
+        if (_archiveType._parent.removeArchiveHandler(this) == null) {
+            logger.error("We were unable to remove this ArchiveHandler from the registered ArchiveHandlers");
+        }
         // Give the thread a correct name (Waiting for archive)
         t.setName(Archive.ArchiveHandlerThreadFactory.getIdleThreadName(t.getId()));
     }
