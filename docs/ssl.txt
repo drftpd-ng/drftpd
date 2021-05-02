@@ -1,0 +1,74 @@
+SSL/TLS within drftpd has been changed/reworked with the introduction of drftpd 4.0.
+In the past you created a single ssl key/certificate for everything drftpd did.
+This can still be used as is, for now, the default mode of operating.
+
+However drftpd has the concept of virtual file system and slaves that talk to a master.
+This means slaves have a connection to a master, which could be unencrypted in the past.
+With the introduction of 4.0 this needs to be ssl/tls encrypted.
+We have also divided the ssl/tls configuration per connection type in such a way that client connections do no longer dictate the available options for slave connections.
+By default drftpd 4.0 will only allow TLS1.3 connections using 3 ciphers (see master.conf), but still uses the same single key/certificate principle (keystore).
+
+SSL / TLS is hard to get right in the configuration phase and support all possible features/combinations out there.
+Therefor the existing configuration options have been removed and replaced with an external library.
+Starting from drftpd 4.0 we use the elasticsearch-ssl-config module, which has become the basis for all our ssl/tls configuration options.
+
+With the introduction of this new library we can offer the wide variety of configurations supported by it.
+We highly recommend you, at least, change the configuration for master<->slave communication to be very secure.
+This can be done on the master side by changing the slavemanager.ssl settings in master.conf.
+
+An example of a (more) secure configuration is by setting up your own private root certificate authority.
+As an example you could use easy-rsa from openvpn -> https://github.com/OpenVPN/easy-rsa
+Explaining all options is beyond the scope of this document, but we will give an example below on how to use it, including slavemanager config.
+For a quickstart guide: https://github.com/OpenVPN/easy-rsa/blob/master/README.quickstart.md
+
+mkdir runtime/master/ssl
+cd runtime/master/ssl
+git clone https://github.com/OpenVPN/easy-rsa easy-rsa.git
+cp -rp easy-rsa.git/easyrsa3/* .
+./easyrsa init-pki
+./easyrsa build-ca
+./easyrsa gen-req my-awesome-master
+./easyrsa sign-req server my-awesome-master
+./easyrsa gen-req my-awesome-client
+./easyrsa sign-req client my-awesome-client
+
+With this you need the following files on the master:
+- pki/ca.crt (root ca certificate)
+- pki/private/my-awesome-master.key (master private key)
+- pki/issued/my-awesome-master.crt (master signed certificate by above root ca)
+
+With this you need the following files on the slave:
+- pki/ca.crt (root ca certificate)
+- pki/private/my-awesome-client.key (master private key)
+- pki/issued/my-awesome-client.crt (master signed certificate by above root ca)
+
+cd runtime/master/config
+mkdir ssl
+cp ../../ssl/pki/ca.crt cacert.pem
+cp ../../ssl/pki/private/my-awesome-master.key server.key
+cp ../../ssl/pki/issued/my-awesome-master.crt server.pem
+
+In order to update the configuration to use these new certificated for the slave manager, edit master.conf slavemanager.ssl options.
+An example (based on above) is:
+slavemanager.ssl.verification_mode=certificate
+slavemanager.ssl.client_authentication=required
+slavemanager.ssl.key=config/ssl/server.key
+slavemanager.ssl.certificate=config/ssl/server.pem
+slavemanager.ssl.certificate_authorities.1=config/ssl/cacert.pem
+
+Above settings instruct the slave manager to only trust certificates created by the ca and enforce client certificate authentication based on the ca.
+
+In order to get a slave working you need to copy 3 files from the above PKI to the slave:
+- my-awesome-client.key
+- my-awesome-client.crt
+- ca.crt
+
+Place above in config/ssl as client.pem, client.key, cacert.pem and instruct the slave to use it by changing the master.ssl configuration in slave.conf.
+An example (based on above) is:
+master.ssl.verification_mode=certificate
+master.ssl.client_authentication=required
+master.ssl.key=config/ssl/client.key
+master.ssl.certificate=config/ssl/client.pem
+master.ssl.certificate_authorities.1=config/ssl/cacert.pem
+
+These correspond to the configuration created above on the master side.

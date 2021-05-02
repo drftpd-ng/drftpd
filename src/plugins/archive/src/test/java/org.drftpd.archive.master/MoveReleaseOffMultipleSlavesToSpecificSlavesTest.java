@@ -111,6 +111,7 @@ public class MoveReleaseOffMultipleSlavesToSpecificSlavesTest {
 
     static class DummySlaveManager extends SlaveManager {
         public DummySlaveManager() {
+            super("Test Framework");
             _central = new MasterProtocolCentral();
         }
 
