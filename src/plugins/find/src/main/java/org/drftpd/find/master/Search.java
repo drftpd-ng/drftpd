@@ -42,6 +42,7 @@ import java.util.ResourceBundle;
  * @version $Id$
  */
 public class Search extends CommandInterface {
+
     public static final Logger logger = LogManager.getLogger(Find.class);
 
     private ResourceBundle _bundle;
@@ -65,19 +66,25 @@ public class Search extends CommandInterface {
         }
 
         String type = request.getProperties().getProperty("type");
-        if (type != null && type.equals("d"))
+        if (type != null && type.equals("d")) {
             params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
-        else if (type != null && type.equals("f"))
+        } else if (type != null && type.equals("f")) {
             params.setInodeType(AdvancedSearchParams.InodeType.FILE);
+        } else {
+            logger.error("Incorrect type specified for search function");
+            return new CommandResponse(500, "Internal Server error occurred, stopping execution");
+        }
 
         int limit = Integer.parseInt(request.getProperties().getProperty("limit", "5"));
-        params.setLimit(0); // Get all results, we filter out hidden inodes later
+
+        // Get all results, we filter out hidden inodes later
+        params.setLimit(0);
 
         IndexEngineInterface ie = GlobalContext.getGlobalContext().getIndexEngine();
         Map<String, String> inodes;
 
         try {
-            inodes = ie.advancedFind(request.getCurrentDirectory(), params, "doSEARCH");
+            inodes = ie.advancedFind(GlobalContext.getGlobalContext().getRoot(), params, "doSEARCH");
         } catch (IndexException e) {
             logger.error(e.getMessage());
             return new CommandResponse(550, e.getMessage());
@@ -96,16 +103,17 @@ public class Search extends CommandInterface {
 
         LinkedList<String> responses = new LinkedList<>();
 
-        boolean observePrivPath = request.getProperties().
-                getProperty("observe.privpath", "true").equalsIgnoreCase("true");
+        boolean observePrivPath = request.getProperties().getProperty("observe.privpath", "true").
+                equalsIgnoreCase("true");
 
         InodeHandle inode;
         for (Map.Entry<String, String> item : inodes.entrySet()) {
-            if (responses.size() == limit)
+            if (responses.size() == limit) {
                 break;
+            }
             try {
-                inode = item.getValue().equals("d") ? new DirectoryHandle(item.getKey().
-                        substring(0, item.getKey().length() - 1)) : new FileHandle(item.getKey());
+                inode = item.getValue().equals("d") ? new DirectoryHandle(item.getKey().substring(0, item.getKey().length() - 1)) :
+                        new FileHandle(item.getKey());
                 if (observePrivPath ? inode.isHidden(user) : inode.isHidden(null)) {
                     continue;
                 }
@@ -116,7 +124,7 @@ public class Search extends CommandInterface {
                 env.put("size", Bytes.formatBytes(inode.getSize()));
                 responses.add(session.jprintf(_bundle, "search.item", env, user.getName()));
             } catch (FileNotFoundException e) {
-                logger.warn("Index contained an unexistent inode: {}", item.getKey());
+                logger.warn("Index contained an non-existent inode: {}", item.getKey());
             }
         }
 
@@ -135,4 +143,5 @@ public class Search extends CommandInterface {
 
         return response;
     }
+
 }
