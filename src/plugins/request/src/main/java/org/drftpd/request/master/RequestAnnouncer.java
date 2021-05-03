@@ -17,6 +17,8 @@
  */
 package org.drftpd.request.master;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.master.sitebot.AbstractAnnouncer;
@@ -24,6 +26,7 @@ import org.drftpd.master.sitebot.AnnounceWriter;
 import org.drftpd.master.sitebot.SiteBot;
 import org.drftpd.master.sitebot.config.AnnounceConfig;
 import org.drftpd.master.util.ReplacerUtils;
+import org.drftpd.request.master.event.RequestEvent;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -34,6 +37,8 @@ import java.util.ResourceBundle;
  * @version $Id$
  */
 public class RequestAnnouncer extends AbstractAnnouncer {
+
+    private static final Logger logger = LogManager.getLogger(RequestAnnouncer.class);
 
     private AnnounceConfig _config;
 
@@ -53,7 +58,7 @@ public class RequestAnnouncer extends AbstractAnnouncer {
     }
 
     public String[] getEventTypes() {
-        return new String[]{"request", "reqfilled", "reqdel"};
+        return new String[]{ "request", "reqfilled", "reqdel" };
     }
 
     public void setResourceBundle(ResourceBundle bundle) {
@@ -64,7 +69,9 @@ public class RequestAnnouncer extends AbstractAnnouncer {
     public void onRequestEvent(RequestEvent event) {
         AnnounceWriter writer = _config.getSimpleWriter(event.getCommand());
         // Check we got a writer back, if it is null do nothing and ignore the event
-        if (writer != null) {
+        if (writer == null) {
+            logger.debug("[onRequestEvent] No AnnounceWriter received, ignoring this event");
+        } else {
             Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
             env.put("requestroot", event.getRequestRoot().getPath());
             env.put("requestname", event.getRequestName());

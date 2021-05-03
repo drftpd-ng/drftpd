@@ -17,6 +17,8 @@
  */
 package org.drftpd.request.master;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.usermanager.UserResetPostHookInterface;
@@ -30,19 +32,23 @@ import java.util.Date;
  */
 public class RequestUserResetHook implements UserResetPostHookInterface {
 
-    public void init() {
-    }
+    private static final Logger logger = LogManager.getLogger(RequestUserResetHook.class);
+
+    public void init() {}
 
     public void resetHour(Date d) {
         // No need for this interval
+        logger.debug("Ignoring resetHour()");
     }
 
     public void resetDay(Date d) {
         // No need for this interval
+        logger.debug("Ignoring resetDay()");
     }
 
     public void resetWeek(Date d) {
         // Reset users weekly allotment to zero
+        logger.info("[resetWeek] called, resetting WEEKREQS to 0 for all users");
         for (User user : GlobalContext.getGlobalContext().getUserManager().getAllUsers()) {
             user.getKeyedMap().setObject(RequestUserData.WEEKREQS, 0);
             user.commit();
@@ -50,12 +56,14 @@ public class RequestUserResetHook implements UserResetPostHookInterface {
     }
 
     public void resetMonth(Date d) {
-        // call resetWeek() instead
-        resetWeek(d);
+        // No need for this interval
+        logger.debug("Ignoring resetMonth()");
+        // resetWeek is called regardless of which day it is see TimeEventInterface
     }
 
     public void resetYear(Date d) {
-        // call resetWeek() instead
-        resetWeek(d);
+        // No need for this interval
+        logger.debug("Ignoring resetYear()");
+        // resetWeek is called regardless of which day it is see TimeEventInterface
     }
 }

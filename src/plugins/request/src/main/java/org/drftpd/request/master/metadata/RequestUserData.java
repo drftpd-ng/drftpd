@@ -25,11 +25,12 @@ import java.io.Serializable;
  * @author scitz0
  * @version $id$
  */
-@SuppressWarnings("serial")
 public class RequestUserData implements Serializable {
 
     public static final Key<Integer> REQUESTSFILLED = new Key<>(RequestUserData.class, "requestsFilled");
     public static final Key<Integer> REQUESTS = new Key<>(RequestUserData.class, "requests");
     public static final Key<Integer> WEEKREQS = new Key<>(RequestUserData.class, "weekReqs");
+    public static final Key<String> RENUSER_FROM = new Key<>(RequestUserData.class, "renuser_from");
+    public static final Key<String> RENUSER_TO = new Key<>(RequestUserData.class, "renuser_to");
 
 }
