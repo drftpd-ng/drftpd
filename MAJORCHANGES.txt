@@ -1,4 +1,5 @@
 ==== 4.0.1
+* Now compiles and runs on JDK16
 * request commands have been moved back to the plugin dir. This will mean that you will have duplicate command definitions. Either remove your core.conf for ftp and irc or do a complete clean install
 
 ==== 4.0
