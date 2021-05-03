@@ -48,11 +48,11 @@ public class SysopPostHook {
             user = response.getUser();
         }
         if ((code.startsWith("5") || code.startsWith("4")) && !code.startsWith("530") && showFailed(cmd)) {
-            GlobalContext.getEventService().publishAsync(new SysopEvent(user, message, response
-                    .getMessage(), true, false));
+            GlobalContext.getEventService().publishAsync(new SysopEvent(user, message, response.getMessage(),
+                    true, false));
         } else if (showSuccessful(cmd)) {
-            GlobalContext.getEventService().publishAsync(new SysopEvent(user, message, response
-                    .getMessage(), true, true));
+            GlobalContext.getEventService().publishAsync(new SysopEvent(user, message, response.getMessage(),
+                    true, true));
         }
     }
 
@@ -70,35 +70,31 @@ public class SysopPostHook {
         String code = String.valueOf(response.getCode());
         String message;
         switch (cmd) {
-            case "CHPASS":
-            case "ADDUSER":
+            case "CHPASS", "ADDUSER" -> {
                 int i = arg.indexOf(" ");
                 if (i == -1) {
                     //Syntax check to not throw an StringIndexOutOfBoundsException
                     return;
                 }
                 message = cmd + " " + arg.substring(0, arg.indexOf(" "));
-                break;
-            case "GADDUSER":
+            }
+            case "GADDUSER" -> {
                 String[] arguments = arg.split(" ");
                 if (arguments.length < 2) {
                     //Syntax check to not throw an ArrayIndexOutOfBoundsException
                     return;
                 }
                 message = cmd + " " + arguments[0] + " " + arguments[1];
-                break;
-            default:
-                message = cmd + " " + arg;
-                break;
+            }
+            case "PASSWD" -> message = cmd + " ********";
+            default -> message = cmd + " " + arg;
         }
         if ((code.startsWith("5") || code.startsWith("4")) && !code.startsWith("530") && showFailed(cmd)) {
-            GlobalContext.getEventService().publishAsync(
-                    new SysopEvent(request.getUser(), message, response
-                            .getMessage(), false, false));
+            GlobalContext.getEventService().publishAsync(new SysopEvent(request.getUser(), message, response.getMessage(),
+                    false, false));
         } else if (showSuccessful(cmd)) {
-            GlobalContext.getEventService().publishAsync(
-                    new SysopEvent(request.getUser(), message, response
-                            .getMessage(), false, true));
+            GlobalContext.getEventService().publishAsync(new SysopEvent(request.getUser(), message, response.getMessage(),
+                    false, true));
         }
     }
 
