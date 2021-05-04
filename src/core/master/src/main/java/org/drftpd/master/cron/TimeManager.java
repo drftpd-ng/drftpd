@@ -127,7 +127,12 @@ public class TimeManager {
      */
     public boolean isEuropeanCalendar() {
         ConfigInterface config = GlobalContext.getConfig();
-        return config != null && config.getMainProperties().getProperty("european.cal", "false").equalsIgnoreCase("true");
+        // Complain about this situation as it should not happen!
+        if (config == null) {
+            logger.error("Config from GlobalContext is null, this should not be possible!");
+            return false;
+        }
+        return config.getMainProperties().getProperty("european.cal", "false").equalsIgnoreCase("true");
     }
 
     public void processTimeEventsSinceDate(Date date) {

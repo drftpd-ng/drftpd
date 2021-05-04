@@ -34,10 +34,7 @@ import org.drftpd.master.usermanager.User;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.net.*;
 import java.util.*;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.SynchronousQueue;
@@ -55,7 +52,7 @@ public class Master {
     private static final String themeDir = "config/themes/ftp";
 
     private static Master _master = null;
-    private static InetAddress _bindIP;
+
     private HashMap<String, Properties> _cmds;
     private CommandManagerInterface _commandManager = null;
     private final List<BaseFtpConnection> _conns = new Vector<>();
@@ -66,7 +63,6 @@ public class Master {
      * you're not doing it correctly, ConnectionManager is a Singleton
      */
     protected Master() {
-        _bindIP = null;
         getGlobalContext().getSlaveManager().addShutdownHook();
         // Subscribe to events
         AnnotationProcessor.process(this);
@@ -84,7 +80,18 @@ public class Master {
     }
 
     public static InetAddress getBindIP() {
-        return _bindIP;
+        try {
+            String bindIP = PropertyHelper.getProperty(GlobalContext.getConfig().getMainProperties(), "master.ip", "");
+            logger.debug("'master.ip' has been resolved to " + bindIP);
+            if (bindIP.length() > 0) {
+                return InetAddress.getByName(bindIP);
+            }
+        } catch(UnknownHostException e) {
+            logger.warn("'master.ip' is not a valid ip address");
+        } catch(Exception e) {
+            logger.error("Unknown error occurred trying to get 'master.ip' config", e);
+        }
+        return null;
     }
 
     public static void boot() {
@@ -100,28 +107,20 @@ public class Master {
 
             GlobalContext.getGlobalContext().init();
 
-            getConnectionManager().loadCommands();
+            // Load our main configuration options
             Properties cfg = GlobalContext.getConfig().getMainProperties();
+
+            getConnectionManager().loadCommands();
 
             // initialise command manager before accepting connections
             getConnectionManager().initCommandManager();
 
             // listen for connections
-            String bindIP = null;
             ServerSocket server;
-            boolean useIP;
 
-            try {
-                bindIP = PropertyHelper.getProperty(cfg, "master.ip");
-                useIP = !bindIP.equals("");
-            } catch (NullPointerException e) {
-                useIP = false;
-            }
-
-            if (useIP) {
-                _bindIP = InetAddress.getByName(bindIP);
+            if (getBindIP() != null) {
                 server = new ServerSocket();
-                server.bind(new InetSocketAddress(_bindIP, Integer.parseInt(PropertyHelper.getProperty(cfg, "master.port"))));
+                server.bind(new InetSocketAddress(getBindIP(), Integer.parseInt(PropertyHelper.getProperty(cfg, "master.port"))));
                 logger.info("Listening on {}:{}", server.getInetAddress(), server.getLocalPort());
             } else {
                 server = new ServerSocket(Integer.parseInt(PropertyHelper.getProperty(cfg, "master.port")));
