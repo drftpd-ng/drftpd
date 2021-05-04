@@ -53,7 +53,7 @@ public class ZipscriptList extends SFVTools implements AddListElementsInterface 
     public void initialize() {
         // Subscribe to events
         AnnotationProcessor.process(this);
-        // TODO @ JRI [Done] ListStatusBarProvider
+
         try {
             Set<Class<? extends ZipscriptListStatusBarInterface>> bars = new Reflections("org.drftpd")
                     .getSubTypesOf(ZipscriptListStatusBarInterface.class);

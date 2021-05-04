@@ -229,7 +229,6 @@ public class GlobalContext {
         try {
             Class<?> aClass = Class.forName(desiredSL);
             _slaveSelectionManager = (SlaveSelectionManagerInterface) aClass.getConstructor().newInstance();
-            // TODO [DONE] @k2r slave selector
         } catch (Exception e) {
             throw new FatalException("Unable to load the slaveselection plugin, check config.", e);
         }
@@ -323,7 +322,6 @@ public class GlobalContext {
         try {
             Class<?> aClass = Class.forName(desiredSm);
             _sectionManager = (SectionManagerInterface) aClass.getConstructor().newInstance();
-            // TODO [DONE] @k2r Section Manager
         } catch (Exception e) {
             throw new FatalException("Cannot create instance of SectionManager, check 'sectionmanager' in config file", e);
         }
@@ -335,7 +333,6 @@ public class GlobalContext {
             Class<?> aClass = Class.forName(desiredIe);
             _indexEngine = (IndexEngineInterface) aClass.getConstructor().newInstance();
             _indexEngine.init();
-            // TODO [DONE]  @k2r Plug index engine
         } catch (Exception e) {
             throw new FatalException("Cannot create instance of IndexingEngine, check 'indexingengine' in config file", e);
         }

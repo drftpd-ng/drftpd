@@ -125,7 +125,6 @@ public class SlaveProtocolCentral {
         HashMap<String, HandlerWrapper> handlers = new HashMap<>();
         ArrayList<String> protocols = new ArrayList<>();
 
-        // TODO [DONE] @k2r Load protocols
         Set<Class<? extends AbstractHandler>> aHandlers = new Reflections("org.drftpd")
                 .getSubTypesOf(AbstractHandler.class);
         List<Class<? extends AbstractHandler>> handlersProtocols = aHandlers.stream()

@@ -62,7 +62,6 @@ public class ZipscriptCommands extends CommandInterface {
         // Subscribe to events
         AnnotationProcessor.process(this);
 
-        // TODO [DONE] @k2r Add Rescan
         Set<Class<? extends RescanPostProcessDirInterface>> rescanProcesses = new Reflections("org.drftpd")
                 .getSubTypesOf(RescanPostProcessDirInterface.class);
         try {

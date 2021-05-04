@@ -100,7 +100,6 @@ public class TrialManager implements PluginInterface {
     private void initTypes() {
         CaseInsensitiveHashMap<String, Class<? extends TrialType>> typesMap = new CaseInsensitiveHashMap<>();
 
-        // TODO [DONE] @k2r Fix TrialType
         Set<Class<? extends TrialType>> trialTypes = new Reflections("org.drftpd")
                 .getSubTypesOf(TrialType.class);
         for (Class<? extends TrialType> trial : trialTypes) {

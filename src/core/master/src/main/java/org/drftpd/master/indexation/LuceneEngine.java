@@ -143,8 +143,6 @@ public class LuceneEngine implements IndexEngineInterface {
     public void init() throws IndexException {
         logger.debug("Initializing Index");
 
-        // TODO [DONE] @k2r Load index extensions
-
         // Load index data extensions
         Set<Class<? extends IndexDataExtensionInterface>> indexExtensions = new Reflections("org.drftpd")
                 .getSubTypesOf(IndexDataExtensionInterface.class);

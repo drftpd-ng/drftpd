@@ -60,7 +60,7 @@ public abstract class CommandInterface {
         Multimap<Integer, HookContainer> postHooks = MultimapBuilder.treeKeys().linkedListValues().build();
         Multimap<Integer, HookContainer> preHooks = MultimapBuilder.treeKeys().linkedListValues().build();
         Set<Method> hooksMethods = GlobalContext.getHooksMethods();
-        // TODO [DONE] @k2r Plug hooks
+
         logger.debug("[{}:{}] Looking for hooks to attach here", pluginName, method);
         try {
             for (Method annotatedMethod : hooksMethods) {

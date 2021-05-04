@@ -122,7 +122,6 @@ public class AutoNukeManager implements PluginInterface {
     private void initConfigs() {
         CaseInsensitiveHashMap<String, Class<? extends Config>> configsMap = new CaseInsensitiveHashMap<>();
 
-        // TODO @k2r [DONE] Load config
         Set<Class<? extends Config>> configHandlers = new Reflections("org.drftpd")
                 .getSubTypesOf(Config.class);
         for (Class<? extends Config> configHandler : configHandlers) {

@@ -88,7 +88,6 @@ public class SectionManager implements SectionManagerInterface {
     private void initTypes() {
         CaseInsensitiveHashMap<String, Class<? extends ConfigurableSectionInterface>> typesMap = new CaseInsensitiveHashMap<>();
 
-        // TODO [DONE] @k2r Load section types
         Set<Class<? extends ConfigurableSectionInterface>> sectionsConf = new Reflections("org.drftpd")
                 .getSubTypesOf(ConfigurableSectionInterface.class);
         for (Class<? extends ConfigurableSectionInterface> aClass : sectionsConf) {

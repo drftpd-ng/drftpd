@@ -2867,7 +2867,7 @@ public class SiteBot implements ReplyConstants, Runnable {
 
     private void loadListeners() {
         List<ListenerInterface> listeners = new ArrayList<>();
-        // TODO [DONE] @k2r Load sitebot listeners
+
         Set<Class<? extends ListenerInterface>> sitebotListeners = new Reflections("org.drftpd")
                 .getSubTypesOf(ListenerInterface.class);
         try {

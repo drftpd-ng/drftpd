@@ -100,7 +100,6 @@ public class TrafficManager implements PluginInterface {
     private void initTypes() {
         CaseInsensitiveHashMap<String, Class<? extends TrafficType>> typesMap = new CaseInsensitiveHashMap<>();
 
-        // TODO [DONE] @k2r Load init types
         Set<Class<? extends TrafficType>> trafficTypes = new Reflections("org.drftpd")
                 .getSubTypesOf(TrafficType.class);
         for (Class<? extends TrafficType> trafficType : trafficTypes) {

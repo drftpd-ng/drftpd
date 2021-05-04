@@ -60,7 +60,7 @@ public class MasterProtocolCentral {
     private void loadProtocolExtensions() {
         HashMap<Class<?>, AbstractIssuer> issuersMap = new HashMap<>();
         ArrayList<String> protocols = new ArrayList<>();
-        // TODO [DONE] @k2r Add protocols
+
         Set<Class<? extends AbstractIssuer>> issuers = new Reflections("org.drftpd")
                 .getSubTypesOf(AbstractIssuer.class);
         List<Class<? extends AbstractIssuer>> issuerProtocols = issuers.stream()

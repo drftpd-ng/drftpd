@@ -105,7 +105,6 @@ public class LinkManager implements PluginInterface {
     private void initTypes() {
         CaseInsensitiveHashMap<String, Class<? extends LinkType>> typesMap = new CaseInsensitiveHashMap<>();
 
-        // TODO [DONE] @k2r INIT link manager Types
         Set<Class<? extends LinkType>> LinkTypes = new Reflections("org.drftpd").getSubTypesOf(LinkType.class);
         for (Class<? extends LinkType> linkType : LinkTypes) {
             typesMap.put(linkType.getSimpleName(), linkType);

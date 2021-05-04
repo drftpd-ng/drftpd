@@ -72,7 +72,7 @@ public class SlaveSelectionManager extends SlaveSelectionManagerInterface {
 
     private void initFilters() {
         CaseInsensitiveHashMap<String, Class<? extends Filter>> filtersMap = new CaseInsensitiveHashMap<>();
-        // TODO [DONE] @k2r Add filters
+
         Set<Class<? extends Filter>> filters = new Reflections("org.drftpd").getSubTypesOf(Filter.class);
         for (Class<? extends Filter> filter : filters) {
             String simpleName = filter.getSimpleName().replace("Filter", "");
