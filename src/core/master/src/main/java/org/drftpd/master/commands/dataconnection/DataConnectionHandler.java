@@ -319,7 +319,6 @@ public class DataConnectionHandler extends CommandInterface {
      * where h1 is the high order 8 bits of the internet host address.
      */
     public CommandResponse doPORT(CommandRequest request) {
-        InetAddress clientAddr;
 
         // argument check
         if (!request.hasArgument()) {
@@ -334,9 +333,9 @@ public class DataConnectionHandler extends CommandInterface {
         }
 
         // get data server
-        String dataSrvName = st.nextToken() + '.' + st.nextToken() + '.' +
-                st.nextToken() + '.' + st.nextToken();
+        String dataSrvName = st.nextToken() + '.' + st.nextToken() + '.' + st.nextToken() + '.' + st.nextToken();
 
+        InetAddress clientAddr;
         try {
             clientAddr = InetAddress.getByName(dataSrvName);
         } catch (UnknownHostException ex) {
@@ -344,23 +343,15 @@ public class DataConnectionHandler extends CommandInterface {
         }
 
         BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
-        String portHostAddress = clientAddr.getHostAddress();
-        String clientHostAddress = conn.getControlSocket().getInetAddress()
-                .getHostAddress();
+        InetAddress clientHostAddress = conn.getControlSocket().getInetAddress();
 
-        if ((portHostAddress.startsWith("192.168.") &&
-                !clientHostAddress.startsWith("192.168.")) ||
-                (portHostAddress.startsWith("10.") &&
-                        !clientHostAddress.startsWith("10."))) {
+        if (clientAddr.isSiteLocalAddress() && !clientHostAddress.isSiteLocalAddress()) {
             CommandResponse response = new CommandResponse(501);
             response.addComment("==YOU'RE BEHIND A NAT ROUTER==");
-            response.addComment(
-                    "Configure the firewall settings of your FTP client");
-            response.addComment("  to use your real IP: " +
-                    conn.getControlSocket().getInetAddress().getHostAddress());
+            response.addComment("Configure the firewall settings of your FTP client");
+            response.addComment("  to use your real IP: " + conn.getControlSocket().getInetAddress().getHostAddress());
             response.addComment("And set up port forwarding in your router.");
-            response.addComment(
-                    "Or you can just use a PRET capable client, see");
+            response.addComment("Or you can just use a PRET capable client, see");
             response.addComment("  https://github.com/drftpd-ng/drftpd/wiki for PRET capable clients");
 
             reset(conn);
@@ -384,9 +375,8 @@ public class DataConnectionHandler extends CommandInterface {
 
         CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 
-        if (portHostAddress.startsWith("127.")) {
-            response.addComment(
-                    "Ok, but distributed transfers won't work with local addresses");
+        if (clientAddr.isLoopbackAddress()) {
+            response.addComment("Ok, but distributed transfers won't work with local addresses");
         }
 
         //Notify the user that this is not his IP.. Good for NAT users that
