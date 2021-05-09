@@ -86,7 +86,7 @@ public class BaseFtpConnection extends Session implements Runnable {
     private CommandManagerInterface _commandManager;
     private BufferedReader _in;
     private ThreadPoolExecutor _pool;
-    private boolean _authDone = false;
+    private boolean _securityDataExchangeCompleted = false;
     private final AtomicInteger _commandCount = new AtomicInteger(0);
 
     protected BaseFtpConnection() {
@@ -378,7 +378,7 @@ public class BaseFtpConnection extends Session implements Runnable {
                 // execute command
                 _pool.execute(new CommandThread(_request, this));
                 if (_request.getCommand().equalsIgnoreCase("AUTH")) {
-                    while (!_authDone && !_stopRequest) {
+                    while (!_securityDataExchangeCompleted && !_stopRequest) {
                         Thread.sleep(100);
                     }
                 }
@@ -478,8 +478,12 @@ public class BaseFtpConnection extends Session implements Runnable {
         _out.flush();
     }
 
-    public void authDone() {
-        _authDone = true;
+    public boolean hasSecurityExchangeCompleted() {
+        return _securityDataExchangeCompleted;
+    }
+
+    public void securityExchangeCompleted() {
+        _securityDataExchangeCompleted = true;
     }
 
     public void poolStatus() {

@@ -116,7 +116,7 @@ public class DataConnectionHandler extends CommandInterface {
             logger.debug("[{}] Enabled protocols for this new connection are as follows: '{}'",
                     sslSock.getRemoteSocketAddress(), Arrays.toString(sslSock.getEnabledProtocols()));
             sslSock.startHandshake();
-            conn.authDone();
+            conn.securityExchangeCompleted();
         } catch (IOException e) {
             logger.warn("", e);
             if (sslSock != null) {
@@ -167,8 +167,7 @@ public class DataConnectionHandler extends CommandInterface {
         ts.setPasv(true);
         if (!ts.isPreTransfer()) {
             reset(conn);
-            return new CommandResponse(500,
-                    "You need to use a client supporting PRET (PRE Transfer) to use PASV");
+            return new CommandResponse(500, "You need to use a client supporting PRET (PRE Transfer) to use PASV");
         }
 
         if (request.getCommand().equalsIgnoreCase("CPSV")) {
@@ -293,10 +292,23 @@ public class DataConnectionHandler extends CommandInterface {
     }
 
     public CommandResponse doPBSZ(CommandRequest request) {
+
+        BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
+
+        if (!conn.hasSecurityExchangeCompleted()) {
+            logger.warn("PBSZ Command received before Security Exchange has completed");
+            return new CommandResponse(503, "Security exchange needs to be completed first");
+        }
+
         String cmd = request.getArgument();
 
-        if ((cmd == null) || !cmd.equals("0")) {
+        if (cmd == null || cmd.length() == 0) {
             return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+        }
+
+        if (!cmd.equals("0")) {
+            logger.debug("Received a higher payload than 0, not supported, accepting it with a reply of 'PBSZ 0'");
+            return new CommandResponse(200, "PBSZ=0");
         }
 
         return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
