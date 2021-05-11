@@ -1,6 +1,6 @@
 ########################
 ## MediaInfo Settings ##
-####################################################################################################
+########################
 
 # Sections to exclude this plugin from, separate with space.
 sections.exclude=PRE
@@ -14,5 +14,9 @@ mediabar.directory=true
 mediabar.enabled=false
 
 # Extensions to listen for on STOR, separate with space.
-extensions=avi mkv mp4
+#
+# By default this requires an external binary present, as such we do not enable this.
+# Uncomment below line and remove the empty line
+# extensions=avi mkv mp4
+extensions=
 
