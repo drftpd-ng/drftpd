@@ -53,6 +53,7 @@ import java.io.*;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -86,7 +87,6 @@ public class Slave extends SslConfigurationLoader {
     private String[] _sslProtocols;
 
     private SslConfiguration _sslConfig;
-    //private SSLContext _ctx;
 
     private boolean _downloadChecksums;
 
@@ -122,7 +122,6 @@ public class Slave extends SslConfigurationLoader {
 
     private boolean _online;
 
-    //protected Slave() {}
     private Properties _cfg;
 
     public Slave(Properties p) throws IOException, SSLUnavailableException {
@@ -157,7 +156,19 @@ public class Slave extends SslConfigurationLoader {
             _renameQueue = Collections.newSetFromMap(new ConcurrentHashMap<>());
         }
 
-        _bindIP = InetAddress.getByName(PropertyHelper.getProperty(p, "bind.ip", null));
+        // Initialize to null
+        _bindIP = null;
+        try {
+            String bindIP = PropertyHelper.getProperty(p, "bind.ip", "");
+            logger.debug("'bind.ip' has been resolved to " + bindIP);
+            if (bindIP.length() > 0) {
+                _bindIP = InetAddress.getByName(bindIP);
+            }
+        } catch(UnknownHostException e) {
+            logger.warn("'bind.ip' is not a valid ip address");
+        } catch(Exception e) {
+            logger.error("Unknown error occurred trying to get 'bind.ip' config", e);
+        }
         _timeout = Integer.parseInt(PropertyHelper.getProperty(p, "slave.timeout", String.valueOf(actualTimeout)));
 
         try {
