@@ -136,6 +136,7 @@ public class ZipscriptCommands extends CommandInterface {
                     valid = true;
                 }
             } catch (FileNotFoundException e) {
+                logger.debug("Caught FileNotFoundException while checking for file or directory", e);
                 // Do nothing, the valid path check will deal with this
             }
             if (!valid) {
