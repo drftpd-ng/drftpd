@@ -46,6 +46,8 @@ public class ZipscriptCommands extends CommandInterface {
 
     private static final Logger logger = LogManager.getLogger(ZipscriptCommands.class);
 
+    private static final String NEWLINE = "\r\n";
+
     private final ArrayList<RescanPostProcessDirInterface> _rescanAddons = new ArrayList<>();
 
     public void initialize(String method, String pluginName, StandardCommandManager cManager) {
@@ -140,7 +142,7 @@ public class ZipscriptCommands extends CommandInterface {
                 // Do nothing, the valid path check will deal with this
             }
             if (!valid) {
-                session.printOutput(fileOrPath + " is not a valid file or directory");
+                session.printOutput(fileOrPath + " is not a valid file or directory" + NEWLINE);
                 throw new ImproperUsageException();
             }
         } else {
