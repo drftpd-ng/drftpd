@@ -46,8 +46,6 @@ public class ZipscriptCommands extends CommandInterface {
 
     private static final Logger logger = LogManager.getLogger(ZipscriptCommands.class);
 
-    private static final String NEWLINE = "\r\n";
-
     private final ArrayList<RescanPostProcessDirInterface> _rescanAddons = new ArrayList<>();
 
     public void initialize(String method, String pluginName, StandardCommandManager cManager) {
@@ -131,8 +129,7 @@ public class ZipscriptCommands extends CommandInterface {
                 }
                 if (InodeHandle.isFile(fileOrPath)) {
                     if (recursive) {
-                        session.printOutput("Not possible to recursively work on a single file");
-                        throw new ImproperUsageException();
+                        return new CommandResponse(500, "Not possible to recursively work on a single file");
                     }
                     singleFile = true;
                     valid = true;
@@ -142,8 +139,7 @@ public class ZipscriptCommands extends CommandInterface {
                 // Do nothing, the valid path check will deal with this
             }
             if (!valid) {
-                session.printOutput(fileOrPath + " is not a valid file or directory" + NEWLINE);
-                throw new ImproperUsageException();
+                return new CommandResponse(500, fileOrPath + " is not a valid file or directory");
             }
         } else {
             logger.debug("Adding current working directory ({}) for rescan", request.getCurrentDirectory());
@@ -153,8 +149,7 @@ public class ZipscriptCommands extends CommandInterface {
             FileHandle workingFile = new FileHandle(fileOrPath);
             // Make sure the file exists!
             if (!workingFile.exists()) {
-                session.printOutput("File (" + fileOrPath + ") does not exist");
-                throw new ImproperUsageException();
+                return new CommandResponse(500, "File (" + fileOrPath + ") does not exist");
             }
             DirectoryHandle workingDir = workingFile.getParent();
             SFVInfo workingSFV = null;
