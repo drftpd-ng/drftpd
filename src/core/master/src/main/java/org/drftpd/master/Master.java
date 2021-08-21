@@ -325,11 +325,9 @@ public class Master {
                     }
                     if (hm.matchesIdent(ident)) {
                         allowedConnection = true;
-                        break;
                     }
                 } else {
                     allowedConnection = true;
-                    break;
                 }
             }
 
