@@ -91,8 +91,7 @@ public class HostMask {
             ident = "";
         }
 
-        return !isIdentMaskSignificant()
-                || GlobPattern.matches(getIdentMask(), ident);
+        return !isIdentMaskSignificant() || GlobPattern.matches(getIdentMask(), ident);
     }
 
     public String toString() {
