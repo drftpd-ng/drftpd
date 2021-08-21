@@ -325,9 +325,11 @@ public class Master {
                     }
                     if (hm.matchesIdent(ident)) {
                         allowedConnection = true;
+                        break;
                     }
                 } else {
                     allowedConnection = true;
+                    break;
                 }
             }
 
@@ -339,6 +341,7 @@ public class Master {
             }
 
             conn = new BaseFtpConnection(sock);
+
             // If the ident is null it was not necessary. In order for the remaining logic (login etc) to function normally we set it to "" here.
             if (ident == null) {
                 ident = "";
