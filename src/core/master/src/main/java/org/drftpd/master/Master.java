@@ -22,6 +22,7 @@ import org.apache.logging.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.common.socks.Ident;
+import org.drftpd.common.util.HostMask;
 import org.drftpd.common.util.PropertyHelper;
 import org.drftpd.master.commands.CommandManagerInterface;
 import org.drftpd.master.commands.usermanagement.UserManagement;
@@ -282,33 +283,70 @@ public class Master {
         // Check hostmasks before we move further unless we expect a bouncer to connect (which is handled during doIDNT)
         BaseFtpConnection conn;
         if (!GlobalContext.getConfig().getBouncerIps().contains(sock.getInetAddress())) {
-            String ident = "";
-            try {
-                ident = new Ident(sock).getUserName();
-            } catch (IOException e) {
-                if (GlobalContext.getConfig().getHideIps()) {
-                    logger.warn("Failed to get ident for <iphidden>");
-                } else {
-                    logger.warn("Failed to get ident for {}", sock.getInetAddress().getHostAddress());
-                }
-            }
-            boolean allowedConnection = false;
+
+            // Get a list of masks that match the client IP
+            List<HostMask> masks = new ArrayList<>();
             for (User u : GlobalContext.getGlobalContext().getUserManager().getAllUsers()) {
                 // Skip if user is deleted
                 if (!u.isDeleted()) {
-                    if (u.getHostMaskCollection().check(ident, sock.getInetAddress())) {
-                        allowedConnection = true;
-                        break;
-                    }
+                    masks.addAll(u.getHostMaskCollection().getMatchingMasks(sock));
                 }
             }
+
+            // If we have 0 matched hostmasks handle it quickly
+            if (masks.size() < 1) {
+                logger.warn("No hostmasks matched new connection, doing ident lookup not to leak anything");
+                try {
+                    new Ident(sock);
+                } catch (IOException ignore) {}
+                logger.warn("Closing connecting as it is not allowed based on existing hostmasks");
+                sock.close();
+                return;
+            }
+
+            boolean allowedConnection = false;
+            String ident = null;
+            for (HostMask hm : masks) {
+                // Does this hostmask need ident to verify connection?
+                if (hm.isIdentMaskSignificant()) {
+                    if (ident == null) {
+                        logger.debug("One of the hostmasks requires ident so we get it regardless of the other hostmasks");
+                        try {
+                            ident = new Ident(sock).getUserName();
+                        } catch (IOException e) {
+                            if (GlobalContext.getConfig().getHideIps()) {
+                                logger.warn("Failed to get ident for <iphidden>");
+                            } else {
+                                logger.warn("Failed to get ident for {}", sock.getInetAddress().getHostAddress());
+                            }
+                            // Because we tried to get ident and it failed we change it from 'null' to '""'
+                            ident = "";
+                        }
+                    }
+                    if (hm.matchesIdent(ident)) {
+                        allowedConnection = true;
+                    }
+                } else {
+                    allowedConnection = true;
+                }
+            }
+
+            // Drop connection if we cannot match the connection to a user hostmask
             if (!allowedConnection) {
                 logger.warn("Closing connecting as it is not allowed based on existing hostmasks");
                 sock.close();
                 return;
             }
+
             conn = new BaseFtpConnection(sock);
+
+            // If the ident is null it was not necessary. In order for the remaining logic (login etc) to function normally we set it to "" here.
+            if (ident == null) {
+                ident = "";
+            }
+
             // Store the ident
+            logger.debug("Setting ident for this connection to {}", ident);
             conn.setObject(BaseFtpConnection.IDENT, ident);
         } else {
             conn = new BaseFtpConnection(sock);

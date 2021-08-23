@@ -28,6 +28,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.regex.PatternSyntaxException;
 
 /**
@@ -71,6 +72,17 @@ public class HostMaskCollection extends ArrayList<HostMask> {
         add(newMask);
     }
 
+    public List<HostMask> getMatchingMasks(Socket s) throws PatternSyntaxException {
+        List<HostMask> matched = new ArrayList<>();
+        InetAddress a = s.getInetAddress();
+        for (HostMask mask : this) {
+            if (mask.matchesHost(a)) {
+                matched.add(mask);
+            }
+        }
+        return matched;
+    }
+
     public boolean check(Socket s) throws PatternSyntaxException {
         String ident = "";
         // Try to get an ident for the slave connection
@@ -103,8 +115,8 @@ public class HostMaskCollection extends ArrayList<HostMask> {
     }
 
     /**
-     * @param mask
-     * @return
+     * @param mask The mask to remove
+     * @return true only if we have a mask that matches the input
      */
     public boolean removeMask(String mask) {
         for (Iterator<HostMask> iter = iterator(); iter.hasNext(); ) {
