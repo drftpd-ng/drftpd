@@ -187,7 +187,7 @@ public class AutoFreeSpace implements PluginInterface {
             long freespace = remoteSlave.getSlaveStatus().getDiskSpaceAvailable();
             long freespaceMinimum = AutoFreeSpaceSettings.getSettings().getMinFreeSpace();
 
-            if (freespace >= AutoFreeSpaceSettings.getSettings().getMinFreeSpace()) {
+            if (freespace > freespaceMinimum) {
                 logger.debug("AUTODELETE: Space over limit for slave {} will not clean: {}>={}", remoteSlave.getName(), Bytes.formatBytes(freespace), Bytes.formatBytes(AutoFreeSpaceSettings.getSettings().getMinFreeSpace()));
                 return;
             }
@@ -202,7 +202,7 @@ public class AutoFreeSpace implements PluginInterface {
             int maxIterations = AutoFreeSpaceSettings.getSettings().getMaxIterations();
             while (deletedCount < maxIterations) {
 
-                if (freespace <= freespaceMinimum) {
+                if (freespace < freespaceMinimum) {
                     logger.info("freespace [{}] reached the desired minimum [{}], stopping iteration", freespace, freespaceMinimum);
                     break;
                 }
