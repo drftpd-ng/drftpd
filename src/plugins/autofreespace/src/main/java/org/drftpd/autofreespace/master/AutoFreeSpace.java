@@ -96,13 +96,23 @@ public class AutoFreeSpace implements PluginInterface {
         // Also this will grow indefinitely and could potentially be a memory hog
         private List<String> checkedReleases;
 
+        // Keep a boolean to make sure we run only one iteration at a time
+        private boolean isActive;
+
         public MrCleanIt() {
             checkedReleases = new ArrayList<>();
+            isActive = false;
         }
 
         public void run() {
             // Make sure we start with a clean list
+            if (isActive) {
+                logger.warn("Timer tried to start MrCleanIt, but it seems to be running already");
+                return;
+            }
+            isActive = true;
             checkedReleases = new ArrayList<>();
+            logger.info("MrCleanIt task started");
             try {
                 int slavesCount = 0;
                 for (RemoteSlave remoteSlave : GlobalContext.getGlobalContext().getSlaveManager().getAvailableSlaves()) {
@@ -127,6 +137,8 @@ public class AutoFreeSpace implements PluginInterface {
             } catch (NoAvailableSlaveException nase) {
                 logger.warn("AUTODELETE: No slaves online, no point in running the cleaning procedure");
             }
+            logger.info("MrCleanIt task finished");
+            isActive = false;
         }
 
         /**
@@ -135,11 +147,18 @@ public class AutoFreeSpace implements PluginInterface {
          */
         private void cleanByDate(RemoteSlave remoteSlave) throws SlaveUnavailableException {
             int deletedCount = 0;
+            int maxIterations = AutoFreeSpaceSettings.getSettings().getMaxIterations();
             try {
-                InodeHandle oldestRelease;
-                while ((oldestRelease = getOldestRelease(remoteSlave)) != null) {
+                while (deletedCount < maxIterations) {
+                    InodeHandle oldestRelease = getOldestRelease(remoteSlave);
+                    if (oldestRelease == null) {
+                        logger.warn("Could not find oldest release for slave [{}]. Not cleaning", remoteSlave.getName());
+                        break;
+                    }
+
                     GlobalContext.getEventService().publishAsync(new AFSEvent(oldestRelease, remoteSlave));
                     if (AutoFreeSpaceSettings.getSettings().getOnlyAnnounce()) {
+                        logger.warn("AUTODELETE: (OnlyAnnounce) Would have deleted {}", oldestRelease.getName());
                         checkedReleases.add(oldestRelease.getName());
                     } else {
                         logger.info("AUTODELETE: Removing {}", oldestRelease.getName());
@@ -151,6 +170,9 @@ public class AutoFreeSpace implements PluginInterface {
                 logger.error("AUTODELETE: Deleted [{}] releases on slave {} before we ran into an unexpected exception: {}", deletedCount, remoteSlave.getName(), e.getCause());
             }
             if (deletedCount > 0) {
+                if (deletedCount >= maxIterations) {
+                    logger.warn("AUTODELETE: deleted count [{}] matched maximum iterations [{}], cycleTime or max iterations might need a tweak", deletedCount, maxIterations);
+                }
                 logger.debug("AUTODELETE: Deleted [{}] releases on slave {}", deletedCount, remoteSlave.getName());
             } else {
                 logger.warn("AUTODELETE: Found 0 oldest releases for slave {}", remoteSlave.getName());
@@ -163,26 +185,32 @@ public class AutoFreeSpace implements PluginInterface {
          */
         private void cleanBySpace(RemoteSlave remoteSlave) throws SlaveUnavailableException {
             long freespace = remoteSlave.getSlaveStatus().getDiskSpaceAvailable();
-            long freespaceSaved = freespace;
+            long freespaceMinimum = AutoFreeSpaceSettings.getSettings().getMinFreeSpace();
 
             if (freespace >= AutoFreeSpaceSettings.getSettings().getMinFreeSpace()) {
                 logger.debug("AUTODELETE: Space over limit for slave {} will not clean: {}>={}", remoteSlave.getName(), Bytes.formatBytes(freespace), Bytes.formatBytes(AutoFreeSpaceSettings.getSettings().getMinFreeSpace()));
                 return;
             }
 
-            logger.debug("AUTODELETE: Space under limit for {}, will clean: {}<{}", remoteSlave.getName(), Bytes.formatBytes(freespace), Bytes.formatBytes(AutoFreeSpaceSettings.getSettings().getMinFreeSpace()));
+            logger.info("AUTODELETE: Space under limit for {}, will clean: {}<{}", remoteSlave.getName(), Bytes.formatBytes(freespace), Bytes.formatBytes(AutoFreeSpaceSettings.getSettings().getMinFreeSpace()));
             GlobalContext.getEventService().publishAsync(new AFSEvent(null, remoteSlave));
             if (AutoFreeSpaceSettings.getSettings().getOnlyAnnounce()) {
                 return;
             }
 
             int deletedCount = 0;
-            while (freespace < AutoFreeSpaceSettings.getSettings().getMinFreeSpace()) {
+            int maxIterations = AutoFreeSpaceSettings.getSettings().getMaxIterations();
+            while (deletedCount < maxIterations) {
 
-                InodeHandle oldestRelease;
+                if (freespace <= freespaceMinimum) {
+                    logger.info("freespace [{}] reached the desired minimum [{}], stopping iteration", freespace, freespaceMinimum);
+                    break;
+                }
+
+                long freespaceSaved = freespace;
 
                 try {
-                    oldestRelease = getOldestRelease(remoteSlave);
+                    InodeHandle oldestRelease = getOldestRelease(remoteSlave);
                     if (oldestRelease == null) {
                         logger.debug("AUTODELETE: oldestRelease is null. Stopping iteration");
                         break;
@@ -190,6 +218,7 @@ public class AutoFreeSpace implements PluginInterface {
 
                     GlobalContext.getEventService().publishAsync(new AFSEvent(oldestRelease, remoteSlave));
                     if (AutoFreeSpaceSettings.getSettings().getOnlyAnnounce()) {
+                        logger.warn("AUTODELETE: (OnlyAnnounce) Would have deleted {}", oldestRelease.getName());
                         checkedReleases.add(oldestRelease.getName());
                     } else {
                         logger.info("AUTODELETE: Removing {}", oldestRelease.getName());
@@ -200,16 +229,20 @@ public class AutoFreeSpace implements PluginInterface {
                     deletedCount++;
                 } catch (FileNotFoundException e) {
                     logger.error("AUTODELETE: Deleted [{}] releases on slave {} before we ran into an unexpected exception: {}", deletedCount, remoteSlave.getName(), e.getCause());
-                }
-
-                if (freespaceSaved == freespace && !AutoFreeSpaceSettings.getSettings().getOnlyAnnounce()) {
-                    logger.warn("AUTODELETE: We tried to clean slave {}, but free space has not changed. Stopping iteration", remoteSlave.getName());
                     break;
                 }
 
-                freespaceSaved = freespace;
+                if (freespaceSaved == freespace) {
+                    if (!AutoFreeSpaceSettings.getSettings().getOnlyAnnounce()) {
+                        logger.warn("AUTODELETE: We tried to clean slave {}, but free space has not changed. Stopping iteration", remoteSlave.getName());
+                        break;
+                    }
+                }
             }
             if (deletedCount > 0) {
+                if (deletedCount >= maxIterations) {
+                    logger.warn("AUTODELETE: deleted count [{}] matched maximum iterations [{}], cycleTime or max iterations might need a tweak", deletedCount, maxIterations);
+                }
                 logger.debug("AUTODELETE: Deleted [{}] releases on slave {}", deletedCount, remoteSlave.getName());
             } else {
                 logger.warn("AUTODELETE: Found 0 oldest releases to clean for slave {}", remoteSlave.getName());
@@ -340,10 +373,11 @@ public class AutoFreeSpace implements PluginInterface {
                     return 0;
                 }
                 int result = Long.compare(aLong, bLong);
-                if (result == 0)
+                if (result == 0) {
                     return a.getName().compareTo(b.getName());
-                else
-                    return result;
+                }
+
+                return result;
             }
         }
     }
