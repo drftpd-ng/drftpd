@@ -25,6 +25,7 @@ import org.drftpd.autofreespace.master.event.AFSEvent;
 import org.drftpd.common.extensibility.PluginInterface;
 import org.drftpd.common.util.Bytes;
 import org.drftpd.master.GlobalContext;
+import org.drftpd.master.event.MessageEvent;
 import org.drftpd.master.event.ReloadEvent;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.exceptions.SlaveUnavailableException;
@@ -48,6 +49,7 @@ import java.util.*;
 public class AutoFreeSpace implements PluginInterface {
     private static final Logger logger = LogManager.getLogger(AutoFreeSpace.class);
     private Timer _timer;
+    private MrCleanIt _cleanTask;
 
     public void startPlugin() {
         reload();
@@ -58,6 +60,7 @@ public class AutoFreeSpace implements PluginInterface {
 
     public void stopPlugin(String reason) {
         AnnotationProcessor.unprocess(this);
+        _cleanTask.stop();
         _timer.cancel();
         logger.info("Autofreespace plugin unloaded successfully");
     }
@@ -68,9 +71,20 @@ public class AutoFreeSpace implements PluginInterface {
         reload();
     }
 
+    @EventSubscriber
+    public void onMessageEvent(MessageEvent event) {
+        // Only interested in the shutdown event
+        if (Objects.equals(event.getCommand(), "SHUTDOWN")) {
+            logger.info("Received shutdown event, shutting down AutoFreeSpace timer and task");
+            _cleanTask.stop();
+            _timer.cancel();
+        }
+    }
+
     private void reload() {
         if (_timer != null) {
             logger.info("AUTODELETE: Reloading {}", AutoFreeSpace.class.getName());
+            _cleanTask.stop();
             _timer.cancel();
         } else
         {
@@ -83,8 +97,9 @@ public class AutoFreeSpace implements PluginInterface {
             return;
         }
         _timer = new Timer();
+        _cleanTask = new MrCleanIt();
         try {
-            _timer.schedule(new MrCleanIt(), AutoFreeSpaceSettings.getSettings().getCycleTime(), AutoFreeSpaceSettings.getSettings().getCycleTime());
+            _timer.schedule(_cleanTask, AutoFreeSpaceSettings.getSettings().getCycleTime(), AutoFreeSpaceSettings.getSettings().getCycleTime());
         } catch (IllegalStateException e) {
             logger.error("Unable to start AutoFreeSpace timer task, reload and try again");
         }
@@ -99,13 +114,24 @@ public class AutoFreeSpace implements PluginInterface {
         // Keep a boolean to make sure we run only one iteration at a time
         private boolean isActive;
 
+        private boolean isRunning;
+
         public MrCleanIt() {
             checkedReleases = new ArrayList<>();
             isActive = false;
+            isRunning = true;
+        }
+
+        public void stop() {
+            isRunning = false;
         }
 
         public void run() {
             // Make sure we start with a clean list
+            if (!isRunning) {
+                logger.error("Invoked task but we should not be running, stopping");
+                return;
+            }
             if (isActive) {
                 logger.warn("Timer tried to start MrCleanIt, but it seems to be running already");
                 return;
@@ -116,6 +142,10 @@ public class AutoFreeSpace implements PluginInterface {
             try {
                 int slavesCount = 0;
                 for (RemoteSlave remoteSlave : GlobalContext.getGlobalContext().getSlaveManager().getAvailableSlaves()) {
+                    if (!isRunning) {
+                        logger.info("Stopping loop as we should not be running");
+                        break;
+                    }
                     if (AutoFreeSpaceSettings.getSettings().getExcludeSlaves().contains(remoteSlave.getName())) {
                         logger.debug("Skipping [{}] as it is excluded", remoteSlave.getName());
                         continue;
@@ -149,7 +179,7 @@ public class AutoFreeSpace implements PluginInterface {
             int deletedCount = 0;
             int maxIterations = AutoFreeSpaceSettings.getSettings().getMaxIterations();
             try {
-                while (deletedCount < maxIterations) {
+                while (isRunning && deletedCount < maxIterations) {
                     InodeHandle oldestRelease = getOldestRelease(remoteSlave);
                     if (oldestRelease == null) {
                         logger.warn("Could not find oldest release for slave [{}]. Not cleaning", remoteSlave.getName());
@@ -200,7 +230,7 @@ public class AutoFreeSpace implements PluginInterface {
 
             int deletedCount = 0;
             int maxIterations = AutoFreeSpaceSettings.getSettings().getMaxIterations();
-            while (deletedCount < maxIterations) {
+            while (isRunning && deletedCount < maxIterations) {
 
                 if (freespace < freespaceMinimum) {
                     logger.info("freespace [{}] reached the desired minimum [{}], stopping iteration", freespace, freespaceMinimum);
