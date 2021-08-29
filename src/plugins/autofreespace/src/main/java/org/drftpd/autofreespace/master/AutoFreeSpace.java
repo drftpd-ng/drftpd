@@ -218,11 +218,11 @@ public class AutoFreeSpace implements PluginInterface {
             long freespaceMinimum = AutoFreeSpaceSettings.getSettings().getMinFreeSpace();
 
             if (freespace > freespaceMinimum) {
-                logger.debug("AUTODELETE: Space over limit for slave {} will not clean: {}>={}", remoteSlave.getName(), Bytes.formatBytes(freespace), Bytes.formatBytes(AutoFreeSpaceSettings.getSettings().getMinFreeSpace()));
+                logger.debug("AUTODELETE: Space over limit for slave {}, will not clean: {}>={}", remoteSlave.getName(), Bytes.formatBytes(freespace), Bytes.formatBytes(AutoFreeSpaceSettings.getSettings().getMinFreeSpace()));
                 return;
             }
 
-            logger.info("AUTODELETE: Space under limit for {}, will clean: {}<{}", remoteSlave.getName(), Bytes.formatBytes(freespace), Bytes.formatBytes(AutoFreeSpaceSettings.getSettings().getMinFreeSpace()));
+            logger.info("AUTODELETE: Space under limit for slave {}, will clean: {}<{}", remoteSlave.getName(), Bytes.formatBytes(freespace), Bytes.formatBytes(AutoFreeSpaceSettings.getSettings().getMinFreeSpace()));
             GlobalContext.getEventService().publishAsync(new AFSEvent(null, remoteSlave));
             if (AutoFreeSpaceSettings.getSettings().getOnlyAnnounce()) {
                 return;
