@@ -233,7 +233,7 @@ public class AutoFreeSpace implements PluginInterface {
             while (isRunning && deletedCount < maxIterations) {
 
                 if (freespace > freespaceMinimum) {
-                    logger.info("freespace [{}] reached the desired minimum [{}], stopping iteration", freespace, freespaceMinimum);
+                    logger.info("freespace [{}] reached the desired minimum [{}], stopping iteration", Bytes.formatBytes(freespace), Bytes.formatBytes(freespaceMinimum));
                     break;
                 }
 
