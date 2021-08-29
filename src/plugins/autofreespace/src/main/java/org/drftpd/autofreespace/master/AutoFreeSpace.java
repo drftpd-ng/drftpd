@@ -232,7 +232,7 @@ public class AutoFreeSpace implements PluginInterface {
             int maxIterations = AutoFreeSpaceSettings.getSettings().getMaxIterations();
             while (isRunning && deletedCount < maxIterations) {
 
-                if (freespace < freespaceMinimum) {
+                if (freespace > freespaceMinimum) {
                     logger.info("freespace [{}] reached the desired minimum [{}], stopping iteration", freespace, freespaceMinimum);
                     break;
                 }
