@@ -23,6 +23,7 @@ public class AutoFreeSpaceSettings {
     private String _mode;
     private long _minFreeSpace;
     private long _cycleTime;
+    private int _maxIterations;
 
     private AutoFreeSpaceSettings() {
         // Set defaults (just in case)
@@ -33,6 +34,7 @@ public class AutoFreeSpaceSettings {
         _mode = MODE_DISABLED;
         _minFreeSpace = 0L;
         _cycleTime = 10080L * 60000L;
+        _maxIterations = 5;
         reload();
     }
 
@@ -52,6 +54,7 @@ public class AutoFreeSpaceSettings {
         _onlyAnnounce = p.getProperty("announce.only", "false").equalsIgnoreCase("true");
         _minFreeSpace = Bytes.parseBytes(p.getProperty("keepFree"));
         _cycleTime = Long.parseLong(p.getProperty("cycleTime")) * 60000L;
+        _maxIterations = Integer.parseInt(p.getProperty("max.iterations"));
 
         // Handle operating mode
         String mode = p.getProperty("mode", MODE_DISABLED);
@@ -137,6 +140,8 @@ public class AutoFreeSpaceSettings {
     public long getCycleTime() {
         return _cycleTime;
     }
+
+    public int getMaxIterations() { return _maxIterations; }
 
     static class Section {
         private final int id;

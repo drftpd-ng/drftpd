@@ -2,13 +2,15 @@
 ## Auto FreeSpace Settings ##
 ####################################################################################################
 
+# Smallest number of time in between cycles.
 # Times are represented in minutes.
+#
+# 1440 = 1 day
 # 10080 = 1 week
 # 43200 = 1 month
-
-# Smallest number of time in between cycles.
-# Default: [10080]
-cycleTime=10080
+#
+# Default: [1440]
+cycleTime=1440
 
 # Do not delete files with this following names (regex).
 #excluded.file.1=.*speedtest.*
@@ -19,6 +21,10 @@ cycleTime=10080
 # Only announce, no delete.
 # Default: [true]
 announce.only=true
+
+# Max iterations for any single mode run per slave per cycle
+# Default: [5]
+max.iterations=5
 
 # On which mode should autofreespace work.
 # Possible options: disabled, date, space
