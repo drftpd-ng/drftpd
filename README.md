@@ -59,12 +59,12 @@ Clone the project from https://github.com/drftpd-ng/drftpd.git or Download relea
 Git:
 - Run `git clone https://github.com/drftpd-ng/drftpd.git`
 - Run `cd drftpd`
-- Run `git checkout tags/4.0.2`
+- Run `git checkout tags/4.0.3`
 
 Release:
-- Run `wget https://github.com/drftpd-ng/drftpd/archive/4.0.2.tar.gz`
-- Run `tar xvzf 4.0.2.tar.gz`
-- Run `cd drftpd-4.0.2`
+- Run `wget https://github.com/drftpd-ng/drftpd/archive/4.0.3.tar.gz`
+- Run `tar xvzf 4.0.3.tar.gz`
+- Run `cd drftpd-4.0.3`
 
 ### Compile
 
@@ -81,7 +81,7 @@ Check generated runtime directory
 - Optional: Run `./genkey.sh` for Linux or `genkey.bat` for Windows (if you want to use SSL (Master & Slave))
 - Run `./master.sh` for Linux or `master.bat` for Windows
 - Connect to `127.0.0.1:2121` with `drftpd:drftpd`
-- Execute remote commands: `SITE ADD SLAVE SLAVENAME` and `SITE SLAVE SLAVENAME ADDMASK *@IP.MASK`
+- Execute remote commands: `SITE ADDSLAVE SLAVENAME` and `SITE SLAVE SLAVENAME ADDMASK *@IP.MASK`
 - Optional: Create Master Service (`systemd`, `sc.exe` ...)
 
 ### Slave

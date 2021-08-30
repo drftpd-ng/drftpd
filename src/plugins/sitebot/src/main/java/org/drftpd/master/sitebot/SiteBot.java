@@ -113,7 +113,7 @@ public class SiteBot implements ReplyConstants, Runnable {
     private List<ListenerInterface> _listeners = new ArrayList<>();
 
     // Default settings for the PircBot.
-    private final String _version = "4.0.3-git";
+    private final String _version = "4.0.3";
     private String _nick = null;
     private String _ctcpVersion = "DrFTPD SiteBot ";
     private String _finger = "You ought to be arrested for fingering a bot!";
