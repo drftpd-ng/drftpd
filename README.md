@@ -43,10 +43,10 @@ DrFTPD 4.x installation requires a number of steps before you can utilize the so
 To give an overview of the installation process the different steps are listed below in this section.
 
 On the master you will need to:
-- Install Java JDK or OpenJDK 16, Apache Maven, Git
+- Install Java JDK or OpenJDK 15, Apache Maven, Git
 
 On the slaves you will need to:
-- Install Java SE or OpenJDK 16.
+- Install Java SE or OpenJDK 15.
 - Add needed deps that are not present:
   - MediaInfo (CLI): https://mediaarea.net/en/MediaInfo
   - mkvalidator tool: https://github.com/Matroska-Org/foundation-source
@@ -140,7 +140,7 @@ Run `mvn package`
 Create new Application via Run -> Edit Configurations
 
 - Name: `Master`
-- JDK: `java 16 SDK of 'drftpd-dev' module`
+- JDK: `java 15 SDK of 'drftpd-dev' module`
 - Main class: `org.drftpd.master.Master`
 - eg. Working Directory: `C:\Users\Administrator\Documents\GitHub\drftpd\runtime\master`
 - eg. Environment variables: `DRFTPD_CONFIG_PATH=C:\Users\Administrator\Documents\GitHub\drftpd\runtime\master`
@@ -152,7 +152,7 @@ Start debug Master
 Create new Application via Run -> Edit Configurations
 
 - Name: `Slave`
-- JDK: `java 16 SDK of 'drftpd-dev' module`
+- JDK: `java 15 SDK of 'drftpd-dev' module`
 - Main class: `org.drftpd.slave.Slave`
 - eg. Working Directory: `C:\Users\Administrator\Documents\GitHub\drftpd\runtime\slave`
 - eg. Environment variables: `DRFTPD_CONFIG_PATH=C:\Users\Administrator\Documents\GitHub\drftpd\runtime\slave`
