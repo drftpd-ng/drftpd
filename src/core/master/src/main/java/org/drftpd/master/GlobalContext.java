@@ -73,7 +73,7 @@ import static org.drftpd.common.util.ConfigLoader.configPath;
 
 public class GlobalContext {
 
-    public static final String VERSION = "DrFTPD 4.0.4";
+    public static final String VERSION = "DrFTPD 4.0.5-git";
     private static final Logger logger = LogManager.getLogger(GlobalContext.class);
     protected static GlobalContext _gctx;
     private static final DirectoryHandle root = new DirectoryHandle(VirtualFileSystem.separator);
