@@ -87,7 +87,7 @@ public class HostMaskCollection extends ArrayList<HostMask> {
         String ident = "";
         // Try to get an ident for the slave connection
         try {
-            ident = new Ident(s).getUserName();
+            ident = new Ident(s, Ident.defaultConnectionTimeout).getUserName();
         } catch (IOException ignore) {}
         return check(ident, s.getInetAddress());
     }

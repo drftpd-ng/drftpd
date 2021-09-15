@@ -297,12 +297,21 @@ public class Master {
             if (masks.size() < 1) {
                 logger.warn("No hostmasks matched new connection, doing ident lookup not to leak anything");
                 try {
-                    new Ident(sock);
+                    // -1 will be changed to defaultConnectionTimeout
+                    new Ident(sock, -1);
                 } catch (IOException ignore) {}
                 logger.warn("Closing connecting as it is not allowed based on existing hostmasks");
                 sock.close();
                 return;
             }
+
+            int identTimeout = Ident.defaultConnectionTimeout;
+            try {
+                identTimeout = Integer.parseInt(GlobalContext.getConfig().getMainProperties().getProperty("ident.lookup.timeout"));
+            } catch(NumberFormatException e) {
+                logger.warn("Failed to get 'ident.lookup.timeout' property or get the integer from the value, defaulting to [{}]", identTimeout, e);
+            }
+            logger.debug("Ident Timeout has been set to [{}]", identTimeout);
 
             boolean allowedConnection = false;
             String ident = null;
@@ -312,14 +321,14 @@ public class Master {
                     if (ident == null) {
                         logger.debug("One of the hostmasks requires ident so we get it regardless of the other hostmasks");
                         try {
-                            ident = new Ident(sock).getUserName();
+                            ident = new Ident(sock, identTimeout).getUserName();
                         } catch (IOException e) {
                             if (GlobalContext.getConfig().getHideIps()) {
                                 logger.warn("Failed to get ident for <iphidden>");
                             } else {
                                 logger.warn("Failed to get ident for {}", sock.getInetAddress().getHostAddress());
                             }
-                            // Because we tried to get ident and it failed we change it from 'null' to '""'
+                            // Because we tried to get ident and it failed, we change it from 'null' to '""'
                             ident = "";
                         }
                     }
@@ -346,7 +355,7 @@ public class Master {
             }
 
             // Store the ident
-            logger.debug("Setting ident for this connection to {}", ident);
+            logger.debug("Setting ident for this connection to [{}]", ident);
             conn.setObject(BaseFtpConnection.IDENT, ident);
         } else {
             conn = new BaseFtpConnection(sock);
