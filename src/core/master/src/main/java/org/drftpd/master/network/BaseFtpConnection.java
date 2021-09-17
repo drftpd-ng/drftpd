@@ -23,6 +23,8 @@ import org.apache.logging.log4j.Logger;
 import org.drftpd.common.dynamicdata.Key;
 import org.drftpd.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.common.io.AddAsciiOutputStream;
+import org.drftpd.common.socks.Ident;
+import org.drftpd.common.util.HostMask;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.commands.CommandManagerInterface;
 import org.drftpd.master.commands.CommandRequestInterface;
@@ -41,6 +43,8 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -61,6 +65,7 @@ public class BaseFtpConnection extends Session implements Runnable {
     public static final Key<String>         FAILEDREASON = new Key<>(BaseFtpConnection.class, "failedreason");
     public static final Key<String>         FAILEDUSERNAME = new Key<>(BaseFtpConnection.class, "failedusername");
     public static final Key<Boolean>        KILLGHOSTS = new Key<>(BaseFtpConnection.class, "killghosts");
+    public static final Key<List<HostMask>> HOSTMASKS = new Key<>(BaseFtpConnection.class, "hostmasks");
 
     private static final Logger logger = LogManager.getLogger(BaseFtpConnection.class);
 
@@ -291,6 +296,12 @@ public class BaseFtpConnection extends Session implements Runnable {
      * Server one FTP connection.
      */
     public void run() {
+        // Make sure we require HOSTMASKS to be set
+        if (getObject(HOSTMASKS, null) == null || getObject(HOSTMASKS, new ArrayList<>()).size() < 1) {
+            logger.error("HOSTMASKS is not set, this should not be possible... BUG");
+            return;
+        }
+
         _commandManager = GlobalContext.getConnectionManager().getCommandManager();
         setCommands(GlobalContext.getConnectionManager().getCommands());
         _lastActive = System.currentTimeMillis();
@@ -310,13 +321,62 @@ public class BaseFtpConnection extends Session implements Runnable {
         _pool = new ThreadPoolExecutor(1, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<>(), new CommandThreadFactory(_thread.getName()));
 
         try {
-            _controlSocket.setSoTimeout(1000);
+            // First handle any ident requirements
+            int identTimeout = Ident.defaultConnectionTimeout;
+            try {
+                identTimeout = Integer.parseInt(GlobalContext.getConfig().getMainProperties().getProperty("ident.lookup.timeout"));
+            } catch(NumberFormatException e) {
+                logger.warn("Failed to get 'ident.lookup.timeout' property or get the integer from the value, defaulting to [{}]", identTimeout, e);
+            }
+            logger.debug("Ident Timeout has been set to [{}]", identTimeout);
 
-            if (GlobalContext.getGlobalContext().isShutdown()) {
-                stop(GlobalContext.getGlobalContext().getShutdownMessage());
+            boolean allowedConnection = false;
+            String ident = null;
+            for (HostMask hm : getObject(HOSTMASKS)) {
+                // Does this hostmask need ident to verify connection?
+                if (hm.isIdentMaskSignificant()) {
+                    if (ident == null) {
+                        logger.debug("One of the hostmasks requires ident so we get it regardless of the other hostmasks");
+                        try {
+                            ident = new Ident(_controlSocket, identTimeout).getUserName();
+                        } catch (IOException e) {
+                            if (GlobalContext.getConfig().getHideIps()) {
+                                logger.warn("Failed to get ident for <iphidden>");
+                            } else {
+                                logger.warn("Failed to get ident for {}", _controlSocket.getInetAddress().getHostAddress());
+                            }
+                            // Because we tried to get ident and it failed, we change it from 'null' to '""'
+                            ident = "";
+                        }
+                    }
+                    if (hm.matchesIdent(ident)) {
+                        allowedConnection = true;
+                    }
+                } else {
+                    allowedConnection = true;
+                }
+            }
+            if (!allowedConnection) {
+                logger.warn("Closing connecting as it is not allowed based on existing hostmasks");
+                _stopRequest = true;
             } else {
-                FtpReply response = new FtpReply(220, GlobalContext.getConfig().getLoginPrompt());
-                _out.print(response);
+                _controlSocket.setSoTimeout(1000);
+
+                // If the ident is null it was not necessary. In order for the remaining logic (login etc) to function normally we set it to "" here.
+                if (ident == null) {
+                    ident = "";
+                }
+
+                // Store the ident
+                logger.debug("Setting ident for this connection to [{}]", ident);
+                setObject(IDENT, ident);
+
+                if (GlobalContext.getGlobalContext().isShutdown()) {
+                    stop(GlobalContext.getGlobalContext().getShutdownMessage());
+                } else {
+                    FtpReply response = new FtpReply(220, GlobalContext.getConfig().getLoginPrompt());
+                    _out.print(response);
+                }
             }
 
             while (!_stopRequest) {
