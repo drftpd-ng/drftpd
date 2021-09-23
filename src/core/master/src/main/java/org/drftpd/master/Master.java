@@ -281,11 +281,11 @@ public class Master {
          */
 
         // Check hostmasks before we move further unless we expect a bouncer to connect (which is handled during doIDNT)
-        BaseFtpConnection conn;
+        List<HostMask> masks = new ArrayList<>();
         if (!GlobalContext.getConfig().getBouncerIps().contains(sock.getInetAddress())) {
 
             // Get a list of masks that match the client IP
-            List<HostMask> masks = new ArrayList<>();
+            // NOTE: Ident is handled later as it could introduce a timeout during accept() which is not acceptable
             for (User u : GlobalContext.getGlobalContext().getUserManager().getAllUsers()) {
                 // Skip if user is deleted
                 if (!u.isDeleted()) {
@@ -295,62 +295,17 @@ public class Master {
 
             // If we have 0 matched hostmasks handle it quickly
             if (masks.size() < 1) {
-                logger.warn("No hostmasks matched new connection, doing ident lookup not to leak anything");
-                try {
-                    new Ident(sock);
-                } catch (IOException ignore) {}
                 logger.warn("Closing connecting as it is not allowed based on existing hostmasks");
                 sock.close();
                 return;
             }
-
-            boolean allowedConnection = false;
-            String ident = null;
-            for (HostMask hm : masks) {
-                // Does this hostmask need ident to verify connection?
-                if (hm.isIdentMaskSignificant()) {
-                    if (ident == null) {
-                        logger.debug("One of the hostmasks requires ident so we get it regardless of the other hostmasks");
-                        try {
-                            ident = new Ident(sock).getUserName();
-                        } catch (IOException e) {
-                            if (GlobalContext.getConfig().getHideIps()) {
-                                logger.warn("Failed to get ident for <iphidden>");
-                            } else {
-                                logger.warn("Failed to get ident for {}", sock.getInetAddress().getHostAddress());
-                            }
-                            // Because we tried to get ident and it failed we change it from 'null' to '""'
-                            ident = "";
-                        }
-                    }
-                    if (hm.matchesIdent(ident)) {
-                        allowedConnection = true;
-                    }
-                } else {
-                    allowedConnection = true;
-                }
-            }
-
-            // Drop connection if we cannot match the connection to a user hostmask
-            if (!allowedConnection) {
-                logger.warn("Closing connecting as it is not allowed based on existing hostmasks");
-                sock.close();
-                return;
-            }
-
-            conn = new BaseFtpConnection(sock);
-
-            // If the ident is null it was not necessary. In order for the remaining logic (login etc) to function normally we set it to "" here.
-            if (ident == null) {
-                ident = "";
-            }
-
-            // Store the ident
-            logger.debug("Setting ident for this connection to {}", ident);
-            conn.setObject(BaseFtpConnection.IDENT, ident);
-        } else {
-            conn = new BaseFtpConnection(sock);
         }
+
+        // Initialize a new BaseFtpConnection
+        BaseFtpConnection conn = new BaseFtpConnection(sock);
+
+        // If we get here it means at least one hostmask was matched so register it
+        conn.setObject(BaseFtpConnection.HOSTMASKS, masks);
 
         _conns.add(conn);
         try {

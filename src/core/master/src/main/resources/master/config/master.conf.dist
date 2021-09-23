@@ -132,3 +132,14 @@ slavemanager.ssl.client_authentication=optional
 # slavemanager.ssl.key=
 slavemanager.ssl.keystore.path=config/drftpd.key
 slavemanager.ssl.keystore.password=drftpd
+
+# Setting to control the connection timeout for ident lookups (port 113)
+#
+# Setting this value higher will increase accuracy of ident lookups (less misses)
+# Flipside is that a lot of clients have a connect timeout of 5 seconds
+# Setting this too high will break those clients
+# ftp users silently dropping request on port 113 will run into this problem frequently!
+#
+# Time in milliseconds (ms).
+# Default: [2000]
+ident.lookup.timeout=2000
