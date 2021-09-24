@@ -59,12 +59,12 @@ Clone the project from https://github.com/drftpd-ng/drftpd.git or Download relea
 Git:
 - Run `git clone https://github.com/drftpd-ng/drftpd.git`
 - Run `cd drftpd`
-- Run `git checkout tags/4.0.4`
+- Run `git checkout tags/4.0.5`
 
 Release:
-- Run `wget https://github.com/drftpd-ng/drftpd/archive/4.0.4.tar.gz`
-- Run `tar xvzf 4.0.4.tar.gz`
-- Run `cd drftpd-4.0.4`
+- Run `wget https://github.com/drftpd-ng/drftpd/archive/4.0.5.tar.gz`
+- Run `tar xvzf 4.0.5.tar.gz`
+- Run `cd drftpd-4.0.5`
 
 ### Compile
 
