@@ -47,12 +47,17 @@ public class SysopPostHook {
         } else { // IDNT
             user = response.getUser();
         }
-        if ((code.startsWith("5") || code.startsWith("4")) && !code.startsWith("530") && showFailed(cmd)) {
-            GlobalContext.getEventService().publishAsync(new SysopEvent(user, message, response.getMessage(),
-                    true, false));
-        } else if (showSuccessful(cmd)) {
-            GlobalContext.getEventService().publishAsync(new SysopEvent(user, message, response.getMessage(),
-                    true, true));
+        // 4XX and 5XX = failed
+        if (code.startsWith("5") || code.startsWith("4")) {
+            if (showFailed(cmd)) {
+                GlobalContext.getEventService().publishAsync(new SysopEvent(user, message,
+                        response.getMessage(), true, false));
+            }
+        } else {
+            if (showSuccessful(cmd)) {
+                GlobalContext.getEventService().publishAsync(new SysopEvent(user, message,
+                        response.getMessage(), true, true));
+            }
         }
     }
 
