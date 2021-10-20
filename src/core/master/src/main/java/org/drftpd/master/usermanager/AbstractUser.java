@@ -120,7 +120,7 @@ public abstract class AbstractUser extends User implements Commitable {
     }
 
     public List<Group> getGroups() {
-        List<Group> groups = new ArrayList<>(_groups.size());
+        List<Group> groups = new ArrayList<>();
         for (String group : _groups) {
             try {
                 groups.add(getUserManager().getGroupByName(group));
@@ -230,10 +230,15 @@ public abstract class AbstractUser extends User implements Commitable {
     }
 
     public boolean isMemberOf(String group) {
+        if (getGroup() == null) {
+            logger.error("Something is wrong with ({}) as the primary group has an issue.", getName());
+            return false;
+        }
         if (getGroup().getName().equals(group)) {
             return true;
         }
 
+        // This can never be null, it can however return an empty Collection (not a problem)
         for (Group myGroup : getGroups()) {
             if (group.equals(myGroup.getName())) {
                 return true;
