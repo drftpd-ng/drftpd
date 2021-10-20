@@ -209,7 +209,7 @@ public class SiteBot implements ReplyConstants, Runnable {
         _outputThread = null;
 
         if (isConnected()) {
-            throw new IOException("The Bot is already connected to an IRC server.  Disconnect first.");
+            throw new IOException("The Bot is already connected to an IRC server. Disconnect first.");
         }
 
         // Clear everything we may have know about channels.
@@ -270,7 +270,7 @@ public class SiteBot implements ReplyConstants, Runnable {
 
         _inputThread = new InputThread(this, socket, breader, bwriter);
 
-        // During our connect phase we might receive commands we cannot process yet so we store them for later processing
+        // During our connect phase we might receive commands we cannot process yet, so we store them for later processing
         // Certain commands expect our _hostMask to be filled with correct data for example
         List<String> storedCommands = new ArrayList<>();
 
@@ -470,6 +470,8 @@ public class SiteBot implements ReplyConstants, Runnable {
      */
     public final void quitServer(String reason) {
         this.sendRawLine("QUIT :" + reason);
+        // sendRawLine forces a flush on the output stream so we can empty the queue now
+        this.emptyOutgoingQueue();
     }
 
     /**
@@ -496,6 +498,10 @@ public class SiteBot implements ReplyConstants, Runnable {
         if (isConnected()) {
             _outQueue.add(line);
         }
+    }
+
+    public final synchronized void emptyOutgoingQueue() {
+        _outQueue.clear();
     }
 
     /**

@@ -263,6 +263,9 @@ public class SiteBotManagement extends CommandInterface {
             } else {
                 bot.quitServer("Reconnect requested by " + request.getUser());
             }
+        } else if (command.equalsIgnoreCase("emptyqueue")) {
+            logger.info("Outgoing queue for for sitebot ({}) was emptied by {}", bot.getBotName(), request.getUser());
+            bot.emptyOutgoingQueue();
         } else {
             // We require more arguments here, complain if they are missing
             if (!st.hasMoreTokens()) {
