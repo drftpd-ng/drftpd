@@ -69,7 +69,7 @@ Release:
 ### Compile
 
 Maven:
-- Optional (Upgrade only), Run `mvn clean` (deletes all jar files in build and lib folders (Master & Slave))
+- Optional (Upgrade only), Run `mvn clean`
 - Run `mvn validate`
 - Run `mvn install`
 
