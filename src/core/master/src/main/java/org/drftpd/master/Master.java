@@ -282,8 +282,8 @@ public class Master {
 
         // Check hostmasks before we move further unless we expect a bouncer to connect (which is handled during doIDNT)
         List<HostMask> masks = new ArrayList<>();
-        if (!GlobalContext.getConfig().getBouncerIps().contains(sock.getInetAddress())) {
-
+        boolean bouncer_allowed = GlobalContext.getConfig().getBouncerIps().contains(sock.getInetAddress());
+        if (!bouncer_allowed) {
             // Get a list of masks that match the client IP
             // NOTE: Ident is handled later as it could introduce a timeout during accept() which is not acceptable
             for (User u : GlobalContext.getGlobalContext().getUserManager().getAllUsers()) {
@@ -304,8 +304,9 @@ public class Master {
         // Initialize a new BaseFtpConnection
         BaseFtpConnection conn = new BaseFtpConnection(sock);
 
-        // If we get here it means at least one hostmask was matched so register it
+        // Register the hostmasks
         conn.setObject(BaseFtpConnection.HOSTMASKS, masks);
+        conn.setObject(BaseFtpConnection.BOUNCERALLOWED, bouncer_allowed);
 
         _conns.add(conn);
         try {

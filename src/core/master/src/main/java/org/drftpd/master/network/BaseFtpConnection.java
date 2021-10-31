@@ -65,6 +65,7 @@ public class BaseFtpConnection extends Session implements Runnable {
     public static final Key<String>         FAILEDREASON = new Key<>(BaseFtpConnection.class, "failedreason");
     public static final Key<String>         FAILEDUSERNAME = new Key<>(BaseFtpConnection.class, "failedusername");
     public static final Key<Boolean>        KILLGHOSTS = new Key<>(BaseFtpConnection.class, "killghosts");
+    public static final Key<Boolean>        BOUNCERALLOWED = new Key<>(BaseFtpConnection.class, "bouncerallowed");
     public static final Key<List<HostMask>> HOSTMASKS = new Key<>(BaseFtpConnection.class, "hostmasks");
 
     private static final Logger logger = LogManager.getLogger(BaseFtpConnection.class);
@@ -296,10 +297,23 @@ public class BaseFtpConnection extends Session implements Runnable {
      * Server one FTP connection.
      */
     public void run() {
-        // Make sure we require HOSTMASKS to be set
-        if (getObject(HOSTMASKS, null) == null || getObject(HOSTMASKS, new ArrayList<>()).size() < 1) {
-            logger.error("HOSTMASKS is not set, this should not be possible... BUG");
+        // Make sure we require BOUNCERALLOWED to be set
+        if (getObject(BOUNCERALLOWED, null) == null) {
+            logger.error("BOUNCERALLOWED is not set, this should not be possible... BUG");
             return;
+        }
+
+        // We initialize allowed connection to false
+        boolean allowedConnection = false;
+        if (getObject(BOUNCERALLOWED, false)) {
+            // Since we expect a bouncer connect allow the connection regardless
+            allowedConnection = true;
+        } else {
+            // Make sure we require HOSTMASKS to be set
+            if (getObject(HOSTMASKS, null) == null || getObject(HOSTMASKS, new ArrayList<>()).size() < 1) {
+                logger.error("HOSTMASKS is not set, this should not be possible... BUG");
+                return;
+            }
         }
 
         _commandManager = GlobalContext.getConnectionManager().getCommandManager();
@@ -330,30 +344,33 @@ public class BaseFtpConnection extends Session implements Runnable {
             }
             logger.debug("Ident Timeout has been set to [{}]", identTimeout);
 
-            boolean allowedConnection = false;
+
             String ident = null;
-            for (HostMask hm : getObject(HOSTMASKS)) {
-                // Does this hostmask need ident to verify connection?
-                if (hm.isIdentMaskSignificant()) {
-                    if (ident == null) {
-                        logger.debug("One of the hostmasks requires ident so we get it regardless of the other hostmasks");
-                        try {
-                            ident = new Ident(_controlSocket, identTimeout).getUserName();
-                        } catch (IOException e) {
-                            if (GlobalContext.getConfig().getHideIps()) {
-                                logger.warn("Failed to get ident for <iphidden>");
-                            } else {
-                                logger.warn("Failed to get ident for {}", _controlSocket.getInetAddress().getHostAddress());
+            // Only loop over the hostmasks if we are not expecting a bouncer to connect
+            if (!getObject(BOUNCERALLOWED, false)) {
+                for (HostMask hm : getObject(HOSTMASKS)) {
+                    // Does this hostmask need ident to verify connection?
+                    if (hm.isIdentMaskSignificant()) {
+                        if (ident == null) {
+                            logger.debug("One of the hostmasks requires ident so we get it regardless of the other hostmasks");
+                            try {
+                                ident = new Ident(_controlSocket, identTimeout).getUserName();
+                            } catch (IOException e) {
+                                if (GlobalContext.getConfig().getHideIps()) {
+                                    logger.warn("Failed to get ident for <iphidden>");
+                                } else {
+                                    logger.warn("Failed to get ident for {}", _controlSocket.getInetAddress().getHostAddress());
+                                }
+                                // Because we tried to get ident and it failed, we change it from 'null' to '""'
+                                ident = "";
                             }
-                            // Because we tried to get ident and it failed, we change it from 'null' to '""'
-                            ident = "";
                         }
-                    }
-                    if (hm.matchesIdent(ident)) {
+                        if (hm.matchesIdent(ident)) {
+                            allowedConnection = true;
+                        }
+                    } else {
                         allowedConnection = true;
                     }
-                } else {
-                    allowedConnection = true;
                 }
             }
             if (!allowedConnection) {
@@ -363,6 +380,7 @@ public class BaseFtpConnection extends Session implements Runnable {
                 _controlSocket.setSoTimeout(1000);
 
                 // If the ident is null it was not necessary. In order for the remaining logic (login etc) to function normally we set it to "" here.
+                // NOTE: when we have a bouncer connect it sets the ident regardless of this
                 if (ident == null) {
                     ident = "";
                 }

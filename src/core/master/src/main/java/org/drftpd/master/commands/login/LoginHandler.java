@@ -68,7 +68,7 @@ public class LoginHandler extends CommandInterface {
             return new CommandResponse(530, "Multiple IDNT commands");
         }
 
-        if (!GlobalContext.getConfig().getBouncerIps().contains(conn.getClientAddress())) {
+        if (!conn.getObject(BaseFtpConnection.BOUNCERALLOWED, false)) {
             logger.warn("IDNT from non-bnc");
             request.getSession().setObject(BaseFtpConnection.FAILEDREASON, "IDNT Non-BNC");
             return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
