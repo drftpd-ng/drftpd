@@ -388,11 +388,9 @@ public class ConfigManager implements ConfigInterface {
         list.add(perm);
     }
 
-
     public boolean checkPathPermission(String directive, User user, DirectoryHandle path) {
         return checkPathPermission(directive, user, path, false);
     }
-
 
     public boolean checkPathPermission(String directive, User user, DirectoryHandle path, boolean defaults) {
         ArrayList<PathPermission> perms = getPathPermsMap().get(directive);
