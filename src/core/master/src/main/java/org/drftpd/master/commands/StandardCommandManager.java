@@ -208,9 +208,13 @@ public class StandardCommandManager implements CommandManagerInterface {
         if (commandContainer == null) {
             return genericResponse("RESPONSE_502_COMMAND_NOT_IMPLEMENTED");
         }
+        long start = System.nanoTime();
+        logger.debug("Command {} execution start time (nano): {}", request.getCommand(), start);
         request.setProperties(request.getSession().getCommands().get(request.getCommand()));
         CommandResponseInterface response;
         request = commandContainer.getCommandInterfaceInstance().doPreHooks(request);
+        long end = System.nanoTime();
+        logger.debug("Command {} pre hooks took since command start (in nanoseconds): {}", request.getCommand(), (end - start));
         if (!request.isAllowed()) {
             response = request.getDeniedResponse();
             if (response == null) {
@@ -243,8 +247,12 @@ public class StandardCommandManager implements CommandManagerInterface {
             }
             throw (Error) t;
         }
+        end = System.nanoTime();
+        logger.debug("Command {} general execution took since command start (in nanoseconds): {}", request.getCommand(), (end - start));
 
         commandContainer.getCommandInterfaceInstance().doPostHooks(request, response);
+        end = System.nanoTime();
+        logger.debug("Command {} post hooks took since command start (in nanoseconds): {}", request.getCommand(), (end - start));
         return response;
     }
 
