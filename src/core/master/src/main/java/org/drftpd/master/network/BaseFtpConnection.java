@@ -639,15 +639,20 @@ public class BaseFtpConnection extends Session implements Runnable {
         }
 
         public void run() {
+            logger.debug("CommandThread started -#- _commandCount: {}, line: {}", _commandCount.get(), _ftpRequest.getCommandLine());
             if (_commandCount.get() > 0 && !_ftpRequest.getCommand().equalsIgnoreCase("ABOR")) {
+                logger.warn("ABORT found, ignoring incoming line [{}]", _ftpRequest.getCommandLine());
                 return;
             }
             _commandCount.incrementAndGet();
             clearAborted();
+            logger.debug("commandThread[{}] - commandCount: {} -#- creating command request", _ftpRequest.getCommandLine(), _commandCount);
             CommandRequestInterface cmdRequest = _commandManager.newRequest(
                     _ftpRequest.getCommand(), _ftpRequest.getArgument(),
                     _currentDirectory, _conn.getUsername(), _conn, _conn.getCommands().get(_ftpRequest.getCommand()));
+            logger.debug("commandThread[{}] - commandCount: {} -#- executing command request", _ftpRequest.getCommandLine(), _commandCount);
             CommandResponseInterface cmdResponse = _commandManager.execute(cmdRequest);
+            logger.debug("commandThread[{}] - commandCount: {} -#- executing finished", _ftpRequest.getCommandLine(), _commandCount);
             if (cmdResponse != null) {
                 if (!isAborted() || _ftpRequest.getCommand().equalsIgnoreCase("ABOR")) {
                     if (cmdResponse.getCurrentDirectory() != null) {
@@ -665,6 +670,7 @@ public class BaseFtpConnection extends Session implements Runnable {
             }
 
             _commandCount.decrementAndGet();
+            logger.debug("commandThread[{}] - commandCount: {} -#- thread finished", _ftpRequest.getCommandLine(), _commandCount);
         }
     }
 }
