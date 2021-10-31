@@ -640,8 +640,11 @@ public class BaseFtpConnection extends Session implements Runnable {
 
         public void run() {
             if (_commandCount.get() > 0 && !_ftpRequest.getCommand().equalsIgnoreCase("ABOR")) {
+                logger.warn("There is already a command active for this connection, dropping this request [{}]",
+                        _ftpRequest.getCommandLine());
                 return;
             }
+            logger.debug("CommandThread started. _commandCount: {}", _commandCount.get());
             _commandCount.incrementAndGet();
             clearAborted();
             CommandRequestInterface cmdRequest = _commandManager.newRequest(
@@ -656,6 +659,9 @@ public class BaseFtpConnection extends Session implements Runnable {
                     if (cmdResponse.getUser() != null) {
                         _user = cmdResponse.getUser();
                     }
+                    // We are finished with this command and are about to reply, so decrease the count here
+                    // Doing this later might end up with the above warning in the logs for commands being send very quickly.
+                    _commandCount.decrementAndGet();
                     printOutput(new FtpReply(cmdResponse));
                 }
             }
@@ -663,8 +669,7 @@ public class BaseFtpConnection extends Session implements Runnable {
             if (cmdRequest.getSession().getObject(BaseFtpConnection.FAILEDLOGIN, false)) {
                 _conn.stop("Closing Connection");
             }
-
-            _commandCount.decrementAndGet();
+            logger.debug("CommandThread finished. _commandCount: {}", _commandCount.get());
         }
     }
 }
