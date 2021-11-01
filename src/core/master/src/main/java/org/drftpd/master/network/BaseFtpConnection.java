@@ -332,7 +332,8 @@ public class BaseFtpConnection extends Session implements Runnable {
             _thread.setName("FtpConn thread " + _thread.getId() + " from " + getClientAddress().getHostAddress());
         }
 
-        _pool = new ThreadPoolExecutor(1, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<>(), new CommandThreadFactory(_thread.getName()));
+        //_pool = new ThreadPoolExecutor(1, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<>(), new CommandThreadFactory(_thread.getName()));
+        _pool = (ThreadPoolExecutor) Executors.newSingleThreadExecutor(new CommandThreadFactory(_thread.getName()));
 
         try {
             // First handle any ident requirements
@@ -454,13 +455,18 @@ public class BaseFtpConnection extends Session implements Runnable {
                 }
 
                 // execute command
-                _pool.execute(new CommandThread(_request, this));
-                if (_request.getCommand().equalsIgnoreCase("AUTH")) {
-                    while (!_securityDataExchangeCompleted && !_stopRequest) {
-                        Thread.sleep(100);
+                // If we get ABOR handle it directly otherwise hand it over to the executor
+                if (_request.getCommand().equalsIgnoreCase("ABOR")) {
+                    executeFtpCommand(_request);
+                } else {
+                    _pool.execute(new CommandThread(_request, this));
+                    if (_request.getCommand().equalsIgnoreCase("AUTH")) {
+                        while (!_securityDataExchangeCompleted && !_stopRequest) {
+                            Thread.sleep(100);
+                        }
                     }
+                    poolStatus();
                 }
-                poolStatus();
                 _lastActive = System.currentTimeMillis();
             }
 
@@ -612,6 +618,33 @@ public class BaseFtpConnection extends Session implements Runnable {
         return o == this;
     }
 
+    protected void executeFtpCommand(FtpRequest _ftpRequest) {
+        _commandCount.incrementAndGet();
+        clearAborted();
+        CommandRequestInterface cmdRequest = _commandManager.newRequest(
+                _ftpRequest.getCommand(), _ftpRequest.getArgument(),
+                _currentDirectory, getUsername(), this, getCommands().get(_ftpRequest.getCommand()));
+        CommandResponseInterface cmdResponse = _commandManager.execute(cmdRequest);
+        if (cmdResponse != null) {
+            if (!isAborted() || _ftpRequest.getCommand().equalsIgnoreCase("ABOR")) {
+                if (cmdResponse.getCurrentDirectory() != null) {
+                    _currentDirectory = cmdResponse.getCurrentDirectory();
+                }
+                if (cmdResponse.getUser() != null) {
+                    _user = cmdResponse.getUser();
+                }
+                // We are finished with this command and are about to reply, so decrease the count here
+                // Doing this later might end up with the above warning in the logs for commands being send very quickly.
+                _commandCount.decrementAndGet();
+                printOutput(new FtpReply(cmdResponse));
+            }
+        }
+
+        if (cmdRequest.getSession().getObject(BaseFtpConnection.FAILEDLOGIN, false)) {
+            stop("Closing Connection");
+        }
+    }
+
     static class CommandThreadFactory implements ThreadFactory {
 
         String _parentName;
@@ -639,40 +672,17 @@ public class BaseFtpConnection extends Session implements Runnable {
         }
 
         public void run() {
-            logger.debug("CommandThread started -#- _commandCount: {}, line: {}", _commandCount.get(), _ftpRequest.getCommandLine());
-            if (_commandCount.get() > 0 && !_ftpRequest.getCommand().equalsIgnoreCase("ABOR")) {
-                logger.warn("It seems a previous command is still running while the client is sending a next one [{}]... TODO fix this", _ftpRequest.getCommandLine());
+            if (_commandCount.get() > 0) {
+                logger.fatal("The executor should be single threaded, this should not be possible unless an \"ABOR\" command was issued");
+                /*
+                logger.warn("There is already a command active for this connection, dropping this request [{}]",
+                        _ftpRequest.getCommandLine());
                 return;
+                */
             }
-            _commandCount.incrementAndGet();
-            clearAborted();
-            logger.debug("commandThread[{}] - commandCount: {} -#- creating command request", _ftpRequest.getCommandLine(), _commandCount);
-            CommandRequestInterface cmdRequest = _commandManager.newRequest(
-                    _ftpRequest.getCommand(), _ftpRequest.getArgument(),
-                    _currentDirectory, _conn.getUsername(), _conn, _conn.getCommands().get(_ftpRequest.getCommand()));
-            logger.debug("commandThread[{}] - commandCount: {} -#- executing command request", _ftpRequest.getCommandLine(), _commandCount);
-            CommandResponseInterface cmdResponse = _commandManager.execute(cmdRequest);
-            logger.debug("commandThread[{}] - commandCount: {} -#- executing finished", _ftpRequest.getCommandLine(), _commandCount);
-
-            // Once the command has executed decrement here quickly as it might block the next message
-            _commandCount.decrementAndGet();
-            if (cmdResponse != null) {
-                if (!isAborted() || _ftpRequest.getCommand().equalsIgnoreCase("ABOR")) {
-                    if (cmdResponse.getCurrentDirectory() != null) {
-                        _currentDirectory = cmdResponse.getCurrentDirectory();
-                    }
-                    if (cmdResponse.getUser() != null) {
-                        _user = cmdResponse.getUser();
-                    }
-                    printOutput(new FtpReply(cmdResponse));
-                }
-            }
-
-            if (cmdRequest.getSession().getObject(BaseFtpConnection.FAILEDLOGIN, false)) {
-                _conn.stop("Closing Connection");
-            }
-
-            logger.debug("commandThread[{}] - commandCount: {} -#- thread finished", _ftpRequest.getCommandLine(), _commandCount);
+            logger.debug("CommandThread started. _commandCount: {}", _commandCount.get());
+            _conn.executeFtpCommand(_ftpRequest);
+            logger.debug("CommandThread finished. _commandCount: {}", _commandCount.get());
         }
     }
 }
