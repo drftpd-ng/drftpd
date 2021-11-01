@@ -345,7 +345,6 @@ public class BaseFtpConnection extends Session implements Runnable {
             }
             logger.debug("Ident Timeout has been set to [{}]", identTimeout);
 
-
             String ident = null;
             // Only loop over the hostmasks if we are not expecting a bouncer to connect
             if (!getObject(BOUNCERALLOWED, false)) {
@@ -625,6 +624,11 @@ public class BaseFtpConnection extends Session implements Runnable {
                 _ftpRequest.getCommand(), _ftpRequest.getArgument(),
                 _currentDirectory, getUsername(), this, getCommands().get(_ftpRequest.getCommand()));
         CommandResponseInterface cmdResponse = _commandManager.execute(cmdRequest);
+
+        // We are finished with this command and are about to reply, so decrease the count here
+        // Doing this later might end up with the above warning in the logs for commands being send very quickly.
+        _commandCount.decrementAndGet();
+
         if (cmdResponse != null) {
             if (!isAborted() || _ftpRequest.getCommand().equalsIgnoreCase("ABOR")) {
                 if (cmdResponse.getCurrentDirectory() != null) {
@@ -633,9 +637,6 @@ public class BaseFtpConnection extends Session implements Runnable {
                 if (cmdResponse.getUser() != null) {
                     _user = cmdResponse.getUser();
                 }
-                // We are finished with this command and are about to reply, so decrease the count here
-                // Doing this later might end up with the above warning in the logs for commands being send very quickly.
-                _commandCount.decrementAndGet();
                 printOutput(new FtpReply(cmdResponse));
             }
         }
