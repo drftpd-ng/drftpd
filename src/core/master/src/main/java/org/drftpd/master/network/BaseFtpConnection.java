@@ -332,8 +332,8 @@ public class BaseFtpConnection extends Session implements Runnable {
             _thread.setName("FtpConn thread " + _thread.getId() + " from " + getClientAddress().getHostAddress());
         }
 
-        //_pool = new ThreadPoolExecutor(1, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<>(), new CommandThreadFactory(_thread.getName()));
-        _pool = (ThreadPoolExecutor) Executors.newSingleThreadExecutor(new CommandThreadFactory(_thread.getName()));
+        _pool = new ThreadPoolExecutor(1, 1, 60L, TimeUnit.SECONDS, new SynchronousQueue<>(), new CommandThreadFactory(_thread.getName()));
+        // _pool = (ThreadPoolExecutor) Executors.newSingleThreadExecutor(new CommandThreadFactory(_thread.getName()));
 
         try {
             // First handle any ident requirements
