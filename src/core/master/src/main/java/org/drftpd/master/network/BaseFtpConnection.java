@@ -332,15 +332,14 @@ public class BaseFtpConnection extends Session implements Runnable {
             _thread.setName("FtpConn thread " + _thread.getId() + " from " + getClientAddress().getHostAddress());
         }
 
-        _pool = new ThreadPoolExecutor(1, 1, 60L, TimeUnit.SECONDS, new SynchronousQueue<>(), new CommandThreadFactory(_thread.getName()), new ThreadPoolExecutor.DiscardOldestPolicy());
-        // _pool = (ThreadPoolExecutor) Executors.newSingleThreadExecutor(new CommandThreadFactory(_thread.getName()));
+        _pool = new ThreadPoolExecutor(1, 1, 60L, TimeUnit.SECONDS, new LinkedBlockingQueue<>(), new CommandThreadFactory(_thread.getName()));
 
         try {
             // First handle any ident requirements
             int identTimeout = Ident.defaultConnectionTimeout;
             try {
                 identTimeout = Integer.parseInt(GlobalContext.getConfig().getMainProperties().getProperty("ident.lookup.timeout"));
-            } catch(NumberFormatException e) {
+            } catch (NumberFormatException e) {
                 logger.warn("Failed to get 'ident.lookup.timeout' property or get the integer from the value, defaulting to [{}]", identTimeout, e);
             }
             logger.debug("Ident Timeout has been set to [{}]", identTimeout);
@@ -476,10 +475,12 @@ public class BaseFtpConnection extends Session implements Runnable {
             }
 
             _out.flush();
+        } catch (RejectedExecutionException ex) {
+            logger.error("Unable to execute task, closing session. Message: {}", ex.getMessage());
         } catch (SocketException ex) {
-            logger.log(Level.INFO, ex.getMessage() + ", closing for user " + ((_user == null) ? "<not logged in>" : _user), ex);
+            logger.info("{}, closing for user {}", ex.getMessage(), ((_user == null) ? "<not logged in>" : _user));
         } catch (Exception ex) {
-            logger.log(Level.INFO, "Exception, closing", ex);
+            logger.info("Exception, closing", ex);
         } finally {
             shutdownSocket();
 
