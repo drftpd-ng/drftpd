@@ -407,10 +407,12 @@ public class BaseFtpConnection extends Session implements Runnable {
                     // milliseconds
                 } catch (InterruptedIOException ex) {
                     if (_controlSocket == null) {
+                        logger.debug("_controlSocket is true");
                         stop("Control socket is null");
                         break;
                     }
                     if (!_controlSocket.isConnected()) {
+                        logger.debug("!_controlSocket.isConnected()");
                         stop("Socket unexpectedly closed");
                         break;
                     }
@@ -427,6 +429,7 @@ public class BaseFtpConnection extends Session implements Runnable {
                     if (idleTime > 0
                             && ((System.currentTimeMillis() - _lastActive) / 1000 >= idleTime)
                             && !isExecuting()) {
+                        logger.debug("idleTimeout... isExecuting: {}, _lastActive: {}, idleTime: {}, diff: {}", isExecuting(), _lastActive, idleTime, (System.currentTimeMillis() - _lastActive) / 1000);
                         stop("IdleTimeout");
                         break;
                     }
@@ -434,11 +437,13 @@ public class BaseFtpConnection extends Session implements Runnable {
                 }
 
                 if (_stopRequest) {
+                    logger.debug("_stopRequest is true");
                     break;
                 }
 
                 // test command line
                 if (commandLine == null) {
+                    logger.debug("commandLine == null");
                     break;
                 }
 
@@ -448,18 +453,22 @@ public class BaseFtpConnection extends Session implements Runnable {
 
                 _request = new FtpRequest(commandLine);
 
-                if (!_request.getCommand().equals("PASS")) {
+                if (_request.getCommand().equals("PASS")) {
+                    logger.debug("<< PASS");
+                } else {
                     logger.debug("<< {}", _request.getCommandLine());
                 }
 
                 // execute command
                 // If we get ABOR handle it directly otherwise hand it over to the executor
                 if (_request.getCommand().equalsIgnoreCase("ABOR")) {
+                    logger.debug("Found ABOR, handling directly");
                     executeFtpCommand(_request);
                 } else {
                     _pool.execute(new CommandThread(_request, this));
                     if (_request.getCommand().equalsIgnoreCase("AUTH")) {
                         while (!_securityDataExchangeCompleted && !_stopRequest) {
+                            logger.debug("Waiting 100 miliseconds for AUTH to finalize");
                             Thread.sleep(100);
                         }
                     }
