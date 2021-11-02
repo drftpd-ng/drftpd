@@ -482,6 +482,11 @@ public class BaseFtpConnection extends Session implements Runnable {
         } catch (Exception ex) {
             logger.info("Exception, closing", ex);
         } finally {
+            if (GlobalContext.getConfig().getHideIps()) {
+                logger.debug("Finalizing control session from <iphidden>");
+            } else {
+                logger.debug("Finalizing control session from {}", getClientAddress().getHostAddress());
+            }
             shutdownSocket();
 
             if (isAuthenticated()) {
