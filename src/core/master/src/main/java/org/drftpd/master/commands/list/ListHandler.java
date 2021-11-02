@@ -132,6 +132,7 @@ public class ListHandler extends CommandInterface {
 
     protected CommandResponse list(CommandRequest request, boolean isList, boolean isStat, boolean isMlst, boolean isMlsd)
             throws ImproperUsageException {
+        logger.debug("list called. isList: {}, isStat: {}, isMlst: {}, isMlsd: {}", isList, isStat, isMlst, isMlsd);
         try {
             String directoryName = null;
             String options = "";
@@ -249,6 +250,7 @@ public class ListHandler extends CommandInterface {
             }
         } finally {
             BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
+            logger.debug("[list()] calling reset() on transferstate");
             conn.getTransferState().reset();
         }
     }
