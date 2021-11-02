@@ -676,11 +676,6 @@ public class BaseFtpConnection extends Session implements Runnable {
         public void run() {
             if (_commandCount.get() > 0) {
                 logger.fatal("The executor should be single threaded, this should not be possible unless an \"ABOR\" command was issued");
-                /*
-                logger.warn("There is already a command active for this connection, dropping this request [{}]",
-                        _ftpRequest.getCommandLine());
-                return;
-                */
             }
             logger.debug("CommandThread started. _commandCount: {}", _commandCount.get());
             _conn.executeFtpCommand(_ftpRequest);
