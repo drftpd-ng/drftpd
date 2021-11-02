@@ -677,7 +677,7 @@ public class DataConnectionHandler extends CommandInterface {
 
     protected synchronized void reset(BaseFtpConnection conn) {
         logger.debug("reset(BaseFtpConnection) called");
-        logger.debug(Thread.currentThread().getStackTrace());
+        logger.debug(Arrays.toString(Thread.currentThread().getStackTrace()).replace( ',', '\n' )); // TODO: remove this
         conn.getTransferState().reset();
     }
 
