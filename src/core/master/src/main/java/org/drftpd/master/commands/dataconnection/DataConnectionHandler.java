@@ -384,20 +384,18 @@ public class DataConnectionHandler extends CommandInterface {
 
         conn.getTransferState().setPortAddress(new InetSocketAddress(clientAddr, clientPort));
 
-
         CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 
         if (clientAddr.isLoopbackAddress()) {
             response.addComment("Ok, but distributed transfers won't work with local addresses");
         }
 
-        //Notify the user that this is not his IP.. Good for NAT users that
-        // aren't aware that their IP has changed.
+        // Notify the user that this is not his IP.
+        // Good for NAT users that aren't aware that their IP has changed.
         if (!clientAddr.equals(conn.getControlSocket().getInetAddress())) {
-            response.addComment(
-                    "FXP allowed. If you're not FXPing then set your IP to " +
-                            conn.getControlSocket().getInetAddress().getHostAddress() +
-                            " (usually in firewall settings)");
+            response.addComment("FXP allowed. If you're not FXPing then set your IP to " +
+                    conn.getControlSocket().getInetAddress().getHostAddress()
+                    + " (usually in firewall settings)");
         }
 
         return response;
@@ -567,7 +565,7 @@ public class DataConnectionHandler extends CommandInterface {
         }
 
         String skipNum = request.getArgument();
-        long resumePosition = 0L;
+        long resumePosition;
 
         try {
             resumePosition = Long.parseLong(skipNum);
@@ -577,7 +575,6 @@ public class DataConnectionHandler extends CommandInterface {
         }
 
         if (resumePosition < 0) {
-            resumePosition = 0;
             reset(conn);
             return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
         }
@@ -676,8 +673,6 @@ public class DataConnectionHandler extends CommandInterface {
     }
 
     protected synchronized void reset(BaseFtpConnection conn) {
-        logger.debug("reset(BaseFtpConnection) called");
-        logger.debug(Arrays.toString(Thread.currentThread().getStackTrace()).replace( ',', '\n' )); // TODO: remove this
         conn.getTransferState().reset();
     }
 
@@ -688,9 +683,7 @@ public class DataConnectionHandler extends CommandInterface {
      * created in the current directory under a name unique to that directory.
      * The 250 Transfer Started response must include the name generated.
      */
-
     //TODO STOU
-
     /*
      * public void doSTOU(FtpRequest request, PrintWriter out) {
      *  // reset state variables resetState();
@@ -789,9 +782,9 @@ public class DataConnectionHandler extends CommandInterface {
                 return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
             }
 
-            //          Checks maxsim up/down
+            // Checks maxsim up/down
             // _simup OR _simdown = 0, exempt
-            int comparison = 0;
+            int comparison;
             int count = BaseFtpConnection.countTransfersForUser(conn.getUserNull(), direction);
             env.put("maxsim", count);
 
@@ -826,9 +819,8 @@ public class DataConnectionHandler extends CommandInterface {
 
             if (isStor && !ts.isPasv() && !ts.isPreTransfer()) {
                 //setup upload
-                FileHandle fh = ts.getTransferFile();
-                // cannot use this FileHandle for anything but name, parent, and path
-                // it doesn't exist in the VFS yet!
+                FileHandle fh;
+                // cannot use this FileHandle for anything but name, parent, and path it doesn't exist in the VFS yet!
                 try {
                     fh = conn.getCurrentDirectory().getFile(conn.getRequest().getArgument(), user);
                 } catch (FileNotFoundException e) {
@@ -838,14 +830,12 @@ public class DataConnectionHandler extends CommandInterface {
                 } catch (ObjectNotValidException e) {
                     // this is not good, file exists
                     // until we can upload multiple instances of files
-                    return StandardCommandManager.genericResponse(
-                            "RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN_FILE_EXISTS");
+                    return StandardCommandManager.genericResponse("RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN_FILE_EXISTS");
                 }
                 if (fh != null) {
                     // this is not good, file exists
                     // until we can upload multiple instances of files
-                    return StandardCommandManager.genericResponse(
-                            "RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN_FILE_EXISTS");
+                    return StandardCommandManager.genericResponse("RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN_FILE_EXISTS");
                 }
                 fh = conn.getCurrentDirectory().getNonExistentFileHandle(conn.getRequest().getArgument());
 
@@ -859,7 +849,7 @@ public class DataConnectionHandler extends CommandInterface {
             //setup _rslave
             //if (isCpsv)
             if (ts.isPASVDownload()) {
-                //check pretransfer
+                //check pre transfer
                 try {
                     if (!ts.getTransferFile().getSlaves().contains(ts.getTransferSlave())) {
                         // reset(); already done in finally block
@@ -979,8 +969,7 @@ public class DataConnectionHandler extends CommandInterface {
 
                         try {
                             Thread.sleep(100);
-                        } catch (InterruptedException e1) {
-                        }
+                        } catch (InterruptedException ignored) {}
                     }
                 } else if (isStor) {
                     ts.receiveFile(ts.getTransferFile().getPath(), ts.getType(),
@@ -1007,8 +996,7 @@ public class DataConnectionHandler extends CommandInterface {
                         }
                         try {
                             Thread.sleep(100);
-                        } catch (InterruptedException e1) {
-                        }
+                        } catch (InterruptedException ignored) { }
                     }
                 } else {
                     throw new RuntimeException();
@@ -1030,7 +1018,7 @@ public class DataConnectionHandler extends CommandInterface {
                         status = tse.getStatus();
                         slowDenied = true;
                         transferEnded = true;
-                        response = new CommandResponse(426, "You are transfering too slow");
+                        response = new CommandResponse(426, "You are transferring too slow");
                     } else if (ex.getCause() instanceof TransferDeniedException) {
                         fxpDenied = true;
                         response = new CommandResponse(426, "You are not allowed to FXP from here.");
@@ -1075,39 +1063,54 @@ public class DataConnectionHandler extends CommandInterface {
                         "transfer.complete", env, request.getUser()));
             }
 
+            // Safety net, make sure response is not null
+            if (response == null) {
+                logger.error("transfer() did not produce a valid 'response' object, bug!");
+                throw new RuntimeException("'response' object in an invalid state");
+            }
+
             response.setObject(CHECKSUM, status == null ? 0L : status.getChecksum());
             response.setObject(TRANSFER_FILE, ts.getTransferFile());
             response.setObject(TRANSFER_SLAVE, ts.getTransferSlave());
             response.setObject(TRANSFER_SLAVE_INET_ADDRESS, ts.getAddress().getAddress());
             response.setObject(TRANSFER_TYPE, ts.getType());
-            if (status != null) {
+            if (status == null) {
+                logger.warn("Something happened during the transfer that the 'status' object is null, not an issue");
+            } else {
                 response.setObject(XFER_STATUS, status);
             }
 
             if (isStor && transferEnded) {
                 try {
-                    if (ts.getResumePosition() == 0) {
-                        ts.getTransferFile().setCheckSum(status.getChecksum());
-                    } // else, fetch checksum from slave when resumable
-                    // uploads are implemented.
+                    if (status != null) {
+                        if (ts.getResumePosition() == 0) {
+                            ts.getTransferFile().setCheckSum(status.getChecksum());
+                        } // else, fetch checksum from slave when resume-able uploads are implemented.
 
-                    ts.getTransferFile().setSize(status.getTransfered());
+                        ts.getTransferFile().setSize(status.getTransfered());
+                    }
                     ts.getTransferFile().setLastModified(System.currentTimeMillis());
                     ts.getTransferFile().setXfertime(ts.getElapsed());
                 } catch (FileNotFoundException e) {
-                    // this is kindof odd
-                    // it was a successful transfer, yet the file is gone
-                    // lets just return the response
+                    // This is odd as the transfer seems to be successful, however the file seems gone.
+                    logger.warn("We have a successful transfer, but the file is gone");
+                    // let's just return the response
                 }
             }
 
             if (slowDenied) {
-                GlobalContext.getEventService().publish(new SlowTransferEvent(user, ts.getTransferFile(), isStor, conn, request.getObjectLong(MIN_XFER_SPEED), status.getXferSpeed(), status.getTransfered(), ts.getTransferSlave().getName()));
+                long transferSpeed = 0L;
+                long transferred = 0L;
+                if (status != null) {
+                    transferSpeed = status.getXferSpeed();
+                    transferred = status.getTransfered();
+                }
+                GlobalContext.getEventService().publish(new SlowTransferEvent(user, ts.getTransferFile(), isStor, conn, request.getObjectLong(MIN_XFER_SPEED), transferSpeed, transferred, ts.getTransferSlave().getName()));
             }
 
             return response;
         } finally {
-            // A simple catch all to delete any 0-byte uploaded files as these could be left around if
+            // A simple catch-all to delete any 0-byte uploaded files as these could be left around if
             // settings like delete on abort are disabled
             try {
                 if (isStor && ts.getTransferFileCreated() && ts.getTransferFile().getSize() == 0L) {
