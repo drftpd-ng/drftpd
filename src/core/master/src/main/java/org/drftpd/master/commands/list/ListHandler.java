@@ -250,7 +250,6 @@ public class ListHandler extends CommandInterface {
             }
         } finally {
             BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
-            logger.debug("[list()] calling reset() on transferstate");
             conn.getTransferState().reset();
         }
     }
