@@ -402,17 +402,16 @@ public class BaseFtpConnection extends Session implements Runnable {
                 String commandLine;
 
                 try {
+                    // will block for a maximum of _controlSocket.getSoTimeout() milliseconds
                     commandLine = _in.readLine();
-                    // will block for a maximum of _controlSocket.getSoTimeout()
-                    // milliseconds
                 } catch (InterruptedIOException ex) {
                     if (_controlSocket == null) {
-                        logger.debug("_controlSocket is true");
+                        logger.info("Control socket is 'null', stopping this session");
                         stop("Control socket is null");
                         break;
                     }
                     if (!_controlSocket.isConnected()) {
-                        logger.debug("!_controlSocket.isConnected()");
+                        logger.info("Control socket is no longer connected, stopping this session");
                         stop("Socket unexpectedly closed");
                         break;
                     }
@@ -429,7 +428,7 @@ public class BaseFtpConnection extends Session implements Runnable {
                     if (idleTime > 0
                             && ((System.currentTimeMillis() - _lastActive) / 1000 >= idleTime)
                             && !isExecuting()) {
-                        logger.debug("idleTimeout... isExecuting: {}, _lastActive: {}, idleTime: {}, diff: {}", isExecuting(), _lastActive, idleTime, (System.currentTimeMillis() - _lastActive) / 1000);
+                        logger.warn("idleTimeout... isExecuting: {}, _lastActive: {}, idleTime: {}, diff: {}", isExecuting(), _lastActive, idleTime, (System.currentTimeMillis() - _lastActive) / 1000);
                         stop("IdleTimeout");
                         break;
                     }
@@ -437,13 +436,12 @@ public class BaseFtpConnection extends Session implements Runnable {
                 }
 
                 if (_stopRequest) {
-                    logger.debug("_stopRequest is true");
                     break;
                 }
 
                 // test command line
                 if (commandLine == null) {
-                    logger.debug("commandLine == null");
+                    logger.info("input stream is closed as we got 'null' from reading the stream, stopping this session");
                     break;
                 }
 
@@ -689,7 +687,7 @@ public class BaseFtpConnection extends Session implements Runnable {
 
         public void run() {
             if (_commandCount.get() > 0) {
-                logger.fatal("The executor should be single threaded, this should not be possible unless an \"ABOR\" command was issued");
+                logger.warn("The executor should be single threaded, this should not be possible unless an \"ABOR\" command was issued");
             }
             logger.debug("CommandThread started. _commandCount: {}", _commandCount.get());
             _conn.executeFtpCommand(_ftpRequest);
