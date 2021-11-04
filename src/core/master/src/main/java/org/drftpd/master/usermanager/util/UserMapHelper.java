@@ -28,7 +28,12 @@ public class UserMapHelper {
     }
 
     public void setObject(Key key, Object data) {
-        _data.put(key.toString(), data);
+        if (data instanceof Date) {
+            SimpleDateFormat format = new SimpleDateFormat(DATE_FORMAT);
+            _data.put(key.toString(), format.format(data));
+        } else {
+            _data.put(key.toString(), data);
+        }
     }
 
     public void remove(Key key) {

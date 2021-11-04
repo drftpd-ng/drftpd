@@ -46,7 +46,8 @@ public abstract class AbstractGroup extends Group implements Commitable {
     public AbstractGroup(String groupname) {
         checkValidGroupName(groupname);
         _groupname = groupname;
-        _data.put(GroupManagement.CREATED.toString(), new Date(System.currentTimeMillis()));
+        UserMapHelper groupMap = umap(_data);
+        groupMap.setObject(GroupManagement.CREATED, new Date(System.currentTimeMillis()));
     }
 
     public static void checkValidGroupName(String group) {
