@@ -61,8 +61,9 @@ public abstract class AbstractUser extends User implements Commitable {
     public AbstractUser(String username) {
         checkValidUser(username);
         _username = username;
-        _data.put(UserManagement.CREATED.toString(), new Date(System.currentTimeMillis()));
-        _data.put(UserManagement.TAGLINE.toString(), "no tagline");
+        UserMapHelper userMap = umap(_data);
+        userMap.setObject(UserManagement.CREATED, new Date(System.currentTimeMillis()));
+        userMap.setObject(UserManagement.TAGLINE, "no tagline");
     }
 
     public static void checkValidUser(String user) {
@@ -343,7 +344,8 @@ public abstract class AbstractUser extends User implements Commitable {
      * Hit user - update last access time
      */
     public void updateLastAccessTime() {
-        _data.put(UserManagement.LASTSEEN.toString(), new Date(System.currentTimeMillis()));
+        UserMapHelper userMap = umap(_data);
+        userMap.setObject(UserManagement.LASTSEEN, new Date(System.currentTimeMillis()));
     }
 
     public double getMaxSimUp() {
