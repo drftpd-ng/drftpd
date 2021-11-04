@@ -40,7 +40,7 @@ public class BytesTest {
 
     @Test
     public void testFormatByte() {
-        assertEquals("123B", Bytes.formatBytes(123, false));
+        assertEquals("123.0B", Bytes.formatBytes(123, false));
     }
 
     @Test
