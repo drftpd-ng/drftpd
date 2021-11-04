@@ -26,13 +26,14 @@ import org.drftpd.common.util.HostMaskCollection;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.commands.usermanagement.UserManagement;
 import org.drftpd.master.event.UserEvent;
+import org.drftpd.master.usermanager.util.UserMapHelper;
 import org.drftpd.master.vfs.Commitable;
 import org.drftpd.slave.exceptions.FileExistsException;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+
+import static org.drftpd.master.usermanager.util.UserMapHelper.umap;
 
 /**
  * Implements basic functionality for the User interface.
@@ -42,13 +43,14 @@ import java.util.List;
  * @version $Id$
  */
 public abstract class AbstractUser extends User implements Commitable {
+    public static final String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
     private static final Logger logger = LogManager.getLogger(AbstractUser.class);
-    protected KeyedMap<Key<?>, Object> _data = new KeyedMap<>();
+    private Map<String, Object> _data = new HashMap<>();
     /**
      * Protected for DummyUser b/c TrialTest
      */
     protected long _lastReset;
-    private long _credits;
+    private double _credits;
     private String _group = null;
     // We keep this String based, but for the outside world this always needs to be an object of type Group
     private ArrayList<String> _groups = new ArrayList<>();
@@ -59,8 +61,8 @@ public abstract class AbstractUser extends User implements Commitable {
     public AbstractUser(String username) {
         checkValidUser(username);
         _username = username;
-        _data.setObject(UserManagement.CREATED, new Date(System.currentTimeMillis()));
-        _data.setObject(UserManagement.TAGLINE, "no tagline");
+        _data.put(UserManagement.CREATED.toString(), new Date(System.currentTimeMillis()));
+        _data.put(UserManagement.TAGLINE.toString(), "no tagline");
     }
 
     public static void checkValidUser(String user) {
@@ -97,11 +99,11 @@ public abstract class AbstractUser extends User implements Commitable {
      */
     public abstract AbstractUserManager getAbstractUserManager();
 
-    public long getCredits() {
+    public double getCredits() {
         return _credits;
     }
 
-    public void setCredits(long credits) {
+    public void setCredits(double credits) {
         _credits = credits;
     }
 
@@ -117,6 +119,10 @@ public abstract class AbstractUser extends User implements Commitable {
 
     public void setGroup(Group g) {
         _group = g.getName();
+    }
+
+    public void setData(Map<String, Object> _data) {
+        this._data = _data;
     }
 
     public List<Group> getGroups() {
@@ -154,11 +160,15 @@ public abstract class AbstractUser extends User implements Commitable {
         _idleTime = idleTime;
     }
 
-    public KeyedMap<Key<?>, Object> getKeyedMap() {
+    public Map<String, Object> getKeyedMap() {
         return _data;
     }
 
-    public void setKeyedMap(KeyedMap<Key<?>, Object> data) {
+    public UserMapHelper getKeyed() {
+        return umap(_data);
+    }
+
+    public void setKeyedMap(Map<String, Object> data) {
         _data = data;
     }
 
@@ -285,8 +295,8 @@ public abstract class AbstractUser extends User implements Commitable {
     public void resetWeek(Date resetDate) {
         GlobalContext.getEventService().publish(new UserEvent(this, "RESETWEEK", resetDate.getTime()));
         super.resetWeek(resetDate);
-        if (getKeyedMap().getObjectLong(UserManagement.WKLYALLOTMENT) > 0) {
-            setCredits(getKeyedMap().getObjectLong(UserManagement.WKLYALLOTMENT));
+        if (getKeyed().getObjectDouble(UserManagement.WKLYALLOTMENT) > 0) {
+            setCredits(getKeyed().getObjectDouble(UserManagement.WKLYALLOTMENT));
         }
         logger.info("Reset weekly stats for {}", getName());
     }
@@ -333,23 +343,23 @@ public abstract class AbstractUser extends User implements Commitable {
      * Hit user - update last access time
      */
     public void updateLastAccessTime() {
-        _data.setObject(UserManagement.LASTSEEN, new Date(System.currentTimeMillis()));
+        _data.put(UserManagement.LASTSEEN.toString(), new Date(System.currentTimeMillis()));
     }
 
-    public int getMaxSimUp() {
-        return getKeyedMap().getObjectInteger(UserManagement.MAXSIMUP);
+    public double getMaxSimUp() {
+        return getKeyed().getObjectDouble(UserManagement.MAXSIMUP);
     }
 
     public void setMaxSimUp(int maxSimUp) {
-        getKeyedMap().setObject(UserManagement.MAXSIMUP, maxSimUp);
+        getKeyed().setObject(UserManagement.MAXSIMUP, maxSimUp);
     }
 
-    public int getMaxSimDown() {
-        return getKeyedMap().getObjectInteger(UserManagement.MAXSIMDN);
+    public double getMaxSimDown() {
+        return getKeyed().getObjectDouble(UserManagement.MAXSIMDN);
     }
 
     public void setMaxSimDown(int maxSimDown) {
-        getKeyedMap().setObject(UserManagement.MAXSIMDN, maxSimDown);
+        getKeyed().setObject(UserManagement.MAXSIMDN, maxSimDown);
     }
 
     public abstract void writeToDisk() throws IOException;

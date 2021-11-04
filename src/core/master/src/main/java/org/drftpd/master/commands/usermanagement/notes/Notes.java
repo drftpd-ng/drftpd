@@ -57,12 +57,12 @@ public class Notes extends CommandInterface {
 
         String note = st.nextToken("\n");
 
-        NotesData notes = user.getKeyedMap().getObject(NotesData.NOTES, null);
+        NotesData notes = user.getKeyed().getObjectNotes(NotesData.NOTES, null);
         if (notes == null) {
             notes = new NotesData();
         }
         notes.addNote(note);
-        user.getKeyedMap().setObject(NotesData.NOTES, notes);
+        user.getKeyed().setObject(NotesData.NOTES, notes);
         user.commit();
         return new CommandResponse(200, "Note Added");
     }
@@ -100,14 +100,14 @@ public class Notes extends CommandInterface {
             throw new ImproperUsageException();
         }
 
-        NotesData notes = user.getKeyedMap().getObject(NotesData.NOTES, null);
+        NotesData notes = user.getKeyed().getObjectNotes(NotesData.NOTES, null);
         if (notes != null) {
             try {
                 notes.delNote(notenum - 1);
             } catch (IndexOutOfBoundsException e) {
                 return new CommandResponse(500, "Invalid note number, user has " + notes.getNotes().size() + " notes");
             }
-            user.getKeyedMap().setObject(NotesData.NOTES, notes);
+            user.getKeyed().setObject(NotesData.NOTES, notes);
             user.commit();
             return new CommandResponse(200, "Note Removed");
         }

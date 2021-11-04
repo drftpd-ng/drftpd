@@ -40,7 +40,7 @@ public class DummyUser extends AbstractUser {
 
     public DummyUser(String username, long time) {
         this(username);
-        getKeyedMap().setObject(UserManagement.CREATED, new Date(time));
+        getKeyed().setObject(UserManagement.CREATED, new Date(time));
     }
 
     public boolean checkPassword(String password) {

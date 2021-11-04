@@ -23,12 +23,13 @@ import org.drftpd.common.dynamicdata.Key;
 import org.drftpd.common.dynamicdata.KeyedMap;
 import org.drftpd.common.exceptions.DuplicateElementException;
 import org.drftpd.master.commands.usermanagement.GroupManagement;
+import org.drftpd.master.usermanager.util.UserMapHelper;
 import org.drftpd.master.vfs.Commitable;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+
+import static org.drftpd.master.usermanager.util.UserMapHelper.umap;
 
 /**
  * Implements basic functionality for the Group interface.
@@ -38,14 +39,14 @@ import java.util.List;
  */
 public abstract class AbstractGroup extends Group implements Commitable {
     private static final Logger logger = LogManager.getLogger(AbstractUser.class);
-    protected KeyedMap<Key<?>, Object> _data = new KeyedMap<>();
+    private Map<String, Object> _data = new HashMap<>();
     private ArrayList<String> _admins = new ArrayList<>();
     private String _groupname;
 
     public AbstractGroup(String groupname) {
         checkValidGroupName(groupname);
         _groupname = groupname;
-        _data.setObject(GroupManagement.CREATED, new Date(System.currentTimeMillis()));
+        _data.put(GroupManagement.CREATED.toString(), new Date(System.currentTimeMillis()));
     }
 
     public static void checkValidGroupName(String group) {
@@ -102,12 +103,16 @@ public abstract class AbstractGroup extends Group implements Commitable {
         return _admins.contains(u.getName());
     }
 
-    public KeyedMap<Key<?>, Object> getKeyedMap() {
+    public void setData(Map<String, Object> _data) {
+        this._data = _data;
+    }
+
+    public Map<String, Object> getKeyedMap() {
         return _data;
     }
 
-    public void setKeyedMap(KeyedMap<Key<?>, Object> data) {
-        _data = data;
+    public UserMapHelper getKeyed() {
+        return umap(_data);
     }
 
     public String getName() {
@@ -131,32 +136,32 @@ public abstract class AbstractGroup extends Group implements Commitable {
 
     public abstract void writeToDisk() throws IOException;
 
-    public float getMinRatio() {
-        return getKeyedMap().getObject(GroupManagement.MINRATIO, 3F);
+    public double getMinRatio() {
+        return getKeyed().getObjectDouble(GroupManagement.MINRATIO, 3);
     }
 
     public void setMinRatio(float minRatio) {
-        getKeyedMap().setObject(GroupManagement.MINRATIO, minRatio);
+        getKeyed().setObject(GroupManagement.MINRATIO, minRatio);
     }
 
-    public float getMaxRatio() {
-        return getKeyedMap().getObject(GroupManagement.MAXRATIO, 3F);
+    public double getMaxRatio() {
+        return getKeyed().getObjectDouble(GroupManagement.MAXRATIO, 3);
     }
 
     public void setMaxRatio(float maxRatio) {
-        getKeyedMap().setObject(GroupManagement.MAXRATIO, maxRatio);
+        getKeyed().setObject(GroupManagement.MAXRATIO, maxRatio);
     }
 
-    public int getGroupSlots() { return getKeyedMap().getObject(GroupManagement.GROUPSLOTS, 0); }
+    public double getGroupSlots() { return getKeyed().getObjectDouble(GroupManagement.GROUPSLOTS, 0); }
 
-    public void setGroupSlots(int groupslots) { getKeyedMap().setObject(GroupManagement.GROUPSLOTS, groupslots); }
+    public void setGroupSlots(int groupslots) { getKeyed().setObject(GroupManagement.GROUPSLOTS, groupslots); }
 
-    public int getLeechSlots() { return getKeyedMap().getObject(GroupManagement.LEECHSLOTS, 0); }
+    public double getLeechSlots() { return getKeyed().getObjectDouble(GroupManagement.LEECHSLOTS, 0); }
 
-    public void setLeechSlots(int leechslots) { getKeyedMap().setObject(GroupManagement.LEECHSLOTS, leechslots); }
+    public void setLeechSlots(int leechslots) { getKeyed().setObject(GroupManagement.LEECHSLOTS, leechslots); }
 
-    public Date getCreated() { return getKeyedMap().getObject(GroupManagement.CREATED, new Date()); }
+    public Date getCreated() { return getKeyed().getObjectDate(GroupManagement.CREATED, new Date()); }
 
-    public void setCreated(Date created) { getKeyedMap().setObject(GroupManagement.CREATED, created); }
+    public void setCreated(Date created) { getKeyed().setObject(GroupManagement.CREATED, created); }
 
 }

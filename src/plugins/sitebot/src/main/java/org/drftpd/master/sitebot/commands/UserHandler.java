@@ -69,7 +69,7 @@ public class UserHandler extends CommandInterface {
             String ident = commSession.getIdent();
             String existIdentString = "";
             try {
-                existIdentString = user.getKeyedMap().getObject(UserManagement.IRCIDENT);
+                existIdentString = user.getKeyed().getObjectString(UserManagement.IRCIDENT);
             } catch (KeyNotFoundException e) {
                 // Means no existing idents at all, safe to proceed
             }
@@ -98,7 +98,7 @@ public class UserHandler extends CommandInterface {
                 newIdents.append("|");
                 newIdents.append(ident);
             }
-            user.getKeyedMap().setObject(UserManagement.IRCIDENT, newIdents.toString());
+            user.getKeyed().setObject(UserManagement.IRCIDENT, newIdents.toString());
             user.commit();
             logger.info("Set IRC ident to '{}' for {} on bot {}", ident, user.getName(), sourceBot);
             request.getSession().printOutput("Set IRC ident to '" + ident + "' for " + user.getName() + " on bot " + sourceBot);
@@ -125,7 +125,7 @@ public class UserHandler extends CommandInterface {
             return null;
         }
 
-        user.getKeyedMap().setObject(UserManagement.IRCIDENT, "");
+        user.getKeyed().setObject(UserManagement.IRCIDENT, "");
         user.commit();
         logger.info("Unset IRC ident for {}", user.getName());
         request.getSession().printOutput("Unset IRC ident for " + user.getName() + "");
@@ -162,7 +162,7 @@ public class UserHandler extends CommandInterface {
             String ident = session.getIdent();
             String existIdentString = "";
             try {
-                existIdentString = user.getKeyedMap().getObject(UserManagement.IRCIDENT);
+                existIdentString = user.getKeyed().getObjectString(UserManagement.IRCIDENT);
             } catch (KeyNotFoundException e) {
                 // Means no existing idents at all, safe to proceed
             }
@@ -192,7 +192,7 @@ public class UserHandler extends CommandInterface {
                 newIdents.append(ident);
             }
             logger.info("Invited \"{}\" as user {}", session.getIdent(), user.getName());
-            user.getKeyedMap().setObject(UserManagement.IRCIDENT, newIdents.toString());
+            user.getKeyed().setObject(UserManagement.IRCIDENT, newIdents.toString());
             user.commit();
         } else {
             logger.warn("{} attempted invite with bad password: {} {}", session.getIrcUser().getNick(), request.getCommand(), request.getArgument());

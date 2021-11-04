@@ -17,12 +17,11 @@
  */
 package org.drftpd.master.usermanager;
 
-import org.drftpd.common.dynamicdata.Key;
-import org.drftpd.common.dynamicdata.KeyedMap;
 import org.drftpd.common.exceptions.DuplicateElementException;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author mikevg
@@ -31,7 +30,7 @@ import java.util.List;
 public abstract class Group implements Entity {
     public abstract UserManager getUserManager();
 
-    protected abstract KeyedMap<Key<?>, Object> getKeyedMap();
+    protected abstract Map<String, Object> getKeyedMap();
 
     /**
      * Commit changes.
@@ -57,19 +56,19 @@ public abstract class Group implements Entity {
 
     public abstract void removeAdmin(User u) throws NoSuchFieldException;
 
-    public abstract float getMinRatio();
+    public abstract double getMinRatio();
 
     public abstract void setMinRatio(float minRatio);
 
-    public abstract float getMaxRatio();
+    public abstract double getMaxRatio();
 
     public abstract void setMaxRatio(float MaxRatio);
 
-    public abstract int getGroupSlots();
+    public abstract double getGroupSlots();
 
     public abstract void setGroupSlots(int slots);
 
-    public abstract int getLeechSlots();
+    public abstract double getLeechSlots();
 
     public abstract void setLeechSlots(int leechslots);
 

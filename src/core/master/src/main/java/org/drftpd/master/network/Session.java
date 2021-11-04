@@ -50,8 +50,8 @@ public abstract class Session extends KeyedMap<Key<?>, Object> {
         Map<String, Object> env = new HashMap<>();
         if (inheritedEnv != null) env.putAll(inheritedEnv);
         if (user != null) {
-            for (Map.Entry<Key<?>, Object> entry : user.getKeyedMap().getAllObjects().entrySet()) {
-                String key = entry.getKey().toString();
+            for (Map.Entry<String, Object> entry : user.getKeyedMap().entrySet()) {
+                String key = entry.getKey();
                 String value = entry.getValue().toString();
                 if (key.equals("org.drftpd.master.commands.nuke.metadata.NukeUserData@nukedBytes"))
                     value = Bytes.formatBytes(Long.parseLong(value));
@@ -61,8 +61,8 @@ public abstract class Session extends KeyedMap<Key<?>, Object> {
             env.put("username", user.getName());
             env.put("idletime", "" + user.getIdleTime());
             env.put("credits", Bytes.formatBytes(user.getCredits()));
-            env.put("ratio", "" + user.getKeyedMap().get(UserManagement.RATIO));
-            env.put("tagline", user.getKeyedMap().get(UserManagement.TAGLINE));
+            env.put("ratio",  user.getKeyed().getObjectDouble(UserManagement.RATIO));
+            env.put("tagline", user.getKeyed().getObjectString(UserManagement.TAGLINE, ""));
             env.put("uploaded", Bytes.formatBytes(user.getUploadedBytes()));
             env.put("downloaded", Bytes.formatBytes(user.getDownloadedBytes()));
             env.put("group", user.getGroup());
@@ -70,7 +70,7 @@ public abstract class Session extends KeyedMap<Key<?>, Object> {
             env.put("averagespeed", Bytes.formatBytes((user.getDownloadedBytes() + user.getUploadedBytes())
                     / (((user.getDownloadedTime() + user.getUploadedTime()) / 1000) + 1)));
             env.put("ipmasks", user.getHostMaskCollection().toString());
-            env.put("isbanned", "" + (user.getKeyedMap().getObject(UserManagement.BANTIME, new Date()).getTime() > System.currentTimeMillis()));
+            env.put("isbanned", "" + (user.getKeyed().getObjectDate(UserManagement.BANTIME, new Date()).getTime() > System.currentTimeMillis()));
         }
         return env;
     }
