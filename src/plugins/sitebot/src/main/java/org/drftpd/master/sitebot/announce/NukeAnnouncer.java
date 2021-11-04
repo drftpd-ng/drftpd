@@ -106,7 +106,7 @@ public class NukeAnnouncer extends AbstractAnnouncer {
             nukeeenv.put("user", nukee.getName());
             nukeeenv.put("group", nukee.getGroup());
             long debt = NukeUtils.calculateNukedAmount(nukeeObj.getAmount(),
-                    nukee.getKeyedMap().getObjectFloat(UserManagement.RATIO), event.getMultiplier());
+                    nukee.getKeyed().getObjectDouble(UserManagement.RATIO), event.getMultiplier());
             nukeeenv.put("nukedamount", Bytes.formatBytes(debt));
             output.append(ReplacerUtils.jprintf(type + ".nukees", nukeeenv, _bundle));
         }

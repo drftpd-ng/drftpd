@@ -67,7 +67,7 @@ public class NukeUtils {
      * @param multiplier
      * @return the amount of nuked bytes.
      */
-    public static long calculateNukedAmount(long size, float ratio,
+    public static long calculateNukedAmount(long size, double ratio,
                                             int multiplier) {
         if (size != 0 && ratio != 0 && multiplier != 0) {
             return (long) ((size * ratio) + (size * (multiplier - 1)));
@@ -252,17 +252,17 @@ public class NukeUtils {
                 }
 
                 long debt = NukeUtils.calculateNukedAmount(size,
-                        nukee.getKeyedMap().getObjectFloat(UserManagement.RATIO), multiplier);
+                        nukee.getKeyed().getObjectDouble(UserManagement.RATIO), multiplier);
 
                 nukedAmount += debt;
 
                 nukee.updateCredits(-debt);
                 nukee.updateUploadedBytes(-size);
 
-                nukee.getKeyedMap().incrementLong(NukeUserData.NUKEDBYTES, debt);
+                nukee.getKeyed().incrementLong(NukeUserData.NUKEDBYTES, debt);
 
-                nukee.getKeyedMap().incrementInt(NukeUserData.NUKED);
-                nukee.getKeyedMap().setObject(NukeUserData.LASTNUKED, System.currentTimeMillis());
+                nukee.getKeyed().incrementInt(NukeUserData.NUKED);
+                nukee.getKeyed().setObject(NukeUserData.LASTNUKED, System.currentTimeMillis());
 
                 nukee.commit();
             }
@@ -368,14 +368,14 @@ public class NukeUtils {
                 }
 
                 long nukedAmount = NukeUtils.calculateNukedAmount(nukeeObj.getAmount(),
-                        nukee.getKeyedMap().getObjectFloat(UserManagement.RATIO),
+                        nukee.getKeyed().getObjectDouble(UserManagement.RATIO),
                         nd.getMultiplier());
 
                 nukee.updateCredits(nukedAmount);
                 nukee.updateUploadedBytes(nukeeObj.getAmount());
 
-                nukee.getKeyedMap().incrementInt(NukeUserData.NUKED, -1);
-                nukee.getKeyedMap().incrementLong(NukeUserData.NUKEDBYTES, -nukedAmount);
+                nukee.getKeyed().incrementInt(NukeUserData.NUKED, -1);
+                nukee.getKeyed().incrementLong(NukeUserData.NUKEDBYTES, -nukedAmount);
 
                 nukee.commit();
             }

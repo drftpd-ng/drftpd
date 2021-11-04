@@ -18,15 +18,13 @@
 package org.drftpd.master.usermanager.javabeans;
 
 import com.cedarsoftware.util.io.JsonReader;
+import com.google.gson.Gson;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.drftpd.master.usermanager.*;
 import org.drftpd.slave.exceptions.FileExistsException;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.lang.ref.SoftReference;
 import java.util.*;
 
@@ -170,10 +168,12 @@ public class BeanUserManager extends AbstractUserManager {
      * @throws GroupFileException, if an error (i/o) occured while loading data.
      */
     protected Group loadGroup(String groupName) throws GroupFileException {
-        try (InputStream in = new FileInputStream(getGroupFile(groupName));
-             JsonReader reader = new JsonReader(in)) {
+        Gson gson = new Gson();
+        try {
             logger.debug("Loading '{}' Json group data from disk.", groupName);
-            BeanGroup group = (BeanGroup) reader.readObject();
+            File userFile = getGroupFile(groupName);
+            FileReader fileReader = new FileReader(userFile);
+            BeanGroup group = gson.fromJson(fileReader, BeanGroup.class);
             group.setUserManager(this);
             return group;
         } catch (Exception e) {
@@ -188,15 +188,18 @@ public class BeanUserManager extends AbstractUserManager {
      * @throws UserFileException, if an error (i/o) occured while loading data.
      */
     protected User loadUser(String userName) throws UserFileException {
-        try (InputStream in = new FileInputStream(getUserFile(userName));
-             JsonReader reader = new JsonReader(in)) {
+        Gson gson = new Gson();
+        try {
             logger.debug("Loading '{}' Json user data from disk.", userName);
-            BeanUser user = (BeanUser) reader.readObject();
+            File userFile = getUserFile(userName);
+            FileReader fileReader = new FileReader(userFile);
+            BeanUser user = gson.fromJson(fileReader, BeanUser.class);
             user.setUserManager(this);
             return user;
         } catch (Exception e) {
             throw new UserFileException("Error loading " + userName, e);
         }
+
     }
 
     /**

@@ -53,13 +53,13 @@ public class Bytes {
         FORMAT.setDecimalSeparatorAlwaysShown(true);
     }
 
-    public static String formatBytes(long bytes) {
+    public static String formatBytes(double bytes) {
         return formatBytes(bytes, System.getProperty("bytes.binary", "false")
                 .equals("true"));
     }
 
-    public static String formatBytes(long bytes, boolean binary) {
-        long absbytes = Math.abs(bytes);
+    public static String formatBytes(double bytes, boolean binary) {
+        double absbytes = Math.abs(bytes);
 
         for (Multiple multiple : MULTIPLES) {
             long multipleVal = binary ? multiple.getBinaryMultiple() : multiple

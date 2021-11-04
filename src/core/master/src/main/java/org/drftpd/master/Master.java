@@ -201,23 +201,23 @@ public class Master {
             }
         }
 
-        int maxLogins = user.getKeyedMap().getObjectInteger(UserManagement.MAXLOGINS);
+        double maxLogins = user.getKeyed().getObjectDouble(UserManagement.MAXLOGINS);
         if (maxLogins > 0) {
             if (maxLogins <= userCount) {
                 return new FtpReply(530, "Sorry, your account is restricted to " + maxLogins + " simultaneous logins.");
             }
         }
 
-        int maxLoginsIP = user.getKeyedMap().getObjectInteger(UserManagement.MAXLOGINSIP);
+        double maxLoginsIP = user.getKeyed().getObjectDouble(UserManagement.MAXLOGINSIP);
         if (maxLoginsIP > 0) {
             if (maxLoginsIP <= ipCount) {
                 return new FtpReply(530, "Sorry, your maximum number of connections from this IP (" + maxLoginsIP + ") has been reached.");
             }
         }
 
-        Date banTime = user.getKeyedMap().getObject(UserManagement.BANTIME, new Date());
+        Date banTime = user.getKeyed().getObjectDate(UserManagement.BANTIME, new Date());
         if (banTime.getTime() > System.currentTimeMillis()) {
-            return new FtpReply(530, "Sorry you are banned until " + banTime + "! (" + user.getKeyedMap().getObjectString(UserManagement.BANREASON) + ")");
+            return new FtpReply(530, "Sorry you are banned until " + banTime + "! (" + user.getKeyed().getObjectString(UserManagement.BANREASON, "no reason") + ")");
         }
 
         if (!baseConn.isSecure() && GlobalContext.getConfig().checkPermission("userrejectinsecure", user)) {

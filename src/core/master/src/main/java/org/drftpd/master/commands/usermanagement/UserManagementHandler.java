@@ -244,21 +244,21 @@ public class UserManagementHandler extends CommandInterface {
             newUser = GlobalContext.getGlobalContext().getUserManager().createUser(newUsername);
 
             newUser.setPassword(pass);
-            newUser.getKeyedMap().setObject(UserManagement.CREATED, new Date());
-            newUser.getKeyedMap().setObject(UserManagement.LASTSEEN, new Date());
-            newUser.getKeyedMap().setObject(UserManagement.BANTIME, new Date());
-            newUser.getKeyedMap().setObject(UserManagement.COMMENT, "Added by " + currentUser.getName());
+            newUser.getKeyed().setObject(UserManagement.CREATED, new Date());
+            newUser.getKeyed().setObject(UserManagement.LASTSEEN, new Date());
+            newUser.getKeyed().setObject(UserManagement.BANTIME, new Date());
+            newUser.getKeyed().setObject(UserManagement.COMMENT, "Added by " + currentUser.getName());
 
             // TODO fix this.
-            //newUser.getKeyedMap().setObject(Statistics.LOGINS,0);
-            newUser.getKeyedMap().setObject(UserManagement.IRCIDENT, "");
-            newUser.getKeyedMap().setObject(UserManagement.TAGLINE, tagline);
-            newUser.getKeyedMap().setObject(UserManagement.RATIO, ratioVal);
-            newUser.getKeyedMap().setObject(UserManagement.MAXLOGINS, maxloginsVal);
-            newUser.getKeyedMap().setObject(UserManagement.MAXLOGINSIP, maxloginsipVal);
-            newUser.getKeyedMap().setObject(UserManagement.MAXSIMUP, maxsimupVal);
-            newUser.getKeyedMap().setObject(UserManagement.MAXSIMDN, maxsimdnVal);
-            newUser.getKeyedMap().setObject(UserManagement.WKLYALLOTMENT, wklyallotmentVal);
+            //newUser.getKeyed().setObject(Statistics.LOGINS,0);
+            newUser.getKeyed().setObject(UserManagement.IRCIDENT, "");
+            newUser.getKeyed().setObject(UserManagement.TAGLINE, tagline);
+            newUser.getKeyed().setObject(UserManagement.RATIO, ratioVal);
+            newUser.getKeyed().setObject(UserManagement.MAXLOGINS, maxloginsVal);
+            newUser.getKeyed().setObject(UserManagement.MAXLOGINSIP, maxloginsipVal);
+            newUser.getKeyed().setObject(UserManagement.MAXSIMUP, maxsimupVal);
+            newUser.getKeyed().setObject(UserManagement.MAXSIMDN, maxsimdnVal);
+            newUser.getKeyed().setObject(UserManagement.WKLYALLOTMENT, wklyallotmentVal);
 
             newUser.setIdleTime(idletimeVal);
             newUser.setCredits(creditsVal);
@@ -505,9 +505,9 @@ public class UserManagementHandler extends CommandInterface {
 
                     if (isAdmin) {
                         ////// Ratio changes by an admin //////
-                        logger.info("'{}' changed ratio for '{}' from '{} to '{}'", session.getUserNull(request.getUser()).getName(), userToChange.getName(), userToChange.getKeyedMap().getObjectFloat(UserManagement.RATIO), ratio);
-                        userToChange.getKeyedMap().setObject(UserManagement.RATIO, ratio);
-                        env.put("newratio", Float.toString(userToChange.getKeyedMap().getObjectFloat(UserManagement.RATIO)));
+                        logger.info("'{}' changed ratio for '{}' from '{} to '{}'", session.getUserNull(request.getUser()).getName(), userToChange.getName(), userToChange.getKeyed().getObjectDouble(UserManagement.RATIO), ratio);
+                        userToChange.getKeyed().setObject(UserManagement.RATIO, ratio);
+                        env.put("newratio", Double.toString(userToChange.getKeyed().getObjectDouble(UserManagement.RATIO)));
                         response.addComment(session.jprintf(_bundle, "changeratio.success", env, request.getUser()));
                     } else if (isGroupAdmin) {
                         ////// Group Admin Ratio //////
@@ -519,7 +519,7 @@ public class UserManagementHandler extends CommandInterface {
                             int usedleechslots = 0;
 
                             for (User user : GlobalContext.getGlobalContext().getUserManager().getAllUsersByGroup(g)) {
-                                if ((user).getKeyedMap().getObjectFloat(UserManagement.RATIO) == 0F) {
+                                if ((user).getKeyed().getObjectDouble(UserManagement.RATIO) == 0F) {
                                     usedleechslots++;
                                 }
                             }
@@ -533,9 +533,9 @@ public class UserManagementHandler extends CommandInterface {
                             return new CommandResponse(452, session.jprintf(_bundle, "changeratio.invalidratio", env, request.getUser()));
                         }
 
-                        logger.info("'{}' changed ratio for '{}' from '{}' to '{}'", currentUser.getName(), userToChange.getName(), userToChange.getKeyedMap().getObjectFloat(UserManagement.RATIO), ratio);
-                        userToChange.getKeyedMap().setObject(UserManagement.RATIO, ratio);
-                        env.put("newratio", Float.toString(userToChange.getKeyedMap().getObjectFloat(UserManagement.RATIO)));
+                        logger.info("'{}' changed ratio for '{}' from '{}' to '{}'", currentUser.getName(), userToChange.getName(), userToChange.getKeyed().getObjectDouble(UserManagement.RATIO), ratio);
+                        userToChange.getKeyed().setObject(UserManagement.RATIO, ratio);
+                        env.put("newratio", Double.toString(userToChange.getKeyed().getObjectDouble(UserManagement.RATIO)));
                         response.addComment(session.jprintf(_bundle, "changeratio.success", env, request.getUser()));
 
                     } else {
@@ -563,12 +563,12 @@ public class UserManagementHandler extends CommandInterface {
                             "changecredits.success", env, request.getUser()));
                     break;
                 case "comment":
-                    logger.info("'{}' changed comment for '{}' from '{} to '{}'", session.getUserNull(request.getUser()).getName(), userToChange.getName(), userToChange.getKeyedMap().getObjectString(
-                            UserManagement.COMMENT), fullCommandArgument);
-                    userToChange.getKeyedMap().setObject(UserManagement.COMMENT,
+                    logger.info("'{}' changed comment for '{}' from '{} to '{}'", session.getUserNull(request.getUser()).getName(), userToChange.getName(), userToChange.getKeyed().getObjectString(
+                            UserManagement.COMMENT, ""), fullCommandArgument);
+                    userToChange.getKeyed().setObject(UserManagement.COMMENT,
                             fullCommandArgument);
-                    env.put("comment", userToChange.getKeyedMap().getObjectString(
-                            UserManagement.COMMENT));
+                    env.put("comment", userToChange.getKeyed().getObjectString(
+                            UserManagement.COMMENT, ""));
                     response.addComment(session.jprintf(_bundle,
                             "changecomment.success", env, request.getUser()));
                     break;
@@ -588,8 +588,8 @@ public class UserManagementHandler extends CommandInterface {
                 case "num_logins":
                     // [# sim logins] [# sim logins/ip]
                     try {
-                        int numLogins;
-                        int numLoginsIP;
+                        double numLogins;
+                        double numLoginsIP;
 
                         if ((commandArguments.length < 1)
                                 || (commandArguments.length > 2)) {
@@ -601,16 +601,16 @@ public class UserManagementHandler extends CommandInterface {
                         if (commandArguments.length == 2) {
                             numLoginsIP = Integer.parseInt(commandArguments[1]);
                         } else {
-                            numLoginsIP = userToChange.getKeyedMap().getObjectInteger(
+                            numLoginsIP = userToChange.getKeyed().getObjectDouble(
                                     UserManagement.MAXLOGINSIP);
                         }
 
-                        logger.info("'{}' changed num_logins for '{}' from '{}' '{}' to '{}' '{}'", session.getUserNull(request.getUser()).getName(), userToChange.getName(), userToChange.getKeyedMap().getObjectInteger(
-                                UserManagement.MAXLOGINS), userToChange.getKeyedMap().getObjectInteger(
+                        logger.info("'{}' changed num_logins for '{}' from '{}' '{}' to '{}' '{}'", session.getUserNull(request.getUser()).getName(), userToChange.getName(), userToChange.getKeyed().getObjectDouble(
+                                UserManagement.MAXLOGINS), userToChange.getKeyed().getObjectDouble(
                                 UserManagement.MAXLOGINSIP), numLogins, numLoginsIP);
-                        userToChange.getKeyedMap().setObject(UserManagement.MAXLOGINS,
+                        userToChange.getKeyed().setObject(UserManagement.MAXLOGINS,
                                 numLogins);
-                        userToChange.getKeyedMap().setObject(
+                        userToChange.getKeyed().setObject(
                                 UserManagement.MAXLOGINSIP, numLoginsIP);
                         env.put("numlogins", "" + numLogins);
                         env.put("numloginsip", "" + numLoginsIP);
@@ -642,9 +642,9 @@ public class UserManagementHandler extends CommandInterface {
                         logger
                                 .info("'{}' changed max simultaneous download/upload slots for '{}' from '{}' '{}' to '{}' '{}'", session.getUserNull(request.getUser()).getName(), userToChange.getName(), userToChange.getMaxSimDown(), userToChange.getMaxSimUp(), maxdn, maxup);
 
-                        userToChange.getKeyedMap().setObject(UserManagement.MAXSIMDN,
+                        userToChange.getKeyed().setObject(UserManagement.MAXSIMDN,
                                 maxdn);
-                        userToChange.getKeyedMap().setObject(UserManagement.MAXSIMUP,
+                        userToChange.getKeyed().setObject(UserManagement.MAXSIMUP,
                                 maxup);
                         userToChange.setMaxSimUp(maxup);
                         userToChange.setMaxSimDown(maxdn);
@@ -689,8 +689,8 @@ public class UserManagementHandler extends CommandInterface {
                         myDate = new Date();
                     }
 
-                    logger.info("'{}' changed created for '{}' from '{}' to '{}'", currentUser.getName(), userToChange.getName(), userToChange.getKeyedMap().getObject(UserManagement.CREATED, new Date(0)), myDate);
-                    userToChange.getKeyedMap().setObject(UserManagement.CREATED, myDate);
+                    logger.info("'{}' changed created for '{}' from '{}' to '{}'", currentUser.getName(), userToChange.getName(), userToChange.getKeyed().getObjectDate(UserManagement.CREATED, new Date(0)), myDate);
+                    userToChange.getKeyed().setObject(UserManagement.CREATED, myDate);
 
                     response = new CommandResponse(200, session.jprintf(_bundle, "changeuser.created.success", env, request.getUser()));
                     break;
@@ -700,9 +700,9 @@ public class UserManagementHandler extends CommandInterface {
                     }
 
                     long weeklyAllotment = Bytes.parseBytes(commandArguments[0]);
-                    logger.info("'{}' changed wkly_allotment for '{}' from '{}' to {}'", session.getUserNull(request.getUser()).getName(), userToChange.getName(), userToChange.getKeyedMap().getObjectLong(
+                    logger.info("'{}' changed wkly_allotment for '{}' from '{}' to {}'", session.getUserNull(request.getUser()).getName(), userToChange.getName(), userToChange.getKeyed().getObjectDouble(
                             UserManagement.WKLYALLOTMENT), weeklyAllotment);
-                    userToChange.getKeyedMap().setObject(UserManagement.WKLYALLOTMENT,
+                    userToChange.getKeyed().setObject(UserManagement.WKLYALLOTMENT,
                             weeklyAllotment);
 
                     response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
@@ -712,8 +712,8 @@ public class UserManagementHandler extends CommandInterface {
                         throw new ImproperUsageException();
                     }
 
-                    logger.info("'{}' changed tagline for '{}' from '{}' to '{}'", session.getUserNull(request.getUser()).getName(), userToChange.getName(), userToChange.getKeyedMap().getObjectString(UserManagement.TAGLINE), fullCommandArgument);
-                    userToChange.getKeyedMap().setObject(UserManagement.TAGLINE,
+                    logger.info("'{}' changed tagline for '{}' from '{}' to '{}'", session.getUserNull(request.getUser()).getName(), userToChange.getName(), userToChange.getKeyed().getObjectString(UserManagement.TAGLINE, ""), fullCommandArgument);
+                    userToChange.getKeyed().setObject(UserManagement.TAGLINE,
                             fullCommandArgument);
 
                     response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
@@ -872,12 +872,12 @@ public class UserManagementHandler extends CommandInterface {
             requestedUser.setDeleted(true);
             String reason = "";
             if (st.hasMoreTokens()) {
-                requestedUser.getKeyedMap().setObject(UserManagement.REASON, reason = st.nextToken("").substring(1));
+                requestedUser.getKeyed().setObject(UserManagement.REASON, reason = st.nextToken("").substring(1));
             }
             requestedUser.commit();
             response.addComment(session.jprintf(_bundle, "deluser.success", env, request.getUser()));
             logger.info("'{}' deleted user '{}' with reason '{}'", currentUser.getName(), requestedUser.getName(), reason);
-            logger.debug("reason {}", requestedUser.getKeyedMap().getObjectString(UserManagement.REASON));
+            logger.debug("reason {}", requestedUser.getKeyed().getObjectString(UserManagement.REASON, ""));
 
             requestedUser.purge();
             response.addComment(session.jprintf(_bundle, "purgeuser.success", env, request.getUser()));
@@ -923,12 +923,12 @@ public class UserManagementHandler extends CommandInterface {
             requestedUser.setDeleted(true);
             String reason = "";
             if (st.hasMoreTokens()) {
-                requestedUser.getKeyedMap().setObject(UserManagement.REASON, reason = st.nextToken("").substring(1));
+                requestedUser.getKeyed().setObject(UserManagement.REASON, reason = st.nextToken("").substring(1));
             }
             requestedUser.commit();
             response.addComment(session.jprintf(_bundle, "deluser.success", env, request.getUser()));
             logger.info("'{}' deleted user '{}' with reason '{}'", currentUser.getName(), requestedUser.getName(), reason);
-            logger.debug("reason {}", requestedUser.getKeyedMap().getObjectString(UserManagement.REASON));
+            logger.debug("reason {}", requestedUser.getKeyed().getObjectString(UserManagement.REASON, ""));
 
         } catch (NoSuchUserException e) {
             return new CommandResponse(452, e.getMessage());
@@ -1302,7 +1302,7 @@ public class UserManagementHandler extends CommandInterface {
             }
 
             requestedUser.setDeleted(false);
-            requestedUser.getKeyedMap().remove(UserManagement.REASON);
+            requestedUser.getKeyed().remove(UserManagement.REASON);
             logger.info("'{}' readded '{}'", currentUser.getName(), requestedUser.getName());
             requestedUser.commit();
         } catch (NoSuchUserException e) {
@@ -1380,7 +1380,7 @@ public class UserManagementHandler extends CommandInterface {
         }
 
         return new CommandResponse(200, "User was last seen: "
-                + user.getKeyedMap().getObject(UserManagement.LASTSEEN, new Date(0)));
+                + user.getKeyed().getObjectDate(UserManagement.LASTSEEN, new Date(0)));
     }
 
     public CommandResponse doSITE_TAGLINE(CommandRequest request) throws ImproperUsageException {
@@ -1392,9 +1392,9 @@ public class UserManagementHandler extends CommandInterface {
 
         User u = session.getUserNull(request.getUser());
 
-        logger.info("'{}' changed his tagline from '{}' to '{}'", request.getUser(), u.getKeyedMap().getObjectString(UserManagement.TAGLINE), request.getArgument());
+        logger.info("'{}' changed his tagline from '{}' to '{}'", request.getUser(), u.getKeyed().getObjectString(UserManagement.TAGLINE, ""), request.getArgument());
 
-        u.getKeyedMap().setObject(UserManagement.TAGLINE, request.getArgument());
+        u.getKeyed().setObject(UserManagement.TAGLINE, request.getArgument());
         u.commit();
 
         return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
@@ -1404,13 +1404,13 @@ public class UserManagementHandler extends CommandInterface {
         Session session = request.getSession();
         User user = session.getUserNull(request.getUser());
         if (!request.hasArgument()) {
-            user.getKeyedMap().setObject(
+            user.getKeyed().setObject(
                     UserManagement.DEBUG,
-                    !user.getKeyedMap().getObjectBoolean(
+                    !user.getKeyed().getObjectBoolean(
                             UserManagement.DEBUG));
         } else {
             String arg = request.getArgument();
-            user.getKeyedMap().setObject(UserManagement.DEBUG,
+            user.getKeyed().setObject(UserManagement.DEBUG,
                     arg.equals("true") || arg.equals("on"));
         }
         user.commit();
@@ -1856,9 +1856,9 @@ public class UserManagementHandler extends CommandInterface {
                     + banTime + "m";
         }
 
-        myUser.getKeyedMap().setObject(UserManagement.BANTIME,
+        myUser.getKeyed().setObject(UserManagement.BANTIME,
                 new Date(System.currentTimeMillis() + (banTime * 60000)));
-        myUser.getKeyedMap().setObject(UserManagement.BANREASON, banMsg);
+        myUser.getKeyed().setObject(UserManagement.BANREASON, banMsg);
         myUser.commit();
 
         return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
@@ -1895,9 +1895,9 @@ public class UserManagementHandler extends CommandInterface {
         for (User user : GlobalContext.getGlobalContext().getUserManager().getAllUsers()) {
             if (user.getName().equals(executioner))
                 continue;
-            user.getKeyedMap().setObject(UserManagement.BANTIME,
+            user.getKeyed().setObject(UserManagement.BANTIME,
                     new Date(System.currentTimeMillis() + (banTime * 60000)));
-            user.getKeyedMap().setObject(UserManagement.BANREASON, banMsg);
+            user.getKeyed().setObject(UserManagement.BANREASON, banMsg);
             user.commit();
         }
 
@@ -1925,8 +1925,8 @@ public class UserManagementHandler extends CommandInterface {
             return new CommandResponse(200, e.getMessage());
         }
 
-        myUser.getKeyedMap().setObject(UserManagement.BANTIME, new Date());
-        myUser.getKeyedMap().setObject(UserManagement.BANREASON, "");
+        myUser.getKeyed().setObject(UserManagement.BANTIME, new Date());
+        myUser.getKeyed().setObject(UserManagement.BANREASON, "");
 
         myUser.commit();
 
@@ -1936,8 +1936,8 @@ public class UserManagementHandler extends CommandInterface {
     public CommandResponse doSITE_UNBANALL(CommandRequest request) {
 
         for (User user : GlobalContext.getGlobalContext().getUserManager().getAllUsers()) {
-            user.getKeyedMap().setObject(UserManagement.BANTIME, new Date());
-            user.getKeyedMap().setObject(UserManagement.BANREASON, "");
+            user.getKeyed().setObject(UserManagement.BANTIME, new Date());
+            user.getKeyed().setObject(UserManagement.BANREASON, "");
             user.commit();
         }
 
@@ -1949,7 +1949,7 @@ public class UserManagementHandler extends CommandInterface {
 
         CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
         for (User user : myUsers) {
-            long timeleft = user.getKeyedMap().getObject(
+            long timeleft = user.getKeyed().getObjectDate(
                     UserManagement.BANTIME, new Date()).getTime()
                     - System.currentTimeMillis();
             if (timeleft > 0) {

@@ -17,20 +17,18 @@
  */
 package org.drftpd.master.usermanager.javabeans;
 
-import com.cedarsoftware.util.io.JsonIoException;
-import com.cedarsoftware.util.io.JsonWriter;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.drftpd.master.io.SafeFileOutputStream;
 import org.drftpd.master.usermanager.AbstractUser;
 import org.drftpd.master.usermanager.AbstractUserManager;
 import org.drftpd.master.usermanager.UserManager;
 import org.drftpd.master.vfs.CommitManager;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @author mog
@@ -89,18 +87,17 @@ public class BeanUser extends AbstractUser {
     }
 
     public void writeToDisk() throws IOException {
-        if (_purged)
+        if (_purged) {
             return;
-
-        Map<String, Object> params = new HashMap<>();
-        params.put(JsonWriter.PRETTY_PRINT, true);
-        try (OutputStream out = new SafeFileOutputStream(_um.getUserFile(getName()));
-             JsonWriter writer = new JsonWriter(out, params)) {
-            writer.write(this);
-            logger.debug("Wrote userfile for {}", this.getName());
-        } catch (IOException | JsonIoException e) {
-            throw new IOException("Unable to write " + _um.getUserFile(getName()) + " to disk", e);
         }
+        Gson gson = new GsonBuilder()
+                .setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
+                .setPrettyPrinting().create();
+        File userFile = _um.getUserFile(getName());
+        FileWriter writer = new FileWriter(userFile);
+        logger.debug("Wrote userfile for {}", this.getName());
+        gson.toJson(this, writer);
+        writer.close();
     }
 
     public String descriptiveName() {

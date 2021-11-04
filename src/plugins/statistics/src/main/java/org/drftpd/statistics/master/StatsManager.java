@@ -75,24 +75,24 @@ public class StatsManager implements PluginInterface {
     public void onUserEvent(UserEvent event) {
         if (event.getCommand().equalsIgnoreCase("LOGIN")) {
             User u = event.getUser();
-            u.getKeyedMap().setObject(UserManagement.LASTSEEN, new Date(event.getTime()));
-            u.getKeyedMap().incrementInt(StatsUserData.LOGINS);
+            u.getKeyed().setObject(UserManagement.LASTSEEN, new Date(event.getTime()));
+            u.getKeyed().incrementInt(StatsUserData.LOGINS);
         }
     }
 
-    public float getCreditLossRatio(DirectoryHandle dir, User user) {
-        float defaultRatio = (user.getKeyedMap().getObjectFloat(UserManagement.RATIO) == 0) ? 0 : 1;
+    public double getCreditLossRatio(DirectoryHandle dir, User user) {
+        float defaultRatio = (user.getKeyed().getObjectDouble(UserManagement.RATIO) == 0) ? 0 : 1;
 
         return getRatioPathPerm(CREDITLOSS, dir, user, defaultRatio);
     }
 
-    public float getCreditCheckRatio(DirectoryHandle dir, User user) {
-        float defaultRatio = user.getKeyedMap().getObjectFloat(UserManagement.RATIO);
+    public double getCreditCheckRatio(DirectoryHandle dir, User user) {
+        double defaultRatio = user.getKeyed().getObjectDouble(UserManagement.RATIO);
 
         return getRatioPathPerm(CREDITCHECK, dir, user, defaultRatio);
     }
 
-    private float getRatioPathPerm(Key<ArrayList<RatioPathPermission>> key, DirectoryHandle dir, User user, float defaultRatio) {
+    private double getRatioPathPerm(Key<ArrayList<RatioPathPermission>> key, DirectoryHandle dir, User user, double defaultRatio) {
 
         ArrayList<RatioPathPermission> list =
                 GlobalContext.getConfig().getKeyedMap().getObject(key, null);

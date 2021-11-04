@@ -50,7 +50,7 @@ public class StatsPreHook {
             return request;
         }
 
-        float ratio = StatsManager.getStatsManager().getCreditLossRatio(dir, user);
+        double ratio = StatsManager.getStatsManager().getCreditLossRatio(dir, user);
 
         if (ratio == 0L) {
             return request;
@@ -59,7 +59,7 @@ public class StatsPreHook {
         try {
             long fileSize = dir.getFileUnchecked(request.getArgument()).getSize();
             long creditsLoss = (long) ratio * fileSize;
-            long userCredits = user.getCredits();
+            double userCredits = user.getCredits();
 
             if (userCredits < creditsLoss) {
                 // this comparison doesn't allow a user with negative credits,

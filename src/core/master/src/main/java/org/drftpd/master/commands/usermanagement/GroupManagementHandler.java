@@ -572,8 +572,8 @@ public class GroupManagementHandler extends CommandInterface {
                 env.put("mbup", Bytes.formatBytes(user.getUploadedBytes()));
                 env.put("fdn", "" + user.getDownloadedFiles());
                 env.put("mbdn", Bytes.formatBytes(user.getDownloadedBytes()));
-                env.put("ratio", "1:" + user.getKeyedMap().getObjectFloat(UserManagement.RATIO));
-                env.put("wkly", Bytes.formatBytes(user.getKeyedMap().getObjectLong(UserManagement.WKLYALLOTMENT)));
+                env.put("ratio", "1:" + user.getKeyed().getObjectDouble(UserManagement.RATIO));
+                env.put("wkly", Bytes.formatBytes(user.getKeyed().getObjectDouble(UserManagement.WKLYALLOTMENT)));
                 response.addComment(ReplacerUtils.jprintf(body, env));
             } catch (MissingResourceException e) {
                 response.addComment(e.getMessage());
@@ -581,7 +581,7 @@ public class GroupManagementHandler extends CommandInterface {
 
             // update totals
             numUsers++;
-            if (user.getKeyedMap().getObjectFloat(UserManagement.RATIO).intValue() == 0) {
+            if (user.getKeyed().getObjectDouble(UserManagement.RATIO).intValue() == 0) {
                 numLeechUsers++;
             }
             allfup += user.getUploadedFiles();

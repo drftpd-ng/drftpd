@@ -57,8 +57,8 @@ public class RequestPostHook {
             logger.error("[doSITE_REQUEST::doREQUESTIncrement][Post-hook] User {} does not exists, this should not be possible", request.getUser());
             return;
         }
-        user.getKeyedMap().incrementInt(RequestUserData.REQUESTS);
-        user.getKeyedMap().incrementInt(RequestUserData.WEEKREQS);
+        user.getKeyed().incrementInt(RequestUserData.REQUESTS);
+        user.getKeyed().incrementInt(RequestUserData.WEEKREQS);
         user.commit();
     }
 
@@ -73,7 +73,7 @@ public class RequestPostHook {
             logger.error("[doSITE_REQUEST::doREQFILLEDIncrement][Post-hook] User {} does not exists, this should not be possible", request.getUser());
             return;
         }
-        user.getKeyedMap().incrementInt(RequestUserData.REQUESTSFILLED);
+        user.getKeyed().incrementInt(RequestUserData.REQUESTSFILLED);
         user.commit();
     }
 
@@ -88,8 +88,8 @@ public class RequestPostHook {
             logger.error("[doSITE_REQUEST::doWklyAllotmentDecrease][Post-hook] User {} does not exists, this should not be possible", request.getUser());
             return;
         }
-        if (RequestSettings.getSettings().getRequestDecreaseWeekReqs() && user.getKeyedMap().getObjectInteger(RequestUserData.WEEKREQS) > 0) {
-            user.getKeyedMap().incrementInt(RequestUserData.WEEKREQS, -1);
+        if (RequestSettings.getSettings().getRequestDecreaseWeekReqs() && user.getKeyed().getObjectDouble(RequestUserData.WEEKREQS) > 0) {
+            user.getKeyed().incrementInt(RequestUserData.WEEKREQS, -1);
             user.commit();
         }
     }

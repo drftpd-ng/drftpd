@@ -163,7 +163,7 @@ public class TransferStatistics extends CommandInterface {
 
         Map<String, Object> env = new HashMap<>();
 
-        env.put("created", user.getKeyedMap().getObject(UserManagement.CREATED, new Date(0L)));
+        env.put("created", user.getKeyed().getObjectDate(UserManagement.CREATED, new Date(0L)));
 
         env.put("aluprank", UserTransferStats.getStatsPlace("ALUP", user, userman));
         env.put("aldnrank", UserTransferStats.getStatsPlace("ALDN", user, userman));
