@@ -15,9 +15,6 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-/**
- *
- */
 package org.drftpd.master.network;
 
 import org.apache.logging.log4j.LogManager;
@@ -190,7 +187,6 @@ public class TransferState {
                 dataSocket = ac.connect(GlobalContext.getConfig().getCipherSuites(), GlobalContext.getConfig().getSSLProtocols(), 0);
             } catch (IOException ex) {
                 logger.warn("Error opening data socket", ex);
-                dataSocket = null;
                 throw ex;
             }
         } else if (isPasv()) {
@@ -330,8 +326,8 @@ public class TransferState {
     /**
      * Returns true if the transfer was aborted
      *
-     * @param reason
-     * @return
+     * @param reason The reason to abort the transfer
+     * @return true if we were able to abort, false if there is no transfer going on
      */
     public synchronized boolean abort(String reason) {
         RemoteTransfer rt = getTransfer();
@@ -344,6 +340,7 @@ public class TransferState {
                     _transferFile.deleteUnchecked();
                 } catch (FileNotFoundException e) {
                     // This is fine as we wanted to delete it anyway
+                    logger.warn("abort() - File no longer existed when we tried to delete it, not an error");
                 }
             }
             return true;

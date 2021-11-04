@@ -332,18 +332,17 @@ public class BaseFtpConnection extends Session implements Runnable {
             _thread.setName("FtpConn thread " + _thread.getId() + " from " + getClientAddress().getHostAddress());
         }
 
-        _pool = new ThreadPoolExecutor(1, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<>(), new CommandThreadFactory(_thread.getName()));
+        _pool = new ThreadPoolExecutor(1, 1, 60L, TimeUnit.SECONDS, new LinkedBlockingQueue<>(), new CommandThreadFactory(_thread.getName()));
 
         try {
             // First handle any ident requirements
             int identTimeout = Ident.defaultConnectionTimeout;
             try {
                 identTimeout = Integer.parseInt(GlobalContext.getConfig().getMainProperties().getProperty("ident.lookup.timeout"));
-            } catch(NumberFormatException e) {
+            } catch (NumberFormatException e) {
                 logger.warn("Failed to get 'ident.lookup.timeout' property or get the integer from the value, defaulting to [{}]", identTimeout, e);
             }
             logger.debug("Ident Timeout has been set to [{}]", identTimeout);
-
 
             String ident = null;
             // Only loop over the hostmasks if we are not expecting a bouncer to connect
@@ -403,15 +402,16 @@ public class BaseFtpConnection extends Session implements Runnable {
                 String commandLine;
 
                 try {
+                    // will block for a maximum of _controlSocket.getSoTimeout() milliseconds
                     commandLine = _in.readLine();
-                    // will block for a maximum of _controlSocket.getSoTimeout()
-                    // milliseconds
                 } catch (InterruptedIOException ex) {
                     if (_controlSocket == null) {
+                        logger.info("Control socket is 'null', stopping this session");
                         stop("Control socket is null");
                         break;
                     }
                     if (!_controlSocket.isConnected()) {
+                        logger.info("Control socket is no longer connected, stopping this session");
                         stop("Socket unexpectedly closed");
                         break;
                     }
@@ -428,6 +428,7 @@ public class BaseFtpConnection extends Session implements Runnable {
                     if (idleTime > 0
                             && ((System.currentTimeMillis() - _lastActive) / 1000 >= idleTime)
                             && !isExecuting()) {
+                        logger.warn("idleTimeout... isExecuting: {}, _lastActive: {}, idleTime: {}, diff: {}", isExecuting(), _lastActive, idleTime, (System.currentTimeMillis() - _lastActive) / 1000);
                         stop("IdleTimeout");
                         break;
                     }
@@ -440,6 +441,7 @@ public class BaseFtpConnection extends Session implements Runnable {
 
                 // test command line
                 if (commandLine == null) {
+                    logger.info("input stream is closed as we got 'null' from reading the stream, stopping this session");
                     break;
                 }
 
@@ -449,18 +451,27 @@ public class BaseFtpConnection extends Session implements Runnable {
 
                 _request = new FtpRequest(commandLine);
 
-                if (!_request.getCommand().equals("PASS")) {
+                if (_request.getCommand().equals("PASS")) {
+                    logger.debug("<< PASS");
+                } else {
                     logger.debug("<< {}", _request.getCommandLine());
                 }
 
                 // execute command
-                _pool.execute(new CommandThread(_request, this));
-                if (_request.getCommand().equalsIgnoreCase("AUTH")) {
-                    while (!_securityDataExchangeCompleted && !_stopRequest) {
-                        Thread.sleep(100);
+                // If we get ABOR handle it directly otherwise hand it over to the executor
+                if (_request.getCommand().equalsIgnoreCase("ABOR")) {
+                    logger.debug("Found ABOR, handling directly");
+                    executeFtpCommand(_request);
+                } else {
+                    _pool.execute(new CommandThread(_request, this));
+                    if (_request.getCommand().equalsIgnoreCase("AUTH")) {
+                        while (!_securityDataExchangeCompleted && !_stopRequest) {
+                            logger.debug("Waiting 100 miliseconds for AUTH to finalize");
+                            Thread.sleep(100);
+                        }
                     }
+                    poolStatus();
                 }
-                poolStatus();
                 _lastActive = System.currentTimeMillis();
             }
 
@@ -471,11 +482,18 @@ public class BaseFtpConnection extends Session implements Runnable {
             }
 
             _out.flush();
+        } catch (RejectedExecutionException ex) {
+            logger.error("Unable to execute task, closing session. Message: {}", ex.getMessage());
         } catch (SocketException ex) {
-            logger.log(Level.INFO, ex.getMessage() + ", closing for user " + ((_user == null) ? "<not logged in>" : _user), ex);
+            logger.info("{}, closing for user {}", ex.getMessage(), ((_user == null) ? "<not logged in>" : _user));
         } catch (Exception ex) {
-            logger.log(Level.INFO, "Exception, closing", ex);
+            logger.info("Exception, closing", ex);
         } finally {
+            if (GlobalContext.getConfig().getHideIps()) {
+                logger.debug("Finalizing control session from <iphidden>");
+            } else {
+                logger.debug("Finalizing control session from {}", getClientAddress().getHostAddress());
+            }
             shutdownSocket();
 
             if (isAuthenticated()) {
@@ -612,6 +630,35 @@ public class BaseFtpConnection extends Session implements Runnable {
         return o == this;
     }
 
+    protected void executeFtpCommand(FtpRequest _ftpRequest) {
+        _commandCount.incrementAndGet();
+        clearAborted();
+        CommandRequestInterface cmdRequest = _commandManager.newRequest(
+                _ftpRequest.getCommand(), _ftpRequest.getArgument(),
+                _currentDirectory, getUsername(), this, getCommands().get(_ftpRequest.getCommand()));
+        CommandResponseInterface cmdResponse = _commandManager.execute(cmdRequest);
+
+        // We are finished with this command and are about to reply, so decrease the count here
+        // Doing this later might end up with the above warning in the logs for commands being send very quickly.
+        _commandCount.decrementAndGet();
+
+        if (cmdResponse != null) {
+            if (!isAborted() || _ftpRequest.getCommand().equalsIgnoreCase("ABOR")) {
+                if (cmdResponse.getCurrentDirectory() != null) {
+                    _currentDirectory = cmdResponse.getCurrentDirectory();
+                }
+                if (cmdResponse.getUser() != null) {
+                    _user = cmdResponse.getUser();
+                }
+                printOutput(new FtpReply(cmdResponse));
+            }
+        }
+
+        if (cmdRequest.getSession().getObject(BaseFtpConnection.FAILEDLOGIN, false)) {
+            stop("Closing Connection");
+        }
+    }
+
     static class CommandThreadFactory implements ThreadFactory {
 
         String _parentName;
@@ -639,36 +686,11 @@ public class BaseFtpConnection extends Session implements Runnable {
         }
 
         public void run() {
-            if (_commandCount.get() > 0 && !_ftpRequest.getCommand().equalsIgnoreCase("ABOR")) {
-                logger.warn("There is already a command active for this connection, dropping this request [{}]",
-                        _ftpRequest.getCommandLine());
-                return;
+            if (_commandCount.get() > 0) {
+                logger.warn("The executor should be single threaded, this should not be possible unless an \"ABOR\" command was issued");
             }
             logger.debug("CommandThread started. _commandCount: {}", _commandCount.get());
-            _commandCount.incrementAndGet();
-            clearAborted();
-            CommandRequestInterface cmdRequest = _commandManager.newRequest(
-                    _ftpRequest.getCommand(), _ftpRequest.getArgument(),
-                    _currentDirectory, _conn.getUsername(), _conn, _conn.getCommands().get(_ftpRequest.getCommand()));
-            CommandResponseInterface cmdResponse = _commandManager.execute(cmdRequest);
-            if (cmdResponse != null) {
-                if (!isAborted() || _ftpRequest.getCommand().equalsIgnoreCase("ABOR")) {
-                    if (cmdResponse.getCurrentDirectory() != null) {
-                        _currentDirectory = cmdResponse.getCurrentDirectory();
-                    }
-                    if (cmdResponse.getUser() != null) {
-                        _user = cmdResponse.getUser();
-                    }
-                    // We are finished with this command and are about to reply, so decrease the count here
-                    // Doing this later might end up with the above warning in the logs for commands being send very quickly.
-                    _commandCount.decrementAndGet();
-                    printOutput(new FtpReply(cmdResponse));
-                }
-            }
-
-            if (cmdRequest.getSession().getObject(BaseFtpConnection.FAILEDLOGIN, false)) {
-                _conn.stop("Closing Connection");
-            }
+            _conn.executeFtpCommand(_ftpRequest);
             logger.debug("CommandThread finished. _commandCount: {}", _commandCount.get());
         }
     }
