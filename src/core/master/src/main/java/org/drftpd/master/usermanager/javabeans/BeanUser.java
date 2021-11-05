@@ -18,7 +18,6 @@
 package org.drftpd.master.usermanager.javabeans;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.drftpd.master.usermanager.AbstractUser;
@@ -29,6 +28,8 @@ import org.drftpd.master.vfs.CommitManager;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+
+import static org.drftpd.common.util.SerializerUtils.getSerializer;
 
 /**
  * @author mog
@@ -90,9 +91,7 @@ public class BeanUser extends AbstractUser {
         if (_purged) {
             return;
         }
-        Gson gson = new GsonBuilder()
-                .setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
-                .setPrettyPrinting().create();
+        Gson gson = getSerializer();
         File userFile = _um.getUserFile(getName());
         FileWriter writer = new FileWriter(userFile);
         logger.debug("Wrote userfile for {}", this.getName());

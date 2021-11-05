@@ -29,6 +29,7 @@ import org.drftpd.master.vfs.InodeHandle;
 import org.drftpd.zipscript.common.flac.AsyncResponseFlacInfo;
 import org.drftpd.zipscript.common.flac.FlacInfo;
 import org.drftpd.zipscript.common.flac.VorbisTag;
+import org.drftpd.zipscript.master.flac.ConfigFlac;
 import org.drftpd.zipscript.master.flac.ZipscriptFlacIssuer;
 
 import java.io.FileNotFoundException;
@@ -63,7 +64,7 @@ public class ZipscriptVFSDataFlac {
             // Find the info for the first flac file we come across and use that
             DirectoryHandle dir = (DirectoryHandle) _inode;
             FlacInfo flacinfo = null;
-            VorbisTag vorbistag = null;
+            VorbisTag vorbistag;
             for (FileHandle file : dir.getFilesUnchecked()) {
                 if (file.getName().toLowerCase().endsWith(".flac") && file.getSize() > 0 && file.getXfertime() != -1) {
                     RemoteSlave rslave = file.getASlaveForFunction();
@@ -83,7 +84,7 @@ public class ZipscriptVFSDataFlac {
                 }
             }
             if (flacinfo != null) {
-                dir.addPluginMetaData(FlacInfo.FLACINFO, flacinfo);
+                dir.addPluginMetaData(FlacInfo.FLACINFO, new ConfigFlac(flacinfo));
                 return flacinfo;
             }
             throw new FileNotFoundException("No usable flac files found in directory");
@@ -121,11 +122,11 @@ public class ZipscriptVFSDataFlac {
                 getFlacInfoFromInode(dir);
             } catch (KeyNotFoundException e1) {
                 _setDir = true;
-                dir.addPluginMetaData(FlacInfo.FLACINFO, flacinfo);
+                dir.addPluginMetaData(FlacInfo.FLACINFO, new ConfigFlac(flacinfo));
             }
 
             // Update flacinfo on the file inode
-            _inode.addPluginMetaData(FlacInfo.FLACINFO, flacinfo);
+            _inode.addPluginMetaData(FlacInfo.FLACINFO, new ConfigFlac(flacinfo));
             return flacinfo;
         } else {
             throw new IllegalArgumentException("Inode type other than directory or file passed in");

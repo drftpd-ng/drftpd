@@ -17,8 +17,7 @@
  */
 package org.drftpd.master.slavemanagement;
 
-import com.cedarsoftware.util.io.JsonIoException;
-import com.cedarsoftware.util.io.JsonWriter;
+import com.google.gson.Gson;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.drftpd.common.dynamicdata.Key;
@@ -59,6 +58,8 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.PatternSyntaxException;
+
+import static org.drftpd.common.util.SerializerUtils.getSerializer;
 
 /**
  * @author mog
@@ -1177,14 +1178,15 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
     }
 
     public void writeToDisk() {
-        Map<String, Object> params = new HashMap<>();
-        params.put(JsonWriter.PRETTY_PRINT, true);
-        try (OutputStream out = new SafeFileOutputStream(
-                getGlobalContext().getSlaveManager().getSlaveFile(this.getName()));
-             JsonWriter writer = new JsonWriter(out, params)) {
-            writer.write(this);
+        try {
+            Gson gson = getSerializer();
+            File slaveFile = getGlobalContext().getSlaveManager().getSlaveFile(this.getName());
+            FileWriter writer = new FileWriter(slaveFile);
+            logger.debug("Wrote userfile for {}", this.getName());
+            gson.toJson(this, writer);
+            writer.close();
             logger.debug("Wrote slavefile for {}", this.getName());
-        } catch (IOException | JsonIoException e) {
+        } catch (Exception e) {
             throw new RuntimeException("Error writing slavefile for "
                     + this.getName() + ": " + e.getMessage(), e);
         }

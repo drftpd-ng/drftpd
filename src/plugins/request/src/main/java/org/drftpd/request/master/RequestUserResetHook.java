@@ -50,7 +50,7 @@ public class RequestUserResetHook implements UserResetPostHookInterface {
         // Reset users weekly allotment to zero
         logger.info("[resetWeek] called, resetting WEEKREQS to 0 for all users");
         for (User user : GlobalContext.getGlobalContext().getUserManager().getAllUsers()) {
-            user.getKeyed().setObject(RequestUserData.WEEKREQS, 0);
+            user.getConfigHelper().setInt(RequestUserData.WEEKREQS, 0);
             user.commit();
         }
     }

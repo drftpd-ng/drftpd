@@ -135,7 +135,7 @@ public class IMDBUtils {
         populateIMDBInfo(imdbInfo);
         if (imdbInfo.getMovieFound()) {
             try {
-                dir.addPluginMetaData(IMDBInfo.IMDBINFO, imdbInfo);
+                dir.addPluginMetaData(IMDBInfo.IMDBINFO, new ConfigImdb(imdbInfo));
             } catch (FileNotFoundException e) {
                 logger.error("Failed to add IMDB metadata", e);
             }

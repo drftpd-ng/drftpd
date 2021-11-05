@@ -40,7 +40,7 @@ public class DummyUser extends AbstractUser {
 
     public DummyUser(String username, long time) {
         this(username);
-        getKeyed().setObject(UserManagement.CREATED, new Date(time));
+        getConfigHelper().setDate(UserManagement.CREATED, new Date(time));
     }
 
     public boolean checkPassword(String password) {

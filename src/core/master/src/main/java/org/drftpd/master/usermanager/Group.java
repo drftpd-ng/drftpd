@@ -18,10 +18,10 @@
 package org.drftpd.master.usermanager;
 
 import org.drftpd.common.exceptions.DuplicateElementException;
+import org.drftpd.common.dynamicdata.DynamicConfigHelper;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author mikevg
@@ -30,8 +30,7 @@ import java.util.Map;
 public abstract class Group implements Entity {
     public abstract UserManager getUserManager();
 
-    protected abstract Map<String, Object> getKeyedMap();
-
+    public abstract DynamicConfigHelper getConfigHelper();
     /**
      * Commit changes.
      */
@@ -56,11 +55,11 @@ public abstract class Group implements Entity {
 
     public abstract void removeAdmin(User u) throws NoSuchFieldException;
 
-    public abstract double getMinRatio();
+    public abstract float getMinRatio();
 
     public abstract void setMinRatio(float minRatio);
 
-    public abstract double getMaxRatio();
+    public abstract float getMaxRatio();
 
     public abstract void setMaxRatio(float MaxRatio);
 

@@ -102,7 +102,7 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
      * @return the CRC32 of the file.
      */
     public long getChecksum() {
-        return getKeyedMap().getObjectLong(CRC);
+        return configsHelper().get(CRC, 0L);
     }
 
     /**
@@ -111,7 +111,7 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
      * @param checksum
      */
     public void setChecksum(long checksum) {
-        getKeyedMap().setObject(CRC, checksum);
+        configsHelper().setLong(CRC, checksum);
         commit();
     }
 
@@ -119,7 +119,7 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
      * @return the xfertime of the file.
      */
     public long getXfertime() {
-        return getKeyedMap().getObjectLong(XFERTIME);
+        return configsHelper().get(XFERTIME, 0L);
     }
 
     /**
@@ -128,7 +128,7 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
      * @param xfertime
      */
     public void setXfertime(long xfertime) {
-        getKeyedMap().setObject(XFERTIME, xfertime);
+        configsHelper().setLong(XFERTIME, xfertime);
         commit();
     }
 
@@ -234,26 +234,26 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
     }
 
     public long getDownloadedBytes() {
-        return getKeyedMap().getObjectInteger(DOWNLOADEDTIMES) * getSize();
+        return configsHelper().get(DOWNLOADEDTIMES, 0) * getSize();
     }
 
     public void setDownloadedBytes(long bytes) {}
 
     public int getDownloadedFiles() {
-        return getKeyedMap().getObjectInteger(DOWNLOADEDTIMES);
+        return configsHelper().get(DOWNLOADEDTIMES, 0);
     }
 
     public void setDownloadedFiles(int files) {
-        getKeyedMap().incrementInt(DOWNLOADEDTIMES);
+        configsHelper().incrementInt(DOWNLOADEDTIMES);
         commit();
     }
 
     public long getDownloadedTime() {
-        return getKeyedMap().getObjectLong(DOWNLOADDURATION);
+        return configsHelper().get(DOWNLOADDURATION, 0L);
     }
 
     public void setDownloadedTime(long millis) {
-        getKeyedMap().incrementLong(DOWNLOADDURATION);
+        configsHelper().incrementLong(DOWNLOADDURATION);
         commit();
     }
 

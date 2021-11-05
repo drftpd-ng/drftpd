@@ -19,21 +19,20 @@ package org.drftpd.master.usermanager;
 
 import org.drftpd.common.exceptions.DuplicateElementException;
 import org.drftpd.common.util.HostMaskCollection;
+import org.drftpd.common.dynamicdata.DynamicConfigHelper;
 import org.drftpd.master.stats.ExtendedTimedStats;
-import org.drftpd.master.usermanager.util.UserMapHelper;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author mog
  * @version $Id$
  */
 public abstract class User extends ExtendedTimedStats implements Entity {
+
     public abstract UserManager getUserManager();
 
-    public abstract Map<String, Object> getKeyedMap();
-    public abstract UserMapHelper getKeyed();
+    public abstract DynamicConfigHelper getConfigHelper();
 
     public abstract void addAllMasks(HostMaskCollection hostMaskCollection);
 

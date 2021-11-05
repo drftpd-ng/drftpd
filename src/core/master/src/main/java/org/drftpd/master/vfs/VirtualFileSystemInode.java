@@ -19,17 +19,22 @@ package org.drftpd.master.vfs;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.drftpd.common.dynamicdata.DynamicConfigHelper;
 import org.drftpd.common.dynamicdata.Key;
 import org.drftpd.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.common.dynamicdata.KeyedMap;
+import org.drftpd.common.dynamicdata.element.ConfigElement;
 import org.drftpd.common.io.PermissionDeniedException;
 import org.drftpd.slave.exceptions.FileExistsException;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static org.drftpd.common.dynamicdata.DynamicConfigHelper.configHelper;
 
 
 /**
@@ -43,9 +48,8 @@ public abstract class VirtualFileSystemInode implements Commitable {
     protected transient VirtualFileSystemDirectory _parent;
     protected String _username;
     protected String _group;
-    protected KeyedMap<Key<?>, Object> _keyedMap = new KeyedMap<>();
-    protected KeyedMap<Key<?>, Object> _pluginMap = new KeyedMap<>();
-    protected Map<String, Object> _untypedPluginMap = new TreeMap<>();
+    private Map<Key<?>, ConfigElement<?>> _configs = new HashMap<>();
+    private Map<Key<?>, ConfigElement<?>> _plugins = new HashMap<>();
     protected long _lastModified;
     protected long _creationTime;
     private transient boolean _inodeLoaded;
@@ -115,15 +119,28 @@ public abstract class VirtualFileSystemInode implements Commitable {
         }
     }
 
-    /**
-     * @return the KeyedMap containing the Dynamic Data.
-     */
-    public KeyedMap<Key<?>, Object> getKeyedMap() {
-        return _keyedMap;
+    public Map<Key<?>, ConfigElement<?>> getConfigs() {
+        return _configs;
     }
 
-    public void setKeyedMap(KeyedMap<Key<?>, Object> data) {
-        _keyedMap = data;
+    public void setConfigs(Map<Key<?>, ConfigElement<?>> _configs) {
+        this._configs = _configs;
+    }
+
+    public Map<Key<?>, ConfigElement<?>> getPlugins() {
+        return _plugins;
+    }
+
+    public void setPlugins(Map<Key<?>, ConfigElement<?>> _plugins) {
+        this._plugins = _plugins;
+    }
+
+    public DynamicConfigHelper pluginsHelper() {
+        return configHelper(_plugins);
+    }
+
+    public DynamicConfigHelper configsHelper() {
+        return configHelper(_configs);
     }
 
     /**
@@ -307,59 +324,22 @@ public abstract class VirtualFileSystemInode implements Commitable {
         getVFS().notifyInodeRenamed(sourcePath, this);
     }
 
-    public KeyedMap<Key<?>, Object> getPluginMap() {
-        return _pluginMap;
-    }
-
-    public void setPluginMap(KeyedMap<Key<?>, Object> data) {
-        _pluginMap = data;
-    }
-
-    public Map<String, Object> getUntypedPluginMap() {
-        return _untypedPluginMap;
-    }
-
-    public void setUntypedPluginMap(Map<String, Object> data) {
-        _untypedPluginMap = data;
-    }
-
-    protected <T> void addPluginMetaData(Key<T> key, T object) {
-        _pluginMap.setObject(key, object);
+    protected <T> void addPluginMetaData(Key<T> key, ConfigElement<T> object) {
+        pluginsHelper().setObject(key, object);
         commit();
         getVFS().notifyInodeRefresh(this, false);
     }
 
     @SuppressWarnings("unchecked")
     protected <T> T removePluginMetaData(Key<T> key) {
-        T value = (T) _pluginMap.remove(key);
+        T value = pluginsHelper().remove(key);
         commit();
         getVFS().notifyInodeRefresh(this, false);
         return value;
     }
 
     public <T> T getPluginMetaData(Key<T> key) throws KeyNotFoundException {
-        return _pluginMap.getObject(key);
-    }
-
-    protected synchronized <T> void addUntypedPluginMetaData(String key, T object) {
-        _untypedPluginMap.put(key, object);
-        commit();
-    }
-
-    @SuppressWarnings("unchecked")
-    protected <T> T removeUntypedPluginMetaData(String key) {
-        T value = (T) _untypedPluginMap.remove(key);
-        if (value != null) {
-            commit();
-        }
-        return value;
-    }
-
-    @SuppressWarnings("unchecked")
-    public <T> T getUntypedPluginMetaData(String key) {
-        T value = (T) _untypedPluginMap.get(key);
-
-        return value;
+        return pluginsHelper().get(key);
     }
 
     /*

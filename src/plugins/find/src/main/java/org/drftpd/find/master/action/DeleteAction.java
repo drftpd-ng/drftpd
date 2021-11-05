@@ -67,7 +67,7 @@ public class DeleteAction implements ActionInterface {
             reply = "Deleted " + file.getPath();
 
             User uploader = GlobalContext.getGlobalContext().getUserManager().getUserByName(file.getUsername());
-            uploader.updateCredits((long) -(file.getSize() * uploader.getKeyed().getObjectDouble(UserManagement.RATIO)));
+            uploader.updateCredits((long) -(file.getSize() * uploader.getConfigHelper().get(UserManagement.RATIO, 0F)));
         } catch (UserFileException e) {
             reply += " - Error removing credits: " + e.getMessage();
             _failed = true;

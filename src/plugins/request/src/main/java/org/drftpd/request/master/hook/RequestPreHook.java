@@ -44,7 +44,7 @@ public class RequestPreHook {
 
         if (user != null) {
 
-            double weekReqs = user.getKeyed().getObjectDouble(RequestUserData.WEEKREQS);
+            double weekReqs = user.getConfigHelper().get(RequestUserData.WEEKREQS, 0);
 
             if (RequestSettings.getSettings().getRequestWeekMax() != 0 && weekReqs >= RequestSettings.getSettings().getRequestWeekMax()) {
                 if (RequestSettings.getSettings().getRequestWeekExempt().check(user)) {

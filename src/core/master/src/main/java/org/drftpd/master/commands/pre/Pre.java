@@ -195,7 +195,7 @@ public class Pre extends CommandInterface {
                     if (total == null) {
                         total = 0L;
                     }
-                    total = (total + (long) (file.getSize() * owner.getKeyed().getObjectDouble(UserManagement.RATIO)));
+                    total = (total + (long) (file.getSize() * owner.getConfigHelper().get(UserManagement.RATIO, 0F)));
                     awards.put(owner, total);
                 }
 

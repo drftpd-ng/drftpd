@@ -23,6 +23,7 @@ import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.common.dynamicdata.Key;
 import org.drftpd.common.dynamicdata.KeyNotFoundException;
+import org.drftpd.common.dynamicdata.element.ConfigBoolean;
 import org.drftpd.common.util.Bytes;
 import org.drftpd.common.util.ConfigLoader;
 import org.drftpd.master.GlobalContext;
@@ -109,7 +110,7 @@ public class SFVAnnouncer extends AbstractAnnouncer {
             } catch (KeyNotFoundException e) {
                 // This is fine, FIRST not announced yet
                 if (sfvStatus.getAvailable() >= 1 && sfvEvent.getSFVInfo().getSize() > 1) {
-                    dir.addPluginMetaData(SFV_FIRST, true);
+                    dir.addPluginMetaData(SFV_FIRST, new ConfigBoolean(true));
                     AnnounceWriter writer = _config.getPathWriter("store.first", dir);
                     if (writer != null) {
                         fillEnvSection(env, sfvEvent, writer, true);
@@ -153,7 +154,7 @@ public class SFVAnnouncer extends AbstractAnnouncer {
                 int halfway = (int) Math.floor((double) sfvEvent.getSFVInfo().getSize() / 2);
                 if ((sfvEvent.getSFVInfo().getSize() >= 4) &&
                         (sfvStatus.getMissing() <= halfway)) {
-                    dir.addPluginMetaData(SFV_HALFWAY, true);
+                    dir.addPluginMetaData(SFV_HALFWAY, new ConfigBoolean(true));
                     AnnounceWriter writer = _config.getPathWriter("store.halfway", dir);
                     if (writer != null) {
                         Collection<UploaderPosition> uploaders = RankUtils.userSort(SFVTools.getSFVFiles(dir, sfvEvent.getSFVData()),
@@ -193,7 +194,7 @@ public class SFVAnnouncer extends AbstractAnnouncer {
             } catch (KeyNotFoundException e) {
                 // This is fine, COMPLETE not announced yet
                 if (sfvStatus.isFinished()) {
-                    dir.addPluginMetaData(SFV_COMPLETE, true);
+                    dir.addPluginMetaData(SFV_COMPLETE, new ConfigBoolean(true));
                     TimerTask removeAnnounceMetadata = new TimerTask() {
                         public void run() {
                             try {

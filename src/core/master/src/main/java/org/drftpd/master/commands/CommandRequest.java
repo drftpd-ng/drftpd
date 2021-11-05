@@ -21,6 +21,7 @@ package org.drftpd.master.commands;
 import org.drftpd.common.dynamicdata.Key;
 import org.drftpd.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.common.dynamicdata.KeyedMap;
+import org.drftpd.common.dynamicdata.element.ConfigElement;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.network.Session;
 import org.drftpd.master.permissions.Permission;
@@ -38,7 +39,7 @@ import java.util.StringTokenizer;
  * @version $Id$
  */
 @SuppressWarnings("serial")
-public class CommandRequest extends KeyedMap<Key<?>, Object> implements CommandRequestInterface {
+public class CommandRequest extends KeyedMap<Key<?>, ConfigElement<?>> implements CommandRequestInterface {
 
     public static final Key<Boolean> ALLOWED = new Key<>(CommandRequest.class, "allowed");
 

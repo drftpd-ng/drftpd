@@ -25,15 +25,16 @@ import java.io.Serializable;
  */
 @SuppressWarnings("serial")
 public class Key<T> implements Serializable {
-    private final String _key;
-
-    private final Class<?> _owner;
+    private String _key;
 
     public Key(Class<?> owner, String key) {
         assert owner != null;
         assert key != null;
-        _owner = owner;
-        _key = key;
+        _key =  owner.getName() + '@' + key;
+    }
+
+    public Key(String key) {
+        this._key = key;
     }
 
     @SuppressWarnings("unchecked")
@@ -44,26 +45,22 @@ public class Key<T> implements Serializable {
 
         Key<T> ok = (Key<T>) o;
 
-        return ok.getOwner().equals(getOwner()) && ok.getKey().equals(getKey());
+        return ok.getKey().equals(getKey());
     }
 
     public String getKey() {
         return _key;
     }
 
-    public Class<?> getOwner() {
-        return _owner;
+    public void setKey(String _key) {
+        this._key = _key;
     }
 
     public String toString() {
-        return getOwner().getName() + '@' + getKey();
-    }
-
-    public String toString(T value) {
-        return value.toString();
+        return _key;
     }
 
     public int hashCode() {
-        return toString().hashCode();
+        return _key.hashCode();
     }
 }
