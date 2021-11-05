@@ -51,7 +51,7 @@ public class EncryptedBeanUser extends BeanUser {
 
         this.setGroup(user.getGroup());
 
-        this.setKeyedMap(user.getKeyedMap());
+        this.setConfigurations(user.getConfigurations());
         this.setGroups(user.getGroups());
         this.setHostMaskCollection(user.getHostMaskCollection());
         this.setIdleTime(user.getIdleTime());

@@ -75,19 +75,19 @@ public class StatsManager implements PluginInterface {
     public void onUserEvent(UserEvent event) {
         if (event.getCommand().equalsIgnoreCase("LOGIN")) {
             User u = event.getUser();
-            u.getKeyed().setObject(UserManagement.LASTSEEN, new Date(event.getTime()));
-            u.getKeyed().incrementInt(StatsUserData.LOGINS);
+            u.getConfigHelper().setDate(UserManagement.LASTSEEN, new Date(event.getTime()));
+            u.getConfigHelper().incrementInt(StatsUserData.LOGINS);
         }
     }
 
     public double getCreditLossRatio(DirectoryHandle dir, User user) {
-        float defaultRatio = (user.getKeyed().getObjectDouble(UserManagement.RATIO) == 0) ? 0 : 1;
+        float defaultRatio = (user.getConfigHelper().get(UserManagement.RATIO, 0F) == 0) ? 0 : 1;
 
         return getRatioPathPerm(CREDITLOSS, dir, user, defaultRatio);
     }
 
     public double getCreditCheckRatio(DirectoryHandle dir, User user) {
-        double defaultRatio = user.getKeyed().getObjectDouble(UserManagement.RATIO);
+        double defaultRatio = user.getConfigHelper().get(UserManagement.RATIO, 0F);
 
         return getRatioPathPerm(CREDITCHECK, dir, user, defaultRatio);
     }

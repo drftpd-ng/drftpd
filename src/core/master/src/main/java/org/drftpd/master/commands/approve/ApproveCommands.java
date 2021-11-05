@@ -20,6 +20,7 @@ package org.drftpd.master.commands.approve;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.drftpd.common.dynamicdata.KeyNotFoundException;
+import org.drftpd.common.dynamicdata.element.ConfigBoolean;
 import org.drftpd.common.util.Bytes;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.commands.CommandInterface;
@@ -161,7 +162,7 @@ public class ApproveCommands extends CommandInterface {
                     }
                     return new CommandResponse(200, session.jprintf(_bundle, "approve.approved", env, user));
                 } catch (KeyNotFoundException e) {
-                    dir.addPluginMetaData(Approve.APPROVE, true);
+                    dir.addPluginMetaData(Approve.APPROVE, new ConfigBoolean(true));
                     return new CommandResponse(200, session.jprintf(_bundle, "approve.success", env, user));
                 }
 

@@ -17,14 +17,15 @@
  */
 package org.drftpd.master.vfs;
 
-import com.cedarsoftware.util.io.JsonIoException;
-import com.cedarsoftware.util.io.JsonReader;
-import com.cedarsoftware.util.io.JsonWriter;
+import com.google.gson.Gson;
+import org.apache.commons.lang3.SerializationUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.drftpd.common.io.PermissionDeniedException;
+import org.drftpd.common.util.SerializerUtils;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.io.SafeFileOutputStream;
+import org.drftpd.master.usermanager.javabeans.BeanGroup;
 import org.drftpd.master.vfs.event.*;
 
 import java.io.*;
@@ -32,6 +33,8 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+
+import static org.drftpd.common.util.SerializerUtils.getDeserializer;
 
 public class VirtualFileSystem {
 
@@ -211,9 +214,10 @@ public class VirtualFileSystem {
             fullPath = fullPath + separator + dirName;
             jsonFile = new File(fullPath);
         }
-        try (InputStream in = new FileInputStream(fullPath);
-             JsonReader reader = new JsonReader(in)) {
-            VirtualFileSystemInode inode = (VirtualFileSystemInode) reader.readObject();
+        try {
+            Gson gson = getDeserializer();
+            FileReader fileReader = new FileReader(fullPath);
+            VirtualFileSystemInode inode = gson.fromJson(fileReader, VirtualFileSystemInode.class);
             inode.setName(getLast(path));
             if (inode.isDirectory()) {
                 VirtualFileSystemDirectory dir = (VirtualFileSystemDirectory) inode;
@@ -316,13 +320,14 @@ public class VirtualFileSystem {
         } else {
             new File(getRealPath(inode.getParent().getPath())).mkdirs();
         }
-        Map<String, Object> params = new HashMap<>();
-        params.put(JsonWriter.PRETTY_PRINT, true);
-        try (OutputStream out = new SafeFileOutputStream(fullPath);
-             JsonWriter writer = new JsonWriter(out, params)) {
-            writer.write(inode);
+
+        try {
+            Gson gson = SerializerUtils.getSerializer();
+            FileWriter writer = new FileWriter(fullPath);
             logger.debug("Wrote fullPath {}", fullPath);
-        } catch (IOException | JsonIoException e) {
+            gson.toJson(inode, writer);
+            writer.close();
+        } catch (Exception e) {
             logger.error("Unable to write {} to disk", fullPath, e);
         }
     }

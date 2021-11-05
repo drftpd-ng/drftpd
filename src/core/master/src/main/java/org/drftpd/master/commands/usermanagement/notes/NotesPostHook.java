@@ -54,7 +54,7 @@ public class NotesPostHook {
         }
         try {
             // Test if metadata exist for user and if so add to response
-            NotesData notes = myUser.getKeyed().getObjectNotes(NotesData.NOTES);
+            NotesData notes = myUser.getConfigHelper().get(NotesData.NOTES);
             Map<String, Object> env = new HashMap<>();
             int cnt = 1;
             for (String note : notes.getNotes()) {

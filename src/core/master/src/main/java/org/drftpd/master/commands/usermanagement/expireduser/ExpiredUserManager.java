@@ -105,7 +105,7 @@ public class ExpiredUserManager implements UserResetPreHookInterface {
 
     public void resetDay(Date d) {
         for (User user : GlobalContext.getGlobalContext().getUserManager().getAllUsers()) {
-            if (user.getKeyed().getObjectDate(ExpiredUserData.EXPIRES, new Date(4102441199000L)).before(new Date())) {
+            if (user.getConfigHelper().get(ExpiredUserData.EXPIRES, new Date(4102441199000L)).before(new Date())) {
                 doExpired(user);
             }
         }

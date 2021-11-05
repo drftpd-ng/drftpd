@@ -21,6 +21,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.drftpd.common.dynamicdata.Key;
 import org.drftpd.common.dynamicdata.KeyNotFoundException;
+import org.drftpd.common.dynamicdata.element.ConfigElement;
 import org.drftpd.common.io.PermissionDeniedException;
 import org.drftpd.common.vfs.InodeHandleInterface;
 import org.drftpd.master.GlobalContext;
@@ -453,7 +454,7 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable<In
      * @param object The data to be stored in the map
      * @throws FileNotFoundException If the inode for this handle does not exist
      */
-    public <T> void addPluginMetaData(Key<T> key, T object) throws FileNotFoundException {
+    public <T> void addPluginMetaData(Key<T> key, ConfigElement<T> object) throws FileNotFoundException {
         getInode().addPluginMetaData(key, object);
     }
 
@@ -479,48 +480,6 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable<In
      */
     public <T> T getPluginMetaData(Key<T> key) throws FileNotFoundException, KeyNotFoundException {
         return getInode().getPluginMetaData(key);
-    }
-
-    /**
-     * Add meta data provided by a plugin to the map serialized as part of the inode
-     * for future retrieval. It is not safe to use custom classes defined in the plugin
-     * for storing data here, only classes provided by the Java API or the master plugin and
-     * its parents should be used, using other classes will lead to potential memory leaks.
-     * Data stored against this map will not be lost if the plugin which stored it is not
-     * loaded at the time the inode is deserialized providing the stated conditions are met.
-     *
-     * @param key    A unique key to store the meta data against
-     * @param object The data to be stored
-     * @throws FileNotFoundException If the inode for this handle does not exist
-     */
-    public <T> void addUntypedPluginMetaData(String key, T object) throws FileNotFoundException {
-        getInode().addUntypedPluginMetaData(key, object);
-    }
-
-    /**
-     * Remove meta data provided by a plugin from the map serialized as part of the inode.
-     *
-     * @param key   The key which was used when storing the data in the map
-     * @param clazz A class representing the type of the object to return
-     * @return The data which was stored against the key or <tt>null</tt> if the map contained
-     * no entry for the key
-     * @throws FileNotFoundException If the inode for this handle does not exist
-     */
-    public <T> T removeUntypedPluginMetaData(String key, Class<T> clazz) throws FileNotFoundException {
-        return getInode().removeUntypedPluginMetaData(key);
-    }
-
-    /**
-     * Retrieve custom meta data provided by a plugin from the map serialized as part of the inode.
-     *
-     * @param key   The key which was used when storing the data in the map
-     * @param clazz A class representing the type of the object to return
-     * @return The data which was stored against the key or <tt>null</tt> if the map contained
-     * no entry for the provided key
-     * @throws FileNotFoundException If the inode for this handle does not exist
-     */
-    public <T> T getUntypedPluginMetaData(String key, Class<T> clazz) throws FileNotFoundException {
-        return getInode().getUntypedPluginMetaData(key);
     }
 
     public Map<String, AtomicInteger> getSlaveRefCounts() throws FileNotFoundException {

@@ -60,7 +60,7 @@ public class ExpiredUserPreHook {
             return request;
         }
 
-        if (newUser.getKeyed().getObjectDate(ExpiredUserData.EXPIRES, new Date(4102441199000L)).before(new Date())) {
+        if (newUser.getConfigHelper().get(ExpiredUserData.EXPIRES, new Date(4102441199000L)).before(new Date())) {
             request.setDeniedResponse(StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED"));
             request.setAllowed(false);
         }

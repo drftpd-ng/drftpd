@@ -83,7 +83,7 @@ public class ZipscriptVFSDataSFV {
                     } catch (RemoteIOException e) {
                         throw new IOException(e.getMessage());
                     }
-                    _dir.addPluginMetaData(SFVInfo.SFVINFO, info);
+                    _dir.addPluginMetaData(SFVInfo.SFVINFO, new ConfigSfv(info));
                     return info;
                 }
                 throw new SlaveUnavailableException("No slave for SFV file available");

@@ -17,21 +17,26 @@
  */
 package org.drftpd.master.commands.nuke;
 
-import com.cedarsoftware.util.io.JsonIoException;
-import com.cedarsoftware.util.io.JsonReader;
-import com.cedarsoftware.util.io.JsonWriter;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import org.apache.commons.collections4.map.LRUMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.drftpd.common.util.Bytes;
 import org.drftpd.master.commands.nuke.metadata.NukeData;
 import org.drftpd.master.io.SafeFileOutputStream;
+import org.drftpd.master.usermanager.GroupFileException;
+import org.drftpd.master.usermanager.javabeans.BeanGroup;
 import org.drftpd.master.vfs.VirtualFileSystem;
 import org.drftpd.slave.exceptions.ObjectNotFoundException;
 
 import java.beans.XMLDecoder;
 import java.io.*;
+import java.lang.reflect.Type;
 import java.util.*;
+
+import static org.drftpd.common.util.SerializerUtils.getDeserializer;
+import static org.drftpd.common.util.SerializerUtils.getSerializer;
 
 /**
  * NukeBeans handles the logging of nukes. Using a TreeMap, it sorts all nukes
@@ -242,12 +247,12 @@ public class NukeBeans {
      * @throws IOException
      */
     public void commit() throws IOException {
-        Map<String, Object> params = new HashMap<>();
-        params.put(JsonWriter.PRETTY_PRINT, true);
-        try (OutputStream out = new SafeFileOutputStream(_nukebeansPath + VirtualFileSystem.separator + "nukebeans.json");
-             JsonWriter writer = new JsonWriter(out, params)) {
-            writer.write(_nukes);
-        } catch (IOException | JsonIoException e) {
+        try {
+            Gson gson = getSerializer();
+            FileWriter writer = new FileWriter(_nukebeansPath + VirtualFileSystem.separator + "nukebeans.json");
+            gson.toJson(_nukes, writer);
+            writer.close();
+        } catch (Exception e) {
             throw new IOException(e.getMessage());
         }
     }
@@ -267,14 +272,15 @@ public class NukeBeans {
     @SuppressWarnings("unchecked")
     private void loadLRUMap() {
         Map<String, NukeData> nukees = new LRUMap(200);
-        try (InputStream in = new FileInputStream(_nukebeansPath + VirtualFileSystem.separator + "nukebeans.json");
-             JsonReader reader = new JsonReader(in)) {
-            nukees.putAll((Map<String, NukeData>) reader.readObject());
-            logger.debug("Loaded log from .json, size: {}", nukees.size());
+        try {
+            Gson gson = getDeserializer();
+            FileReader fileReader = new FileReader(_nukebeansPath + VirtualFileSystem.separator + "nukebeans.json");
+            Type type = new TypeToken<Map<String, NukeData>>() {}.getType();
+            Map<String, NukeData> nukes = gson.fromJson(fileReader, type);
+            nukees.putAll(nukes);
         } catch (FileNotFoundException e) {
-            // Lets see if there is a legacy xml nuke log to load
             loadXMLLRUMap(nukees);
-        } catch (IOException e) {
+        } catch (Exception e) {
             logger.error("IOException reading json nuke log file", e);
         }
         _nukeBeans.setLRUMap(nukees);

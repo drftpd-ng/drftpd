@@ -63,7 +63,7 @@ public class ExpiredUser extends CommandInterface {
 
         try {
             Date myDate = new SimpleDateFormat("yyyy-MM-dd").parse(date);
-            user.getKeyed().setObject(ExpiredUserData.EXPIRES, myDate);
+            user.getConfigHelper().setDate(ExpiredUserData.EXPIRES, myDate);
 
         } catch (ParseException e) {
             throw new ImproperUsageException();
@@ -91,7 +91,7 @@ public class ExpiredUser extends CommandInterface {
             throw new ImproperUsageException();
         }
 
-        user.getKeyed().remove(ExpiredUserData.EXPIRES);
+        user.getConfigHelper().remove(ExpiredUserData.EXPIRES);
         user.commit();
         return new CommandResponse(200, "Removed Expiry Date For '" + user.getName() + "'");
     }

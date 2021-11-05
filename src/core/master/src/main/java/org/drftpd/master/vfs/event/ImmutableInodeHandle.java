@@ -80,10 +80,6 @@ public class ImmutableInodeHandle {
         throw new UnsupportedOperationException("Slaves can only be retrieved from file inodes");
     }
 
-    public <T> T getUntypedPluginMetaData(String key, Class<T> clazz) {
-        return _inode.getUntypedPluginMetaData(key);
-    }
-
     public String getUsername() {
         return _inode.getUsername();
     }

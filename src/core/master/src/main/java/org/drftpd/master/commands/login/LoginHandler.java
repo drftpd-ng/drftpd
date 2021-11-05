@@ -236,7 +236,7 @@ public class LoginHandler extends CommandInterface {
         if (newUser.isDeleted()) {
             getIP(request);
             request.getSession().setObject(BaseFtpConnection.FAILEDREASON, "USER Deleted");
-            return new CommandResponse(530, newUser.getKeyed().getObjectString(UserManagement.REASON, StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED").getMessage()));
+            return new CommandResponse(530, newUser.getConfigHelper().get(UserManagement.REASON, StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED").getMessage()));
         }
 
         if (!GlobalContext.getConfig().isLoginAllowed(newUser)) {

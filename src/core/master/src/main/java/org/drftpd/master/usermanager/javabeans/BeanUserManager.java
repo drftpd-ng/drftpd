@@ -17,7 +17,6 @@
  */
 package org.drftpd.master.usermanager.javabeans;
 
-import com.cedarsoftware.util.io.JsonReader;
 import com.google.gson.Gson;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -27,6 +26,8 @@ import org.drftpd.slave.exceptions.FileExistsException;
 import java.io.*;
 import java.lang.ref.SoftReference;
 import java.util.*;
+
+import static org.drftpd.common.util.SerializerUtils.getDeserializer;
 
 /**
  * This is a new usermanager that after recommendation from captain- serializes
@@ -168,9 +169,9 @@ public class BeanUserManager extends AbstractUserManager {
      * @throws GroupFileException, if an error (i/o) occured while loading data.
      */
     protected Group loadGroup(String groupName) throws GroupFileException {
-        Gson gson = new Gson();
         try {
             logger.debug("Loading '{}' Json group data from disk.", groupName);
+            Gson gson = getDeserializer();
             File userFile = getGroupFile(groupName);
             FileReader fileReader = new FileReader(userFile);
             BeanGroup group = gson.fromJson(fileReader, BeanGroup.class);
@@ -188,7 +189,7 @@ public class BeanUserManager extends AbstractUserManager {
      * @throws UserFileException, if an error (i/o) occured while loading data.
      */
     protected User loadUser(String userName) throws UserFileException {
-        Gson gson = new Gson();
+        Gson gson = getDeserializer();
         try {
             logger.debug("Loading '{}' Json user data from disk.", userName);
             File userFile = getUserFile(userName);

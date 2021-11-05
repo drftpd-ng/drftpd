@@ -29,6 +29,7 @@ import org.drftpd.master.vfs.InodeHandle;
 import org.drftpd.zipscript.common.mp3.AsyncResponseMP3Info;
 import org.drftpd.zipscript.common.mp3.ID3Tag;
 import org.drftpd.zipscript.common.mp3.MP3Info;
+import org.drftpd.zipscript.master.mp3.ConfigMp3;
 import org.drftpd.zipscript.master.mp3.ZipscriptMP3Issuer;
 
 import java.io.FileNotFoundException;
@@ -84,7 +85,7 @@ public class ZipscriptVFSDataMP3 {
                 }
             }
             if (mp3info != null) {
-                dir.addPluginMetaData(MP3Info.MP3INFO, mp3info);
+                dir.addPluginMetaData(MP3Info.MP3INFO, new ConfigMp3(mp3info));
                 return mp3info;
             }
             throw new FileNotFoundException("No usable mp3 files found in directory");
@@ -122,11 +123,11 @@ public class ZipscriptVFSDataMP3 {
                 getMP3InfoFromInode(dir);
             } catch (KeyNotFoundException e1) {
                 _setDir = true;
-                dir.addPluginMetaData(MP3Info.MP3INFO, mp3info);
+                dir.addPluginMetaData(MP3Info.MP3INFO, new ConfigMp3(mp3info));
             }
 
             // Update mp3info on the file inode
-            _inode.addPluginMetaData(MP3Info.MP3INFO, mp3info);
+            _inode.addPluginMetaData(MP3Info.MP3INFO, new ConfigMp3(mp3info));
             return mp3info;
         } else {
             throw new IllegalArgumentException("Inode type other than directory or file passed in");

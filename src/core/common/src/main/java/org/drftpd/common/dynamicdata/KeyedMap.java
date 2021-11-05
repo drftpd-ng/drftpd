@@ -17,6 +17,8 @@
  */
 package org.drftpd.common.dynamicdata;
 
+import org.drftpd.common.dynamicdata.element.ConfigElement;
+
 import java.util.Hashtable;
 import java.util.Map;
 

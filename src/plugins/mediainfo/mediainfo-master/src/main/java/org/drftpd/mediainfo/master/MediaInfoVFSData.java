@@ -77,7 +77,7 @@ public class MediaInfoVFSData {
             }
             info.setChecksum(_file.getCheckSum());
             info.setFileName(_file.getName());
-            _file.addPluginMetaData(MediaInfo.MEDIAINFO, info);
+            _file.addPluginMetaData(MediaInfo.MEDIAINFO, new ConfigMediaInfo(info));
             return info;
         }
         throw new SlaveUnavailableException("No slave for media file available");

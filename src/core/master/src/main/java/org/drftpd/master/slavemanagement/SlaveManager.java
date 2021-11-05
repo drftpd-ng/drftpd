@@ -17,12 +17,14 @@
  */
 package org.drftpd.master.slavemanagement;
 
-import com.cedarsoftware.util.io.JsonReader;
+import com.google.gson.Gson;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.drftpd.common.exceptions.SSLServiceException;
 import org.drftpd.common.network.SSLService;
 import org.drftpd.master.Master;
+import org.drftpd.master.usermanager.GroupFileException;
+import org.drftpd.master.usermanager.javabeans.BeanGroup;
 import org.elasticsearch.common.ssl.SslConfiguration;
 import org.elasticsearch.common.ssl.SslConfigurationLoader;
 
@@ -51,6 +53,8 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static org.drftpd.common.util.SerializerUtils.getDeserializer;
 
 /**
  * @author mog
@@ -146,9 +150,11 @@ public class SlaveManager extends SslConfigurationLoader implements Runnable, Ti
         if (slaveName == null) {
             throw new NullPointerException();
         }
-        try (InputStream in = new FileInputStream(getSlaveFile(slaveName)); JsonReader reader = new JsonReader(in)) {
+        try {
             logger.debug("Loading slave '{}' Json data from disk.", slaveName);
-            RemoteSlave rSlave = (RemoteSlave) reader.readObject();
+            Gson gson = getDeserializer();
+            FileReader fileReader = new FileReader(getSlaveFile(slaveName));
+            RemoteSlave rSlave = gson.fromJson(fileReader, RemoteSlave.class);
             if (rSlave.getName().equals(slaveName)) {
                 _rSlaves.put(slaveName, rSlave);
                 return rSlave;

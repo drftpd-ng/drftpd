@@ -67,7 +67,7 @@ public class NukeUtils {
      * @param multiplier
      * @return the amount of nuked bytes.
      */
-    public static long calculateNukedAmount(long size, double ratio,
+    public static long calculateNukedAmount(long size, float ratio,
                                             int multiplier) {
         if (size != 0 && ratio != 0 && multiplier != 0) {
             return (long) ((size * ratio) + (size * (multiplier - 1)));
@@ -252,17 +252,17 @@ public class NukeUtils {
                 }
 
                 long debt = NukeUtils.calculateNukedAmount(size,
-                        nukee.getKeyed().getObjectDouble(UserManagement.RATIO), multiplier);
+                        nukee.getConfigHelper().get(UserManagement.RATIO, 0F), multiplier);
 
                 nukedAmount += debt;
 
                 nukee.updateCredits(-debt);
                 nukee.updateUploadedBytes(-size);
 
-                nukee.getKeyed().incrementLong(NukeUserData.NUKEDBYTES, debt);
+                nukee.getConfigHelper().incrementLong(NukeUserData.NUKEDBYTES, debt);
 
-                nukee.getKeyed().incrementInt(NukeUserData.NUKED);
-                nukee.getKeyed().setObject(NukeUserData.LASTNUKED, System.currentTimeMillis());
+                nukee.getConfigHelper().incrementInt(NukeUserData.NUKED);
+                nukee.getConfigHelper().setLong(NukeUserData.LASTNUKED, System.currentTimeMillis());
 
                 nukee.commit();
             }
@@ -303,7 +303,7 @@ public class NukeUtils {
 
             // adding nuke metadata to dir.
             try {
-                nukeDir.addPluginMetaData(NukeData.NUKEDATA, nd);
+                nukeDir.addPluginMetaData(NukeData.NUKEDATA, new ConfigNuke(nd));
             } catch (FileNotFoundException e) {
                 logger.warn("Failed to add nuke metadata, dir gone: {}", nukeDir.getPath(), e);
             }
@@ -368,14 +368,14 @@ public class NukeUtils {
                 }
 
                 long nukedAmount = NukeUtils.calculateNukedAmount(nukeeObj.getAmount(),
-                        nukee.getKeyed().getObjectDouble(UserManagement.RATIO),
+                        nukee.getConfigHelper().get(UserManagement.RATIO, 0F),
                         nd.getMultiplier());
 
                 nukee.updateCredits(nukedAmount);
                 nukee.updateUploadedBytes(nukeeObj.getAmount());
 
-                nukee.getKeyed().incrementInt(NukeUserData.NUKED, -1);
-                nukee.getKeyed().incrementLong(NukeUserData.NUKEDBYTES, -nukedAmount);
+                nukee.getConfigHelper().incrementInt(NukeUserData.NUKED, -1);
+                nukee.getConfigHelper().incrementLong(NukeUserData.NUKEDBYTES, -nukedAmount);
 
                 nukee.commit();
             }

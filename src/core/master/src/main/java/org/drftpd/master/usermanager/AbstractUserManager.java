@@ -70,19 +70,19 @@ public abstract class AbstractUserManager implements UserManager {
         User user = createUserImpl("drftpd");
         user.setGroup(group);
         user.setPassword("drftpd");
-        user.getKeyed().setObject(UserManagement.RATIO, (float) 0);
-        user.getKeyed().setObject(UserManagement.MAXLOGINS, 0);
-        user.getKeyed().setObject(UserManagement.MAXLOGINSIP, 0);
-        user.getKeyed().setObject(UserManagement.MAXSIMUP, 0);
-        user.getKeyed().setObject(UserManagement.MAXSIMDN, 0);
+        user.getConfigHelper().setFloat(UserManagement.RATIO, (float) 0);
+        user.getConfigHelper().setInt(UserManagement.MAXLOGINS, 0);
+        user.getConfigHelper().setInt(UserManagement.MAXLOGINSIP, 0);
+        user.getConfigHelper().setInt(UserManagement.MAXSIMUP, 0);
+        user.getConfigHelper().setInt(UserManagement.MAXSIMDN, 0);
         // user.getKeyed().setObject(Statistics.LOGINS,0);
-        user.getKeyed().setObject(UserManagement.CREATED, new Date());
-        user.getKeyed().setObject(UserManagement.LASTSEEN, new Date());
-        user.getKeyed().setObject(UserManagement.WKLYALLOTMENT, 0L);
-        user.getKeyed().setObject(UserManagement.COMMENT, "Auto-Generated");
-        user.getKeyed().setObject(UserManagement.IRCIDENT, "");
-        user.getKeyed().setObject(UserManagement.TAGLINE, "drftpd");
-        user.getKeyed().setObject(UserManagement.BANTIME, new Date());
+        user.getConfigHelper().setDate(UserManagement.CREATED, new Date());
+        user.getConfigHelper().setDate(UserManagement.LASTSEEN, new Date());
+        user.getConfigHelper().setLong(UserManagement.WKLYALLOTMENT, 0L);
+        user.getConfigHelper().setString(UserManagement.COMMENT, "Auto-Generated");
+        user.getConfigHelper().setString(UserManagement.IRCIDENT, "");
+        user.getConfigHelper().setString(UserManagement.TAGLINE, "drftpd");
+        user.getConfigHelper().setDate(UserManagement.BANTIME, new Date());
         // user.getKeyed().setObject(Nuke.NUKED,0);
         // user.getKeyed().setObject(Nuke.NUKEDBYTES,new Long(0));
 
@@ -245,7 +245,7 @@ public abstract class AbstractUserManager implements UserManager {
     public User getUserByIdent(String ident, String botName) throws NoSuchUserException {
         for (User user : getAllUsers()) {
             try {
-                String uidentList = user.getKeyed().getObjectString(UserManagement.IRCIDENT);
+                String uidentList = user.getConfigHelper().get(UserManagement.IRCIDENT);
                 String[] identArray = uidentList.split(",");
                 for (String anIdentArray : identArray) {
                     if (anIdentArray.matches("^" + botName + "\\|" + ident + "$")) {
