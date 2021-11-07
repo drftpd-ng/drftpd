@@ -20,19 +20,14 @@ package org.drftpd.master.slavemanagement;
 import com.google.gson.Gson;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.drftpd.common.exceptions.SSLServiceException;
-import org.drftpd.common.network.SSLService;
-import org.drftpd.master.Master;
-import org.drftpd.master.usermanager.GroupFileException;
-import org.drftpd.master.usermanager.javabeans.BeanGroup;
-import org.elasticsearch.common.ssl.SslConfiguration;
-import org.elasticsearch.common.ssl.SslConfigurationLoader;
-
 import org.drftpd.common.exceptions.RemoteIOException;
+import org.drftpd.common.exceptions.SSLServiceException;
 import org.drftpd.common.network.AsyncCommandArgument;
+import org.drftpd.common.network.SSLService;
 import org.drftpd.common.protocol.AbstractIssuer;
 import org.drftpd.common.util.PropertyHelper;
 import org.drftpd.master.GlobalContext;
+import org.drftpd.master.Master;
 import org.drftpd.master.cron.TimeEventInterface;
 import org.drftpd.master.exceptions.FatalException;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
@@ -43,12 +38,13 @@ import org.drftpd.master.protocol.AbstractBasicIssuer;
 import org.drftpd.master.protocol.MasterProtocolCentral;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.slave.exceptions.ObjectNotFoundException;
+import org.elasticsearch.common.ssl.SslConfiguration;
+import org.elasticsearch.common.ssl.SslConfigurationLoader;
 
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLSocket;
 import java.beans.XMLDecoder;
 import java.io.*;
-import java.net.InetSocketAddress;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.Map.Entry;
@@ -64,7 +60,6 @@ public class SlaveManager extends SslConfigurationLoader implements Runnable, Ti
     protected static final int actualTimeout = 60000; // one minute, evaluated
 
     private static final String SETTING_PREFIX = "slavemanager.ssl.";
-    private static final List<String> DEFAULT_SSL_PROTOCOLS = Collections.singletonList("TLSv1.3");
 
     private static final Logger logger = LogManager.getLogger(SlaveManager.class.getName());
     private static final String slavePath = "userdata/slaves/";
