@@ -18,20 +18,15 @@
 package org.drftpd.master.vfs;
 
 import com.google.gson.Gson;
-import org.apache.commons.lang3.SerializationUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.drftpd.common.io.PermissionDeniedException;
 import org.drftpd.common.util.SerializerUtils;
 import org.drftpd.master.GlobalContext;
-import org.drftpd.master.io.SafeFileOutputStream;
-import org.drftpd.master.usermanager.javabeans.BeanGroup;
 import org.drftpd.master.vfs.event.*;
 
 import java.io.*;
 import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
 import static org.drftpd.common.util.SerializerUtils.getDeserializer;
