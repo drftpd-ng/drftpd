@@ -22,7 +22,6 @@ import org.apache.logging.log4j.Logger;
 import org.drftpd.master.usermanager.javabeans.BeanUser;
 import org.drftpd.master.usermanager.javabeans.BeanUserManager;
 import org.springframework.security.crypto.bcrypt.BCrypt;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -37,7 +36,6 @@ public class EncryptedBeanUser extends BeanUser {
     // BCrypt workload to use when generating password hashes.
     private static final int _workload = 12;
     private transient EncryptedBeanUserManager _um;
-    private int _encryption = 0;
 
     /*
      * Converts BeanUser to EncryptedBeanUser
@@ -48,6 +46,7 @@ public class EncryptedBeanUser extends BeanUser {
 
         this.setCredits(user.getCredits());
         this.setDeleted(user.isDeleted());
+        this.setEncryption(user.getEncryption());
 
         this.setGroup(user.getGroup());
 
@@ -96,9 +95,7 @@ public class EncryptedBeanUser extends BeanUser {
             this.setUploadedTimeForPeriod(i, user.getUploadedTimeForPeriod(i));
         }
 
-        this.setEncryption(0);
         this.setPassword(user.getPassword());
-
         this.commit();
     }
 
@@ -155,20 +152,6 @@ public class EncryptedBeanUser extends BeanUser {
     }
 
     /*
-     * Returns current encryption type of password
-     */
-    public int getEncryption() {
-        return _encryption;
-    }
-
-    /*
-     * Sets encryption type for password
-     */
-    public void setEncryption(int encryption) {
-        _encryption = encryption;
-    }
-
-    /*
      * Sets EncryptedBeanUserManager
      */
     @Override
@@ -215,16 +198,17 @@ public class EncryptedBeanUser extends BeanUser {
                 if (encryptedPassword != null && encryptedPassword.equals(storedPassword)) result = true;
                 break;
             case 7:
-                if (BCrypt.checkpw(password, storedPassword)) result = true;
+                boolean checkpw = BCrypt.checkpw(password, storedPassword);
+                if (checkpw) result = true;
                 break;
             default:
                 if (password.equals(storedPassword)) result = true;
                 break;
         }
 
+        // Crypt activated after start, enable with SITE RELOAD
         if (getEncryption() != _um.getPasscrypt()) {
             logger.debug("Converting Password To Current Encryption");
-            setEncryption(0);
             this.setPassword(password);
             super.commit();
         }
@@ -232,59 +216,33 @@ public class EncryptedBeanUser extends BeanUser {
         return result;
     }
 
+    private String encrypt(int expectedEncryption, String password) {
+        return switch (expectedEncryption) {
+            case 1 -> Encrypt(password, "MD2");
+            case 2 -> Encrypt(password, "MD5");
+            case 3 -> Encrypt(password, "SHA-1");
+            case 4 -> Encrypt(password, "SHA-256");
+            case 5 -> Encrypt(password, "SHA-384");
+            case 6 -> Encrypt(password, "SHA-512");
+            case 7 -> BCrypt.hashpw(password, BCrypt.gensalt(_workload));
+            default -> throw new UnsupportedOperationException("Unknown encryption type" + expectedEncryption);
+        };
+    }
+
     /*
-     * This makes sure the password isn't encrypted already (when being read from xml)
-     * It will encrypt the password in all other cases.
+     * Set the password, encrypt on the fly is needed
      */
     @Override
     public void setPassword(String password) {
-        if (((getEncryption() == 0) || (!password.equalsIgnoreCase(getPassword()))) && (_um != null)) {
-            String pass;
-            switch (_um.getPasscrypt()) {
-                case 1:
-                    pass = Encrypt(password, "MD2");
-                    setEncryption(1);
-                    break;
-                case 2:
-                    pass = Encrypt(password, "MD5");
-                    setEncryption(2);
-                    break;
-                case 3:
-                    pass = Encrypt(password, "SHA-1");
-                    setEncryption(3);
-                    break;
-                case 4:
-                    pass = Encrypt(password, "SHA-256");
-                    setEncryption(4);
-                    break;
-                case 5:
-                    pass = Encrypt(password, "SHA-384");
-                    setEncryption(5);
-                    break;
-                case 6:
-                    pass = Encrypt(password, "SHA-512");
-                    setEncryption(6);
-                    break;
-                case 7:
-                    pass = BCrypt.hashpw(password, BCrypt.gensalt(_workload));
-                    setEncryption(7);
-                    break;
-                default:
-                    pass = password;
-                    setEncryption(0);
-                    break;
-            }
-
-            if (pass != null) {
-                if (pass.length() < 2) {
-                    logger.debug("Failed To Set Password, Length Too Short");
-                } else {
-                    super.setPassword(pass);
-                }
-            }
-        } else {
+        if (password.length() < 2) {
+            logger.debug("Failed To Set Password, Length Too Short");
+        }
+        int expectedEncryption = _um.getPasscrypt();
+        if (getEncryption() == expectedEncryption) {
             super.setPassword(password);
+        } else if(getEncryption() == 0 /* Password is currently clear */) {
+            setEncryption(expectedEncryption);
+            super.setPassword(encrypt(expectedEncryption, password));
         }
     }
-
 }

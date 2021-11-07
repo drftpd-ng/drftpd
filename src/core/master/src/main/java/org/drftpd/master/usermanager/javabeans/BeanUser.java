@@ -41,6 +41,7 @@ public class BeanUser extends AbstractUser {
 
     private transient BeanUserManager _um;
 
+    private int _encryption = 0;
     private String _password = "";
 
     private transient boolean _purged;
@@ -64,6 +65,20 @@ public class BeanUser extends AbstractUser {
 
     public void setUserManager(BeanUserManager manager) {
         _um = manager;
+    }
+
+    /*
+     * Returns current encryption type of password
+     */
+    public int getEncryption() {
+        return _encryption;
+    }
+
+    /*
+     * Sets encryption type for password
+     */
+    public void setEncryption(int encryption) {
+        _encryption = encryption;
     }
 
     public boolean checkPassword(String password) {
