@@ -39,7 +39,6 @@ import org.drftpd.master.GlobalContext;
 import org.drftpd.master.event.SlaveEvent;
 import org.drftpd.master.exceptions.FatalException;
 import org.drftpd.master.exceptions.SlaveUnavailableException;
-import org.drftpd.master.io.SafeFileOutputStream;
 import org.drftpd.master.network.RemoteTransfer;
 import org.drftpd.master.stats.ExtendedTimedStats;
 import org.drftpd.master.usermanager.Entity;
@@ -54,7 +53,10 @@ import java.io.*;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Properties;
+import java.util.StringTokenizer;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.PatternSyntaxException;
@@ -81,7 +83,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
     private transient long _lastUploadReceiving = 0;
     private transient long _lastResponseReceived = System.currentTimeMillis();
     private transient long _lastCommandSent = System.currentTimeMillis();
-    private final String _name;
+    private String _name;
     private transient DiskStatus _status;
     private HostMaskCollection _ipMasks;
     private Properties _keysAndValues;
@@ -100,8 +102,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
     private transient RemergeThread _remergeThread;
     private transient CrcThread _crcThread;
 
-    public RemoteSlave(String name) {
-        _name = name;
+    public RemoteSlave() {
         _keysAndValues = new Properties();
         _transientKeyedMap = new KeyedMap<>();
         _ipMasks = new HostMaskCollection();
@@ -112,14 +113,9 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
         _commandMonitor = new Object();
     }
 
-    public static Hashtable<String, RemoteSlave> rslavesToHashtable(Collection<RemoteSlave> rslaves) {
-        Hashtable<String, RemoteSlave> map = new Hashtable<>(rslaves.size());
-
-        for (RemoteSlave rslave : rslaves) {
-            map.put(rslave.getName(), rslave);
-        }
-
-        return map;
+    public RemoteSlave(String name) {
+        this();
+        _name = name;
     }
 
     public static String getSlaveNameFromObjectInput(ObjectInputStream in)
