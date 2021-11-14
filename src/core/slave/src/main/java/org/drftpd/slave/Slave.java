@@ -667,7 +667,7 @@ public class Slave extends SslConfigurationLoader {
     }
 
     protected char[] getSecureSetting(String key) throws Exception {
-        logger.error("!!NOT IMPLEMENTED!! Looking up key: {} as char[] - !!NOT IMPLEMENTED!!", key);
+        logger.debug("!!NOT IMPLEMENTED!! Looking up key: {} as char[] - !!NOT IMPLEMENTED!!", key);
         return null;
     }
 
