@@ -22,6 +22,11 @@ import org.drftpd.zipscript.common.flac.FlacInfo;
 
 public class ConfigFlac extends ConfigElement<FlacInfo> {
 
+    @SuppressWarnings("unused")
+    public ConfigFlac() {
+        super();
+    }
+
     public ConfigFlac(FlacInfo value) {
         super(value);
     }

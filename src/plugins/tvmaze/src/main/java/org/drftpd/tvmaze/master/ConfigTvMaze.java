@@ -22,6 +22,11 @@ import org.drftpd.tvmaze.master.metadata.TvMazeInfo;
 
 public class ConfigTvMaze extends ConfigElement<TvMazeInfo> {
 
+    @SuppressWarnings("unused")
+    public ConfigTvMaze() {
+        super();
+    }
+
     public ConfigTvMaze(TvMazeInfo value) {
         super(value);
     }

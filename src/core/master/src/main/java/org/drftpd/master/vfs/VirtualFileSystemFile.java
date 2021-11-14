@@ -17,6 +17,7 @@
  */
 package org.drftpd.master.vfs;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.drftpd.common.dynamicdata.Key;
 import org.drftpd.common.exceptions.TransferFailedException;
 import org.drftpd.master.GlobalContext;
@@ -38,14 +39,21 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
     public static final Key<Integer> DOWNLOADEDTIMES = new Key<>(VirtualFileSystemFile.class, "dltimes");
     public static final Key<Long> DOWNLOADDURATION = new Key<>(VirtualFileSystemFile.class, "dlduration");
     protected Set<String> _slaves;
-    private final transient Queue<RemoteTransfer> _uploads = new ConcurrentLinkedQueue<>();
 
+    @JsonIgnore
+    private final transient Queue<RemoteTransfer> _uploads = new ConcurrentLinkedQueue<>();
+    @JsonIgnore
     private final transient Queue<RemoteTransfer> _downloads = new ConcurrentLinkedQueue<>();
 
     private long _size;
 
+    @SuppressWarnings("unused")
+    public VirtualFileSystemFile() {
+        super();
+    }
+
     public VirtualFileSystemFile(String username, String group, long size, String initialSlave) {
-        this(username, group, size, new HashSet<>(Arrays.asList(initialSlave)));
+        this(username, group, size, new HashSet<>(List.of(initialSlave)));
     }
 
     public VirtualFileSystemFile(String username, String group, long size,

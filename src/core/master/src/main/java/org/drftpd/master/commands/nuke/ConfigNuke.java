@@ -22,6 +22,11 @@ import org.drftpd.master.commands.nuke.metadata.NukeData;
 
 public class ConfigNuke extends ConfigElement<NukeData> {
 
+    @SuppressWarnings("unused")
+    public ConfigNuke() {
+        super();
+    }
+
     public ConfigNuke(NukeData value) {
         super(value);
     }

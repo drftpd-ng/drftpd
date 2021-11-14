@@ -22,6 +22,11 @@ import org.drftpd.zipscript.common.sfv.SFVInfo;
 
 public class ConfigSfv extends ConfigElement<SFVInfo> {
 
+    @SuppressWarnings("unused")
+    public ConfigSfv() {
+        super();
+    }
+
     public ConfigSfv(SFVInfo value) {
         super(value);
     }

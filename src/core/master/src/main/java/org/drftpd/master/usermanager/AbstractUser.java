@@ -17,6 +17,7 @@
  */
 package org.drftpd.master.usermanager;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.drftpd.common.dynamicdata.Key;
@@ -44,6 +45,7 @@ import static org.drftpd.common.dynamicdata.DynamicConfigHelper.configHelper;
  * @author mog
  * @version $Id$
  */
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "@type")
 public abstract class AbstractUser extends User implements Commitable {
     private static final Logger logger = LogManager.getLogger(AbstractUser.class);
     private Map<Key<?>, ConfigElement<?>> _configs = new HashMap<>();
@@ -61,6 +63,9 @@ public abstract class AbstractUser extends User implements Commitable {
 
     public DynamicConfigHelper getConfigHelper() {
         return configHelper(_configs);
+    }
+
+    public AbstractUser() {
     }
 
     public AbstractUser(String username) {

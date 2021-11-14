@@ -17,34 +17,24 @@
  */
 package org.drftpd.master.tests;
 
-import org.drftpd.master.commands.usermanagement.UserManagement;
 import org.drftpd.master.usermanager.AbstractGroup;
 import org.drftpd.master.usermanager.AbstractUserManager;
 import org.drftpd.master.usermanager.UserManager;
 
 import java.io.IOException;
-import java.util.Date;
 
 
 public class DummyGroup extends AbstractGroup {
     private DummyUserManager _userManager;
 
-    public DummyGroup(String name) {
-        super(name);
+    @SuppressWarnings("unused")
+    public DummyGroup() {
+        super();
     }
 
     public DummyGroup(String name, DummyUserManager userManager) {
         super(name);
         _userManager = userManager;
-    }
-
-    public DummyGroup(String name, long time) {
-        this(name);
-        setCreated(new Date(time));
-    }
-
-    public boolean checkPassword(String password) {
-        return true;
     }
 
     public void commit() {}

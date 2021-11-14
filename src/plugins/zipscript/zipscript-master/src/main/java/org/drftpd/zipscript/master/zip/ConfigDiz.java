@@ -22,6 +22,11 @@ import org.drftpd.zipscript.common.zip.DizInfo;
 
 public class ConfigDiz extends ConfigElement<DizInfo> {
 
+    @SuppressWarnings("unused")
+    public ConfigDiz() {
+        super();
+    }
+
     public ConfigDiz(DizInfo value) {
         super(value);
     }

@@ -17,6 +17,7 @@
  */
 package org.drftpd.master.usermanager.encryptedjavabeans;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.drftpd.master.usermanager.javabeans.BeanUser;
@@ -35,6 +36,8 @@ public class EncryptedBeanUser extends BeanUser {
     private static final Logger logger = LogManager.getLogger(EncryptedBeanUser.class);
     // BCrypt workload to use when generating password hashes.
     private static final int _workload = 12;
+
+    @JsonIgnore
     private transient EncryptedBeanUserManager _um;
 
     /*
@@ -102,8 +105,9 @@ public class EncryptedBeanUser extends BeanUser {
     /*
      * Constructor to tell Parent class all is good
      */
-    public EncryptedBeanUser(String username) {
-        super(username);
+    @SuppressWarnings("unused")
+    public EncryptedBeanUser() {
+        super();
     }
 
     /*

@@ -17,17 +17,18 @@
  */
 package org.drftpd.master.usermanager.javabeans;
 
-import com.google.gson.Gson;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.drftpd.master.usermanager.*;
 import org.drftpd.slave.exceptions.FileExistsException;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.lang.ref.SoftReference;
 import java.util.*;
 
-import static org.drftpd.common.util.SerializerUtils.getDeserializer;
+import static org.drftpd.master.util.SerializerUtils.getMapper;
 
 /**
  * This is a new usermanager that after recommendation from captain- serializes
@@ -171,10 +172,9 @@ public class BeanUserManager extends AbstractUserManager {
     protected Group loadGroup(String groupName) throws GroupFileException {
         try {
             logger.debug("Loading '{}' Json group data from disk.", groupName);
-            Gson gson = getDeserializer();
             File userFile = getGroupFile(groupName);
             FileReader fileReader = new FileReader(userFile);
-            BeanGroup group = gson.fromJson(fileReader, BeanGroup.class);
+            BeanGroup group = getMapper().readValue(fileReader, BeanGroup.class);
             group.setUserManager(this);
             return group;
         } catch (Exception e) {
@@ -189,12 +189,11 @@ public class BeanUserManager extends AbstractUserManager {
      * @throws UserFileException, if an error (i/o) occured while loading data.
      */
     protected User loadUser(String userName) throws UserFileException {
-        Gson gson = getDeserializer();
         try {
             logger.debug("Loading '{}' Json user data from disk.", userName);
             File userFile = getUserFile(userName);
             FileReader fileReader = new FileReader(userFile);
-            BeanUser user = gson.fromJson(fileReader, BeanUser.class);
+            BeanUser user = getMapper().readValue(fileReader, BeanUser.class);
             user.setUserManager(this);
             return user;
         } catch (Exception e) {

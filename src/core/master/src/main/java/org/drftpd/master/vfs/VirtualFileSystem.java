@@ -17,19 +17,20 @@
  */
 package org.drftpd.master.vfs;
 
-import com.google.gson.Gson;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.drftpd.common.io.PermissionDeniedException;
-import org.drftpd.common.util.SerializerUtils;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.vfs.event.*;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FilenameFilter;
 import java.util.Comparator;
 import java.util.Set;
 
-import static org.drftpd.common.util.SerializerUtils.getDeserializer;
+import static org.drftpd.master.util.SerializerUtils.getMapper;
 
 public class VirtualFileSystem {
 
@@ -210,9 +211,9 @@ public class VirtualFileSystem {
             jsonFile = new File(fullPath);
         }
         try {
-            Gson gson = getDeserializer();
+
             FileReader fileReader = new FileReader(fullPath);
-            VirtualFileSystemInode inode = gson.fromJson(fileReader, VirtualFileSystemInode.class);
+            VirtualFileSystemInode inode = getMapper().readValue(fileReader, VirtualFileSystemInode.class);
             inode.setName(getLast(path));
             if (inode.isDirectory()) {
                 VirtualFileSystemDirectory dir = (VirtualFileSystemDirectory) inode;
@@ -221,6 +222,7 @@ public class VirtualFileSystem {
             inode.inodeLoadCompleted();
             return inode;
         } catch (Exception e) {
+            e.printStackTrace();
             boolean corruptedJsonFile = jsonFile.exists();
             if (corruptedJsonFile) {
                 // parsing error! Let's get rid of the offending bugger
@@ -317,11 +319,9 @@ public class VirtualFileSystem {
         }
 
         try {
-            Gson gson = SerializerUtils.getSerializer();
-            FileWriter writer = new FileWriter(fullPath);
+            File node = new File(fullPath);
             logger.debug("Wrote fullPath {}", fullPath);
-            gson.toJson(inode, writer);
-            writer.close();
+            getMapper().writeValue(node, inode);
         } catch (Exception e) {
             logger.error("Unable to write {} to disk", fullPath, e);
         }

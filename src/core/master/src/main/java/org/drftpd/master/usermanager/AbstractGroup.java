@@ -43,6 +43,8 @@ public abstract class AbstractGroup extends Group implements Commitable {
     private ArrayList<String> _admins = new ArrayList<>();
     private String _groupname;
 
+    public AbstractGroup() {}
+
     public AbstractGroup(String groupname) {
         checkValidGroupName(groupname);
         _groupname = groupname;

@@ -17,26 +17,20 @@
  */
 package org.drftpd.master.commands.nuke;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+import com.fasterxml.jackson.core.type.TypeReference;
 import org.apache.commons.collections4.map.LRUMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.drftpd.common.util.Bytes;
 import org.drftpd.master.commands.nuke.metadata.NukeData;
-import org.drftpd.master.io.SafeFileOutputStream;
-import org.drftpd.master.usermanager.GroupFileException;
-import org.drftpd.master.usermanager.javabeans.BeanGroup;
 import org.drftpd.master.vfs.VirtualFileSystem;
 import org.drftpd.slave.exceptions.ObjectNotFoundException;
 
 import java.beans.XMLDecoder;
 import java.io.*;
-import java.lang.reflect.Type;
 import java.util.*;
 
-import static org.drftpd.common.util.SerializerUtils.getDeserializer;
-import static org.drftpd.common.util.SerializerUtils.getSerializer;
+import static org.drftpd.master.util.SerializerUtils.getMapper;
 
 /**
  * NukeBeans handles the logging of nukes. Using a TreeMap, it sorts all nukes
@@ -52,7 +46,6 @@ public class NukeBeans {
     private static final String _nukebeansPath = "userdata";
     private static NukeBeans _nukeBeans = null;
     private Map<String, NukeData> _nukes = null;
-    private ClassLoader _prevCL;
 
     /**
      * Singleton.
@@ -248,10 +241,8 @@ public class NukeBeans {
      */
     public void commit() throws IOException {
         try {
-            Gson gson = getSerializer();
-            FileWriter writer = new FileWriter(_nukebeansPath + VirtualFileSystem.separator + "nukebeans.json");
-            gson.toJson(_nukes, writer);
-            writer.close();
+            File nukeFile = new File(_nukebeansPath + VirtualFileSystem.separator + "nukebeans.json");
+            getMapper().writeValue(nukeFile, this);
         } catch (Exception e) {
             throw new IOException(e.getMessage());
         }
@@ -271,12 +262,10 @@ public class NukeBeans {
      */
     @SuppressWarnings("unchecked")
     private void loadLRUMap() {
-        Map<String, NukeData> nukees = new LRUMap(200);
+        Map<String, NukeData> nukees = new LRUMap<>(200);
         try {
-            Gson gson = getDeserializer();
             FileReader fileReader = new FileReader(_nukebeansPath + VirtualFileSystem.separator + "nukebeans.json");
-            Type type = new TypeToken<Map<String, NukeData>>() {}.getType();
-            Map<String, NukeData> nukes = gson.fromJson(fileReader, type);
+            Map<String, NukeData> nukes = getMapper().readValue(fileReader, new TypeReference<>() {});
             nukees.putAll(nukes);
         } catch (FileNotFoundException e) {
             loadXMLLRUMap(nukees);

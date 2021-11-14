@@ -22,6 +22,11 @@ import org.drftpd.imdb.common.IMDBInfo;
 
 public class ConfigImdb extends ConfigElement<IMDBInfo> {
 
+    @SuppressWarnings("unused")
+    public ConfigImdb() {
+        super();
+    }
+
     public ConfigImdb(IMDBInfo value) {
         super(value);
     }
