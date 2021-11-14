@@ -21,6 +21,11 @@ import java.util.Date;
 
 public class ConfigDate extends ConfigElement<Date> {
 
+    @SuppressWarnings("unused")
+    public ConfigDate() {
+        super();
+    }
+
     public ConfigDate(Date value) {
         super(value);
     }

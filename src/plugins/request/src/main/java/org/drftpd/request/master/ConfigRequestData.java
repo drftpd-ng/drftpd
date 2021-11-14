@@ -22,6 +22,11 @@ import org.drftpd.request.master.metadata.RequestData;
 
 public class ConfigRequestData extends ConfigElement<RequestData> {
 
+    @SuppressWarnings("unused")
+    public ConfigRequestData() {
+        super();
+    }
+
     public ConfigRequestData(RequestData value) {
         super(value);
     }

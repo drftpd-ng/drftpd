@@ -17,7 +17,7 @@
  */
 package org.drftpd.master.slavemanagement;
 
-import com.google.gson.Gson;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.drftpd.common.dynamicdata.Key;
@@ -61,7 +61,7 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.PatternSyntaxException;
 
-import static org.drftpd.common.util.SerializerUtils.getSerializer;
+import static org.drftpd.master.util.SerializerUtils.getMapper;
 
 /**
  * @author mog
@@ -72,34 +72,59 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 
     public static final Key<Boolean> SSL = new Key<>(RemoteSlave.class, "ssl");
     private static final Logger logger = LogManager.getLogger(RemoteSlave.class);
+    @JsonIgnore
     public transient AtomicBoolean _remergePaused;
+    @JsonIgnore
     protected transient int _errors;
+    @JsonIgnore
     protected transient long _lastNetworkError;
+    @JsonIgnore
     private transient boolean _isAvailable;
+    @JsonIgnore
     private transient boolean _isRemerging;
+    @JsonIgnore
     private transient boolean _remergeChecksums;
+    @JsonIgnore
     private transient int _prevSocketTimeout;
+    @JsonIgnore
     private transient long _lastDownloadSending = 0;
+    @JsonIgnore
     private transient long _lastUploadReceiving = 0;
+    @JsonIgnore
     private transient long _lastResponseReceived = System.currentTimeMillis();
+    @JsonIgnore
     private transient long _lastCommandSent = System.currentTimeMillis();
     private String _name;
+    @JsonIgnore
     private transient DiskStatus _status;
     private HostMaskCollection _ipMasks;
     private Properties _keysAndValues;
+    @JsonIgnore
     private final transient KeyedMap<Key<?>, Object> _transientKeyedMap;
     private ConcurrentLinkedDeque<QueuedOperation> _renameQueue;
+    @JsonIgnore
     private transient LinkedBlockingDeque<String> _indexPool;
+    @JsonIgnore
     private transient ConcurrentHashMap<String, AsyncResponse> _indexWithCommands;
+    @JsonIgnore
     private transient ObjectInputStream _sin;
+    @JsonIgnore
     private transient Socket _socket;
+    @JsonIgnore
     private transient ObjectOutputStream _sout;
+    @JsonIgnore
     private transient ConcurrentHashMap<TransferIndex, RemoteTransfer> _transfers;
+    @JsonIgnore
     private transient boolean _initRemergeCompleted;
+    @JsonIgnore
     private final transient Object _commandMonitor;
+    @JsonIgnore
     private final transient LinkedBlockingQueue<RemergeMessage> _remergeQueue;
+    @JsonIgnore
     private final transient LinkedBlockingQueue<FileHandle> _crcQueue;
+    @JsonIgnore
     private transient RemergeThread _remergeThread;
+    @JsonIgnore
     private transient CrcThread _crcThread;
 
     public RemoteSlave() {
@@ -1175,12 +1200,9 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 
     public void writeToDisk() {
         try {
-            Gson gson = getSerializer();
             File slaveFile = getGlobalContext().getSlaveManager().getSlaveFile(this.getName());
-            FileWriter writer = new FileWriter(slaveFile);
             logger.debug("Wrote userfile for {}", this.getName());
-            gson.toJson(this, writer);
-            writer.close();
+            getMapper().writeValue(slaveFile, this);
             logger.debug("Wrote slavefile for {}", this.getName());
         } catch (Exception e) {
             throw new RuntimeException("Error writing slavefile for "

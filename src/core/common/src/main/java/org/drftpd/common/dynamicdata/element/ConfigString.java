@@ -19,6 +19,11 @@ package org.drftpd.common.dynamicdata.element;
 
 public class ConfigString extends ConfigElement<String> {
 
+    @SuppressWarnings("unused")
+    public ConfigString() {
+        super();
+    }
+
     public ConfigString(String value) {
         super(value);
     }

@@ -19,6 +19,7 @@ package org.drftpd.master.vfs;
 
 public class VirtualFileSystemRoot extends VirtualFileSystemDirectory {
 
+    @SuppressWarnings("unused")
     public VirtualFileSystemRoot() {
         this("drftpd", "drftpd");
     }

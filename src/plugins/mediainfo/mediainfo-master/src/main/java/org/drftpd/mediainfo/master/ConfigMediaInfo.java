@@ -22,6 +22,11 @@ import org.drftpd.mediainfo.common.MediaInfo;
 
 public class ConfigMediaInfo extends ConfigElement<MediaInfo> {
 
+    @SuppressWarnings("unused")
+    public ConfigMediaInfo() {
+        super();
+    }
+
     public ConfigMediaInfo(MediaInfo value) {
         super(value);
     }

@@ -17,12 +17,13 @@
  */
 package org.drftpd.master.vfs;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.drftpd.common.dynamicdata.DynamicConfigHelper;
 import org.drftpd.common.dynamicdata.Key;
 import org.drftpd.common.dynamicdata.KeyNotFoundException;
-import org.drftpd.common.dynamicdata.KeyedMap;
 import org.drftpd.common.dynamicdata.element.ConfigElement;
 import org.drftpd.common.io.PermissionDeniedException;
 import org.drftpd.slave.exceptions.FileExistsException;
@@ -31,7 +32,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.drftpd.common.dynamicdata.DynamicConfigHelper.configHelper;
@@ -41,10 +41,13 @@ import static org.drftpd.common.dynamicdata.DynamicConfigHelper.configHelper;
  * VirtualFileSystemInode is an abstract class used to handle basic functions
  * of files/dirs/links and to keep an hierarchy/organization of the FS.
  */
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "@type")
 public abstract class VirtualFileSystemInode implements Commitable {
 
     protected static final Logger logger = LogManager.getLogger(VirtualFileSystemInode.class);
+    @JsonIgnore
     protected transient String _name;
+    @JsonIgnore
     protected transient VirtualFileSystemDirectory _parent;
     protected String _username;
     protected String _group;
@@ -52,13 +55,18 @@ public abstract class VirtualFileSystemInode implements Commitable {
     private Map<Key<?>, ConfigElement<?>> _plugins = new HashMap<>();
     protected long _lastModified;
     protected long _creationTime;
+    @JsonIgnore
     private transient boolean _inodeLoaded;
 
-    public VirtualFileSystemInode(String user, String group) {
-        _username = user;
-        _group = group;
+    public VirtualFileSystemInode() {
         _lastModified = System.currentTimeMillis();
         _creationTime = _lastModified;
+    }
+
+    public VirtualFileSystemInode(String user, String group) {
+        this();
+        _username = user;
+        _group = group;
     }
 
     /**

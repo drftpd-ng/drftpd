@@ -17,6 +17,7 @@
  */
 package org.drftpd.master.vfs;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.drftpd.common.vfs.CaseInsensitiveTreeMap;
 import org.drftpd.slave.exceptions.FileExistsException;
 
@@ -39,13 +40,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 
     protected long _size = 0;
+    @JsonIgnore
     private final transient TreeMap<String, SoftReference<VirtualFileSystemInode>> _files =
             new CaseInsensitiveTreeMap<String, SoftReference<VirtualFileSystemInode>>();
     private boolean _placeHolderLastModified;
     private Map<String, AtomicInteger> _slaveRefCounts = new TreeMap<>();
 
-    public VirtualFileSystemDirectory(String user, String group) {
-        super(user, group);
+    @SuppressWarnings("unused")
+    public VirtualFileSystemDirectory() {
+        super();
     }
 
     protected VirtualFileSystemDirectory(String user, String group, boolean placeHolderLastModified) {
@@ -67,7 +70,7 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
         }
         if (getCreationTime() > inode.getLastModified() ||
                 getCreationTime() > inode.getCreationTime()) {
-            setCreationTime(inode.getCreationTime() > inode.getLastModified() ? inode.getLastModified() : inode.getCreationTime());
+            setCreationTime(Math.min(inode.getCreationTime(), inode.getLastModified()));
         }
         addSize(inode.getSize());
         addChildSlaveRefCounts(inode, inode.getSlaveRefCounts());

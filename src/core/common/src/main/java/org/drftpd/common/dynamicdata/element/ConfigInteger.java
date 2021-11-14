@@ -19,6 +19,11 @@ package org.drftpd.common.dynamicdata.element;
 
 public class ConfigInteger extends ConfigElement<Integer>{
 
+    @SuppressWarnings("unused")
+    public ConfigInteger() {
+        super();
+    }
+
     public ConfigInteger(Integer value) {
         super(value);
     }

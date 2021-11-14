@@ -19,6 +19,11 @@ package org.drftpd.common.dynamicdata.element;
 
 public class ConfigFloat extends ConfigElement<Float>{
 
+    @SuppressWarnings("unused")
+    public ConfigFloat() {
+        super();
+    }
+
     public ConfigFloat(Float value) {
         super(value);
     }

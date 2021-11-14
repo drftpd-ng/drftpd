@@ -17,7 +17,7 @@
  */
 package org.drftpd.master.usermanager.javabeans;
 
-import com.google.gson.Gson;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.drftpd.master.usermanager.AbstractUser;
@@ -26,10 +26,9 @@ import org.drftpd.master.usermanager.UserManager;
 import org.drftpd.master.vfs.CommitManager;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 
-import static org.drftpd.common.util.SerializerUtils.getSerializer;
+import static org.drftpd.master.util.SerializerUtils.getMapper;
 
 /**
  * @author mog
@@ -39,15 +38,17 @@ public class BeanUser extends AbstractUser {
 
     private static final Logger logger = LogManager.getLogger(BeanUser.class);
 
+    @JsonIgnore
     private transient BeanUserManager _um;
 
     private int _encryption = 0;
     private String _password = "";
 
+    @JsonIgnore
     private transient boolean _purged;
 
-    public BeanUser(String username) {
-        super(username);
+    public BeanUser() {
+        super();
     }
 
     public BeanUser(BeanUserManager manager, String username) {
@@ -106,12 +107,9 @@ public class BeanUser extends AbstractUser {
         if (_purged) {
             return;
         }
-        Gson gson = getSerializer();
         File userFile = _um.getUserFile(getName());
-        FileWriter writer = new FileWriter(userFile);
         logger.debug("Wrote userfile for {}", this.getName());
-        gson.toJson(this, writer);
-        writer.close();
+        getMapper().writeValue(userFile, this);
     }
 
     public String descriptiveName() {

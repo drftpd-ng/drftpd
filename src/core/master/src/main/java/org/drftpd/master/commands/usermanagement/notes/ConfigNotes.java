@@ -22,6 +22,11 @@ import org.drftpd.common.dynamicdata.element.ConfigElement;
 
 public class ConfigNotes extends ConfigElement<NotesData> {
 
+    @SuppressWarnings("unused")
+    public ConfigNotes() {
+        super();
+    }
+
     public ConfigNotes(NotesData value) {
         super(value);
     }

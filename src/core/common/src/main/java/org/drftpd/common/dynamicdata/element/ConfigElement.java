@@ -17,15 +17,18 @@
  */
 package org.drftpd.common.dynamicdata.element;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "@type")
 public abstract class ConfigElement<T> {
     private T value;
+
     public ConfigElement(T value) {
         this.value = value;
+    }
+
+    public ConfigElement() {
+        // Default constructor for serialization
     }
 
     public T getValue() {
@@ -34,13 +37,5 @@ public abstract class ConfigElement<T> {
 
     public void setValue(T value) {
         this.value = value;
-    }
-
-    public JsonElement serialize() {
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        JsonObject object = new JsonObject();
-        object.addProperty("clz", this.getClass().getCanonicalName());
-        object.add("value", gson.toJsonTree(getValue(), getValue().getClass()));
-        return object;
     }
 }

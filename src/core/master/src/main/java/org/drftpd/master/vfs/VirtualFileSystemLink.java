@@ -28,6 +28,11 @@ public class VirtualFileSystemLink extends VirtualFileSystemInode {
 
     private String _link;
 
+    @SuppressWarnings("unused")
+    public VirtualFileSystemLink() {
+        super();
+    }
+
     public VirtualFileSystemLink(String user, String group, String link) {
         super(user, group);
         _link = link;

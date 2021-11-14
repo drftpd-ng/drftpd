@@ -17,7 +17,7 @@
  */
 package org.drftpd.master.usermanager.javabeans;
 
-import com.google.gson.Gson;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.drftpd.master.usermanager.AbstractGroup;
@@ -26,10 +26,9 @@ import org.drftpd.master.usermanager.UserManager;
 import org.drftpd.master.vfs.CommitManager;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 
-import static org.drftpd.common.util.SerializerUtils.getSerializer;
+import static org.drftpd.master.util.SerializerUtils.getMapper;
 
 /**
  * @author mikevg
@@ -39,13 +38,14 @@ public class BeanGroup extends AbstractGroup {
 
     private static final Logger logger = LogManager.getLogger(BeanGroup.class);
 
+    @JsonIgnore
     private transient BeanUserManager _um;
 
+    @JsonIgnore
     private transient boolean _purged;
 
-    public BeanGroup(String groupname) {
-        super(groupname);
-    }
+    @SuppressWarnings("unused")
+    public BeanGroup() { super(); }
 
     public BeanGroup(BeanUserManager manager, String groupname) {
         super(groupname);
@@ -77,12 +77,9 @@ public class BeanGroup extends AbstractGroup {
         if (_purged) {
             return;
         }
-        Gson gson = getSerializer();
         File groupFile = _um.getGroupFile(getName());
-        FileWriter writer = new FileWriter(groupFile);
         logger.debug("Wrote groupfile for {}", this.getName());
-        gson.toJson(this, writer);
-        writer.close();
+        getMapper().writeValue(groupFile, this);
     }
 
     public String descriptiveName() {

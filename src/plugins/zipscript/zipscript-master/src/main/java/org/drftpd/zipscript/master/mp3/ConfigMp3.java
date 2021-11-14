@@ -23,6 +23,11 @@ import org.drftpd.zipscript.common.mp3.MP3Info;
 
 public class ConfigMp3 extends ConfigElement<MP3Info> {
 
+    @SuppressWarnings("unused")
+    public ConfigMp3() {
+        super();
+    }
+
     public ConfigMp3(MP3Info value) {
         super(value);
     }

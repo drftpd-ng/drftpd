@@ -17,6 +17,7 @@
  */
 package org.drftpd.master.sitebot;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.drftpd.common.dynamicdata.Key;
 import org.drftpd.master.network.Session;
 import org.drftpd.master.usermanager.User;
@@ -38,6 +39,7 @@ public class ServiceCommand extends Session {
 
     public static final Key<String> SOURCE = new Key<>(ServiceCommand.class, "source");
 
+    @JsonIgnore
     private final transient SiteBot _bot;
 
     private final ArrayList<OutputWriter> _outputs;
