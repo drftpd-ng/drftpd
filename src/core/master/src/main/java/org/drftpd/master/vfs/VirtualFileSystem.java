@@ -222,7 +222,6 @@ public class VirtualFileSystem {
             inode.inodeLoadCompleted();
             return inode;
         } catch (Exception e) {
-            e.printStackTrace();
             boolean corruptedJsonFile = jsonFile.exists();
             if (corruptedJsonFile) {
                 // parsing error! Let's get rid of the offending bugger
