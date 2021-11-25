@@ -1,10 +1,10 @@
-==== 4.0.1
-* Now compiles and runs on JDK16
-* request commands have been moved back to the plugin dir. This will mean that you will have duplicate command definitions. Either remove your core.conf for ftp and irc or do a complete clean install
+==== 4.1
+* Now compiles and runs on JDK17
+* json-io has been removed and replaced by jackson
 
 ==== 4.0
 * Java Plugin Framework has been removed and replaced by java reflections framework
-* Now compiles and runs on JDK14
+* Now compiles and runs on JDK15
 * Users groups are now seperate entities:
   - Group admins are set on the group level and no longer on the user level
   - To be a group admin it is no longer required for it to be the primary group
@@ -13,6 +13,7 @@
   - User files from pre 4.0 need a conversion
 * AutoFreeSpace plugin has had a few configuration updates
 * SiteBot config has some new options, mainly DH1080 related
+* request commands have been moved back to the plugin dir. This will mean that you will have duplicate command definitions. Either remove your core.conf for ftp and irc or do a complete clean install
 
 ==== 3.0
 The reasons it's 3.0 and not 2.1
