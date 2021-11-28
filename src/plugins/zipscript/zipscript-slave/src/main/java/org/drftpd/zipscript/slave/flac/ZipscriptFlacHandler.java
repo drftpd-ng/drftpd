@@ -47,7 +47,7 @@ public class ZipscriptFlacHandler extends AbstractHandler {
     public AsyncResponse handleFlacFile(AsyncCommandArgument ac) {
         try {
             return new AsyncResponseFlacInfo(ac.getIndex(),
-                    getFlacFile(getSlaveObject(), getSlaveObject().mapPathToRenameQueue(ac.getArgs())));
+                    getFlacFile(getSlaveObject(), ac.getArgs()));
         } catch (IOException e) {
             return new AsyncResponseException(ac.getIndex(), e);
         }

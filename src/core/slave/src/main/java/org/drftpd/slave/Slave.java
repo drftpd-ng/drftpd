@@ -69,9 +69,7 @@ import java.util.zip.CheckedInputStream;
  * @version $Id$
  */
 public class Slave extends SslConfigurationLoader {
-    private static final Object _lock = new Object();
 
-    public static final boolean isWin32 = System.getProperty("os.name").startsWith("Windows");
     private static final String SETTING_PREFIX = "master.ssl.";
 
     private static final Logger logger = LogManager.getLogger(Slave.class);
@@ -103,8 +101,6 @@ public class Slave extends SslConfigurationLoader {
     private boolean _uploadChecksums;
 
     private PortRange _portRange;
-
-    private Set<QueuedOperation> _renameQueue = null;
 
     private int _timeout;
 
@@ -152,15 +148,11 @@ public class Slave extends SslConfigurationLoader {
 
         logger.info("Slave {} connecting to master at {}", slaveName, masterIsa);
 
-        if (isWin32) {
-            _renameQueue = Collections.newSetFromMap(new ConcurrentHashMap<>());
-        }
-
         // Initialize to null
         _bindIP = null;
         try {
             String bindIP = PropertyHelper.getProperty(p, "bind.ip", "");
-            logger.debug("'bind.ip' has been resolved to {}", bindIP);
+            logger.debug("'bind.ip' has been resolved to " + bindIP);
             if (bindIP.length() > 0) {
                 _bindIP = InetAddress.getByName(bindIP);
             }
@@ -228,9 +220,6 @@ public class Slave extends SslConfigurationLoader {
 
         _ignorePartialRemerge = p.getProperty("ignore.partialremerge", "false").equalsIgnoreCase("true");
         _threadedRemerge = p.getProperty("threadedremerge", "false").equalsIgnoreCase("true");
-
-        parseCipherSuites();
-        parseSSLProtocols();
     }
 
     public Properties getConfig() {
@@ -250,9 +239,6 @@ public class Slave extends SslConfigurationLoader {
         Slave s = new Slave(p);
         s.getProtocolCentral().handshakeWithMaster();
 
-        if (isWin32) {
-            s.startFileLockThread();
-        }
         try {
             s.sendResponse(new AsyncResponseDiskStatus(s.getDiskStatus()));
         } catch (Throwable t) {
@@ -329,12 +315,6 @@ public class Slave extends SslConfigurationLoader {
 
     public void setOnline(boolean online) {
         _online = online;
-    }
-
-    private void startFileLockThread() {
-        Thread t = new Thread(new FileLockRunnable());
-        t.setName("FileLockThread");
-        t.start();
     }
 
     public void addTransfer(Transfer transfer) {
@@ -498,7 +478,6 @@ public class Slave extends SslConfigurationLoader {
                     try {
                         sendResponse(handleCommand(_command));
                     } catch (Throwable e) {
-                        logger.warn("Catched a throwable, sending to master", e);
                         sendResponse(new AsyncResponseException(_command.getIndex(), e));
                     }
                 }
@@ -509,34 +488,9 @@ public class Slave extends SslConfigurationLoader {
         }
     }
 
-    public String mapPathToRenameQueue(String path) {
-        if (!isWin32) { // there is no renameQueue
-            return path;
-        }
-        for (QueuedOperation qo : _renameQueue) {
-            if (qo.getDestination() == null) {
-                continue;
-            }
-            if (qo.getDestination().equals(path)) {
-                return qo.getSource();
-            }
-        }
-        return path;
-    }
-
     public void removeTransfer(Transfer transfer) {
-        // Synchronization only needed for Win32 to notify FileLockThread
-        if (isWin32) {
-            synchronized (_lock) {
-                if (_transfers.remove(transfer.getTransferIndex()) == null) {
-                    throw new IllegalStateException();
-                }
-                _lock.notifyAll();
-            }
-        } else {
-            if (_transfers.remove(transfer.getTransferIndex()) == null) {
-                throw new IllegalStateException();
-            }
+        if (_transfers.remove(transfer.getTransferIndex()) == null) {
+            throw new IllegalStateException();
         }
     }
 
@@ -558,9 +512,7 @@ public class Slave extends SslConfigurationLoader {
                         "renameTo(" + fromfile + ", " + tofile + ") failed to create destination folder");
             }
 
-            // !win32 == true on linux
-            // !win32 && equalsignore == true on win32
-            if (tofile.exists() && !(isWin32 && fromfile.getName().equalsIgnoreCase(toName))) {
+            if (tofile.exists() && !fromfile.getName().equalsIgnoreCase(toName)) {
                 throw new FileExistsException(
                         "cannot rename from " + fromfile + " to " + tofile + ", destination exists");
             }
@@ -629,10 +581,6 @@ public class Slave extends SslConfigurationLoader {
         }
     }
 
-    public Set<QueuedOperation> getRenameQueue() {
-        return _renameQueue;
-    }
-
     public PortRange getPortRange() {
         return _portRange;
     }
@@ -683,149 +631,5 @@ public class Slave extends SslConfigurationLoader {
         }
         logger.debug("Got List<String> for {} as -> [{}]", key, Arrays.toString(data.toArray()));
         return data;
-    }
-
-    private void parseCipherSuites() {
-        List<String> cipherSuites = new ArrayList<>();
-        List<String> supportedCipherSuites = new ArrayList<>();
-        try {
-            supportedCipherSuites.addAll(Arrays.asList(SSLContext.getDefault().getSupportedSSLParameters().getCipherSuites()));
-        } catch (Exception e) {
-            logger.error("Unable to get supported cipher suites, using default.", e);
-        }
-        // Parse cipher suite whitelist rules
-        boolean whitelist = false;
-        for (int x = 1; ; x++) {
-            String whitelistPattern = _cfg.getProperty("cipher.whitelist." + x);
-
-            // If this is null it means the there is no configuration entry for cipher.whitelist.(x) and thus need to break the loop
-            if (whitelistPattern == null) {
-                break;
-            }
-            logger.debug("Found cipher.whitelist.{} as {}", x, whitelistPattern);
-            if (whitelistPattern.trim().isEmpty()) {
-                continue;
-            }
-            if (!whitelist) {
-                whitelist = true;
-            }
-            boolean found = false;
-            for (String cipherSuite : supportedCipherSuites) {
-                if (cipherSuite.matches(whitelistPattern)) {
-                    logger.debug("Adding {} as it matches whitelist pattern {}", cipherSuite, whitelistPattern);
-                    cipherSuites.add(cipherSuite);
-                    found = true;
-                }
-            }
-            if (!found) {
-                logger.warn("Did not find a match for whitelist {} in supported cipher suites", whitelistPattern);
-            }
-        }
-        if (cipherSuites.isEmpty()) {
-            // No whitelist rule or whitelist pattern bad, add default set
-            cipherSuites.addAll(supportedCipherSuites);
-            if (whitelist) {
-                // There are at least one whitelist pattern specified
-                logger.warn("Bad whitelist pattern, no matching ciphers found. " +
-                        "Adding default cipher set before continuing with blacklist check");
-            }
-        }
-        // Parse cipher suite blacklist rules and remove matching ciphers from set
-        for (int x = 1; ; x++) {
-            String blacklistPattern = _cfg.getProperty("cipher.blacklist." + x);
-
-            // If this is null it means the there is no configuration entry for cipher.blacklist.(x) and thus need to break the loop
-            if (blacklistPattern == null) {
-                break;
-            }
-            logger.debug("Found cipher.blacklist.{} as {}", x, blacklistPattern);
-            if (blacklistPattern.trim().isEmpty()) {
-                continue;
-            }
-            cipherSuites.removeIf(cipherSuite -> cipherSuite.matches(blacklistPattern));
-        }
-        if (cipherSuites.isEmpty()) {
-            _cipherSuites = null;
-        } else {
-            _cipherSuites = cipherSuites.toArray(new String[0]);
-        }
-    }
-
-    private void parseSSLProtocols() {
-        List<String> sslProtocols = new ArrayList<>();
-        List<String> supportedSSLProtocols;
-        try {
-            supportedSSLProtocols = Arrays.asList(SSLContext.getDefault().getSupportedSSLParameters().getProtocols());
-            for (int x = 1; ; x++) {
-                String sslProtocol = _cfg.getProperty("protocol." + x);
-                if (sslProtocol == null) {
-                    break;
-                }
-                logger.debug("Found protocol.{} as {}", x, sslProtocol);
-                if (!supportedSSLProtocols.contains(sslProtocol)) {
-                    logger.warn("Found unsupported protocol configuration: protocol.{} -> {}", x, sslProtocol);
-                } else {
-                    sslProtocols.add(sslProtocol);
-                }
-            }
-        } catch (Exception e) {
-            logger.error("Unable to get supported SSL protocols, using default.", e);
-        }
-        if (sslProtocols.size() == 0) {
-            _sslProtocols = null;
-        } else {
-            _sslProtocols = sslProtocols.toArray(new String[0]);
-        }
-    }
-
-    public class FileLockRunnable implements Runnable {
-
-        public void run() {
-            while (true) {
-                synchronized (_lock) {
-                    try {
-                        // In order to escape from this busy while true loop we need to have a condition to know the main process
-                        // has stopped. Checking the input stream (_sin) will throw an IOException if it is no longer valid.
-                        // We do not care for the available bytes, so it is not used further.
-                        if(_sin.available() >= 0) {
-                            _lock.wait(5000);
-                        }
-                    } catch (IOException e) {
-                        break;
-                    } catch (InterruptedException ignored) {}
-
-                    for (Iterator<QueuedOperation> operationIterator = _renameQueue.iterator(); operationIterator.hasNext(); ) {
-                        QueuedOperation qo = operationIterator.next();
-                        if (qo.getDestination() == null) { // delete
-                            try {
-                                delete(qo.getSource());
-                                // delete successful
-                                operationIterator.remove();
-                            } catch (PermissionDeniedException e) {
-                                // keep it in the queue
-                            } catch (FileNotFoundException e) {
-                                operationIterator.remove();
-                            } catch (IOException e) {
-                                throw new RuntimeException("Delete operation for " + qo.getSource() + " Failed - Win32 stinks", e);
-                            }
-                        } else { // rename
-                            String fileName = qo.getDestination().substring(qo.getDestination().lastIndexOf("/") + 1);
-                            String destinationDir = qo.getDestination().substring(0, qo.getDestination().lastIndexOf("/"));
-                            try {
-                                rename(qo.getSource(), destinationDir, fileName);
-                                // rename successful
-                                operationIterator.remove();
-                            } catch (PermissionDeniedException e) {
-                                // keep it in the queue
-                            } catch (FileNotFoundException e) {
-                                operationIterator.remove();
-                            } catch (IOException e) {
-                                throw new RuntimeException("Rename operation for " + qo.getSource() + " Failed - Win32 stinks", e);
-                            }
-                        }
-                    }
-                }
-            }
-        }
     }
 }

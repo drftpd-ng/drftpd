@@ -49,7 +49,7 @@ public class IMDBHandler extends AbstractHandler {
     public AsyncResponse handleIMDBFile(AsyncCommandArgument ac) {
         try {
             return new AsyncResponseIMDBInfo(ac.getIndex(),
-                    getIMDBFile(getSlaveObject(), getSlaveObject().mapPathToRenameQueue(ac.getArgs())));
+                    getIMDBFile(getSlaveObject(), ac.getArgs()));
         } catch (IOException e) {
             return new AsyncResponseException(ac.getIndex(), e);
         }

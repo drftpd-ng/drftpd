@@ -41,9 +41,6 @@ public class MediaInfoHandler extends AbstractHandler {
 
     public MediaInfoHandler(SlaveProtocolCentral central) {
         super(central);
-        if (!MediaInfo.hasWorkingMediaInfo()) {
-            throw new RuntimeException("Unable to find a functioning mediainfo binary");
-        }
         logger.info("Handler initialized");
     }
 
@@ -54,8 +51,11 @@ public class MediaInfoHandler extends AbstractHandler {
 
     public AsyncResponse handleMediaInfo(AsyncCommandArgument ac) {
         try {
-            return new AsyncResponseMediaInfo(ac.getIndex(),
-                    getMediaInfo(getSlaveObject(), getSlaveObject().mapPathToRenameQueue(ac.getArgs())));
+            if (MediaInfo.hasWorkingMediaInfo()) {
+                return new AsyncResponseMediaInfo(ac.getIndex(),
+                        getMediaInfo(getSlaveObject(), ac.getArgs()));
+            }
+            return new AsyncResponse(ac.getIndex());
         } catch (IOException e) {
             return new AsyncResponseException(ac.getIndex(), e);
         }
