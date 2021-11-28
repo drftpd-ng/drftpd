@@ -49,7 +49,7 @@ public class ZipscriptHandler extends AbstractHandler {
     public AsyncResponse handleSfvFile(AsyncCommandArgument ac) {
         try {
             return new AsyncResponseSFVInfo(ac.getIndex(),
-                    getSFVFile(getSlaveObject(), getSlaveObject().mapPathToRenameQueue(ac.getArgs())));
+                    getSFVFile(getSlaveObject(), ac.getArgs()));
         } catch (IOException e) {
             return new AsyncResponseException(ac.getIndex(), e);
         }

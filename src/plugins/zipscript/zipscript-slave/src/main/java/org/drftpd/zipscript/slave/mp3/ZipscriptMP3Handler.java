@@ -48,7 +48,7 @@ public class ZipscriptMP3Handler extends AbstractHandler {
     public AsyncResponse handleMP3File(AsyncCommandArgument ac) {
         try {
             return new AsyncResponseMP3Info(ac.getIndex(),
-                    getMP3File(getSlaveObject(), getSlaveObject().mapPathToRenameQueue(ac.getArgs())));
+                    getMP3File(getSlaveObject(), ac.getArgs()));
         } catch (IOException e) {
             return new AsyncResponseException(ac.getIndex(), e);
         }

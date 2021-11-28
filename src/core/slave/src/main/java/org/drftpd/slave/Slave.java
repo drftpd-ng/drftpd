@@ -69,9 +69,7 @@ import java.util.zip.CheckedInputStream;
  * @version $Id$
  */
 public class Slave extends SslConfigurationLoader {
-    private static final Object _lock = new Object();
 
-    public static final boolean isWin32 = System.getProperty("os.name").startsWith("Windows");
     private static final String SETTING_PREFIX = "master.ssl.";
 
     private static final Logger logger = LogManager.getLogger(Slave.class);
@@ -103,8 +101,6 @@ public class Slave extends SslConfigurationLoader {
     private boolean _uploadChecksums;
 
     private PortRange _portRange;
-
-    private Set<QueuedOperation> _renameQueue = null;
 
     private int _timeout;
 
@@ -151,10 +147,6 @@ public class Slave extends SslConfigurationLoader {
         String slaveName = PropertyHelper.getProperty(p, "slave.name");
 
         logger.info("Slave {} connecting to master at {}", slaveName, masterIsa);
-
-        if (isWin32) {
-            _renameQueue = Collections.newSetFromMap(new ConcurrentHashMap<>());
-        }
 
         // Initialize to null
         _bindIP = null;
@@ -247,9 +239,6 @@ public class Slave extends SslConfigurationLoader {
         Slave s = new Slave(p);
         s.getProtocolCentral().handshakeWithMaster();
 
-        if (isWin32) {
-            s.startFileLockThread();
-        }
         try {
             s.sendResponse(new AsyncResponseDiskStatus(s.getDiskStatus()));
         } catch (Throwable t) {
@@ -326,12 +315,6 @@ public class Slave extends SslConfigurationLoader {
 
     public void setOnline(boolean online) {
         _online = online;
-    }
-
-    private void startFileLockThread() {
-        Thread t = new Thread(new FileLockRunnable());
-        t.setName("FileLockThread");
-        t.start();
     }
 
     public void addTransfer(Transfer transfer) {
@@ -505,34 +488,9 @@ public class Slave extends SslConfigurationLoader {
         }
     }
 
-    public String mapPathToRenameQueue(String path) {
-        if (!isWin32) { // there is no renameQueue
-            return path;
-        }
-        for (QueuedOperation qo : _renameQueue) {
-            if (qo.getDestination() == null) {
-                continue;
-            }
-            if (qo.getDestination().equals(path)) {
-                return qo.getSource();
-            }
-        }
-        return path;
-    }
-
     public void removeTransfer(Transfer transfer) {
-        // Synchronization only needed for Win32 to notify FileLockThread
-        if (isWin32) {
-            synchronized (_lock) {
-                if (_transfers.remove(transfer.getTransferIndex()) == null) {
-                    throw new IllegalStateException();
-                }
-                _lock.notifyAll();
-            }
-        } else {
-            if (_transfers.remove(transfer.getTransferIndex()) == null) {
-                throw new IllegalStateException();
-            }
+        if (_transfers.remove(transfer.getTransferIndex()) == null) {
+            throw new IllegalStateException();
         }
     }
 
@@ -554,9 +512,7 @@ public class Slave extends SslConfigurationLoader {
                         "renameTo(" + fromfile + ", " + tofile + ") failed to create destination folder");
             }
 
-            // !win32 == true on linux
-            // !win32 && equalsignore == true on win32
-            if (tofile.exists() && !(isWin32 && fromfile.getName().equalsIgnoreCase(toName))) {
+            if (tofile.exists() && !fromfile.getName().equalsIgnoreCase(toName)) {
                 throw new FileExistsException(
                         "cannot rename from " + fromfile + " to " + tofile + ", destination exists");
             }
@@ -625,10 +581,6 @@ public class Slave extends SslConfigurationLoader {
         }
     }
 
-    public Set<QueuedOperation> getRenameQueue() {
-        return _renameQueue;
-    }
-
     public PortRange getPortRange() {
         return _portRange;
     }
@@ -679,56 +631,5 @@ public class Slave extends SslConfigurationLoader {
         }
         logger.debug("Got List<String> for {} as -> [{}]", key, Arrays.toString(data.toArray()));
         return data;
-    }
-
-    public class FileLockRunnable implements Runnable {
-
-        public void run() {
-            while (true) {
-                synchronized (_lock) {
-                    try {
-                        // In order to escape from this busy while true loop we need to have a condition to know the main process
-                        // has stopped. Checking the input stream (_sin) will throw an IOException if it is no longer valid.
-                        // We do not care for the available bytes, so it is not used further.
-                        if(_sin.available() >= 0) {
-                            _lock.wait(5000);
-                        }
-                    } catch (IOException e) {
-                        break;
-                    } catch (InterruptedException ignored) {}
-
-                    for (Iterator<QueuedOperation> operationIterator = _renameQueue.iterator(); operationIterator.hasNext(); ) {
-                        QueuedOperation qo = operationIterator.next();
-                        if (qo.getDestination() == null) { // delete
-                            try {
-                                delete(qo.getSource());
-                                // delete successful
-                                operationIterator.remove();
-                            } catch (PermissionDeniedException e) {
-                                // keep it in the queue
-                            } catch (FileNotFoundException e) {
-                                operationIterator.remove();
-                            } catch (IOException e) {
-                                throw new RuntimeException("Delete operation for " + qo.getSource() + " Failed - Win32 stinks", e);
-                            }
-                        } else { // rename
-                            String fileName = qo.getDestination().substring(qo.getDestination().lastIndexOf("/") + 1);
-                            String destinationDir = qo.getDestination().substring(0, qo.getDestination().lastIndexOf("/"));
-                            try {
-                                rename(qo.getSource(), destinationDir, fileName);
-                                // rename successful
-                                operationIterator.remove();
-                            } catch (PermissionDeniedException e) {
-                                // keep it in the queue
-                            } catch (FileNotFoundException e) {
-                                operationIterator.remove();
-                            } catch (IOException e) {
-                                throw new RuntimeException("Rename operation for " + qo.getSource() + " Failed - Win32 stinks", e);
-                            }
-                        }
-                    }
-                }
-            }
-        }
     }
 }

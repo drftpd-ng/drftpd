@@ -64,12 +64,12 @@ public class ZipscriptZipHandler extends AbstractHandler {
 
     public AsyncResponse handleZipCRC(AsyncCommandArgument ac) {
         return new AsyncResponseZipCRCInfo(ac.getIndex(),
-                checkZipFile(getSlaveObject(), getSlaveObject().mapPathToRenameQueue(ac.getArgs())));
+                checkZipFile(getSlaveObject(), ac.getArgs()));
     }
 
     public AsyncResponse handleZipDiz(AsyncCommandArgument ac) {
         return new AsyncResponseDizInfo(ac.getIndex(),
-                getDizInfo(getSlaveObject(), getSlaveObject().mapPathToRenameQueue(ac.getArgs())));
+                getDizInfo(getSlaveObject(), ac.getArgs()));
     }
 
     private URI getZipURI(Slave slave, String path) throws FileNotFoundException, URISyntaxException {
