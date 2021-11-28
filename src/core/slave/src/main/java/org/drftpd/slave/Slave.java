@@ -82,6 +82,10 @@ public class Slave extends SslConfigurationLoader {
 
     private int _bufferSize;
 
+    private int _maxPathLength;
+
+    private int _maxPathFileTestingLength;
+
     private String[] _cipherSuites;
 
     private String[] _sslProtocols;
@@ -205,6 +209,8 @@ public class Slave extends SslConfigurationLoader {
         _uploadChecksums = p.getProperty("enableuploadchecksums", "true").equals("true");
         _downloadChecksums = p.getProperty("enabledownloadchecksums", "true").equals("true");
         _bufferSize = Integer.parseInt(p.getProperty("bufferSize", "0"));
+        _maxPathLength = Integer.parseInt(p.getProperty("maxPathLength", "32767"));
+        _maxPathFileTestingLength = Integer.parseInt(p.getProperty("maxPathFileTestingLength", "512"));
 
         _concurrentRootIteration = p.getProperty("concurrent.root.iteration", "false").equalsIgnoreCase("true");
         _roots = getDefaultRootBasket(p);
@@ -234,8 +240,8 @@ public class Slave extends SslConfigurationLoader {
 
     private static void testFileWrite(Slave s) throws Exception {
         // Write the file
-        String fileName = "." + IntStream.rangeClosed(1, 512).mapToObj(operand -> "a") //
-                .collect(Collectors.joining()) + ".txt";
+        String fileName = "." + IntStream.rangeClosed(1, s.getMaxPathFileTestingLength()) //
+                .mapToObj(operand -> "a").collect(Collectors.joining()) + ".txt";
         String rootPath = s.getRoots().getARoot().getPath();
         String file = rootPath + "\\" + fileName;
         FileWriter fileWriter = new FileWriter(file);
@@ -441,8 +447,16 @@ public class Slave extends SslConfigurationLoader {
         return _bufferSize;
     }
 
+    public int getMaxPathLength() {
+        return _maxPathLength;
+    }
+
     public boolean getDownloadChecksums() {
         return _downloadChecksums;
+    }
+
+    public int getMaxPathFileTestingLength() {
+        return _maxPathFileTestingLength;
     }
 
     public RootCollection getRoots() {

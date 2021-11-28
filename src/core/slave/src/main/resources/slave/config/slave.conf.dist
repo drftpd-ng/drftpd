@@ -39,6 +39,13 @@ enabledownloadchecksums=true
 # Default: [0]
 bufferSize=0
 
+# Max path length for filesystem
+# Default: [32767] - Max windows size
+# https://docs.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation
+maxPathLength=32767
+# Max path is tested at slave start, size of this file can be adapted here
+maxPathFileTestingLength=128
+
 # This is the maximum the slave will wait for the master.
 # Timeout on the slave (on the master side) should be equal.
 # "site slave <slavename> set timeout <value>".
