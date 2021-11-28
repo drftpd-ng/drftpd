@@ -106,6 +106,7 @@ public class TrafficManager implements PluginInterface {
             String simpleName = trafficType.getSimpleName().replace("Traffic", "");
             typesMap.put(simpleName, trafficType);
         }
+        logger.debug("Loaded Traffic Manager Types: {}", typesMap.keySet().toString());
         _typesMap = typesMap;
     }
 
@@ -117,11 +118,17 @@ public class TrafficManager implements PluginInterface {
         int count = 1;
         String type;
         while ((type = PropertyHelper.getProperty(props, count + ".type", null)) != null) {
+            logger.debug("Checking for [{}]", count + ".type");
             TrafficType trafficType = getTrafficType(count, type, props);
             if (trafficType != null) {
                 _traffictypes.add(trafficType);
             }
             count++;
+        }
+        logger.info("Succesfully processed [{}] config statements", count);
+        logger.info("Registered traffic types:");
+        for (TrafficType tt : getTrafficTypes()) {
+            logger.info("- {}", tt.getName());
         }
     }
 
