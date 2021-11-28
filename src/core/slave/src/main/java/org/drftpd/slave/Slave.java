@@ -60,6 +60,8 @@ import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 
@@ -230,13 +232,38 @@ public class Slave extends SslConfigurationLoader {
         Slave.boot();
     }
 
+    private static void testFileWrite(Slave s) throws Exception {
+        // Write the file
+        String fileName = "." + IntStream.rangeClosed(1, 512).mapToObj(operand -> "a") //
+                .collect(Collectors.joining()) + ".txt";
+        String rootPath = s.getRoots().getARoot().getPath();
+        String file = rootPath + "\\" + fileName;
+        FileWriter fileWriter = new FileWriter(file);
+        fileWriter.write("test");
+        fileWriter.close();
+        // Delete the created test file
+        File testFile = new File(file);
+        testFile.delete();
+    }
+
     public static void boot() throws Exception {
         System.out.println("DrFTPD Slave starting, further logging will be done through log4j");
-
         Thread.currentThread().setName("Slave Main Thread");
 
         Properties p = ConfigLoader.loadConfig("slave.conf");
         Slave s = new Slave(p);
+
+        // Check slave capability to create long file
+        try {
+            testFileWrite(s);
+        } catch (Exception e) {
+            // https://docs.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation
+            logger.fatal("Error writing test file, check your root directories right and long path limitation " +
+                    "on windows (see https://docs.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation)");
+            return;
+        }
+
+        // Register to master
         s.getProtocolCentral().handshakeWithMaster();
 
         try {
@@ -512,7 +539,7 @@ public class Slave extends SslConfigurationLoader {
                         "renameTo(" + fromfile + ", " + tofile + ") failed to create destination folder");
             }
 
-            if (tofile.exists() && !fromfile.getName().equalsIgnoreCase(toName)) {
+            if (tofile.exists() || fromfile.getName().equalsIgnoreCase(toName)) {
                 throw new FileExistsException(
                         "cannot rename from " + fromfile + " to " + tofile + ", destination exists");
             }

@@ -133,7 +133,7 @@ public class BasicHandler extends AbstractHandler {
         String[] data = ac.getArgs().split(":");
         boolean encrypted = data[0].equals("true");
         boolean useSSLClientMode = data[1].equals("true");
-        PassiveConnection c = null;
+        PassiveConnection c;
 
         try {
             c = new PassiveConnection(encrypted ? getSlaveObject().getSSLContext() : null,
@@ -150,7 +150,7 @@ public class BasicHandler extends AbstractHandler {
     }
 
     public AsyncResponse handleMaxpath(AsyncCommandArgument ac) {
-        return new AsyncResponseMaxPath(ac.getIndex(), 255);
+        return new AsyncResponseMaxPath(ac.getIndex(), 32767 /* Max windows size */);
     }
 
     public AsyncResponse handlePing(AsyncCommandArgument ac) {
