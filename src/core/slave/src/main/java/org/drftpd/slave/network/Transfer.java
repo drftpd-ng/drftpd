@@ -419,8 +419,8 @@ public class Transfer {
                 _out = new AddAsciiOutputStream(_out);
             }
 
-            // Set the buffer size (uses ram) to whatever is configured with a maximum (hardcoded) as 256K
-            byte[] buff = new byte[Math.max(_slave.getBufferSize(), 262144)];
+            // Set the buffer size (uses ram) to whatever is configured with a minimum (hardcoded) as 32K
+            byte[] buff = new byte[Math.max(_slave.getBufferSize(), 32768)];
             logger.debug("Buffer has been initialized with a size of [{}]", buff.length);
 
             int count;
