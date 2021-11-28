@@ -304,6 +304,7 @@ public class GlobalContext {
                         PluginInterface pluginInterface = plugin.getConstructor().newInstance();
                         pluginInterface.startPlugin();
                         _plugins.add(pluginInterface);
+                        logger.info("Loaded plugin {}", plugin.getName());
                         alreadyResolved.add(plugin.getName());
                     }
                     if (plugins.size() == _plugins.size()) {
