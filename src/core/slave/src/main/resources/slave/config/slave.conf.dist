@@ -44,7 +44,7 @@ bufferSize=0
 # https://docs.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation
 maxPathLength=32767
 # Max path is tested at slave start, size of this file can be adapted here
-maxPathFileTestingLength=128
+maxPathFileTestingLength=512
 
 # This is the maximum the slave will wait for the master.
 # Timeout on the slave (on the master side) should be equal.
