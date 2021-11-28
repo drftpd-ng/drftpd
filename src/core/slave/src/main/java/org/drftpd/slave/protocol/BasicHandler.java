@@ -150,7 +150,8 @@ public class BasicHandler extends AbstractHandler {
     }
 
     public AsyncResponse handleMaxpath(AsyncCommandArgument ac) {
-        return new AsyncResponseMaxPath(ac.getIndex(), 32767 /* Max windows size */);
+        int maxPathLength = getSlaveObject().getMaxPathLength();
+        return new AsyncResponseMaxPath(ac.getIndex(), maxPathLength);
     }
 
     public AsyncResponse handlePing(AsyncCommandArgument ac) {
