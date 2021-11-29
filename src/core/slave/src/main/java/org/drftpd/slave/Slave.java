@@ -84,8 +84,6 @@ public class Slave extends SslConfigurationLoader {
 
     private int _maxPathLength;
 
-    private int _maxPathFileTestingLength;
-
     private String[] _cipherSuites;
 
     private String[] _sslProtocols;
@@ -120,7 +118,7 @@ public class Slave extends SslConfigurationLoader {
 
     private boolean _concurrentRootIteration;
 
-    private InetAddress _bindIP = null;
+    private InetAddress _bindIP;
 
     private boolean _online;
 
@@ -209,8 +207,7 @@ public class Slave extends SslConfigurationLoader {
         _uploadChecksums = p.getProperty("enableuploadchecksums", "true").equals("true");
         _downloadChecksums = p.getProperty("enabledownloadchecksums", "true").equals("true");
         _bufferSize = Integer.parseInt(p.getProperty("bufferSize", "0"));
-        _maxPathLength = Integer.parseInt(p.getProperty("maxPathLength", "32767"));
-        _maxPathFileTestingLength = Integer.parseInt(p.getProperty("maxPathFileTestingLength", "512"));
+        _maxPathLength = Integer.parseInt(p.getProperty("maxPathLength", "4096"));
 
         _concurrentRootIteration = p.getProperty("concurrent.root.iteration", "false").equalsIgnoreCase("true");
         _roots = getDefaultRootBasket(p);
@@ -238,36 +235,12 @@ public class Slave extends SslConfigurationLoader {
         Slave.boot();
     }
 
-    private static void testFileWrite(Slave s) throws Exception {
-        // Write the file
-        String fileName = "." + IntStream.rangeClosed(1, s.getMaxPathFileTestingLength()) //
-                .mapToObj(operand -> "a").collect(Collectors.joining()) + ".txt";
-        String rootPath = s.getRoots().getARoot().getPath();
-        String file = rootPath + "\\" + fileName;
-        FileWriter fileWriter = new FileWriter(file);
-        fileWriter.write("test");
-        fileWriter.close();
-        // Delete the created test file
-        File testFile = new File(file);
-        testFile.delete();
-    }
-
     public static void boot() throws Exception {
         System.out.println("DrFTPD Slave starting, further logging will be done through log4j");
         Thread.currentThread().setName("Slave Main Thread");
 
         Properties p = ConfigLoader.loadConfig("slave.conf");
         Slave s = new Slave(p);
-
-        // Check slave capability to create long file
-        try {
-            testFileWrite(s);
-        } catch (Exception e) {
-            // https://docs.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation
-            logger.fatal("Error writing test file, check your root directories right and long path limitation " +
-                    "on windows (see https://docs.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation)");
-            return;
-        }
 
         // Register to master
         s.getProtocolCentral().handshakeWithMaster();
@@ -453,10 +426,6 @@ public class Slave extends SslConfigurationLoader {
 
     public boolean getDownloadChecksums() {
         return _downloadChecksums;
-    }
-
-    public int getMaxPathFileTestingLength() {
-        return _maxPathFileTestingLength;
     }
 
     public RootCollection getRoots() {
