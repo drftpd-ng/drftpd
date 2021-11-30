@@ -53,7 +53,7 @@ public class MediaInfoHandler extends AbstractHandler {
         try {
             if (MediaInfo.hasWorkingMediaInfo()) {
                 return new AsyncResponseMediaInfo(ac.getIndex(),
-                        getMediaInfo(getSlaveObject(), getSlaveObject().mapPathToRenameQueue(ac.getArgs())));
+                        getMediaInfo(getSlaveObject(), ac.getArgs()));
             }
             return new AsyncResponse(ac.getIndex());
         } catch (IOException e) {
