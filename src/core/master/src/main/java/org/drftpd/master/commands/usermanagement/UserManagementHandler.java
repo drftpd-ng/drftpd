@@ -244,21 +244,21 @@ public class UserManagementHandler extends CommandInterface {
             newUser = GlobalContext.getGlobalContext().getUserManager().createUser(newUsername);
 
             newUser.setPassword(pass);
-            newUser.getKeyedMap().setObject(UserManagement.CREATED, new Date());
-            newUser.getKeyedMap().setObject(UserManagement.LASTSEEN, new Date());
-            newUser.getKeyedMap().setObject(UserManagement.BANTIME, new Date());
-            newUser.getKeyedMap().setObject(UserManagement.COMMENT, "Added by " + currentUser.getName());
+            newUser.getConfigHelper().setDate(UserManagement.CREATED, new Date());
+            newUser.getConfigHelper().setDate(UserManagement.LASTSEEN, new Date());
+            newUser.getConfigHelper().setDate(UserManagement.BANTIME, new Date());
+            newUser.getConfigHelper().setString(UserManagement.COMMENT, "Added by " + currentUser.getName());
 
             // TODO fix this.
-            //newUser.getKeyedMap().setObject(Statistics.LOGINS,0);
-            newUser.getKeyedMap().setObject(UserManagement.IRCIDENT, "");
-            newUser.getKeyedMap().setObject(UserManagement.TAGLINE, tagline);
-            newUser.getKeyedMap().setObject(UserManagement.RATIO, ratioVal);
-            newUser.getKeyedMap().setObject(UserManagement.MAXLOGINS, maxloginsVal);
-            newUser.getKeyedMap().setObject(UserManagement.MAXLOGINSIP, maxloginsipVal);
-            newUser.getKeyedMap().setObject(UserManagement.MAXSIMUP, maxsimupVal);
-            newUser.getKeyedMap().setObject(UserManagement.MAXSIMDN, maxsimdnVal);
-            newUser.getKeyedMap().setObject(UserManagement.WKLYALLOTMENT, wklyallotmentVal);
+            //newUser.getConfigHelper().setObject(Statistics.LOGINS,0);
+            newUser.getConfigHelper().setString(UserManagement.IRCIDENT, "");
+            newUser.getConfigHelper().setString(UserManagement.TAGLINE, tagline);
+            newUser.getConfigHelper().setFloat(UserManagement.RATIO, ratioVal);
+            newUser.getConfigHelper().setInt(UserManagement.MAXLOGINS, maxloginsVal);
+            newUser.getConfigHelper().setInt(UserManagement.MAXLOGINSIP, maxloginsipVal);
+            newUser.getConfigHelper().setInt(UserManagement.MAXSIMUP, maxsimupVal);
+            newUser.getConfigHelper().setInt(UserManagement.MAXSIMDN, maxsimdnVal);
+            newUser.getConfigHelper().setLong(UserManagement.WKLYALLOTMENT, wklyallotmentVal);
 
             newUser.setIdleTime(idletimeVal);
             newUser.setCredits(creditsVal);
@@ -505,9 +505,9 @@ public class UserManagementHandler extends CommandInterface {
 
                     if (isAdmin) {
                         ////// Ratio changes by an admin //////
-                        logger.info("'{}' changed ratio for '{}' from '{} to '{}'", session.getUserNull(request.getUser()).getName(), userToChange.getName(), userToChange.getKeyedMap().getObjectFloat(UserManagement.RATIO), ratio);
-                        userToChange.getKeyedMap().setObject(UserManagement.RATIO, ratio);
-                        env.put("newratio", Float.toString(userToChange.getKeyedMap().getObjectFloat(UserManagement.RATIO)));
+                        logger.info("'{}' changed ratio for '{}' from '{} to '{}'", session.getUserNull(request.getUser()).getName(), userToChange.getName(), userToChange.getConfigHelper().get(UserManagement.RATIO, 0F), ratio);
+                        userToChange.getConfigHelper().setFloat(UserManagement.RATIO, ratio);
+                        env.put("newratio", Double.toString(userToChange.getConfigHelper().get(UserManagement.RATIO, 0F)));
                         response.addComment(session.jprintf(_bundle, "changeratio.success", env, request.getUser()));
                     } else if (isGroupAdmin) {
                         ////// Group Admin Ratio //////
@@ -519,7 +519,7 @@ public class UserManagementHandler extends CommandInterface {
                             int usedleechslots = 0;
 
                             for (User user : GlobalContext.getGlobalContext().getUserManager().getAllUsersByGroup(g)) {
-                                if ((user).getKeyedMap().getObjectFloat(UserManagement.RATIO) == 0F) {
+                                if ((user).getConfigHelper().get(UserManagement.RATIO, 0F) == 0F) {
                                     usedleechslots++;
                                 }
                             }
@@ -533,9 +533,9 @@ public class UserManagementHandler extends CommandInterface {
                             return new CommandResponse(452, session.jprintf(_bundle, "changeratio.invalidratio", env, request.getUser()));
                         }
 
-                        logger.info("'{}' changed ratio for '{}' from '{}' to '{}'", currentUser.getName(), userToChange.getName(), userToChange.getKeyedMap().getObjectFloat(UserManagement.RATIO), ratio);
-                        userToChange.getKeyedMap().setObject(UserManagement.RATIO, ratio);
-                        env.put("newratio", Float.toString(userToChange.getKeyedMap().getObjectFloat(UserManagement.RATIO)));
+                        logger.info("'{}' changed ratio for '{}' from '{}' to '{}'", currentUser.getName(), userToChange.getName(), userToChange.getConfigHelper().get(UserManagement.RATIO, 0F), ratio);
+                        userToChange.getConfigHelper().setFloat(UserManagement.RATIO, ratio);
+                        env.put("newratio", Double.toString(userToChange.getConfigHelper().get(UserManagement.RATIO, 0F)));
                         response.addComment(session.jprintf(_bundle, "changeratio.success", env, request.getUser()));
 
                     } else {
@@ -563,12 +563,12 @@ public class UserManagementHandler extends CommandInterface {
                             "changecredits.success", env, request.getUser()));
                     break;
                 case "comment":
-                    logger.info("'{}' changed comment for '{}' from '{} to '{}'", session.getUserNull(request.getUser()).getName(), userToChange.getName(), userToChange.getKeyedMap().getObjectString(
-                            UserManagement.COMMENT), fullCommandArgument);
-                    userToChange.getKeyedMap().setObject(UserManagement.COMMENT,
+                    logger.info("'{}' changed comment for '{}' from '{} to '{}'", session.getUserNull(request.getUser()).getName(), userToChange.getName(), userToChange.getConfigHelper().get(
+                            UserManagement.COMMENT, ""), fullCommandArgument);
+                    userToChange.getConfigHelper().setString(UserManagement.COMMENT,
                             fullCommandArgument);
-                    env.put("comment", userToChange.getKeyedMap().getObjectString(
-                            UserManagement.COMMENT));
+                    env.put("comment", userToChange.getConfigHelper().get(
+                            UserManagement.COMMENT, ""));
                     response.addComment(session.jprintf(_bundle,
                             "changecomment.success", env, request.getUser()));
                     break;
@@ -601,16 +601,16 @@ public class UserManagementHandler extends CommandInterface {
                         if (commandArguments.length == 2) {
                             numLoginsIP = Integer.parseInt(commandArguments[1]);
                         } else {
-                            numLoginsIP = userToChange.getKeyedMap().getObjectInteger(
-                                    UserManagement.MAXLOGINSIP);
+                            numLoginsIP = userToChange.getConfigHelper().get(
+                                    UserManagement.MAXLOGINSIP, 0);
                         }
 
-                        logger.info("'{}' changed num_logins for '{}' from '{}' '{}' to '{}' '{}'", session.getUserNull(request.getUser()).getName(), userToChange.getName(), userToChange.getKeyedMap().getObjectInteger(
-                                UserManagement.MAXLOGINS), userToChange.getKeyedMap().getObjectInteger(
-                                UserManagement.MAXLOGINSIP), numLogins, numLoginsIP);
-                        userToChange.getKeyedMap().setObject(UserManagement.MAXLOGINS,
+                        logger.info("'{}' changed num_logins for '{}' from '{}' '{}' to '{}' '{}'", session.getUserNull(request.getUser()).getName(), userToChange.getName(), userToChange.getConfigHelper().get(
+                                UserManagement.MAXLOGINS, 0), userToChange.getConfigHelper().get(
+                                UserManagement.MAXLOGINSIP, 0), numLogins, numLoginsIP);
+                        userToChange.getConfigHelper().setInt(UserManagement.MAXLOGINS,
                                 numLogins);
-                        userToChange.getKeyedMap().setObject(
+                        userToChange.getConfigHelper().setInt(
                                 UserManagement.MAXLOGINSIP, numLoginsIP);
                         env.put("numlogins", "" + numLogins);
                         env.put("numloginsip", "" + numLoginsIP);
@@ -642,9 +642,9 @@ public class UserManagementHandler extends CommandInterface {
                         logger
                                 .info("'{}' changed max simultaneous download/upload slots for '{}' from '{}' '{}' to '{}' '{}'", session.getUserNull(request.getUser()).getName(), userToChange.getName(), userToChange.getMaxSimDown(), userToChange.getMaxSimUp(), maxdn, maxup);
 
-                        userToChange.getKeyedMap().setObject(UserManagement.MAXSIMDN,
+                        userToChange.getConfigHelper().setInt(UserManagement.MAXSIMDN,
                                 maxdn);
-                        userToChange.getKeyedMap().setObject(UserManagement.MAXSIMUP,
+                        userToChange.getConfigHelper().setInt(UserManagement.MAXSIMUP,
                                 maxup);
                         userToChange.setMaxSimUp(maxup);
                         userToChange.setMaxSimDown(maxdn);
@@ -689,8 +689,8 @@ public class UserManagementHandler extends CommandInterface {
                         myDate = new Date();
                     }
 
-                    logger.info("'{}' changed created for '{}' from '{}' to '{}'", currentUser.getName(), userToChange.getName(), userToChange.getKeyedMap().getObject(UserManagement.CREATED, new Date(0)), myDate);
-                    userToChange.getKeyedMap().setObject(UserManagement.CREATED, myDate);
+                    logger.info("'{}' changed created for '{}' from '{}' to '{}'", currentUser.getName(), userToChange.getName(), userToChange.getConfigHelper().get(UserManagement.CREATED, new Date(0)), myDate);
+                    userToChange.getConfigHelper().setDate(UserManagement.CREATED, myDate);
 
                     response = new CommandResponse(200, session.jprintf(_bundle, "changeuser.created.success", env, request.getUser()));
                     break;
@@ -700,9 +700,9 @@ public class UserManagementHandler extends CommandInterface {
                     }
 
                     long weeklyAllotment = Bytes.parseBytes(commandArguments[0]);
-                    logger.info("'{}' changed wkly_allotment for '{}' from '{}' to {}'", session.getUserNull(request.getUser()).getName(), userToChange.getName(), userToChange.getKeyedMap().getObjectLong(
-                            UserManagement.WKLYALLOTMENT), weeklyAllotment);
-                    userToChange.getKeyedMap().setObject(UserManagement.WKLYALLOTMENT,
+                    logger.info("'{}' changed wkly_allotment for '{}' from '{}' to {}'", session.getUserNull(request.getUser()).getName(), userToChange.getName(), userToChange.getConfigHelper().get(
+                            UserManagement.WKLYALLOTMENT, 0L), weeklyAllotment);
+                    userToChange.getConfigHelper().setLong(UserManagement.WKLYALLOTMENT,
                             weeklyAllotment);
 
                     response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
@@ -712,8 +712,8 @@ public class UserManagementHandler extends CommandInterface {
                         throw new ImproperUsageException();
                     }
 
-                    logger.info("'{}' changed tagline for '{}' from '{}' to '{}'", session.getUserNull(request.getUser()).getName(), userToChange.getName(), userToChange.getKeyedMap().getObjectString(UserManagement.TAGLINE), fullCommandArgument);
-                    userToChange.getKeyedMap().setObject(UserManagement.TAGLINE,
+                    logger.info("'{}' changed tagline for '{}' from '{}' to '{}'", session.getUserNull(request.getUser()).getName(), userToChange.getName(), userToChange.getConfigHelper().get(UserManagement.TAGLINE, ""), fullCommandArgument);
+                    userToChange.getConfigHelper().setString(UserManagement.TAGLINE,
                             fullCommandArgument);
 
                     response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
@@ -872,12 +872,12 @@ public class UserManagementHandler extends CommandInterface {
             requestedUser.setDeleted(true);
             String reason = "";
             if (st.hasMoreTokens()) {
-                requestedUser.getKeyedMap().setObject(UserManagement.REASON, reason = st.nextToken("").substring(1));
+                requestedUser.getConfigHelper().setString(UserManagement.REASON, reason = st.nextToken("").substring(1));
             }
             requestedUser.commit();
             response.addComment(session.jprintf(_bundle, "deluser.success", env, request.getUser()));
             logger.info("'{}' deleted user '{}' with reason '{}'", currentUser.getName(), requestedUser.getName(), reason);
-            logger.debug("reason {}", requestedUser.getKeyedMap().getObjectString(UserManagement.REASON));
+            logger.debug("reason {}", requestedUser.getConfigHelper().get(UserManagement.REASON, ""));
 
             requestedUser.purge();
             response.addComment(session.jprintf(_bundle, "purgeuser.success", env, request.getUser()));
@@ -923,12 +923,12 @@ public class UserManagementHandler extends CommandInterface {
             requestedUser.setDeleted(true);
             String reason = "";
             if (st.hasMoreTokens()) {
-                requestedUser.getKeyedMap().setObject(UserManagement.REASON, reason = st.nextToken("").substring(1));
+                requestedUser.getConfigHelper().setString(UserManagement.REASON, reason = st.nextToken("").substring(1));
             }
             requestedUser.commit();
             response.addComment(session.jprintf(_bundle, "deluser.success", env, request.getUser()));
             logger.info("'{}' deleted user '{}' with reason '{}'", currentUser.getName(), requestedUser.getName(), reason);
-            logger.debug("reason {}", requestedUser.getKeyedMap().getObjectString(UserManagement.REASON));
+            logger.debug("reason {}", requestedUser.getConfigHelper().get(UserManagement.REASON, ""));
 
         } catch (NoSuchUserException e) {
             return new CommandResponse(452, e.getMessage());
@@ -948,7 +948,7 @@ public class UserManagementHandler extends CommandInterface {
                 return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
             }
             String arg = st.nextToken();
-            if(arg.charAt(0) == '=') {
+            if (arg.charAt(0) == '=') {
                 // Deal with the scenario where we only get a '='
                 if (arg.length() <= 1) {
                     return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
@@ -958,8 +958,7 @@ public class UserManagementHandler extends CommandInterface {
                 } catch (NoSuchGroupException | GroupFileException e) {
                     return new CommandResponse(550, "Requested group " + arg.substring(1) + " does not exist");
                 }
-            } else
-            {
+            } else {
                 users = new ArrayList<>();
                 try {
                     users.add(GlobalContext.getGlobalContext().getUserManager().getUserByNameIncludeDeleted(arg));
@@ -1302,7 +1301,7 @@ public class UserManagementHandler extends CommandInterface {
             }
 
             requestedUser.setDeleted(false);
-            requestedUser.getKeyedMap().remove(UserManagement.REASON);
+            requestedUser.getConfigHelper().remove(UserManagement.REASON);
             logger.info("'{}' readded '{}'", currentUser.getName(), requestedUser.getName());
             requestedUser.commit();
         } catch (NoSuchUserException e) {
@@ -1380,7 +1379,7 @@ public class UserManagementHandler extends CommandInterface {
         }
 
         return new CommandResponse(200, "User was last seen: "
-                + user.getKeyedMap().getObject(UserManagement.LASTSEEN, new Date(0)));
+                + user.getConfigHelper().get(UserManagement.LASTSEEN, new Date(0)));
     }
 
     public CommandResponse doSITE_TAGLINE(CommandRequest request) throws ImproperUsageException {
@@ -1392,9 +1391,9 @@ public class UserManagementHandler extends CommandInterface {
 
         User u = session.getUserNull(request.getUser());
 
-        logger.info("'{}' changed his tagline from '{}' to '{}'", request.getUser(), u.getKeyedMap().getObjectString(UserManagement.TAGLINE), request.getArgument());
+        logger.info("'{}' changed his tagline from '{}' to '{}'", request.getUser(), u.getConfigHelper().get(UserManagement.TAGLINE, ""), request.getArgument());
 
-        u.getKeyedMap().setObject(UserManagement.TAGLINE, request.getArgument());
+        u.getConfigHelper().setString(UserManagement.TAGLINE, request.getArgument());
         u.commit();
 
         return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
@@ -1404,13 +1403,13 @@ public class UserManagementHandler extends CommandInterface {
         Session session = request.getSession();
         User user = session.getUserNull(request.getUser());
         if (!request.hasArgument()) {
-            user.getKeyedMap().setObject(
+            user.getConfigHelper().setBool(
                     UserManagement.DEBUG,
-                    !user.getKeyedMap().getObjectBoolean(
-                            UserManagement.DEBUG));
+                    !user.getConfigHelper().get(
+                            UserManagement.DEBUG, false));
         } else {
             String arg = request.getArgument();
-            user.getKeyedMap().setObject(UserManagement.DEBUG,
+            user.getConfigHelper().setBool(UserManagement.DEBUG,
                     arg.equals("true") || arg.equals("on"));
         }
         user.commit();
@@ -1856,9 +1855,9 @@ public class UserManagementHandler extends CommandInterface {
                     + banTime + "m";
         }
 
-        myUser.getKeyedMap().setObject(UserManagement.BANTIME,
+        myUser.getConfigHelper().setDate(UserManagement.BANTIME,
                 new Date(System.currentTimeMillis() + (banTime * 60000)));
-        myUser.getKeyedMap().setObject(UserManagement.BANREASON, banMsg);
+        myUser.getConfigHelper().setString(UserManagement.BANREASON, banMsg);
         myUser.commit();
 
         return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
@@ -1895,9 +1894,9 @@ public class UserManagementHandler extends CommandInterface {
         for (User user : GlobalContext.getGlobalContext().getUserManager().getAllUsers()) {
             if (user.getName().equals(executioner))
                 continue;
-            user.getKeyedMap().setObject(UserManagement.BANTIME,
+            user.getConfigHelper().setDate(UserManagement.BANTIME,
                     new Date(System.currentTimeMillis() + (banTime * 60000)));
-            user.getKeyedMap().setObject(UserManagement.BANREASON, banMsg);
+            user.getConfigHelper().setString(UserManagement.BANREASON, banMsg);
             user.commit();
         }
 
@@ -1925,8 +1924,8 @@ public class UserManagementHandler extends CommandInterface {
             return new CommandResponse(200, e.getMessage());
         }
 
-        myUser.getKeyedMap().setObject(UserManagement.BANTIME, new Date());
-        myUser.getKeyedMap().setObject(UserManagement.BANREASON, "");
+        myUser.getConfigHelper().setDate(UserManagement.BANTIME, new Date());
+        myUser.getConfigHelper().setString(UserManagement.BANREASON, "");
 
         myUser.commit();
 
@@ -1936,8 +1935,8 @@ public class UserManagementHandler extends CommandInterface {
     public CommandResponse doSITE_UNBANALL(CommandRequest request) {
 
         for (User user : GlobalContext.getGlobalContext().getUserManager().getAllUsers()) {
-            user.getKeyedMap().setObject(UserManagement.BANTIME, new Date());
-            user.getKeyedMap().setObject(UserManagement.BANREASON, "");
+            user.getConfigHelper().setDate(UserManagement.BANTIME, new Date());
+            user.getConfigHelper().setString(UserManagement.BANREASON, "");
             user.commit();
         }
 
@@ -1949,7 +1948,7 @@ public class UserManagementHandler extends CommandInterface {
 
         CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
         for (User user : myUsers) {
-            long timeleft = user.getKeyedMap().getObject(
+            long timeleft = user.getConfigHelper().get(
                     UserManagement.BANTIME, new Date()).getTime()
                     - System.currentTimeMillis();
             if (timeleft > 0) {
@@ -2027,37 +2026,45 @@ public class UserManagementHandler extends CommandInterface {
 
             try {
                 _ok = Double.parseDouble(p.getProperty("fairness.ok"));
-            } catch(NumberFormatException e) {
+            } catch (NumberFormatException e) {
                 logger.error("Failed at parsing 'fairness.ok'", e);
                 _ok = FAIRNESS_DEFAULT_RATIO_OK;
-            } catch(Exception e) {
+            } catch (Exception e) {
                 logger.debug("A generic exception happened while trying to get 'fairness.ok', we should be able to ignore this");
                 _ok = FAIRNESS_DEFAULT_RATIO_OK;
             }
 
             try {
                 _good = Double.parseDouble(p.getProperty("fairness.good"));
-            } catch(NumberFormatException e) {
+            } catch (NumberFormatException e) {
                 logger.error("Failed at parsing 'fairness.good'", e);
                 _good = FAIRNESS_DEFAULT_RATIO_GOOD;
-            } catch(Exception e) {
+            } catch (Exception e) {
                 logger.debug("A generic exception happened while trying to get 'fairness.good', we should be able to ignore this");
                 _good = FAIRNESS_DEFAULT_RATIO_GOOD;
             }
 
             try {
                 _awesome = Double.parseDouble(p.getProperty("fairness.awesome"));
-            } catch(NumberFormatException e) {
+            } catch (NumberFormatException e) {
                 logger.error("Failed at parsing 'fairness.awesome'", e);
                 _awesome = FAIRNESS_DEFAULT_RATIO_AWESOME;
-            } catch(Exception e) {
+            } catch (Exception e) {
                 logger.debug("A generic exception happened while trying to get 'fairness.awesome', we should be able to ignore this");
                 _awesome = FAIRNESS_DEFAULT_RATIO_AWESOME;
             }
         }
 
-        public double getOk() { return _ok; }
-        public double getGood() { return _good; }
-        public double getAwesome() { return _awesome; }
+        public double getOk() {
+            return _ok;
+        }
+
+        public double getGood() {
+            return _good;
+        }
+
+        public double getAwesome() {
+            return _awesome;
+        }
     }
 }

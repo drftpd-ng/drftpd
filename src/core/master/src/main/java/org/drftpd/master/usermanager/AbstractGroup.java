@@ -20,15 +20,16 @@ package org.drftpd.master.usermanager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.drftpd.common.dynamicdata.Key;
-import org.drftpd.common.dynamicdata.KeyedMap;
 import org.drftpd.common.exceptions.DuplicateElementException;
 import org.drftpd.master.commands.usermanagement.GroupManagement;
+import org.drftpd.common.dynamicdata.DynamicConfigHelper;
+import org.drftpd.common.dynamicdata.element.ConfigElement;
 import org.drftpd.master.vfs.Commitable;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+
+import static org.drftpd.common.dynamicdata.DynamicConfigHelper.configHelper;
 
 /**
  * Implements basic functionality for the Group interface.
@@ -38,14 +39,17 @@ import java.util.List;
  */
 public abstract class AbstractGroup extends Group implements Commitable {
     private static final Logger logger = LogManager.getLogger(AbstractUser.class);
-    protected KeyedMap<Key<?>, Object> _data = new KeyedMap<>();
+    private final Map<Key<?>, ConfigElement<?>> _configs = new HashMap<>();
     private ArrayList<String> _admins = new ArrayList<>();
     private String _groupname;
+
+    public AbstractGroup() {}
 
     public AbstractGroup(String groupname) {
         checkValidGroupName(groupname);
         _groupname = groupname;
-        _data.setObject(GroupManagement.CREATED, new Date(System.currentTimeMillis()));
+        DynamicConfigHelper groupMap = configHelper(_configs);
+        groupMap.setDate(GroupManagement.CREATED, new Date(System.currentTimeMillis()));
     }
 
     public static void checkValidGroupName(String group) {
@@ -102,12 +106,8 @@ public abstract class AbstractGroup extends Group implements Commitable {
         return _admins.contains(u.getName());
     }
 
-    public KeyedMap<Key<?>, Object> getKeyedMap() {
-        return _data;
-    }
-
-    public void setKeyedMap(KeyedMap<Key<?>, Object> data) {
-        _data = data;
+    public Map<Key<?>, ConfigElement<?>> getConfigurations() {
+        return _configs;
     }
 
     public String getName() {
@@ -131,32 +131,36 @@ public abstract class AbstractGroup extends Group implements Commitable {
 
     public abstract void writeToDisk() throws IOException;
 
+    public DynamicConfigHelper getConfigHelper() {
+        return configHelper(_configs);
+    }
+
     public float getMinRatio() {
-        return getKeyedMap().getObject(GroupManagement.MINRATIO, 3F);
+        return getConfigHelper().get(GroupManagement.MINRATIO, 3F);
     }
 
     public void setMinRatio(float minRatio) {
-        getKeyedMap().setObject(GroupManagement.MINRATIO, minRatio);
+        getConfigHelper().setFloat(GroupManagement.MINRATIO, minRatio);
     }
 
     public float getMaxRatio() {
-        return getKeyedMap().getObject(GroupManagement.MAXRATIO, 3F);
+        return getConfigHelper().get(GroupManagement.MAXRATIO, 3F);
     }
 
     public void setMaxRatio(float maxRatio) {
-        getKeyedMap().setObject(GroupManagement.MAXRATIO, maxRatio);
+        getConfigHelper().setFloat(GroupManagement.MAXRATIO, maxRatio);
     }
 
-    public int getGroupSlots() { return getKeyedMap().getObject(GroupManagement.GROUPSLOTS, 0); }
+    public double getGroupSlots() { return getConfigHelper().get(GroupManagement.GROUPSLOTS, 0); }
 
-    public void setGroupSlots(int groupslots) { getKeyedMap().setObject(GroupManagement.GROUPSLOTS, groupslots); }
+    public void setGroupSlots(int groupslots) { getConfigHelper().setInt(GroupManagement.GROUPSLOTS, groupslots); }
 
-    public int getLeechSlots() { return getKeyedMap().getObject(GroupManagement.LEECHSLOTS, 0); }
+    public double getLeechSlots() { return getConfigHelper().get(GroupManagement.LEECHSLOTS, 0); }
 
-    public void setLeechSlots(int leechslots) { getKeyedMap().setObject(GroupManagement.LEECHSLOTS, leechslots); }
+    public void setLeechSlots(int leechslots) { getConfigHelper().setInt(GroupManagement.LEECHSLOTS, leechslots); }
 
-    public Date getCreated() { return getKeyedMap().getObject(GroupManagement.CREATED, new Date()); }
+    public Date getCreated() { return getConfigHelper().get(GroupManagement.CREATED, new Date()); }
 
-    public void setCreated(Date created) { getKeyedMap().setObject(GroupManagement.CREATED, created); }
+    public void setCreated(Date created) { getConfigHelper().setDate(GroupManagement.CREATED, created); }
 
 }

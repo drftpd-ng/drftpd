@@ -57,11 +57,11 @@ public class ExpiredUserPostHook {
         }
         try {
             // Test if metadata exist for user and if so add to response
-            Date expiredate = myUser.getKeyedMap().getObject(ExpiredUserData.EXPIRES);
+            Date expiredate = myUser.getConfigHelper().get(ExpiredUserData.EXPIRES);
             Map<String, Object> env = new HashMap<>();
             env.put("expiredate", expiredate);
             response.addComment(request.getSession().jprintf(_bundle, "expireduser", env, myUser.getName()));
-        } catch (KeyNotFoundException e) {
+        } catch (Exception e) {
             // ignore
         }
     }

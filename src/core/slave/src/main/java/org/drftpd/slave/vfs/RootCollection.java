@@ -35,8 +35,8 @@ import java.util.concurrent.*;
 public class RootCollection {
     private static final Logger logger = LogManager.getLogger(RootCollection.class);
 
-    private ArrayList<Root> _roots = null;
-    private Slave _slave = null;
+    private ArrayList<Root> _roots;
+    private Slave _slave;
     private ThreadPoolExecutor _pool;
 
     public RootCollection(Slave slave, Collection<Root> roots) throws IOException {
@@ -313,22 +313,6 @@ public class RootCollection {
 
     public Iterator<Root> iterator() {
         return _roots.iterator();
-    }
-
-    public int getMaxPath() {
-        if (Slave.isWin32) {
-            int maxPath = 0;
-
-            for (Root root : _roots) {
-                maxPath = Math.max(root.getPath().length(), maxPath);
-            } // constant for win32, see
-
-            // http://support.microsoft.com/default.aspx?scid=http://support.microsoft.com:80/support/kb/articles/Q177/6/65.ASP&NoWebContent=1
-            // for more info
-            return 256 - maxPath;
-        }
-
-        return -1;
     }
 
     public ArrayList<Root> getRootList() {

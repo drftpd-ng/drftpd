@@ -17,20 +17,16 @@
  */
 package org.drftpd.master.slavemanagement;
 
-import com.cedarsoftware.util.io.JsonReader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.drftpd.common.exceptions.SSLServiceException;
-import org.drftpd.common.network.SSLService;
-import org.drftpd.master.Master;
-import org.elasticsearch.common.ssl.SslConfiguration;
-import org.elasticsearch.common.ssl.SslConfigurationLoader;
-
 import org.drftpd.common.exceptions.RemoteIOException;
+import org.drftpd.common.exceptions.SSLServiceException;
 import org.drftpd.common.network.AsyncCommandArgument;
+import org.drftpd.common.network.SSLService;
 import org.drftpd.common.protocol.AbstractIssuer;
 import org.drftpd.common.util.PropertyHelper;
 import org.drftpd.master.GlobalContext;
+import org.drftpd.master.Master;
 import org.drftpd.master.cron.TimeEventInterface;
 import org.drftpd.master.exceptions.FatalException;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
@@ -41,16 +37,19 @@ import org.drftpd.master.protocol.AbstractBasicIssuer;
 import org.drftpd.master.protocol.MasterProtocolCentral;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.slave.exceptions.ObjectNotFoundException;
+import org.elasticsearch.common.ssl.SslConfiguration;
+import org.elasticsearch.common.ssl.SslConfigurationLoader;
 
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLSocket;
 import java.beans.XMLDecoder;
 import java.io.*;
-import java.net.InetSocketAddress;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static org.drftpd.master.util.SerializerUtils.getMapper;
 
 /**
  * @author mog
@@ -60,7 +59,6 @@ public class SlaveManager extends SslConfigurationLoader implements Runnable, Ti
     protected static final int actualTimeout = 60000; // one minute, evaluated
 
     private static final String SETTING_PREFIX = "slavemanager.ssl.";
-    private static final List<String> DEFAULT_SSL_PROTOCOLS = Collections.singletonList("TLSv1.3");
 
     private static final Logger logger = LogManager.getLogger(SlaveManager.class.getName());
     private static final String slavePath = "userdata/slaves/";
@@ -146,9 +144,10 @@ public class SlaveManager extends SslConfigurationLoader implements Runnable, Ti
         if (slaveName == null) {
             throw new NullPointerException();
         }
-        try (InputStream in = new FileInputStream(getSlaveFile(slaveName)); JsonReader reader = new JsonReader(in)) {
+        try {
             logger.debug("Loading slave '{}' Json data from disk.", slaveName);
-            RemoteSlave rSlave = (RemoteSlave) reader.readObject();
+            FileReader fileReader = new FileReader(getSlaveFile(slaveName));
+            RemoteSlave rSlave = getMapper().readValue(fileReader, RemoteSlave.class);
             if (rSlave.getName().equals(slaveName)) {
                 _rSlaves.put(slaveName, rSlave);
                 return rSlave;
@@ -578,7 +577,7 @@ public class SlaveManager extends SslConfigurationLoader implements Runnable, Ti
     }
 
     protected char[] getSecureSetting(String key) throws Exception {
-        logger.error("!!NOT IMPLEMENTED!! Looking up key: {} as char[] - !!NOT IMPLEMENTED!!", key);
+        logger.debug("!!NOT IMPLEMENTED!! Looking up key: {} as char[] - !!NOT IMPLEMENTED!!", key);
         return null;
     }
 

@@ -70,21 +70,21 @@ public abstract class AbstractUserManager implements UserManager {
         User user = createUserImpl("drftpd");
         user.setGroup(group);
         user.setPassword("drftpd");
-        user.getKeyedMap().setObject(UserManagement.RATIO, (float) 0);
-        user.getKeyedMap().setObject(UserManagement.MAXLOGINS, 0);
-        user.getKeyedMap().setObject(UserManagement.MAXLOGINSIP, 0);
-        user.getKeyedMap().setObject(UserManagement.MAXSIMUP, 0);
-        user.getKeyedMap().setObject(UserManagement.MAXSIMDN, 0);
-        // user.getKeyedMap().setObject(Statistics.LOGINS,0);
-        user.getKeyedMap().setObject(UserManagement.CREATED, new Date());
-        user.getKeyedMap().setObject(UserManagement.LASTSEEN, new Date());
-        user.getKeyedMap().setObject(UserManagement.WKLYALLOTMENT, 0L);
-        user.getKeyedMap().setObject(UserManagement.COMMENT, "Auto-Generated");
-        user.getKeyedMap().setObject(UserManagement.IRCIDENT, "");
-        user.getKeyedMap().setObject(UserManagement.TAGLINE, "drftpd");
-        user.getKeyedMap().setObject(UserManagement.BANTIME, new Date());
-        // user.getKeyedMap().setObject(Nuke.NUKED,0);
-        // user.getKeyedMap().setObject(Nuke.NUKEDBYTES,new Long(0));
+        user.getConfigHelper().setFloat(UserManagement.RATIO, (float) 0);
+        user.getConfigHelper().setInt(UserManagement.MAXLOGINS, 0);
+        user.getConfigHelper().setInt(UserManagement.MAXLOGINSIP, 0);
+        user.getConfigHelper().setInt(UserManagement.MAXSIMUP, 0);
+        user.getConfigHelper().setInt(UserManagement.MAXSIMDN, 0);
+        // user.getKeyed().setObject(Statistics.LOGINS,0);
+        user.getConfigHelper().setDate(UserManagement.CREATED, new Date());
+        user.getConfigHelper().setDate(UserManagement.LASTSEEN, new Date());
+        user.getConfigHelper().setLong(UserManagement.WKLYALLOTMENT, 0L);
+        user.getConfigHelper().setString(UserManagement.COMMENT, "Auto-Generated");
+        user.getConfigHelper().setString(UserManagement.IRCIDENT, "");
+        user.getConfigHelper().setString(UserManagement.TAGLINE, "drftpd");
+        user.getConfigHelper().setDate(UserManagement.BANTIME, new Date());
+        // user.getKeyed().setObject(Nuke.NUKED,0);
+        // user.getKeyed().setObject(Nuke.NUKEDBYTES,new Long(0));
 
         try {
             user.addIPMask("*@127.0.0.1");
@@ -245,7 +245,7 @@ public abstract class AbstractUserManager implements UserManager {
     public User getUserByIdent(String ident, String botName) throws NoSuchUserException {
         for (User user : getAllUsers()) {
             try {
-                String uidentList = user.getKeyedMap().getObject(UserManagement.IRCIDENT);
+                String uidentList = user.getConfigHelper().get(UserManagement.IRCIDENT);
                 String[] identArray = uidentList.split(",");
                 for (String anIdentArray : identArray) {
                     if (anIdentArray.matches("^" + botName + "\\|" + ident + "$")) {

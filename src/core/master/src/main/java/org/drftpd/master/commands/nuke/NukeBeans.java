@@ -17,21 +17,20 @@
  */
 package org.drftpd.master.commands.nuke;
 
-import com.cedarsoftware.util.io.JsonIoException;
-import com.cedarsoftware.util.io.JsonReader;
-import com.cedarsoftware.util.io.JsonWriter;
+import com.fasterxml.jackson.core.type.TypeReference;
 import org.apache.commons.collections4.map.LRUMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.drftpd.common.util.Bytes;
 import org.drftpd.master.commands.nuke.metadata.NukeData;
-import org.drftpd.master.io.SafeFileOutputStream;
 import org.drftpd.master.vfs.VirtualFileSystem;
 import org.drftpd.slave.exceptions.ObjectNotFoundException;
 
 import java.beans.XMLDecoder;
 import java.io.*;
 import java.util.*;
+
+import static org.drftpd.master.util.SerializerUtils.getMapper;
 
 /**
  * NukeBeans handles the logging of nukes. Using a TreeMap, it sorts all nukes
@@ -47,7 +46,6 @@ public class NukeBeans {
     private static final String _nukebeansPath = "userdata";
     private static NukeBeans _nukeBeans = null;
     private Map<String, NukeData> _nukes = null;
-    private ClassLoader _prevCL;
 
     /**
      * Singleton.
@@ -242,12 +240,10 @@ public class NukeBeans {
      * @throws IOException
      */
     public void commit() throws IOException {
-        Map<String, Object> params = new HashMap<>();
-        params.put(JsonWriter.PRETTY_PRINT, true);
-        try (OutputStream out = new SafeFileOutputStream(_nukebeansPath + VirtualFileSystem.separator + "nukebeans.json");
-             JsonWriter writer = new JsonWriter(out, params)) {
-            writer.write(_nukes);
-        } catch (IOException | JsonIoException e) {
+        try {
+            File nukeFile = new File(_nukebeansPath + VirtualFileSystem.separator + "nukebeans.json");
+            getMapper().writeValue(nukeFile, this);
+        } catch (Exception e) {
             throw new IOException(e.getMessage());
         }
     }
@@ -266,15 +262,14 @@ public class NukeBeans {
      */
     @SuppressWarnings("unchecked")
     private void loadLRUMap() {
-        Map<String, NukeData> nukees = new LRUMap(200);
-        try (InputStream in = new FileInputStream(_nukebeansPath + VirtualFileSystem.separator + "nukebeans.json");
-             JsonReader reader = new JsonReader(in)) {
-            nukees.putAll((Map<String, NukeData>) reader.readObject());
-            logger.debug("Loaded log from .json, size: {}", nukees.size());
+        Map<String, NukeData> nukees = new LRUMap<>(200);
+        try {
+            FileReader fileReader = new FileReader(_nukebeansPath + VirtualFileSystem.separator + "nukebeans.json");
+            Map<String, NukeData> nukes = getMapper().readValue(fileReader, new TypeReference<>() {});
+            nukees.putAll(nukes);
         } catch (FileNotFoundException e) {
-            // Lets see if there is a legacy xml nuke log to load
             loadXMLLRUMap(nukees);
-        } catch (IOException e) {
+        } catch (Exception e) {
             logger.error("IOException reading json nuke log file", e);
         }
         _nukeBeans.setLRUMap(nukees);

@@ -163,7 +163,7 @@ public class SiteBotManagement extends CommandInterface {
 
         String userKeysString = "";
         try {
-            userKeysString = user.getKeyedMap().getObject(UserDetails.BLOWKEY);
+            userKeysString = user.getConfigHelper().get(UserDetails.BLOWKEY);
         } catch (KeyNotFoundException ignore) {
             // Means this user has never set a blowfish key, is safe to proceed
         }
@@ -196,7 +196,7 @@ public class SiteBotManagement extends CommandInterface {
             userKey.append(blowKey);
         }
         // Store the new blowfish key data for the user
-        user.getKeyedMap().setObject(UserDetails.BLOWKEY, userKey.toString());
+        user.getConfigHelper().setString(UserDetails.BLOWKEY, userKey.toString());
         user.commit();
         return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
     }

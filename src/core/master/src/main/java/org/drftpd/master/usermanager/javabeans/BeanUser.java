@@ -17,20 +17,18 @@
  */
 package org.drftpd.master.usermanager.javabeans;
 
-import com.cedarsoftware.util.io.JsonIoException;
-import com.cedarsoftware.util.io.JsonWriter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.drftpd.master.io.SafeFileOutputStream;
 import org.drftpd.master.usermanager.AbstractUser;
 import org.drftpd.master.usermanager.AbstractUserManager;
 import org.drftpd.master.usermanager.UserManager;
 import org.drftpd.master.vfs.CommitManager;
 
+import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.util.HashMap;
-import java.util.Map;
+
+import static org.drftpd.master.util.SerializerUtils.getMapper;
 
 /**
  * @author mog
@@ -40,14 +38,17 @@ public class BeanUser extends AbstractUser {
 
     private static final Logger logger = LogManager.getLogger(BeanUser.class);
 
+    @JsonIgnore
     private transient BeanUserManager _um;
 
+    private int _encryption = 0;
     private String _password = "";
 
+    @JsonIgnore
     private transient boolean _purged;
 
-    public BeanUser(String username) {
-        super(username);
+    public BeanUser() {
+        super();
     }
 
     public BeanUser(BeanUserManager manager, String username) {
@@ -65,6 +66,20 @@ public class BeanUser extends AbstractUser {
 
     public void setUserManager(BeanUserManager manager) {
         _um = manager;
+    }
+
+    /*
+     * Returns current encryption type of password
+     */
+    public int getEncryption() {
+        return _encryption;
+    }
+
+    /*
+     * Sets encryption type for password
+     */
+    public void setEncryption(int encryption) {
+        _encryption = encryption;
     }
 
     public boolean checkPassword(String password) {
@@ -89,18 +104,12 @@ public class BeanUser extends AbstractUser {
     }
 
     public void writeToDisk() throws IOException {
-        if (_purged)
+        if (_purged) {
             return;
-
-        Map<String, Object> params = new HashMap<>();
-        params.put(JsonWriter.PRETTY_PRINT, true);
-        try (OutputStream out = new SafeFileOutputStream(_um.getUserFile(getName()));
-             JsonWriter writer = new JsonWriter(out, params)) {
-            writer.write(this);
-            logger.debug("Wrote userfile for {}", this.getName());
-        } catch (IOException | JsonIoException e) {
-            throw new IOException("Unable to write " + _um.getUserFile(getName()) + " to disk", e);
         }
+        File userFile = _um.getUserFile(getName());
+        logger.debug("Wrote userfile for {}", this.getName());
+        getMapper().writeValue(userFile, this);
     }
 
     public String descriptiveName() {

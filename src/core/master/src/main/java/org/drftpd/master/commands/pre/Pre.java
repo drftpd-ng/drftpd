@@ -20,13 +20,10 @@ package org.drftpd.master.commands.pre;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.drftpd.common.dynamicdata.Key;
-import org.drftpd.common.extensibility.CommandHook;
-import org.drftpd.common.extensibility.HookType;
 import org.drftpd.common.util.Bytes;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.commands.*;
 import org.drftpd.master.commands.usermanagement.UserManagement;
-import org.drftpd.master.config.ConfigInterface;
 import org.drftpd.master.sections.SectionInterface;
 import org.drftpd.master.usermanager.NoSuchUserException;
 import org.drftpd.master.usermanager.User;
@@ -198,7 +195,7 @@ public class Pre extends CommandInterface {
                     if (total == null) {
                         total = 0L;
                     }
-                    total = (total + (long) (file.getSize() * owner.getKeyedMap().getObjectFloat(UserManagement.RATIO)));
+                    total = (total + (long) (file.getSize() * owner.getConfigHelper().get(UserManagement.RATIO, 0F)));
                     awards.put(owner, total);
                 }
 

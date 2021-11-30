@@ -17,6 +17,7 @@
  */
 package org.drftpd.dupecheck.master;
 
+import org.drftpd.common.dynamicdata.element.ConfigBoolean;
 import org.drftpd.dupecheck.master.metadata.DupeCheckFileData;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.commands.CommandInterface;
@@ -71,7 +72,7 @@ public class DupeCheckCommands extends CommandInterface {
                 for (Map.Entry<String, String> item : inodes.entrySet()) {
                     InodeHandle inode = item.getValue().equals("d") ? new DirectoryHandle(item.getKey()) : new FileHandle(item.getKey());
                     try {
-                        inode.addPluginMetaData(DupeCheckFileData.DUPE, false);
+                        inode.addPluginMetaData(DupeCheckFileData.DUPE, new ConfigBoolean(false));
                         response.addComment("Unduped: " + inode.getPath());
                     } catch (FileNotFoundException e) {
                         // File Not Found - Deleted?? Probably not a good thing

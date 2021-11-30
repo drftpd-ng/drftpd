@@ -31,6 +31,7 @@ import org.drftpd.master.vfs.InodeHandle;
 import org.drftpd.zipscript.common.zip.AsyncResponseDizInfo;
 import org.drftpd.zipscript.common.zip.DizInfo;
 import org.drftpd.zipscript.common.zip.DizStatus;
+import org.drftpd.zipscript.master.zip.ConfigDiz;
 import org.drftpd.zipscript.master.zip.ZipTools;
 import org.drftpd.zipscript.master.zip.ZipscriptZipIssuer;
 
@@ -82,7 +83,7 @@ public class ZipscriptVFSDataZip {
         }
         if (dizInfo != null) {
             if (dizInfo.isValid()) {
-                _dir.addPluginMetaData(DizInfo.DIZINFO, dizInfo);
+                _dir.addPluginMetaData(DizInfo.DIZINFO, new ConfigDiz(dizInfo));
                 return dizInfo;
             }
         }

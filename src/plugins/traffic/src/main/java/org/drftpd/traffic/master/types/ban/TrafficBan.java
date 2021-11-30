@@ -55,8 +55,8 @@ public class TrafficBan extends TrafficType {
 
     @Override
     public void doAction(User user, FileHandle file, boolean isStor, long minspeed, long speed, long transfered, BaseFtpConnection conn, String slavename) {
-        user.getKeyedMap().setObject(UserManagement.BANTIME, new Date(System.currentTimeMillis() + _bantime));
-        user.getKeyedMap().setObject(UserManagement.BANREASON, _reason);
+        user.getConfigHelper().setDate(UserManagement.BANTIME, new Date(System.currentTimeMillis() + _bantime));
+        user.getConfigHelper().setString(UserManagement.BANREASON, _reason);
         user.commit();
 
         if (_kickall) {

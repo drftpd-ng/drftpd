@@ -82,15 +82,6 @@ public class BasicHandler extends AbstractHandler {
         return "BasicProtocol";
     }
 
-    /**
-     * Simply delegates the request to the Slave object.
-     *
-     * @param path The path to map
-     */
-    private String mapPathToRenameQueue(String path) {
-        return getSlaveObject().mapPathToRenameQueue(path);
-    }
-
     // TODO check this.
     public AsyncResponse handleAbort(AsyncCommandArgument ac) {
         TransferIndex ti = new TransferIndex(Integer.parseInt(ac.getArgsArray()[0]));
@@ -130,15 +121,7 @@ public class BasicHandler extends AbstractHandler {
 
     public AsyncResponse handleDelete(AsyncCommandArgument ac) {
         try {
-            try {
-                getSlaveObject().delete(mapPathToRenameQueue(ac.getArgs()));
-            } catch (PermissionDeniedException e) {
-                if (Slave.isWin32) {
-                    getSlaveObject().getRenameQueue().add(new QueuedOperation(ac.getArgs(), null));
-                } else {
-                    throw e;
-                }
-            }
+            getSlaveObject().delete(ac.getArgs());
             sendResponse(new AsyncResponseDiskStatus(getSlaveObject().getDiskStatus()));
             return new AsyncResponse(ac.getIndex());
         } catch (IOException e) {
@@ -150,7 +133,7 @@ public class BasicHandler extends AbstractHandler {
         String[] data = ac.getArgs().split(":");
         boolean encrypted = data[0].equals("true");
         boolean useSSLClientMode = data[1].equals("true");
-        PassiveConnection c = null;
+        PassiveConnection c;
 
         try {
             c = new PassiveConnection(encrypted ? getSlaveObject().getSSLContext() : null,
@@ -167,7 +150,8 @@ public class BasicHandler extends AbstractHandler {
     }
 
     public AsyncResponse handleMaxpath(AsyncCommandArgument ac) {
-        return new AsyncResponseMaxPath(ac.getIndex(), Slave.isWin32 ? 255 : Integer.MAX_VALUE);
+        int maxPathLength = getSlaveObject().getMaxPathLength();
+        return new AsyncResponseMaxPath(ac.getIndex(), maxPathLength);
     }
 
     public AsyncResponse handlePing(AsyncCommandArgument ac) {
@@ -179,7 +163,7 @@ public class BasicHandler extends AbstractHandler {
         long position = Long.parseLong(ac.getArgsArray()[1]);
         TransferIndex transferIndex = new TransferIndex(Integer.parseInt(ac.getArgsArray()[2]));
         String inetAddress = ac.getArgsArray()[3];
-        String path = mapPathToRenameQueue(ac.getArgsArray()[4]);
+        String path = ac.getArgsArray()[4];
         String fileName = path.substring(path.lastIndexOf("/") + 1);
         String dirName = path.substring(0, path.lastIndexOf("/"));
         long minSpeed = Long.parseLong(ac.getArgsArray()[5]);
@@ -489,27 +473,12 @@ public class BasicHandler extends AbstractHandler {
     }
 
     public AsyncResponse handleRename(AsyncCommandArgument ac) {
-        String from = mapPathToRenameQueue(ac.getArgsArray()[0]);
+        String from = ac.getArgsArray()[0];
         String toDir = ac.getArgsArray()[1];
         String toFile = ac.getArgsArray()[2];
 
         try {
-            try {
-                getSlaveObject().rename(from, toDir, toFile);
-            } catch (PermissionDeniedException e) {
-                if (Slave.isWin32) {
-                    String simplePath = null;
-                    if (toDir.endsWith("/")) {
-                        simplePath = toDir + toFile;
-                    } else {
-                        simplePath = toDir + "/" + toFile;
-                    }
-                    getSlaveObject().getRenameQueue().add(new QueuedOperation(from, simplePath));
-                } else {
-                    throw e;
-                }
-            }
-
+            getSlaveObject().rename(from, toDir, toFile);
             return new AsyncResponse(ac.getIndex());
         } catch (IOException e) {
             return new AsyncResponseException(ac.getIndex(), e);
@@ -521,7 +490,7 @@ public class BasicHandler extends AbstractHandler {
         long position = Long.parseLong(ac.getArgsArray()[1]);
         TransferIndex transferIndex = new TransferIndex(Integer.parseInt(ac.getArgsArray()[2]));
         String inetAddress = ac.getArgsArray()[3];
-        String path = mapPathToRenameQueue(ac.getArgsArray()[4]);
+        String path = ac.getArgsArray()[4];
         long minSpeed = Long.parseLong(ac.getArgsArray()[5]);
         long maxSpeed = Long.parseLong(ac.getArgsArray()[6]);
         Transfer t = getSlaveObject().getTransfer(transferIndex);

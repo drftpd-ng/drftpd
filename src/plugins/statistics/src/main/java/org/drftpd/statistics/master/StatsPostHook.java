@@ -45,7 +45,7 @@ public class StatsPostHook {
         TransferStatus status = response.getObject(DataConnectionHandler.XFER_STATUS, null);
         if (status != null) {
             // creditloss routine.
-            float ratio = StatsManager.getStatsManager().getCreditLossRatio(dir, user);
+            double ratio = StatsManager.getStatsManager().getCreditLossRatio(dir, user);
             long transferredSize = status.getTransfered();
             long creditsLoss = (long) ratio * transferredSize;
             user.updateCredits(-creditsLoss);
@@ -70,7 +70,7 @@ public class StatsPostHook {
         FileHandle transferFile = response.getObject(DataConnectionHandler.TRANSFER_FILE, null);
         if (status != null && transferFile != null && transferFile.exists()) {
             // creditcheck routine.
-            float ratio = StatsManager.getStatsManager().getCreditCheckRatio(dir, user);
+            double ratio = StatsManager.getStatsManager().getCreditCheckRatio(dir, user);
             long transferredSize = status.getTransfered();
             long creditsCheck = (long) ratio * transferredSize;
             user.updateCredits(creditsCheck);
@@ -106,7 +106,7 @@ public class StatsPostHook {
             User user = GlobalContext.getGlobalContext().getUserManager().getUserByName(userName);
 
             // updating credits
-            float ratio = StatsManager.getStatsManager().getCreditCheckRatio(dir, user);
+            double ratio = StatsManager.getStatsManager().getCreditCheckRatio(dir, user);
             long creditsCheck = (long) ratio * fileSize;
             user.updateCredits(-creditsCheck);
 

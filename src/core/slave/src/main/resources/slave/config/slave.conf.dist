@@ -39,6 +39,10 @@ enabledownloadchecksums=true
 # Default: [0]
 bufferSize=0
 
+# Max path length for filesystem
+# Default: [4096]
+maxPathLength=4096
+
 # This is the maximum the slave will wait for the master.
 # Timeout on the slave (on the master side) should be equal.
 # "site slave <slavename> set timeout <value>".

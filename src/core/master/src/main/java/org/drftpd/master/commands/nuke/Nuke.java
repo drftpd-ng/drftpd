@@ -224,7 +224,7 @@ public class Nuke extends CommandInterface {
                 }
 
                 long debt = NukeUtils.calculateNukedAmount(nukeeObj.getAmount(),
-                        nukee.getKeyedMap().getObjectFloat(UserManagement.RATIO), multiplier);
+                        nukee.getConfigHelper().get(UserManagement.RATIO, 0F), multiplier);
                 nukeeenv.put("nukedamount", Bytes.formatBytes(debt));
                 response.addComment(session.jprintf(_bundle, "nuke.nukees", nukeeenv, nukee));
             }
@@ -435,7 +435,7 @@ public class Nuke extends CommandInterface {
                 }
 
                 long debt = NukeUtils.calculateNukedAmount(nukeeObj.getAmount(),
-                        nukee.getKeyedMap().getObjectFloat(UserManagement.RATIO), nd.getMultiplier());
+                        nukee.getConfigHelper().get(UserManagement.RATIO, 0F), nd.getMultiplier());
                 nukeeenv.put("nukedamount", Bytes.formatBytes(debt));
                 response.addComment(session.jprintf(_bundle, "unnuke.nukees", nukeeenv, nukee));
             }

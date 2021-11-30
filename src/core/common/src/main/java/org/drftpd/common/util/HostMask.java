@@ -31,6 +31,9 @@ public class HostMask {
 
     private String _identMask;
 
+    @SuppressWarnings("unused")
+    public HostMask() {}
+
     public HostMask(String string) {
         int pos = string.indexOf('@');
 

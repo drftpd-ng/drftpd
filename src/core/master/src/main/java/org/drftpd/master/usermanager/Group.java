@@ -17,9 +17,8 @@
  */
 package org.drftpd.master.usermanager;
 
-import org.drftpd.common.dynamicdata.Key;
-import org.drftpd.common.dynamicdata.KeyedMap;
 import org.drftpd.common.exceptions.DuplicateElementException;
+import org.drftpd.common.dynamicdata.DynamicConfigHelper;
 
 import java.util.Date;
 import java.util.List;
@@ -31,8 +30,7 @@ import java.util.List;
 public abstract class Group implements Entity {
     public abstract UserManager getUserManager();
 
-    protected abstract KeyedMap<Key<?>, Object> getKeyedMap();
-
+    public abstract DynamicConfigHelper getConfigHelper();
     /**
      * Commit changes.
      */
@@ -65,11 +63,11 @@ public abstract class Group implements Entity {
 
     public abstract void setMaxRatio(float MaxRatio);
 
-    public abstract int getGroupSlots();
+    public abstract double getGroupSlots();
 
     public abstract void setGroupSlots(int slots);
 
-    public abstract int getLeechSlots();
+    public abstract double getLeechSlots();
 
     public abstract void setLeechSlots(int leechslots);
 

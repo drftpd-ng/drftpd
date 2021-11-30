@@ -23,6 +23,7 @@ import org.drftpd.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.exceptions.SlaveUnavailableException;
 import org.drftpd.master.vfs.DirectoryHandle;
+import org.drftpd.tvmaze.master.ConfigTvMaze;
 import org.drftpd.tvmaze.master.TvMazeParser;
 import org.drftpd.tvmaze.master.metadata.TvMazeInfo;
 
@@ -73,7 +74,7 @@ public class TvMazeVFSData {
         TvMazeInfo tvmazeInfo = tvmazeParser.getTvShow();
 
         try {
-            _dir.addPluginMetaData(TvMazeInfo.TVMAZEINFO, tvmazeInfo);
+            _dir.addPluginMetaData(TvMazeInfo.TVMAZEINFO, new ConfigTvMaze(tvmazeInfo));
         } catch (FileNotFoundException e) {
             logger.error("Failed to add TvMaze metadata", e);
         }

@@ -137,7 +137,7 @@ public class Request extends CommandInterface {
     }
 
     private void storeRequestData(DirectoryHandle dirHandle, RequestData reqData) throws FileNotFoundException {
-        dirHandle.addPluginMetaData(RequestData.REQUESTS, reqData);
+        dirHandle.addPluginMetaData(RequestData.REQUESTS, new ConfigRequestData(reqData));
     }
 
     public CommandResponse doSITE_REQFILLED(CommandRequest request) throws ImproperUsageException {

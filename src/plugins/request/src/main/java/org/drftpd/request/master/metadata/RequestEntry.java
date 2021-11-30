@@ -25,6 +25,9 @@ public class RequestEntry implements Serializable {
     private String _prefix;
     private long _creationTime;
 
+    @SuppressWarnings("unused")
+    public RequestEntry() {}
+
     public RequestEntry(String name, String user, String prefix, long creationTime) {
         _name = name;
         _user = user;

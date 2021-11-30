@@ -17,10 +17,9 @@
  */
 package org.drftpd.master.usermanager;
 
-import org.drftpd.common.dynamicdata.Key;
-import org.drftpd.common.dynamicdata.KeyedMap;
 import org.drftpd.common.exceptions.DuplicateElementException;
 import org.drftpd.common.util.HostMaskCollection;
+import org.drftpd.common.dynamicdata.DynamicConfigHelper;
 import org.drftpd.master.stats.ExtendedTimedStats;
 
 import java.util.List;
@@ -30,9 +29,10 @@ import java.util.List;
  * @version $Id$
  */
 public abstract class User extends ExtendedTimedStats implements Entity {
+
     public abstract UserManager getUserManager();
 
-    public abstract KeyedMap<Key<?>, Object> getKeyedMap();
+    public abstract DynamicConfigHelper getConfigHelper();
 
     public abstract void addAllMasks(HostMaskCollection hostMaskCollection);
 
@@ -47,14 +47,14 @@ public abstract class User extends ExtendedTimedStats implements Entity {
      */
     public abstract void commit();
 
-    public abstract long getCredits();
+    public abstract double getCredits();
 
     /**
      * Sets the credits.
      *
      * @param credits The credits to set
      */
-    public abstract void setCredits(long credits);
+    public abstract void setCredits(double credits);
 
     public abstract Group getGroup();
 
@@ -121,11 +121,11 @@ public abstract class User extends ExtendedTimedStats implements Entity {
 
     public abstract void setLastReset(long lastReset);
 
-    public abstract int getMaxSimDown();
+    public abstract double getMaxSimDown();
 
     public abstract void setMaxSimDown(int maxdown);
 
-    public abstract int getMaxSimUp();
+    public abstract double getMaxSimUp();
 
     public abstract void setMaxSimUp(int maxup);
 }

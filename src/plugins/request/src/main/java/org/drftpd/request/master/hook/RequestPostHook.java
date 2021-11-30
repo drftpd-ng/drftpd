@@ -27,6 +27,7 @@ import org.drftpd.master.commands.CommandResponse;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.ObjectNotValidException;
+import org.drftpd.request.master.ConfigRequestData;
 import org.drftpd.request.master.RequestSettings;
 import org.drftpd.request.master.metadata.RequestData;
 import org.drftpd.request.master.metadata.RequestEntry;
@@ -57,8 +58,8 @@ public class RequestPostHook {
             logger.error("[doSITE_REQUEST::doREQUESTIncrement][Post-hook] User {} does not exists, this should not be possible", request.getUser());
             return;
         }
-        user.getKeyedMap().incrementInt(RequestUserData.REQUESTS);
-        user.getKeyedMap().incrementInt(RequestUserData.WEEKREQS);
+        user.getConfigHelper().incrementInt(RequestUserData.REQUESTS);
+        user.getConfigHelper().incrementInt(RequestUserData.WEEKREQS);
         user.commit();
     }
 
@@ -73,7 +74,7 @@ public class RequestPostHook {
             logger.error("[doSITE_REQUEST::doREQFILLEDIncrement][Post-hook] User {} does not exists, this should not be possible", request.getUser());
             return;
         }
-        user.getKeyedMap().incrementInt(RequestUserData.REQUESTSFILLED);
+        user.getConfigHelper().incrementInt(RequestUserData.REQUESTSFILLED);
         user.commit();
     }
 
@@ -88,8 +89,8 @@ public class RequestPostHook {
             logger.error("[doSITE_REQUEST::doWklyAllotmentDecrease][Post-hook] User {} does not exists, this should not be possible", request.getUser());
             return;
         }
-        if (RequestSettings.getSettings().getRequestDecreaseWeekReqs() && user.getKeyedMap().getObjectInteger(RequestUserData.WEEKREQS) > 0) {
-            user.getKeyedMap().incrementInt(RequestUserData.WEEKREQS, -1);
+        if (RequestSettings.getSettings().getRequestDecreaseWeekReqs() && user.getConfigHelper().get(RequestUserData.WEEKREQS, 0) > 0) {
+            user.getConfigHelper().incrementInt(RequestUserData.WEEKREQS, -1);
             user.commit();
         }
     }
@@ -141,7 +142,7 @@ public class RequestPostHook {
             logger.debug("[doSITE_RENUSER::doPostRequestRenuser][Post-hook] Updated {} requests", requestsUpdated);
             // Only store the requests data if we actually changed anything
             if (requestsUpdated > 0) {
-                requestDirHandle.addPluginMetaData(RequestData.REQUESTS, reqData);
+                requestDirHandle.addPluginMetaData(RequestData.REQUESTS, new ConfigRequestData(reqData));
             }
         } catch (KeyNotFoundException e) {
             logger.error("[doSITE_RENUSER::doPostRequestRenuser][Post-hook] Something went wrong in the pre hook as the Object are not registered");
@@ -187,7 +188,7 @@ public class RequestPostHook {
                 for (RequestEntry reqEntry : deletedRequests) {
                     reqData.delRequest(reqEntry);
                 }
-                requestDirHandle.addPluginMetaData(RequestData.REQUESTS, reqData);
+                requestDirHandle.addPluginMetaData(RequestData.REQUESTS, new ConfigRequestData(reqData));
             }
         } catch (KeyNotFoundException e) {
             logger.error("[doSITE_DELUSER::doPostRequestDeluser][Post-hook] Something went wrong in the pre hook as the Object are not registered");

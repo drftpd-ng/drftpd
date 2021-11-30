@@ -252,17 +252,17 @@ public class NukeUtils {
                 }
 
                 long debt = NukeUtils.calculateNukedAmount(size,
-                        nukee.getKeyedMap().getObjectFloat(UserManagement.RATIO), multiplier);
+                        nukee.getConfigHelper().get(UserManagement.RATIO, 0F), multiplier);
 
                 nukedAmount += debt;
 
                 nukee.updateCredits(-debt);
                 nukee.updateUploadedBytes(-size);
 
-                nukee.getKeyedMap().incrementLong(NukeUserData.NUKEDBYTES, debt);
+                nukee.getConfigHelper().incrementLong(NukeUserData.NUKEDBYTES, debt);
 
-                nukee.getKeyedMap().incrementInt(NukeUserData.NUKED);
-                nukee.getKeyedMap().setObject(NukeUserData.LASTNUKED, System.currentTimeMillis());
+                nukee.getConfigHelper().incrementInt(NukeUserData.NUKED);
+                nukee.getConfigHelper().setLong(NukeUserData.LASTNUKED, System.currentTimeMillis());
 
                 nukee.commit();
             }
@@ -303,7 +303,7 @@ public class NukeUtils {
 
             // adding nuke metadata to dir.
             try {
-                nukeDir.addPluginMetaData(NukeData.NUKEDATA, nd);
+                nukeDir.addPluginMetaData(NukeData.NUKEDATA, new ConfigNuke(nd));
             } catch (FileNotFoundException e) {
                 logger.warn("Failed to add nuke metadata, dir gone: {}", nukeDir.getPath(), e);
             }
@@ -368,14 +368,14 @@ public class NukeUtils {
                 }
 
                 long nukedAmount = NukeUtils.calculateNukedAmount(nukeeObj.getAmount(),
-                        nukee.getKeyedMap().getObjectFloat(UserManagement.RATIO),
+                        nukee.getConfigHelper().get(UserManagement.RATIO, 0F),
                         nd.getMultiplier());
 
                 nukee.updateCredits(nukedAmount);
                 nukee.updateUploadedBytes(nukeeObj.getAmount());
 
-                nukee.getKeyedMap().incrementInt(NukeUserData.NUKED, -1);
-                nukee.getKeyedMap().incrementLong(NukeUserData.NUKEDBYTES, -nukedAmount);
+                nukee.getConfigHelper().incrementInt(NukeUserData.NUKED, -1);
+                nukee.getConfigHelper().incrementLong(NukeUserData.NUKEDBYTES, -nukedAmount);
 
                 nukee.commit();
             }

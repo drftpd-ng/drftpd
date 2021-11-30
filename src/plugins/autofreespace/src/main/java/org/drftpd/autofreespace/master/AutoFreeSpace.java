@@ -48,8 +48,8 @@ import java.util.*;
 
 public class AutoFreeSpace implements PluginInterface {
     private static final Logger logger = LogManager.getLogger(AutoFreeSpace.class);
-    private Timer _timer;
-    private MrCleanIt _cleanTask;
+    private Timer _timer = new Timer();
+    private MrCleanIt _cleanTask = new MrCleanIt();
 
     public void startPlugin() {
         reload();

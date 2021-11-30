@@ -17,8 +17,7 @@
  */
 package org.drftpd.master.slavemanagement;
 
-import com.cedarsoftware.util.io.JsonIoException;
-import com.cedarsoftware.util.io.JsonWriter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.drftpd.common.dynamicdata.Key;
@@ -40,7 +39,6 @@ import org.drftpd.master.GlobalContext;
 import org.drftpd.master.event.SlaveEvent;
 import org.drftpd.master.exceptions.FatalException;
 import org.drftpd.master.exceptions.SlaveUnavailableException;
-import org.drftpd.master.io.SafeFileOutputStream;
 import org.drftpd.master.network.RemoteTransfer;
 import org.drftpd.master.stats.ExtendedTimedStats;
 import org.drftpd.master.usermanager.Entity;
@@ -55,10 +53,15 @@ import java.io.*;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Properties;
+import java.util.StringTokenizer;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.PatternSyntaxException;
+
+import static org.drftpd.master.util.SerializerUtils.getMapper;
 
 /**
  * @author mog
@@ -69,38 +72,62 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 
     public static final Key<Boolean> SSL = new Key<>(RemoteSlave.class, "ssl");
     private static final Logger logger = LogManager.getLogger(RemoteSlave.class);
+    @JsonIgnore
     public transient AtomicBoolean _remergePaused;
+    @JsonIgnore
     protected transient int _errors;
+    @JsonIgnore
     protected transient long _lastNetworkError;
+    @JsonIgnore
     private transient boolean _isAvailable;
+    @JsonIgnore
     private transient boolean _isRemerging;
+    @JsonIgnore
     private transient boolean _remergeChecksums;
+    @JsonIgnore
     private transient int _prevSocketTimeout;
+    @JsonIgnore
     private transient long _lastDownloadSending = 0;
+    @JsonIgnore
     private transient long _lastUploadReceiving = 0;
+    @JsonIgnore
     private transient long _lastResponseReceived = System.currentTimeMillis();
+    @JsonIgnore
     private transient long _lastCommandSent = System.currentTimeMillis();
-    private final String _name;
+    private String _name;
+    @JsonIgnore
     private transient DiskStatus _status;
     private HostMaskCollection _ipMasks;
     private Properties _keysAndValues;
+    @JsonIgnore
     private final transient KeyedMap<Key<?>, Object> _transientKeyedMap;
     private ConcurrentLinkedDeque<QueuedOperation> _renameQueue;
+    @JsonIgnore
     private transient LinkedBlockingDeque<String> _indexPool;
+    @JsonIgnore
     private transient ConcurrentHashMap<String, AsyncResponse> _indexWithCommands;
+    @JsonIgnore
     private transient ObjectInputStream _sin;
+    @JsonIgnore
     private transient Socket _socket;
+    @JsonIgnore
     private transient ObjectOutputStream _sout;
+    @JsonIgnore
     private transient ConcurrentHashMap<TransferIndex, RemoteTransfer> _transfers;
+    @JsonIgnore
     private transient boolean _initRemergeCompleted;
+    @JsonIgnore
     private final transient Object _commandMonitor;
+    @JsonIgnore
     private final transient LinkedBlockingQueue<RemergeMessage> _remergeQueue;
+    @JsonIgnore
     private final transient LinkedBlockingQueue<FileHandle> _crcQueue;
+    @JsonIgnore
     private transient RemergeThread _remergeThread;
+    @JsonIgnore
     private transient CrcThread _crcThread;
 
-    public RemoteSlave(String name) {
-        _name = name;
+    public RemoteSlave() {
         _keysAndValues = new Properties();
         _transientKeyedMap = new KeyedMap<>();
         _ipMasks = new HostMaskCollection();
@@ -111,14 +138,9 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
         _commandMonitor = new Object();
     }
 
-    public static Hashtable<String, RemoteSlave> rslavesToHashtable(Collection<RemoteSlave> rslaves) {
-        Hashtable<String, RemoteSlave> map = new Hashtable<>(rslaves.size());
-
-        for (RemoteSlave rslave : rslaves) {
-            map.put(rslave.getName(), rslave);
-        }
-
-        return map;
+    public RemoteSlave(String name) {
+        this();
+        _name = name;
     }
 
     public static String getSlaveNameFromObjectInput(ObjectInputStream in)
@@ -1177,14 +1199,12 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
     }
 
     public void writeToDisk() {
-        Map<String, Object> params = new HashMap<>();
-        params.put(JsonWriter.PRETTY_PRINT, true);
-        try (OutputStream out = new SafeFileOutputStream(
-                getGlobalContext().getSlaveManager().getSlaveFile(this.getName()));
-             JsonWriter writer = new JsonWriter(out, params)) {
-            writer.write(this);
+        try {
+            File slaveFile = getGlobalContext().getSlaveManager().getSlaveFile(this.getName());
+            logger.debug("Wrote userfile for {}", this.getName());
+            getMapper().writeValue(slaveFile, this);
             logger.debug("Wrote slavefile for {}", this.getName());
-        } catch (IOException | JsonIoException e) {
+        } catch (Exception e) {
             throw new RuntimeException("Error writing slavefile for "
                     + this.getName() + ": " + e.getMessage(), e);
         }

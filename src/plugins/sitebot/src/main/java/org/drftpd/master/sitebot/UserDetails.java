@@ -131,7 +131,7 @@ public class UserDetails {
                 setUserBlowKey(user);
             } else {
                 try {
-                    String userKeysString = user.getKeyedMap().getObject(BLOWKEY);
+                    String userKeysString = user.getConfigHelper().get(BLOWKEY);
                     String[] userKeys = userKeysString.split(",");
                     String userKey = "";
                     String userKeyMode = "";
@@ -172,7 +172,7 @@ public class UserDetails {
     private void setUserBlowKey(User user) {
         String userKeysString = "";
         try {
-            userKeysString = user.getKeyedMap().getObject(BLOWKEY);
+            userKeysString = user.getConfigHelper().get(BLOWKEY);
         } catch (KeyNotFoundException e1) {
             // Means this user has never set a blowfish key, is safe to proceed
             logger.debug("Blowfish key has never been set for {}", _ftpUser);
@@ -205,7 +205,7 @@ public class UserDetails {
             userKey.append("|");
             userKey.append(_blowMode);
         }
-        user.getKeyedMap().setObject(BLOWKEY, userKey.toString());
+        user.getConfigHelper().setString(BLOWKEY, userKey.toString());
         user.commit();
     }
 
@@ -232,7 +232,7 @@ public class UserDetails {
             return;
         }
         try {
-            existIdentString = user.getKeyedMap().getObject(UserManagement.IRCIDENT);
+            existIdentString = user.getConfigHelper().get(UserManagement.IRCIDENT);
         } catch (KeyNotFoundException e) {
             // Means no existing idents at all, safe to proceed
         }
@@ -261,7 +261,7 @@ public class UserDetails {
             newIdents.append("|");
             newIdents.append(ident);
         }
-        user.getKeyedMap().setObject(UserManagement.IRCIDENT, newIdents.toString());
+        user.getConfigHelper().setString(UserManagement.IRCIDENT, newIdents.toString());
         user.commit();
         logger.info("Set IRC ident to '{}' for {} on bot {}", ident, user.getName(), sourceBot);
     }

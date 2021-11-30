@@ -17,6 +17,7 @@
  */
 package org.drftpd.master.vfs;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.drftpd.common.dynamicdata.Key;
 import org.drftpd.common.exceptions.TransferFailedException;
 import org.drftpd.master.GlobalContext;
@@ -38,14 +39,21 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
     public static final Key<Integer> DOWNLOADEDTIMES = new Key<>(VirtualFileSystemFile.class, "dltimes");
     public static final Key<Long> DOWNLOADDURATION = new Key<>(VirtualFileSystemFile.class, "dlduration");
     protected Set<String> _slaves;
-    private final transient Queue<RemoteTransfer> _uploads = new ConcurrentLinkedQueue<>();
 
+    @JsonIgnore
+    private final transient Queue<RemoteTransfer> _uploads = new ConcurrentLinkedQueue<>();
+    @JsonIgnore
     private final transient Queue<RemoteTransfer> _downloads = new ConcurrentLinkedQueue<>();
 
     private long _size;
 
+    @SuppressWarnings("unused")
+    public VirtualFileSystemFile() {
+        super();
+    }
+
     public VirtualFileSystemFile(String username, String group, long size, String initialSlave) {
-        this(username, group, size, new HashSet<>(Arrays.asList(initialSlave)));
+        this(username, group, size, new HashSet<>(List.of(initialSlave)));
     }
 
     public VirtualFileSystemFile(String username, String group, long size,
@@ -102,7 +110,7 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
      * @return the CRC32 of the file.
      */
     public long getChecksum() {
-        return getKeyedMap().getObjectLong(CRC);
+        return configsHelper().get(CRC, 0L);
     }
 
     /**
@@ -111,7 +119,7 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
      * @param checksum
      */
     public void setChecksum(long checksum) {
-        getKeyedMap().setObject(CRC, checksum);
+        configsHelper().setLong(CRC, checksum);
         commit();
     }
 
@@ -119,7 +127,7 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
      * @return the xfertime of the file.
      */
     public long getXfertime() {
-        return getKeyedMap().getObjectLong(XFERTIME);
+        return configsHelper().get(XFERTIME, 0L);
     }
 
     /**
@@ -128,7 +136,7 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
      * @param xfertime
      */
     public void setXfertime(long xfertime) {
-        getKeyedMap().setObject(XFERTIME, xfertime);
+        configsHelper().setLong(XFERTIME, xfertime);
         commit();
     }
 
@@ -234,26 +242,26 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
     }
 
     public long getDownloadedBytes() {
-        return getKeyedMap().getObjectInteger(DOWNLOADEDTIMES) * getSize();
+        return configsHelper().get(DOWNLOADEDTIMES, 0) * getSize();
     }
 
     public void setDownloadedBytes(long bytes) {}
 
     public int getDownloadedFiles() {
-        return getKeyedMap().getObjectInteger(DOWNLOADEDTIMES);
+        return configsHelper().get(DOWNLOADEDTIMES, 0);
     }
 
     public void setDownloadedFiles(int files) {
-        getKeyedMap().incrementInt(DOWNLOADEDTIMES);
+        configsHelper().incrementInt(DOWNLOADEDTIMES);
         commit();
     }
 
     public long getDownloadedTime() {
-        return getKeyedMap().getObjectLong(DOWNLOADDURATION);
+        return configsHelper().get(DOWNLOADDURATION, 0L);
     }
 
     public void setDownloadedTime(long millis) {
-        getKeyedMap().incrementLong(DOWNLOADDURATION);
+        configsHelper().incrementLong(DOWNLOADDURATION);
         commit();
     }
 

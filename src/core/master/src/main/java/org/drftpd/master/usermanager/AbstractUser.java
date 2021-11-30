@@ -17,22 +17,26 @@
  */
 package org.drftpd.master.usermanager;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.drftpd.common.dynamicdata.Key;
-import org.drftpd.common.dynamicdata.KeyedMap;
 import org.drftpd.common.exceptions.DuplicateElementException;
 import org.drftpd.common.util.HostMaskCollection;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.commands.usermanagement.UserManagement;
+import org.drftpd.common.dynamicdata.element.ConfigDate;
+import org.drftpd.common.dynamicdata.element.ConfigElement;
+import org.drftpd.common.dynamicdata.DynamicConfigHelper;
+import org.drftpd.common.dynamicdata.element.ConfigString;
 import org.drftpd.master.event.UserEvent;
 import org.drftpd.master.vfs.Commitable;
 import org.drftpd.slave.exceptions.FileExistsException;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+
+import static org.drftpd.common.dynamicdata.DynamicConfigHelper.configHelper;
 
 /**
  * Implements basic functionality for the User interface.
@@ -41,26 +45,35 @@ import java.util.List;
  * @author mog
  * @version $Id$
  */
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "@type")
 public abstract class AbstractUser extends User implements Commitable {
     private static final Logger logger = LogManager.getLogger(AbstractUser.class);
-    protected KeyedMap<Key<?>, Object> _data = new KeyedMap<>();
+    private Map<Key<?>, ConfigElement<?>> _configs = new HashMap<>();
     /**
      * Protected for DummyUser b/c TrialTest
      */
     protected long _lastReset;
-    private long _credits;
+    private double _credits;
     private String _group = null;
     // We keep this String based, but for the outside world this always needs to be an object of type Group
-    private ArrayList<String> _groups = new ArrayList<>();
+    private List<String> _groups = new ArrayList<>();
     private HostMaskCollection _hostMasks = new HostMaskCollection();
     private int _idleTime = 0; // no limit
     private String _username;
 
+    public DynamicConfigHelper getConfigHelper() {
+        return configHelper(_configs);
+    }
+
+    public AbstractUser() {
+    }
+
     public AbstractUser(String username) {
         checkValidUser(username);
         _username = username;
-        _data.setObject(UserManagement.CREATED, new Date(System.currentTimeMillis()));
-        _data.setObject(UserManagement.TAGLINE, "no tagline");
+        DynamicConfigHelper helper = getConfigHelper();
+        helper.setObject(UserManagement.CREATED, new ConfigDate(new Date()));
+        helper.setObject(UserManagement.TAGLINE, new ConfigString("no tagline"));
     }
 
     public static void checkValidUser(String user) {
@@ -97,11 +110,11 @@ public abstract class AbstractUser extends User implements Commitable {
      */
     public abstract AbstractUserManager getAbstractUserManager();
 
-    public long getCredits() {
+    public double getCredits() {
         return _credits;
     }
 
-    public void setCredits(long credits) {
+    public void setCredits(double credits) {
         _credits = credits;
     }
 
@@ -117,6 +130,14 @@ public abstract class AbstractUser extends User implements Commitable {
 
     public void setGroup(Group g) {
         _group = g.getName();
+    }
+
+    public void setConfigurations(Map<Key<?>, ConfigElement<?>> configurations) {
+        this._configs = configurations;
+    }
+
+    public Map<Key<?>, ConfigElement<?>> getConfigurations() {
+        return _configs;
     }
 
     public List<Group> getGroups() {
@@ -152,14 +173,6 @@ public abstract class AbstractUser extends User implements Commitable {
 
     public void setIdleTime(int idleTime) {
         _idleTime = idleTime;
-    }
-
-    public KeyedMap<Key<?>, Object> getKeyedMap() {
-        return _data;
-    }
-
-    public void setKeyedMap(KeyedMap<Key<?>, Object> data) {
-        _data = data;
     }
 
     public long getLastReset() {
@@ -285,8 +298,9 @@ public abstract class AbstractUser extends User implements Commitable {
     public void resetWeek(Date resetDate) {
         GlobalContext.getEventService().publish(new UserEvent(this, "RESETWEEK", resetDate.getTime()));
         super.resetWeek(resetDate);
-        if (getKeyedMap().getObjectLong(UserManagement.WKLYALLOTMENT) > 0) {
-            setCredits(getKeyedMap().getObjectLong(UserManagement.WKLYALLOTMENT));
+        Long credits = getConfigHelper().get(UserManagement.WKLYALLOTMENT, 0L);
+        if (credits > 0) {
+            setCredits(credits);
         }
         logger.info("Reset weekly stats for {}", getName());
     }
@@ -333,23 +347,24 @@ public abstract class AbstractUser extends User implements Commitable {
      * Hit user - update last access time
      */
     public void updateLastAccessTime() {
-        _data.setObject(UserManagement.LASTSEEN, new Date(System.currentTimeMillis()));
+        DynamicConfigHelper helper = getConfigHelper();
+        helper.setDate(UserManagement.LASTSEEN, new Date(System.currentTimeMillis()));
     }
 
-    public int getMaxSimUp() {
-        return getKeyedMap().getObjectInteger(UserManagement.MAXSIMUP);
+    public double getMaxSimUp() {
+        return getConfigHelper().get(UserManagement.MAXSIMUP, 1);
     }
 
     public void setMaxSimUp(int maxSimUp) {
-        getKeyedMap().setObject(UserManagement.MAXSIMUP, maxSimUp);
+        getConfigHelper().setInt(UserManagement.MAXSIMUP, maxSimUp);
     }
 
-    public int getMaxSimDown() {
-        return getKeyedMap().getObjectInteger(UserManagement.MAXSIMDN);
+    public double getMaxSimDown() {
+        return getConfigHelper().get(UserManagement.MAXSIMDN, 1);
     }
 
     public void setMaxSimDown(int maxSimDown) {
-        getKeyedMap().setObject(UserManagement.MAXSIMDN, maxSimDown);
+        getConfigHelper().setInt(UserManagement.MAXSIMDN, maxSimDown);
     }
 
     public abstract void writeToDisk() throws IOException;

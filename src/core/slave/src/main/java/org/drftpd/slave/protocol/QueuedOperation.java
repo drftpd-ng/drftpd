@@ -27,9 +27,13 @@ public class QueuedOperation implements Serializable {
 
     private static final long serialVersionUID = 3258125869099659321L;
 
-    private final String _source;
+    private String _source;
 
-    private final String _destination;
+    private String _destination;
+
+    public QueuedOperation() {
+        // Default construction for serialization
+    }
 
     public QueuedOperation(String src, String dest) {
         if (src == null) {
@@ -52,8 +56,16 @@ public class QueuedOperation implements Serializable {
         return _source.hashCode();
     }
 
+    public void setSource(String _source) {
+        this._source = _source;
+    }
+
     public String getSource() {
         return _source;
+    }
+
+    public void setDestination(String _destination) {
+        this._destination = _destination;
     }
 
     public String getDestination() {

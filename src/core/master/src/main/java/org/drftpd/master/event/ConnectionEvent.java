@@ -17,6 +17,7 @@
  */
 package org.drftpd.master.event;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.drftpd.master.usermanager.User;
 
 /**
@@ -28,6 +29,8 @@ import org.drftpd.master.usermanager.User;
  * @version $Id$
  */
 public class ConnectionEvent extends Event {
+
+    @JsonIgnore
     private final transient User _user;
 
     public ConnectionEvent(User user, String command) {
