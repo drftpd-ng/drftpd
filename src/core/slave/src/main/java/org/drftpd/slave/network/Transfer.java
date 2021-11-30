@@ -37,6 +37,8 @@ import javax.net.ssl.SSLSocket;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.util.regex.PatternSyntaxException;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
@@ -52,6 +54,7 @@ public class Transfer {
     public static final char TRANSFER_UNKNOWN = 'U';
     private static final Logger logger = LogManager.getLogger(Transfer.class);
     private static final String separator = "/";
+    private static final long _transferProgressAnnounce = 524288L; // Report every 512KB
     private String _abortReason = null;
     private CRC32 _checksum = null;
     private Connection _conn;
@@ -64,7 +67,7 @@ public class Transfer {
     private final Slave _slave;
     private Socket _sock;
     private long _started = 0;
-    private long _transfered = 0;
+    private long _transferred = 0;
     private final TransferIndex _transferIndex;
     private String _pathForUpload = null;
     private long _minSpeed = 0L;
@@ -100,6 +103,7 @@ public class Transfer {
     }
 
     public synchronized void abort(String reason) {
+        logger.warn("Abort was requested, starting to abort transfer");
         try {
             _abortReason = reason;
             if (_int != null) {
@@ -113,20 +117,17 @@ public class Transfer {
             if (_sock != null) {
                 try {
                     _sock.close();
-                } catch (IOException e) {
-                }
+                } catch (IOException ignored) {}
             }
             if (_out != null) {
                 try {
                     _out.close();
-                } catch (IOException e) {
-                }
+                } catch (IOException ignored) {}
             }
             if (_in != null) {
                 try {
                     _in.close();
-                } catch (IOException e) {
-                }
+                } catch (IOException ignored) {}
             }
         }
     }
@@ -152,8 +153,7 @@ public class Transfer {
             return ((PassiveConnection) _conn).getLocalPort();
         }
 
-        throw new IllegalStateException(
-                "getLocalPort() called on a non-passive transfer");
+        throw new IllegalStateException("getLocalPort() called on a non-passive transfer");
     }
 
     public char getState() {
@@ -161,16 +161,15 @@ public class Transfer {
     }
 
     public TransferStatus getTransferStatus() {
-        return new TransferStatus(getElapsed(), getTransfered(), getChecksum(),
-                isFinished(), getTransferIndex());
+        return new TransferStatus(getElapsed(), getTransferred(), getChecksum(), isFinished(), getTransferIndex());
     }
 
     public boolean isFinished() {
         return (_finished != 0 || _abortReason != null);
     }
 
-    public long getTransfered() {
-        return _transfered;
+    public long getTransferred() {
+        return _transferred;
     }
 
     public TransferIndex getTransferIndex() {
@@ -189,10 +188,10 @@ public class Transfer {
         throw new ObjectNotFoundException("Transfer not found");
     }
 
-    public int getXferSpeed() {
+    public int getTransferSpeed() {
         long elapsed = getElapsed();
 
-        if (_transfered == 0) {
+        if (_transferred == 0) {
             return 0;
         }
 
@@ -200,7 +199,7 @@ public class Transfer {
             return 0;
         }
 
-        return (int) (_transfered / ((float) elapsed / (float) 1000));
+        return (int) (_transferred / ((float) elapsed / (float) 1000));
     }
 
     public long getMinSpeed() {
@@ -227,20 +226,32 @@ public class Transfer {
         return _direction == Transfer.TRANSFER_SENDING_DOWNLOAD;
     }
 
-    public TransferStatus receiveFile(String dirname, char mode,
-                                      String filename, long offset, String inetAddress) throws IOException, TransferDeniedException {
+    /**
+     * Receive a file
+     *
+     * @param dirname     The directory to place the file
+     * @param mode        The transfer mode (ascii / binary), ascii not supported currently
+     * @param filename    The file name to place in above directory
+     * @param offset      This is for future use when we supported resume
+     * @param inetAddress The source we are expecting the transfer from (security feature to not allow random connects)
+     *
+     * @return A TransferStatus object of how the transfer went
+     *
+     * @throws IOException If an issue is raised while we are receiving the file during transfer
+     * @throws TransferDeniedException If the connection we have is not the expected source
+     */
+    public TransferStatus receiveFile(String dirname, char mode, String filename, long offset, String inetAddress)
+            throws IOException, TransferDeniedException {
         _pathForUpload = dirname + separator + filename;
         try {
             _slave.getRoots().getFile(_pathForUpload);
-            throw new FileExistsException("File " + dirname
-                    + separator + filename + " exists");
-        } catch (FileNotFoundException ex) {
-        }
+            throw new FileExistsException("File " + dirname + separator + filename + " exists");
+        } catch (FileNotFoundException ignored) {} // This is expected
+
         String root = _slave.getRoots().getARootFileDir(dirname).getPath();
 
         try {
-            _out = new FileOutputStream(new File(root + separator
-                    + filename));
+            _out = new FileOutputStream(new File(root + separator + filename));
 
             if (_slave.getUploadChecksums()) {
                 _checksum = new CRC32();
@@ -248,7 +259,7 @@ public class Transfer {
             }
             accept(_slave.getCipherSuites(), _slave.getSSLProtocols(), _slave.getBufferSize());
 
-            if (!checkMasks(inetAddress, _sock.getInetAddress())) {
+            if (isNotExpectedHostmask(inetAddress, _sock.getInetAddress())) {
                 throw new TransferDeniedException("The IP that connected to the Socket was not the one that was expected.");
             }
 
@@ -265,25 +276,35 @@ public class Transfer {
             if (_sock != null) {
                 try {
                     _sock.close();
-                } catch (IOException e) {
-                }
+                } catch (IOException ignored) {}
             }
             if (_out != null) {
                 try {
                     _out.close();
-                } catch (IOException e) {
-                }
+                } catch (IOException ignored) {}
             }
             if (_in != null) {
                 try {
                     _in.close();
-                } catch (IOException e) {
-                }
+                } catch (IOException ignored) {}
             }
         }
     }
 
-    public TransferStatus sendFile(String path, char type, long resumePosition, String inetAddress)
+    /**
+     * Send a file
+     *
+     * @param path        The file we need to send
+     * @param mode        The transfer mode (ascii / binary), ascii not supported currently
+     * @param offset      This is for future use when we supported resume
+     * @param inetAddress The destination we are sending the transfer to
+     *
+     * @return A TransferStatus object of how the transfer went
+     *
+     * @throws IOException If an issue is raised while we are receiving the file during transfer
+     * @throws TransferDeniedException If the connection we have is not the expected source
+     */
+    public TransferStatus sendFile(String path, char mode, long offset, String inetAddress)
             throws IOException, TransferDeniedException {
         try {
 
@@ -294,10 +315,12 @@ public class Transfer {
                 _in = new CheckedInputStream(_in, _checksum);
             }
 
-            _in.skip(resumePosition);
+            // TODO: Check if we actually support this and works as expected
+            _in.skip(offset);
+
             accept(_slave.getCipherSuites(), _slave.getSSLProtocols(), _slave.getBufferSize());
 
-            if (!checkMasks(inetAddress, _sock.getInetAddress())) {
+            if (isNotExpectedHostmask(inetAddress, _sock.getInetAddress())) {
                 throw new TransferDeniedException("The IP that connected to the Socket was not the one that was expected.");
             }
 
@@ -317,24 +340,26 @@ public class Transfer {
             if (_sock != null) {
                 try {
                     _sock.close();
-                } catch (IOException e) {
-                }
+                } catch (IOException ignored) {}
             }
             if (_out != null) {
                 try {
                     _out.close();
-                } catch (IOException e) {
-                }
+                } catch (IOException ignored) {}
             }
             if (_in != null) {
                 try {
                     _in.close();
-                } catch (IOException e) {
-                }
+                } catch (IOException ignored) {}
             }
         }
     }
 
+    /**
+     * Shows the SSL protocol and Cipher
+     *
+     * @return A string representation of the protocol and cipher
+     */
     private String getNegotiatedSSLString() {
         String finalSSLNegotiation = "";
         if (_sock instanceof SSLSocket) {
@@ -347,100 +372,141 @@ public class Transfer {
 
     private void accept(String[] cipherSuites, String[] sslProtocols, int bufferSize) throws IOException {
         _sock = _conn.connect(cipherSuites, sslProtocols, bufferSize);
+        _sock.setTcpNoDelay(true);
+        _sock.setSoTimeout(100); // 0.1 seconds
 
         _conn = null;
     }
 
     /**
      * Call sock.connect() and start sending.
-     * <p>
+     *
      * Read about buffers here:
      * http://groups.google.com/groups?hl=sv&lr=&ie=UTF-8&oe=UTF-8&threadm=9eomqe%24rtr%241%40to-gate.itd.utech.de&rnum=22&prev=/groups%3Fq%3Dtcp%2Bgood%2Bbuffer%2Bsize%26start%3D20%26hl%3Dsv%26lr%3D%26ie%3DUTF-8%26oe%3DUTF-8%26selm%3D9eomqe%2524rtr%25241%2540to-gate.itd.utech.de%26rnum%3D22
-     * <p>
+     *
      * Quote: Short answer is: if memory is not limited make your buffer big;
      * TCP will flow control itself and only use what it needs.
-     * <p>
+     *
      * Longer answer: for optimal throughput (assuming TCP is not flow
      * controlling itself for other reasons) you want your buffer size to at
      * least be
-     * <p>
+     *
      * channel bandwidth * channel round-trip-delay.
-     * <p>
+     *
      * So on a long slow link, if you can get 100K bps throughput, but your
      * delay -s 8 seconds, you want:
-     * <p>
+     *
      * 100Kbps * / bits-per-byte * 8 seconds = 100 Kbytes
-     * <p>
+     *
      * That way TCP can keep transmitting data for 8 seconds before it would
      * have to stop and wait for an ack (to clear space in the buffer for new
      * data so it can put new TX data in there and on the line). (The idea is to
      * get the ack before you have to stop transmitting.)
+     *
+     * DrFTPD allows for a buffersize between 0 and 262144 (256K)
+     *
+     * @param associatedUpload If we are doing an upload this needs to be set otherwise we expect 'null'
+     *
+     * @throws IOException If anything happens during the transfer on the socket
      */
     private void transfer(Transfer associatedUpload) throws IOException {
         try {
+            // Register when we started this transfer
             _started = System.currentTimeMillis();
+
+            // TODO: Support for mode ASCII?
             if (_mode == 'A') {
                 _out = new AddAsciiOutputStream(_out);
             }
 
-            byte[] buff = new byte[Math.max(_slave.getBufferSize(), 65535)];
+            // Set the buffer size (uses ram) to whatever is configured with a minimum (hardcoded) as 32K
+            byte[] buff = new byte[Math.max(_slave.getBufferSize(), 32768)];
+            logger.debug("Buffer has been initialized with a size of [{}]", buff.length);
+
             int count;
             long currentTime = System.currentTimeMillis();
-            //max speed buffer
-            _int = new ThrottledInputStream(_in, _maxSpeed);
 
+            // The ThrottledInputStream handles the max speed (traffic manager)
+            _int = new ThrottledInputStream(_in, getMaxSpeed());
+
+            // Minimum speed check
             boolean first = true;
             long lastCheck = 0;
 
+            long _showTransferProgress = 0L;
+
             try {
                 while (true) {
+                    if ((getTransferred() - _showTransferProgress) >= _transferProgressAnnounce) {
+                        logger.debug(_int);
+                        _showTransferProgress = getTransferred();
+                    }
                     if (_abortReason != null) {
                         throw new TransferFailedException("Transfer was aborted - " + _abortReason, getTransferStatus());
                     }
-                    count = _int.read(buff);
+                    try {
+                        count = _int.read(buff);
+                    } catch(SocketTimeoutException e) {
+                        logger.debug("SocketTimeoutException happened, this is expected to make other logic work");
+                        count = 0;
+                    }
                     if (count == -1) {
                         if (associatedUpload == null) {
+                            logger.debug("Done transferring as associatedUpload == null");
                             break; // done transferring
                         }
                         if (associatedUpload.getTransferStatus().isFinished()) {
+                            logger.debug("Done transferring as associatedUpload states it is finished");
                             break; // done transferring
                         }
-                        try {
-                            Thread.sleep(500);
-                        } catch (InterruptedException e) {
-                        }
+
                         continue; // waiting for upload to catch up
                     }
-                    // count != -1
+
+                    // Do some keepalive stuff
                     if ((System.currentTimeMillis() - currentTime) >= 1000) {
-                        TransferStatus ts = getTransferStatus();
-                        if (ts.isFinished()) {
-                            throw new TransferFailedException("Transfer was aborted - " + _abortReason, ts);
+                        if (getTransferStatus().isFinished()) {
+                            throw new TransferFailedException("Transfer idle timeout reached", getTransferStatus());
                         }
-                        _slave.sendResponse(new AsyncResponseTransferStatus(ts));
+                        // Report progress to the master
+                        _slave.sendResponse(new AsyncResponseTransferStatus(getTransferStatus()));
                         currentTime = System.currentTimeMillis();
                     }
 
                     // Min Speed Check
                     if (_minSpeed > 0) {
-                        lastCheck = (lastCheck == 0 ? System.currentTimeMillis() : lastCheck);
+                        if (lastCheck == 0) {
+                            lastCheck = System.currentTimeMillis();
+                        }
                         long delay = System.currentTimeMillis() - lastCheck;
 
-                        // This is used to check speedkick delays and its running 2 passes of a combined time of both values
-                        if (first ? delay >= 5000 : delay >= 5000) {
+                        // Check every 0.2 seconds, but take into account tcp slow start so first check is 0.5 seconds
+                        if (first ? delay >= 500 : delay >= 200) {
+                            logger.debug("In minspeed check, delay: {}, current speed: {}, min speed is set to: {}", delay, getTransferSpeed(), _minSpeed);
                             first = false;
-                            if (getXferSpeed() < _minSpeed) {
-                                throw new TransferSlowException("Transfer was aborted - '" + getXferSpeed() + "' is < '" + _minSpeed + "'", getTransferStatus());
+                            if (getTransferSpeed() < _minSpeed) {
+                                throw new TransferSlowException("Transfer was aborted - '" + getTransferSpeed() + "' is < '" + _minSpeed + "'", getTransferStatus());
                             }
+                            // Reset the last Check
+                            lastCheck = System.currentTimeMillis();
                         }
                     }
 
-                    _transfered += count;
-                    _out.write(buff, 0, count);
+                    // Only do these actions if we have read data
+                    if (count > 0) {
+                        _transferred += count;
+                        _out.write(buff, 0, count);
+                    }
                 }
 
                 _out.flush();
+            } catch (SocketException e) {
+                logger.warn("Caught SocketException, forwarding as TransferFailedException", e);
+                logger.debug(_int);
+                throw new TransferFailedException(e, getTransferStatus());
             } catch (IOException e) {
+                logger.warn("Catched IOException, forwarding as TransferFailedException", e);
+                logger.debug(_int);
                 if (e instanceof TransferFailedException) {
                     throw e;
                 }
@@ -449,17 +515,17 @@ public class Transfer {
         } finally {
             _finished = System.currentTimeMillis();
             _slave.removeTransfer(this); // transfers are added in setting up
-            // the transfer,
-            // issueListenToSlave()/issueConnectToSlave()
+            logger.debug("Transfer finalized (stats: {} bytes in {} seconds)", getTransferred(), getElapsed());
         }
     }
 
-    private boolean checkMasks(String maskString, InetAddress connectedAddress) {
+    private boolean isNotExpectedHostmask(String maskString, InetAddress connectedAddress) {
         HostMask mask = new HostMask(maskString);
 
         try {
-            return mask.matchesHost(connectedAddress);
+            return !mask.matchesHost(connectedAddress);
         } catch (PatternSyntaxException e) {
+            logger.debug("maskString {} raised a pattern syntax exception", maskString);
             // if it's not well formed, no need to worry about it, just ignore it.
             return false;
         }

@@ -225,6 +225,9 @@ public class Slave extends SslConfigurationLoader {
 
         _ignorePartialRemerge = p.getProperty("ignore.partialremerge", "false").equalsIgnoreCase("true");
         _threadedRemerge = p.getProperty("threadedremerge", "false").equalsIgnoreCase("true");
+
+        parseCipherSuites();
+        parseSSLProtocols();
     }
 
     public Properties getConfig() {
@@ -488,6 +491,7 @@ public class Slave extends SslConfigurationLoader {
                     try {
                         sendResponse(handleCommand(_command));
                     } catch (Throwable e) {
+                        logger.warn("Catched a throwable, sending to master", e);
                         sendResponse(new AsyncResponseException(_command.getIndex(), e));
                     }
                 }
@@ -641,5 +645,98 @@ public class Slave extends SslConfigurationLoader {
         }
         logger.debug("Got List<String> for {} as -> [{}]", key, Arrays.toString(data.toArray()));
         return data;
+    }
+
+    private void parseCipherSuites() {
+        List<String> cipherSuites = new ArrayList<>();
+        List<String> supportedCipherSuites = new ArrayList<>();
+        try {
+            supportedCipherSuites.addAll(Arrays.asList(SSLContext.getDefault().getSupportedSSLParameters().getCipherSuites()));
+        } catch (Exception e) {
+            logger.error("Unable to get supported cipher suites, using default.", e);
+        }
+        // Parse cipher suite whitelist rules
+        boolean whitelist = false;
+        for (int x = 1; ; x++) {
+            String whitelistPattern = _cfg.getProperty("cipher.whitelist." + x);
+
+            // If this is null it means the there is no configuration entry for cipher.whitelist.(x) and thus need to break the loop
+            if (whitelistPattern == null) {
+                break;
+            }
+            logger.debug("Found cipher.whitelist.{} as {}", x, whitelistPattern);
+            if (whitelistPattern.trim().isEmpty()) {
+                continue;
+            }
+            if (!whitelist) {
+                whitelist = true;
+            }
+            boolean found = false;
+            for (String cipherSuite : supportedCipherSuites) {
+                if (cipherSuite.matches(whitelistPattern)) {
+                    logger.debug("Adding {} as it matches whitelist pattern {}", cipherSuite, whitelistPattern);
+                    cipherSuites.add(cipherSuite);
+                    found = true;
+                }
+            }
+            if (!found) {
+                logger.warn("Did not find a match for whitelist {} in supported cipher suites", whitelistPattern);
+            }
+        }
+        if (cipherSuites.isEmpty()) {
+            // No whitelist rule or whitelist pattern bad, add default set
+            cipherSuites.addAll(supportedCipherSuites);
+            if (whitelist) {
+                // There are at least one whitelist pattern specified
+                logger.warn("Bad whitelist pattern, no matching ciphers found. " +
+                        "Adding default cipher set before continuing with blacklist check");
+            }
+        }
+        // Parse cipher suite blacklist rules and remove matching ciphers from set
+        for (int x = 1; ; x++) {
+            String blacklistPattern = _cfg.getProperty("cipher.blacklist." + x);
+
+            // If this is null it means the there is no configuration entry for cipher.blacklist.(x) and thus need to break the loop
+            if (blacklistPattern == null) {
+                break;
+            }
+            logger.debug("Found cipher.blacklist.{} as {}", x, blacklistPattern);
+            if (blacklistPattern.trim().isEmpty()) {
+                continue;
+            }
+            cipherSuites.removeIf(cipherSuite -> cipherSuite.matches(blacklistPattern));
+        }
+        if (cipherSuites.isEmpty()) {
+            _cipherSuites = null;
+        } else {
+            _cipherSuites = cipherSuites.toArray(new String[0]);
+        }
+    }
+
+    private void parseSSLProtocols() {
+        List<String> sslProtocols = new ArrayList<>();
+        List<String> supportedSSLProtocols;
+        try {
+            supportedSSLProtocols = Arrays.asList(SSLContext.getDefault().getSupportedSSLParameters().getProtocols());
+            for (int x = 1; ; x++) {
+                String sslProtocol = _cfg.getProperty("protocol." + x);
+                if (sslProtocol == null) {
+                    break;
+                }
+                logger.debug("Found protocol.{} as {}", x, sslProtocol);
+                if (!supportedSSLProtocols.contains(sslProtocol)) {
+                    logger.warn("Found unsupported protocol configuration: protocol.{} -> {}", x, sslProtocol);
+                } else {
+                    sslProtocols.add(sslProtocol);
+                }
+            }
+        } catch (Exception e) {
+            logger.error("Unable to get supported SSL protocols, using default.", e);
+        }
+        if (sslProtocols.size() == 0) {
+            _sslProtocols = null;
+        } else {
+            _sslProtocols = sslProtocols.toArray(new String[0]);
+        }
     }
 }
