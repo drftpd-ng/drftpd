@@ -50,7 +50,7 @@
 
 CLASSPATH="lib/*:build/*"
 # Add JVM Options here however you see fit and please check if the max memory Xmx is good enough for your slave.
-JVM_OPTS="-Xmx1G -XX:+UseZGC"
+JVM_OPTS="-Xms1G -Xmx1G -XX:+UseZGC"
 OPTIONS="-Dlog4j.configurationFile=config/log4j2-slave.xml"
 PROGRAM="org.drftpd.slave.Slave"
 
