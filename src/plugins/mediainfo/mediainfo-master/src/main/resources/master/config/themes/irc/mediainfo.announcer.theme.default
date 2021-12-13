@@ -1,8 +1,13 @@
-# Announced on MKV/MP4/AVI upload
+# Announced on MKV/M2TS/MP4/AVI upload
 mediainfo.mkv=${bold}[SAMPLE]${bold} ${filepath} :: ${sample_ok}
 mediainfo.mkv.video=${bold}-VIDEO-${bold} ${v_Format} : ${v_Width}x${v_Height} @ ${v_Bit rate} : ${v_Frame rate} : ${v_Display aspect ratio} : ${v_Format profile} : ${v_Duration}
 mediainfo.mkv.audio=${bold}-AUDIO-${bold} ${a_Languages} : ${a_Format} @ ${a_Bit rate} ${a_Bit rate mode} : ${a_Sampling rate} : ${a_Channel(s)}
 mediainfo.mkv.sub=${bold}-SUB-${bold} ${s_Languages}
+
+mediainfo.m2ts=${bold}[SAMPLE]${bold} ${filepath} :: ${sample_ok}
+mediainfo.m2ts.video=${bold}-VIDEO-${bold} ${v_Format} : ${v_Width}x${v_Height} @ ${v_Bit rate} : ${v_Frame rate} : ${v_Display aspect ratio} : ${v_Format profile} : ${v_Duration}
+mediainfo.m2ts.audio=${bold}-AUDIO-${bold} ${a_Languages} : ${a_Format} @ ${a_Bit rate} ${a_Bit rate mode} : ${a_Sampling rate} : ${a_Channel(s)}
+mediainfo.m2ts.sub=${bold}-SUB-${bold} ${s_Languages}
 
 mediainfo.mp4=${bold}[SAMPLE]${bold} ${filepath} :: ${sample_ok}
 mediainfo.mp4.video=${bold}-VIDEO-${bold} ${v_Format} : ${v_Width}x${v_Height} @ ${v_Bit rate} : ${v_Frame rate} : ${v_Display aspect ratio} : ${v_Format profile} : ${v_Duration}
