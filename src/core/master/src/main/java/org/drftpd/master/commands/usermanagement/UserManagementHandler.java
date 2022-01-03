@@ -760,19 +760,16 @@ public class UserManagementHandler extends CommandInterface {
         User currentUser = session.getUserNull(request.getUser());
 
         try {
-            User requestedUser = GlobalContext.getGlobalContext().getUserManager().getUserByName(args[0]);
-
-            boolean isGroupAdmin = GlobalContext.getGlobalContext().getUserManager().isGroupAdminOfUser(currentUser, requestedUser);
+            UserManager userManager = GlobalContext.getGlobalContext().getUserManager();
+            User requestedUser = userManager.getUserByName(args[0]);
+            boolean isGroupAdmin = userManager.isGroupAdminOfUser(currentUser, requestedUser);
             boolean isAdmin = currentUser.isAdmin();
-
             if (!isAdmin && !isGroupAdmin) {
                 return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
             }
-
-            requestedUser.setPassword(args[1]);
+            requestedUser.changePassword(args[1]);
             requestedUser.commit();
             logger.info("'{}' changed password for '{}'", currentUser.getName(), requestedUser.getName());
-
             return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
         } catch (NoSuchUserException e) {
             return new CommandResponse(452, "User not found: " + e.getMessage());
@@ -1226,7 +1223,7 @@ public class UserManagementHandler extends CommandInterface {
         User currentUser = session.getUserNull(request.getUser());
 
         logger.info("'{}' changed his password", currentUser.getName());
-        currentUser.setPassword(request.getArgument());
+        currentUser.changePassword(request.getArgument());
         currentUser.commit();
 
         return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");

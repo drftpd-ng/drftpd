@@ -213,7 +213,7 @@ public class EncryptedBeanUser extends BeanUser {
         // Crypt activated after start, enable with SITE RELOAD
         if (getEncryption() != _um.getPasscrypt()) {
             logger.debug("Converting Password To Current Encryption");
-            this.setPassword(password);
+            this.changePassword(password);
             super.commit();
         }
 
@@ -233,20 +233,32 @@ public class EncryptedBeanUser extends BeanUser {
         };
     }
 
+    @Override
+    public void changePassword(String password) {
+        if (password.length() < 2) {
+            logger.debug("Failed To Set Password, Length Too Short");
+        }
+        super.setPassword(encrypt(_um.getPasscrypt(), password));
+    }
+
     /*
      * Set the password, encrypt on the fly is needed
      */
     @Override
     public void setPassword(String password) {
-        if (password.length() < 2) {
-            logger.debug("Failed To Set Password, Length Too Short");
-        }
         int expectedEncryption = _um.getPasscrypt();
         if (getEncryption() == expectedEncryption) {
+            // Encryption match, just load the password in memory
             super.setPassword(password);
-        } else if(getEncryption() == 0 /* Password is currently clear */) {
+        } else if (getEncryption() == 0) {
+            // Password is currently clear but encryption is now activated
+            // In this case we can encrypt on the fly
             setEncryption(expectedEncryption);
-            super.setPassword(encrypt(expectedEncryption, password));
+            changePassword(password);
+        } else {
+            throw new UnsupportedOperationException(
+                    "Users are already encrypted with " + getEncryption() + " encryption mode," +
+                            " its not possible to move to " + expectedEncryption + " mode");
         }
     }
 }

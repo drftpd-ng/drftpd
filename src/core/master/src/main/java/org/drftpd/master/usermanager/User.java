@@ -112,6 +112,8 @@ public abstract class User extends ExtendedTimedStats implements Entity {
 
     public abstract void setPassword(String password);
 
+    public abstract void changePassword(String password);
+
     /**
      * Hit user - update last access time
      */

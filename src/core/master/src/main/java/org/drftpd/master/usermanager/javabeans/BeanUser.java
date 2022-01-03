@@ -99,7 +99,16 @@ public class BeanUser extends AbstractUser {
         return _password;
     }
 
+    @Override
     public void setPassword(String password) {
+        _password = password;
+    }
+
+    @Override
+    public void changePassword(String password) {
+        if (password.length() < 2) {
+            logger.debug("Failed To Set Password, Length Too Short");
+        }
         _password = password;
     }
 

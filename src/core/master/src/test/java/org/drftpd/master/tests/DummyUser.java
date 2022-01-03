@@ -62,7 +62,12 @@ public class DummyUser extends AbstractUser {
         _lastReset = l;
     }
 
+    @Override
     public void setPassword(String password) {
+    }
+
+    @Override
+    public void changePassword(String password) {
     }
 
     public void setUploadedBytes(long bytes) {
