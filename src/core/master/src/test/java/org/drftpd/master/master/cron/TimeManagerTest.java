@@ -65,7 +65,7 @@ public class TimeManagerTest {
         System.out.println("Testing date - " + date);
         cal.setTime(date);
         _tm.doReset(cal);
-        assertEquals(_lastReset, Calendar.YEAR);
+        assertEquals(Calendar.YEAR, _lastReset);
         assertFalse(_resetWeek);
 
         // test month & week
@@ -75,7 +75,7 @@ public class TimeManagerTest {
         System.out.println("Testing date - " + date);
         cal.setTime(date);
         _tm.doReset(cal);
-        assertEquals(_lastReset, Calendar.MONTH);
+        assertEquals(Calendar.MONTH, _lastReset);
         assertFalse(_resetWeek);
 
         // test day & week
@@ -85,7 +85,7 @@ public class TimeManagerTest {
         System.out.println("Testing date - " + date);
         cal.setTime(date);
         _tm.doReset(cal);
-        assertEquals(_lastReset, Calendar.DAY_OF_MONTH);
+        assertEquals(Calendar.DAY_OF_MONTH, _lastReset);
         assertFalse(_resetWeek);
 
         // test hour & week
@@ -95,7 +95,7 @@ public class TimeManagerTest {
         System.out.println("Testing date - " + date);
         cal.setTime(date);
         _tm.doReset(cal);
-        assertEquals(_lastReset, Calendar.HOUR);
+        assertEquals(Calendar.HOUR, _lastReset);
         assertFalse(_resetWeek);
 
     }
