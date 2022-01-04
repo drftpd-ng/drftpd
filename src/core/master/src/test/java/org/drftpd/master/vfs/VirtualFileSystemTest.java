@@ -56,8 +56,8 @@ public class VirtualFileSystemTest {
 
     @Test
     public void testGetLast() {
-        assertEquals(VirtualFileSystem.getLast("/full/path/to/file"), "file");
-        assertEquals(VirtualFileSystem.getLast("/full/path/to"), "to");
+        assertEquals("file", VirtualFileSystem.getLast("/full/path/to/file"));
+        assertEquals("to", VirtualFileSystem.getLast("/full/path/to"));
     }
 
     @Test
@@ -109,7 +109,7 @@ public class VirtualFileSystemTest {
 
     @Test
     public void testStripLast() {
-        assertEquals(VirtualFileSystem.stripLast("/full/path/to/file"), "/full/path/to");
-        assertEquals(VirtualFileSystem.stripLast("/full/path/to"), "/full/path");
+        assertEquals("/full/path/to", VirtualFileSystem.stripLast("/full/path/to/file"));
+        assertEquals("/full/path", VirtualFileSystem.stripLast("/full/path/to"));
     }
 }

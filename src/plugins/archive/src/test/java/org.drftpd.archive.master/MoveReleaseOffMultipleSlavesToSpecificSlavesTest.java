@@ -55,12 +55,12 @@ public class MoveReleaseOffMultipleSlavesToSpecificSlavesTest {
         p.setProperty(confNum + ".slavename.3", "DEST3");
         MoveReleaseOffMultipleSlavesToSpecificSlaves instance = new MoveReleaseOffMultipleSlavesToSpecificSlaves(a, s, p, confNum);
 
-        assertEquals(instance.getConfNum(), confNum);
+        assertEquals(confNum, instance.getConfNum());
         assertEquals(instance.getSection().getName(), s.getName());
         assertNull(instance.getDirectory());
-        assertEquals(instance.getArchiveRegex(), "^.*(1080(p|i)).*$");
+        assertEquals("^.*(1080(p|i)).*$", instance.getArchiveRegex());
         assertEquals(instance.getParent(), a);
-        assertEquals(instance.getRepeat(), 10);
+        assertEquals(10, instance.getRepeat());
         assertFalse(instance.isBusy());
         assertFalse(instance.isManual());
         assertFalse(instance.moveReleaseOnly());
@@ -81,12 +81,12 @@ public class MoveReleaseOffMultipleSlavesToSpecificSlavesTest {
         p.setProperty(confNum + ".slavename.1", "DEST1");
         MoveReleaseOffMultipleSlavesToSpecificSlaves instance = new MoveReleaseOffMultipleSlavesToSpecificSlaves(a, s, p, confNum);
 
-        assertEquals(instance.getConfNum(), confNum);
+        assertEquals(confNum, instance.getConfNum());
         assertEquals(instance.getSection().getName(), s.getName());
         assertNull(instance.getDirectory());
-        assertEquals(instance.getArchiveRegex(), ".*");
+        assertEquals(".*", instance.getArchiveRegex());
         assertEquals(instance.getParent(), a);
-        assertEquals(instance.getRepeat(), 1);
+        assertEquals(1, instance.getRepeat());
         assertFalse(instance.isBusy());
         assertFalse(instance.isManual());
         assertFalse(instance.moveReleaseOnly());
