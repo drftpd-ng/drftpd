@@ -20,9 +20,11 @@ rem ############################################################################
 rem #
 rem # DrFTPD service example:
 rem #
-rem # sc.exe create drftpd-master binpath=C:\Users\Administrator\Documents\GitHub\drftpd\runtime\master\master.bat type=own start=auto error=normal DisplayName="DrFTPD Master" 
+rem # Wrapper like: https://commons.apache.org/proper/commons-daemon/procrun.html
 rem #
-rem # sc.exe start drftpd-master
+rem # or
+rem #
+rem # TO DO
 rem #
 rem ###########################################################################################################################################################################
 
