@@ -20,9 +20,11 @@ rem ############################################################################
 rem #
 rem # DrFTPD service example:
 rem #
-rem # sc.exe create drftpd-slave binpath=C:\Users\Administrator\Documents\GitHub\drftpd\runtime\slave\slave.bat type=own start=auto error=normal DisplayName="DrFTPD Slave" 
+rem # https://commons.apache.org/proper/commons-daemon/procrun.html
 rem #
-rem # sc.exe start drftpd-slave
+rem # or
+rem #
+rem # TO DO
 rem #
 rem #######################################################################################################################################################################
 

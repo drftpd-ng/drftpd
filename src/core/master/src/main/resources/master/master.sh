@@ -21,6 +21,10 @@
 #
 # DrFTPD service example:
 #
+# Wrapper like: https://commons.apache.org/proper/commons-daemon/jsvc.html
+# 
+# or
+#
 # Put the below unit into: ~/.config/systemd/user/drftpd-master.service
 #
 #
@@ -43,10 +47,12 @@
 #
 #
 ####################################################
+#
 # systemctl daemon-reload --user
 # systemctl enable --user drftpd-master.service
 # To start the master: systemctl start --user drftpd-master.service
 # To stop the master: systemctl stop --user drftpd-master.service
+#
 #####################################################
 
 CLASSPATH="lib/*:build/*"

@@ -20,6 +20,11 @@
 ####################################################
 #
 # DrFTPD service example:
+#
+# Wrapper like: https://commons.apache.org/proper/commons-daemon/jsvc.html
+# 
+# or
+#
 # Put the below unit into: ~/.config/systemd/user/drftpd-slave.service
 #
 # [Unit]
