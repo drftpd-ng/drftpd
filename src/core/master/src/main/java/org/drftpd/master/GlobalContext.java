@@ -73,7 +73,7 @@ import static org.drftpd.common.util.ConfigLoader.configPath;
 
 public class GlobalContext {
 
-    public static final String VERSION = "DrFTPD 4.0.7";
+    public static final String VERSION = "DrFTPD 4.0.8";
     private static final Logger logger = LogManager.getLogger(GlobalContext.class);
     protected static GlobalContext _gctx;
     private static final DirectoryHandle root = new DirectoryHandle(VirtualFileSystem.separator);
@@ -304,6 +304,7 @@ public class GlobalContext {
                         PluginInterface pluginInterface = plugin.getConstructor().newInstance();
                         pluginInterface.startPlugin();
                         _plugins.add(pluginInterface);
+                        logger.info("Loaded plugin {}", plugin.getName());
                         alreadyResolved.add(plugin.getName());
                     }
                     if (plugins.size() == _plugins.size()) {
