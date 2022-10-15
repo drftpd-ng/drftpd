@@ -165,8 +165,6 @@
             <groupId>com.cedarsoftware</groupId>
             <artifactId>json-io</artifactId>
             <version>4.14.0</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/../../../dist/json-io-4.14.0.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
