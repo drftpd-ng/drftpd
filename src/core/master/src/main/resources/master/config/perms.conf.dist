@@ -4,7 +4,7 @@
 
 # Displayed as the site tagline on first connection.
 # Leave it alone and you will see the version following by link.
-login_prompt DrFTPD 4.0.8 https://github.com/drftpd-ng/drftpd
+login_prompt DrFTPD 4.0.9-git https://github.com/drftpd-ng/drftpd
 
 ###################################################################################################
 #                                                                                                 #
