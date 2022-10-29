@@ -83,7 +83,7 @@ public class Master {
     public static InetAddress getBindIP() {
         try {
             String bindIP = PropertyHelper.getProperty(GlobalContext.getConfig().getMainProperties(), "master.ip", "");
-            logger.debug("'master.ip' has been resolved to " + bindIP);
+            logger.debug("'master.ip' has been resolved to {}", bindIP);
             if (bindIP.length() > 0) {
                 return InetAddress.getByName(bindIP);
             }

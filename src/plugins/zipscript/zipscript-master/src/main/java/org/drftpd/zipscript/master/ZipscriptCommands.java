@@ -159,7 +159,7 @@ public class ZipscriptCommands extends CommandInterface {
                 session.printOutput(200, "No available slave with sfv for: " + workingDir.getPath());
             }
             if (workingSFV == null) {
-                logger.warn("Unable to get SFVInfo from: " + workingDir.getPath());
+                logger.warn("Unable to get SFVInfo from: {}", workingDir.getPath());
                 session.printOutput(200, "Unable to obtain SFVInfo, cannot do anything");
             } else {
                 session.printOutput(200, "Rescanning single file (" + workingFile.getName() + ") in: " + workingDir.getPath());
@@ -211,7 +211,7 @@ public class ZipscriptCommands extends CommandInterface {
                     session.printOutput(200, "No available slave with sfv for: " + workingDir.getPath());
                 }
                 if (workingSFV == null) {
-                    logger.warn("Unable to get SFVInfo from: " + workingDir.getPath());
+                    logger.warn("Unable to get SFVInfo from: {}", workingDir.getPath());
                     continue;
                 }
 

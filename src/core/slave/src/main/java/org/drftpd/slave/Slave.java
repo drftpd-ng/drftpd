@@ -160,7 +160,7 @@ public class Slave extends SslConfigurationLoader {
         _bindIP = null;
         try {
             String bindIP = PropertyHelper.getProperty(p, "bind.ip", "");
-            logger.debug("'bind.ip' has been resolved to " + bindIP);
+            logger.debug("'bind.ip' has been resolved to {}", bindIP);
             if (bindIP.length() > 0) {
                 _bindIP = InetAddress.getByName(bindIP);
             }

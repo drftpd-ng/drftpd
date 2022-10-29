@@ -64,7 +64,7 @@ public class AutoFreeSpaceSettings {
             _mode = MODE_DATE;
         } else {
             if (!mode.equalsIgnoreCase(MODE_DISABLED)) {
-                logger.error("Incorrect mode [" + mode + "] detected for AutoFreeSpace, plugin disabled!!!");
+                logger.error("Incorrect mode [{}] detected for AutoFreeSpace, plugin disabled!!!", mode);
             }
             _mode = MODE_DISABLED;
         }
@@ -76,12 +76,12 @@ public class AutoFreeSpaceSettings {
                     GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(slaveName);
                     _excludeSlaves.add(slaveName);
                 } catch (ObjectNotFoundException e) {
-                    logger.error("Slave with name [" + slaveName + "] does not exist, config error", e);
+                    logger.error("Slave with name [{}] does not exist, config error", slaveName, e);
                 }
             }
         }
 
-        logger.debug("excluded Slaves set to " + _excludeSlaves.toString());
+        logger.debug("excluded Slaves set to {}", _excludeSlaves.toString());
 
         Map<String, Section> sections = new HashMap<>();
         int id = 1;
@@ -90,11 +90,11 @@ public class AutoFreeSpaceSettings {
         // Handle sections
         while ((name = PropertyHelper.getProperty(p, id + ".section", null)) != null) {
             if (!GlobalContext.getGlobalContext().getSectionManager().getSection(name).getName().equalsIgnoreCase(name)) {
-                logger.error("Section [" + name + "] Does not exist, not creating configuration items");
+                logger.error("Section [{}] Does not exist, not creating configuration items", name);
             } else {
                 long wipeAfter = Long.parseLong(p.getProperty(id + ".wipeAfter")) * 60000L;
                 sections.put(name, new Section(id, name, wipeAfter));
-                logger.debug("Loaded section " + name + ", wipeAfter: " + wipeAfter);
+                logger.debug("Loaded section {}, wipeAfter: {}", name, wipeAfter);
             }
             id++;
         }
@@ -110,7 +110,7 @@ public class AutoFreeSpaceSettings {
         }
         excludeFiles.trimToSize();
         _excludeFiles = excludeFiles;
-        logger.debug("excluded Files set to " + _excludeFiles.toString());
+        logger.debug("excluded Files set to {}", _excludeFiles.toString());
     }
 
     public Map<String, Section> getSections() {
