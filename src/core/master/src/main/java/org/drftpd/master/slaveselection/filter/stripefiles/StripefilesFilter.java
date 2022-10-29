@@ -60,7 +60,7 @@ public class StripefilesFilter extends Filter {
                 try {
                     for (RemoteSlave slave : file.getAvailableSlaves()) {
                         String slaveName = slave.getName();
-                        hm.merge(slaveName, 1, (a, b) -> a + b);
+                        hm.merge(slaveName, 1, Integer::sum);
                     }
                 } catch (NoAvailableSlaveException ex) {
                     // Just continue
