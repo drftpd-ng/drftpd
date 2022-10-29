@@ -669,7 +669,7 @@ public class BasicHandler extends AbstractHandler {
                             if (!localRun) {
                                 localRun = true;
                             }
-                            run();
+                            start();
                             path = oldPath;
                             localRun = restoreRun;
                         }
