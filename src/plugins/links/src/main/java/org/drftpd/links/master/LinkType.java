@@ -367,9 +367,7 @@ public abstract class LinkType {
 
                                     link.renameToUnchecked(newlink);
                                     newlink.setTarget(oldtarget.replace(oldDir.getPath(), targetDir.getPath()));
-                                } catch (FileNotFoundException e) {
-                                    link.deleteUnchecked();
-                                } catch (FileExistsException e) {
+                                } catch (FileNotFoundException | FileExistsException e) {
                                     link.deleteUnchecked();
                                 }
                             } else {
@@ -412,9 +410,7 @@ public abstract class LinkType {
 
                                             link.renameToUnchecked(newlink);
                                             newlink.setTarget(oldtarget.replace(oldDir.getPath(), targetDir.getPath()));
-                                        } catch (FileNotFoundException e) {
-                                            link.deleteUnchecked();
-                                        } catch (FileExistsException e) {
+                                        } catch (FileNotFoundException | FileExistsException e) {
                                             link.deleteUnchecked();
                                         }
                                     } else {

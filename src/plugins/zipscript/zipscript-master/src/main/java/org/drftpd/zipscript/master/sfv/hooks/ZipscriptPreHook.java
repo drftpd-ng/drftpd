@@ -153,9 +153,7 @@ public class ZipscriptPreHook {
             }
         } catch (IOException e1) {
             // sfv not readable, do nothing
-        } catch (NoAvailableSlaveException e1) {
-            //sfv not online, do nothing
-        } catch (SlaveUnavailableException e1) {
+        } catch (NoAvailableSlaveException | SlaveUnavailableException e1) {
             //sfv not online, do nothing
         }
         return request;

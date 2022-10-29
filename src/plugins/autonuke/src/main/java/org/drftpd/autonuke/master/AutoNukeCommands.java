@@ -128,10 +128,7 @@ public class AutoNukeCommands extends CommandInterface {
         env.put("path", path);
         try {
             dir = request.getCurrentDirectory().getDirectoryUnchecked(path);
-        } catch (FileNotFoundException e) {
-            return new CommandResponse(501, session.jprintf(
-                    _bundle, "autonukes.del.error", env, request.getUser()));
-        } catch (ObjectNotValidException e) {
+        } catch (FileNotFoundException | ObjectNotValidException e) {
             return new CommandResponse(501, session.jprintf(
                     _bundle, "autonukes.del.error", env, request.getUser()));
         }
@@ -213,9 +210,7 @@ public class AutoNukeCommands extends CommandInterface {
                 }
             } catch (FileNotFoundException e) {
                 // Just continue
-            } catch (NoSuchUserException e) {
-                logger.error("", e);
-            } catch (UserFileException e) {
+            } catch (NoSuchUserException | UserFileException e) {
                 logger.error("", e);
             }
         }

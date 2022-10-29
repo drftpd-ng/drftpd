@@ -96,11 +96,8 @@ public class NukeTask extends TimerTask {
         try {
             nukeUser = GlobalContext.getGlobalContext().getUserManager().
                     getUserByNameUnchecked(AutoNukeSettings.getSettings().getNukeUser());
-        } catch (NoSuchUserException nsue) {
+        } catch (NoSuchUserException | UserFileException nsue) {
             logger.error(nsue.getMessage());
-            return;
-        } catch (UserFileException ufe) {
-            logger.error(ufe.getMessage());
             return;
         }
 

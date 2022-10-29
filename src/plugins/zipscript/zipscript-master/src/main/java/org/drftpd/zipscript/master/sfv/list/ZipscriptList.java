@@ -110,14 +110,12 @@ public class ZipscriptList extends SFVTools implements AddListElementsInterface 
                         }
                     }
                 }
-            } catch (NoAvailableSlaveException e) {
+            } catch (NoAvailableSlaveException | SlaveUnavailableException e) {
                 logger.warn("No available slaves for SFV file in{}", dir.getPath());
             } catch (FileNotFoundException e) {
                 // no sfv file in directory - just skip it
             } catch (IOException e) {
                 // unable to read sfv - just skip it
-            } catch (SlaveUnavailableException e) {
-                logger.warn("No available slaves for SFV file in{}", dir.getPath());
             }
             if (statusBarEnabled) {
                 for (ZipscriptListStatusBarInterface zle : _statusBarProviders) {

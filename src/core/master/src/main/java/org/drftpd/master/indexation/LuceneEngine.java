@@ -390,11 +390,7 @@ public class LuceneEngine implements IndexEngineInterface {
             }
         } catch (FileNotFoundException e) {
             logger.error("Unable to add {} to the index", inode.getPath(), e);
-        } catch (CorruptIndexException e) {
-            throw new IndexException("Unable to add " + inode.getPath() + " to the index", e);
-        } catch (IOException e) {
-            throw new IndexException("Unable to add " + inode.getPath() + " to the index", e);
-        } catch (RuntimeException e) {
+        } catch (RuntimeException | IOException e) {
             throw new IndexException("Unable to add " + inode.getPath() + " to the index", e);
         }
     }
@@ -403,11 +399,7 @@ public class LuceneEngine implements IndexEngineInterface {
     public void deleteInode(ImmutableInodeHandle inode) throws IndexException {
         try {
             _iWriter.deleteDocuments(makeFullPathTermFromInode(inode));
-        } catch (CorruptIndexException e) {
-            throw new IndexException("Unable to delete " + inode.getPath() + " from the index", e);
-        } catch (IOException e) {
-            throw new IndexException("Unable to delete " + inode.getPath() + " from the index", e);
-        } catch (RuntimeException e) {
+        } catch (RuntimeException | IOException e) {
             throw new IndexException("Unable to delete " + inode.getPath() + " from the index", e);
         }
     }
@@ -420,11 +412,7 @@ public class LuceneEngine implements IndexEngineInterface {
             }
         } catch (FileNotFoundException e) {
             logger.error("The inode was here but now it isn't!", e);
-        } catch (CorruptIndexException e) {
-            throw new IndexException("Unable to update " + inode.getPath() + " in the index", e);
-        } catch (IOException e) {
-            throw new IndexException("Unable to update " + inode.getPath() + " in the index", e);
-        } catch (RuntimeException e) {
+        } catch (RuntimeException | IOException e) {
             throw new IndexException("Unable to update " + inode.getPath() + " in the index", e);
         }
     }
@@ -487,13 +475,7 @@ public class LuceneEngine implements IndexEngineInterface {
                     }
                 }
             }
-        } catch (CorruptIndexException e) {
-            throw new IndexException("Unable to rename " + fromInode.getPath() + " to " +
-                    toInode.getPath() + " in the index", e);
-        } catch (IOException e) {
-            throw new IndexException("Unable to rename " + fromInode.getPath() + " to " +
-                    toInode.getPath() + " in the index", e);
-        } catch (RuntimeException e) {
+        } catch (RuntimeException | IOException e) {
             throw new IndexException("Unable to rename " + fromInode.getPath() + " to " +
                     toInode.getPath() + " in the index", e);
         } finally {
@@ -521,11 +503,7 @@ public class LuceneEngine implements IndexEngineInterface {
     public void commit() throws IndexException {
         try {
             _iWriter.commit();
-        } catch (CorruptIndexException e) {
-            throw new IndexException("Unable to commit the index", e);
-        } catch (IOException e) {
-            throw new IndexException("Unable to commit the index", e);
-        } catch (RuntimeException e) {
+        } catch (RuntimeException | IOException e) {
             throw new IndexException("Unable to commit the index", e);
         }
     }
@@ -736,13 +714,7 @@ public class LuceneEngine implements IndexEngineInterface {
             }
 
             return inodes;
-        } catch (CorruptIndexException e) {
-            logger.error(EXCEPTION_OCCURED_WHILE_SEARCHING, e);
-            throw new IndexException("Unable to search the index", e);
-        } catch (IOException e) {
-            logger.error(EXCEPTION_OCCURED_WHILE_SEARCHING, e);
-            throw new IndexException("Unable to search the index", e);
-        } catch (RuntimeException e) {
+        } catch (RuntimeException | IOException e) {
             logger.error(EXCEPTION_OCCURED_WHILE_SEARCHING, e);
             throw new IndexException("Unable to search the index", e);
         } finally {
@@ -810,13 +782,7 @@ public class LuceneEngine implements IndexEngineInterface {
             }
 
             return inodes;
-        } catch (CorruptIndexException e) {
-            logger.error(EXCEPTION_OCCURED_WHILE_SEARCHING, e);
-            throw new IndexException("Unable to search the index", e);
-        } catch (IOException e) {
-            logger.error(EXCEPTION_OCCURED_WHILE_SEARCHING, e);
-            throw new IndexException("Unable to search the index", e);
-        } catch (RuntimeException e) {
+        } catch (RuntimeException | IOException e) {
             logger.error(EXCEPTION_OCCURED_WHILE_SEARCHING, e);
             throw new IndexException("Unable to search the index", e);
         } finally {
@@ -870,8 +836,6 @@ public class LuceneEngine implements IndexEngineInterface {
         try {
             iReader = IndexReader.open(_iWriter, true);
             status.put("deleted inodes", String.valueOf(iReader.numDeletedDocs()));
-        } catch (CorruptIndexException e) {
-            logger.error(EXCEPTION_OCCURED_WHILE_SEARCHING, e);
         } catch (IOException e) {
             logger.error(EXCEPTION_OCCURED_WHILE_SEARCHING, e);
         } finally {

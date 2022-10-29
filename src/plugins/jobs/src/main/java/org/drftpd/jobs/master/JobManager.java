@@ -203,11 +203,7 @@ public class JobManager implements PluginInterface {
                         return;
                     }
                     continue;
-                } catch (FileNotFoundException e) {
-                    job.abort();
-                    // can't transfer
-                    return;
-                } catch (ObjectNotFoundException e) {
+                } catch (FileNotFoundException | ObjectNotFoundException e) {
                     job.abort();
                     // can't transfer
                     return;

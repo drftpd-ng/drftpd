@@ -59,9 +59,7 @@ public class IndexManager extends CommandInterface {
         IndexEngineInterface ie = GlobalContext.getGlobalContext().getIndexEngine();
         try {
             ie.rebuildIndex();
-        } catch (IndexException e) {
-            return new CommandResponse(550, e.getMessage());
-        } catch (FileNotFoundException e) {
+        } catch (IndexException | FileNotFoundException e) {
             return new CommandResponse(550, e.getMessage());
         }
 

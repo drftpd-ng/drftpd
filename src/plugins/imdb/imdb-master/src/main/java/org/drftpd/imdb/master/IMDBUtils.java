@@ -106,9 +106,7 @@ public class IMDBUtils {
         } catch (IOException e) {
             // To bad...
             logger.error("", e);
-        } catch (NoAvailableSlaveException e) {
-            // Not much to do...
-        } catch (SlaveUnavailableException e) {
+        } catch (NoAvailableSlaveException | SlaveUnavailableException e) {
             // Not much to do...
         }
         return null;

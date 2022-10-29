@@ -66,9 +66,7 @@ public class PartialTrustManager implements X509TrustManager {
             }
             managerFactory.init(keystore);
             _defaultManagers = managerFactory.getTrustManagers();
-        } catch (CertificateException e) {
-            logger.error("X509 SSL provider unavailable", e);
-        } catch (KeyStoreException e) {
+        } catch (CertificateException | KeyStoreException e) {
             logger.error("X509 SSL provider unavailable", e);
         } catch (NoSuchAlgorithmException e) {
             logger.error("Encryption algorithm unavailable", e);

@@ -50,10 +50,7 @@ public class AutoNukeHook {
         DirectoryHandle newDir;
         try {
             newDir = request.getCurrentDirectory().getDirectoryUnchecked(request.getArgument());
-        } catch (FileNotFoundException e) {
-            logger.error("Failed getting DirectoryHandle for {}", request.getArgument(), e);
-            return;
-        } catch (ObjectNotValidException e) {
+        } catch (FileNotFoundException | ObjectNotValidException e) {
             logger.error("Failed getting DirectoryHandle for {}", request.getArgument(), e);
             return;
         }

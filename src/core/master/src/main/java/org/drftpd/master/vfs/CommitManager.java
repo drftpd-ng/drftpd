@@ -195,8 +195,6 @@ public class CommitManager {
         try {
             item.writeToDisk();
             return true;
-        } catch (IOException e) {
-            logger.error("Error writing object to disk - {}", item.descriptiveName(), e);
         } catch (Exception e) {
             logger.error("Error writing object to disk - {}", item.descriptiveName(), e);
         }

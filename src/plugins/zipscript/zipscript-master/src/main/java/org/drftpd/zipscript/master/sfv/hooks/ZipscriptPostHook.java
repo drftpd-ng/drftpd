@@ -108,16 +108,11 @@ public class ZipscriptPostHook extends SFVTools {
                     response.addComment(
                             "WARNING: checksum from transfer didn't match checksum in .sfv");
                 }
-            } catch (NoAvailableSlaveException e1) {
+            } catch (NoAvailableSlaveException | SlaveUnavailableException e1) {
                 response.addComment(
                         "slave with .sfv offline, checksum not verified");
-            } catch (FileNotFoundException e1) {
-                //continue without verification
             } catch (IOException e1) {
                 //continue without verification
-            } catch (SlaveUnavailableException e1) {
-                response.addComment(
-                        "slave with .sfv offline, checksum not verified");
             }
         } else { // slave has disabled download crc
 
@@ -202,7 +197,7 @@ public class ZipscriptPostHook extends SFVTools {
                     response.setMessage("Checksum mismatch, deleting file");
                     transferFile.deleteUnchecked();
                 }
-            } catch (NoAvailableSlaveException e) {
+            } catch (NoAvailableSlaveException | SlaveUnavailableException e) {
                 response.addComment(
                         "zipscript - SFV unavailable, slave(s) with .sfv file is offline");
             } catch (FileNotFoundException e) {
@@ -211,9 +206,6 @@ public class ZipscriptPostHook extends SFVTools {
                 response.addComment(
                         "zipscript - SFV unavailable, IO error: " +
                                 e.getMessage());
-            } catch (SlaveUnavailableException e) {
-                response.addComment(
-                        "zipscript - SFV unavailable, slave(s) with .sfv file is offline");
             }
         }
     }

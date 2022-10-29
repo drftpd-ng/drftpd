@@ -55,9 +55,7 @@ public class DummyBaseFtpConnection extends BaseFtpConnection {
         _currentDirectory = new DirectoryHandle(null);
         try {
             _currentDirectory.createFileUnchecked("testfile", "drftpd", "drftpd", null);
-        } catch (FileExistsException e) {
-            logger.error(e);
-        } catch (FileNotFoundException e) {
+        } catch (FileExistsException | FileNotFoundException e) {
             logger.error(e);
         }
         _out2 = new StringWriter();

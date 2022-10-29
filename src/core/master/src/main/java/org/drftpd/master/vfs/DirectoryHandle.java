@@ -840,9 +840,7 @@ public class DirectoryHandle extends InodeHandle implements DirectoryHandleInter
         getInode().createDirectory(name, user, group, placeHolderLastModified);
         try {
             return getDirectoryUnchecked(name);
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException("Something really funky happened, we just created it", e);
-        } catch (ObjectNotValidException e) {
+        } catch (FileNotFoundException | ObjectNotValidException e) {
             throw new RuntimeException("Something really funky happened, we just created it", e);
         }
     }
@@ -913,9 +911,7 @@ public class DirectoryHandle extends InodeHandle implements DirectoryHandleInter
         getInode().createFile(name, user, group, initialSlave.getName(), lastModified, setLastModified, size);
         try {
             return getFileUnchecked(name);
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException("Something really funky happened, we just created it", e);
-        } catch (ObjectNotValidException e) {
+        } catch (FileNotFoundException | ObjectNotValidException e) {
             throw new RuntimeException("Something really funky happened, we just created it", e);
         }
     }
@@ -954,9 +950,7 @@ public class DirectoryHandle extends InodeHandle implements DirectoryHandleInter
         getInode().createLink(name, target, user, group);
         try {
             return getLinkUnchecked(name);
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException("Something really funky happened, we just created it", e);
-        } catch (ObjectNotValidException e) {
+        } catch (FileNotFoundException | ObjectNotValidException e) {
             throw new RuntimeException("Something really funky happened, we just created it", e);
         }
     }

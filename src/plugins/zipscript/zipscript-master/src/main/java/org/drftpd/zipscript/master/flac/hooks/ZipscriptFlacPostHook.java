@@ -162,11 +162,7 @@ public class ZipscriptFlacPostHook {
             } else {
                 response.addComment(request.getSession().jprintf(_bundle, env, "cwd.flacinfo.text"));
             }
-        } catch (FileNotFoundException e) {
-            // Error fetching flac info, ignore
-        } catch (IOException e) {
-            // Error fetching flac info, ignore
-        } catch (NoAvailableSlaveException e) {
+        } catch (NoAvailableSlaveException | IOException e) {
             // Error fetching flac info, ignore
         }
     }

@@ -59,11 +59,7 @@ public class ZipscriptMP3StatusBar implements ZipscriptListStatusBarInterface {
                 }
                 statusBarEntries.add(container.getSession().jprintf(bundle, "statusbar.id3tag", env, container.getUser()));
                 return statusBarEntries;
-            } catch (FileNotFoundException e) {
-                // Error fetching mp3 info, ignore
-            } catch (IOException e) {
-                // Error fetching mp3 info, ignore
-            } catch (NoAvailableSlaveException e) {
+            } catch (NoAvailableSlaveException | IOException e) {
                 // Error fetching mp3 info, ignore
             }
         }

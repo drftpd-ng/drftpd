@@ -80,9 +80,7 @@ public class ZipscriptZipHandler extends AbstractHandler {
         URI zipURI;
         try {
             zipURI = getZipURI(slave, path);
-        } catch (FileNotFoundException e) {
-            return false;
-        } catch (URISyntaxException e) {
+        } catch (FileNotFoundException | URISyntaxException e) {
             return false;
         }
 
@@ -131,9 +129,7 @@ public class ZipscriptZipHandler extends AbstractHandler {
         URI zipURI;
         try {
             zipURI = getZipURI(slave, path);
-        } catch (FileNotFoundException e) {
-            return dizInfo;
-        } catch (URISyntaxException e) {
+        } catch (FileNotFoundException | URISyntaxException e) {
             return dizInfo;
         }
 

@@ -62,9 +62,7 @@ public class StripefilesFilter extends Filter {
                         String slaveName = slave.getName();
                         hm.merge(slaveName, 1, Integer::sum);
                     }
-                } catch (NoAvailableSlaveException ex) {
-                    // Just continue
-                } catch (FileNotFoundException ex) {
+                } catch (NoAvailableSlaveException | FileNotFoundException ex) {
                     // Just continue
                 }
             }

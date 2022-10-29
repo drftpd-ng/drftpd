@@ -103,9 +103,7 @@ public class SFVIncompleteManager implements PluginInterface {
             // no .sfv found - ignore
         } catch (IOException e) {
             // can't read .sfv - ignore
-        } catch (NoAvailableSlaveException e) {
-            // no slaves available for .sfv - ignore
-        } catch (SlaveUnavailableException e) {
+        } catch (NoAvailableSlaveException | SlaveUnavailableException e) {
             // no slaves available for .sfv - ignore
         }
 
@@ -143,9 +141,7 @@ public class SFVIncompleteManager implements PluginInterface {
                         // no .sfv found - ignore
                     } catch (IOException e) {
                         // can't read .sfv - ignore
-                    } catch (NoAvailableSlaveException e) {
-                        // no slaves available for .sfv - ignore
-                    } catch (SlaveUnavailableException e) {
+                    } catch (NoAvailableSlaveException | SlaveUnavailableException e) {
                         // no slaves available for .sfv - ignore
                     }
                 }
