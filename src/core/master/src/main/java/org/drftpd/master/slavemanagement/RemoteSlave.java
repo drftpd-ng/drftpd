@@ -1124,11 +1124,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
     }
 
     public void setRenameQueue(ConcurrentLinkedDeque<QueuedOperation> renameQueue) {
-        if (renameQueue == null) {
-            _renameQueue = new ConcurrentLinkedDeque<>();
-        } else {
-            _renameQueue = renameQueue;
-        }
+        _renameQueue = Objects.requireNonNullElseGet(renameQueue, ConcurrentLinkedDeque::new);
     }
 
     public LinkedBlockingQueue<RemergeMessage> getRemergeQueue() {
