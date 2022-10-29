@@ -56,9 +56,7 @@ public class PropertyBuilder {
                 classname = classname.replaceAll("\\.properties$", "");
                 classname = classname.replace(File.separatorChar, '.');
 
-                BufferedReader in = null;
-                try {
-                    in = new BufferedReader(new FileReader(file2));
+                try (BufferedReader in = new BufferedReader(new FileReader(file2))) {
                     System.out.println("## START: " + classname);
 
                     String line;
@@ -71,10 +69,6 @@ public class PropertyBuilder {
                         }
 
                         System.out.println(classname + "." + line);
-                    }
-                } finally {
-                    if (in != null) {
-                        in.close();
                     }
                 }
             }

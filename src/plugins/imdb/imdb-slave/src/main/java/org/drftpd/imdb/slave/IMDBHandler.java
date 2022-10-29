@@ -59,15 +59,9 @@ public class IMDBHandler extends AbstractHandler {
         BufferedReader reader = null;
         File file = slave.getRoots().getFile(path);
         CRC32 checksum = new CRC32();
-        CheckedInputStream in = null;
-        try {
-            in = new CheckedInputStream(new FileInputStream(file), checksum);
+        try (CheckedInputStream in = new CheckedInputStream(new FileInputStream(file), checksum)) {
             byte[] buf = new byte[4096];
             while (in.read(buf) != -1) {
-            }
-        } finally {
-            if (in != null) {
-                in.close();
             }
         }
         try {

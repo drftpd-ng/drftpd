@@ -36,15 +36,11 @@ public class MessagePathPermission extends StringPathPermission {
 
         _message = new ArrayList<>();
 
-        BufferedReader in = new BufferedReader(new FileReader(messageFile));
-        String line;
-
-        try {
+        try (BufferedReader in = new BufferedReader(new FileReader(messageFile))) {
+            String line;
             while ((line = in.readLine()) != null) {
                 _message.add(line);
             }
-        } finally {
-            in.close();
         }
 
         _message.trimToSize();

@@ -118,12 +118,8 @@ public class PartialTrustManager implements X509TrustManager {
     }
 
     private void loadCert(File file) {
-        FileInputStream fis = null;
-        BufferedInputStream bis = null;
 
-        try {
-            fis = new FileInputStream(file);
-            bis = new BufferedInputStream(fis);
+        try (FileInputStream fis = new FileInputStream(file); BufferedInputStream bis = new BufferedInputStream(fis)) {
 
             while (bis.available() > 0) {
                 X509Certificate cert = (X509Certificate) _factory.generateCertificate(bis);
@@ -135,19 +131,6 @@ public class PartialTrustManager implements X509TrustManager {
             logger.error("Weird the file was just there, how come it's gone?", e);
         } catch (IOException e) {
             logger.error("An error ocurred while loading a trusted SSL certificate");
-        } finally {
-            if (bis != null) {
-                try {
-                    bis.close();
-                } catch (IOException e) {
-                }
-            }
-            if (fis != null) {
-                try {
-                    fis.close();
-                } catch (IOException e) {
-                }
-            }
         }
     }
 }

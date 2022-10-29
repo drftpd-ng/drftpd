@@ -281,9 +281,7 @@ public class ConfigManager implements ConfigInterface {
      * Reads 'config/perms.conf' handling what can be handled, ignoring what's does not have an available handler.
      */
     private void readConf() {
-        LineNumberReader in = null;
-        try {
-            in = new LineNumberReader(new FileReader(permsFile));
+        try (LineNumberReader in = new LineNumberReader(new FileReader(permsFile))) {
             String line;
 
             while ((line = in.readLine()) != null) {
@@ -344,13 +342,6 @@ public class ConfigManager implements ConfigInterface {
             }
         } catch (IOException e) {
             logger.info("Unable to parse {}", permsFile.getName(), e);
-        } finally {
-            if (in != null) {
-                try {
-                    in.close();
-                } catch (IOException ignored) {
-                }
-            }
         }
     }
 
