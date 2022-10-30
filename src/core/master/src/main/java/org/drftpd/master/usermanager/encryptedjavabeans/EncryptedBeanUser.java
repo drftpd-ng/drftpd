@@ -144,12 +144,14 @@ public class EncryptedBeanUser extends BeanUser {
             int halfbyte = (aData >>> 4) & 0x0F;
             int two_halfs = 0;
             do {
+                two_halfs++;
                 if ((0 <= halfbyte) && (halfbyte <= 9))
                     buf.append((char) ('0' + halfbyte));
                 else
                     buf.append((char) ('a' + (halfbyte - 10)));
                 halfbyte = aData & 0x0F;
-            } while (two_halfs++ < 1);
+            } while (two_halfs < 1);
+            two_halfs++;
         }
         return buf.toString();
     }

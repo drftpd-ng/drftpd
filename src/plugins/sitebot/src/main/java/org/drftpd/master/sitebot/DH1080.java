@@ -95,17 +95,20 @@ public class DH1080 {
         byte[] dArr = new byte[input.length() * 6 >> 3];
 
         for (int i = 0, z = 0; z < dArr.length; ) {
-            dArr[z++] = (byte) ((IA[input.charAt(i)] << 2) | (IA[input.charAt(i + 1)] >> 4));
+            dArr[z] = (byte) ((IA[input.charAt(i)] << 2) | (IA[input.charAt(i + 1)] >> 4));
+            z++;
             i++;
             if (z >= dArr.length) {
                 break;
             }
-            dArr[z++] = (byte) ((IA[input.charAt(i)] << 4) | (IA[input.charAt(i + 1)] >> 2));
+            dArr[z] = (byte) ((IA[input.charAt(i)] << 4) | (IA[input.charAt(i + 1)] >> 2));
+            z++;
             i++;
             if (z >= dArr.length) {
                 break;
             }
-            dArr[z++] = (byte) ((IA[input.charAt(i)] << 6) | IA[input.charAt(i + 1)]);
+            dArr[z] = (byte) ((IA[input.charAt(i)] << 6) | IA[input.charAt(i + 1)]);
+            z++;
             i += 2;
         }
         return dArr;
@@ -134,7 +137,8 @@ public class DH1080 {
                 m = 0x80;
             }
             if (((i + 1) % 6) == 0) {
-                dArr[p++] = CA[t];
+                dArr[p] = CA[t];
+                p++;
                 t &= 0;
             }
 

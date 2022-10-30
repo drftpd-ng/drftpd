@@ -61,7 +61,8 @@ public class NotesData implements Serializable {
         String output = "";
         int cnt = 1;
         for (String note : _notes) {
-            output = output + "Note #" + cnt++ + " - " + note + "\n";
+            output = output + "Note #" + cnt + " - " + note + "\n";
+            cnt++;
         }
         return output;
     }

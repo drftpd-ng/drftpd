@@ -209,7 +209,8 @@ public class MoreStats extends CommandInterface {
         int i = 0;
 
         for (MyGroupPosition grp : grpList) {
-            if (++i > count) {
+            ++i;
+            if (i > count) {
                 break;
             }
 

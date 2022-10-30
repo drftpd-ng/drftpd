@@ -295,7 +295,8 @@ public class Request extends CommandInterface {
         int i = 1;
         for (RequestEntry reqEntry : requests.getRequests()) {
             Map<String, Object> env = new HashMap<>();
-            env.put("num", Integer.toString(i++));
+            env.put("num", Integer.toString(i));
+            i++;
             env.put("request.name", reqEntry.getName());
             env.put("request.user", reqEntry.getUser());
             env.put("request.date", sdf.format(Date.from(Instant.ofEpochSecond(reqEntry.getCreationTime()))));

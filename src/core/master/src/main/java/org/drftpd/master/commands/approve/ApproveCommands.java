@@ -122,7 +122,8 @@ public class ApproveCommands extends CommandInterface {
                             env.put("path", foundDir.getPath());
                             env.put("owner", foundDir.getUsername());
                             env.put("group", foundDir.getGroup());
-                            env.put("num", count++);
+                            env.put("num", count);
+                            count++;
                             env.put("size", Bytes.formatBytes(foundDir.getSize()));
                             response.addComment(session.jprintf(_bundle, "approve.search.item", env, user));
                         } catch (FileNotFoundException e) {

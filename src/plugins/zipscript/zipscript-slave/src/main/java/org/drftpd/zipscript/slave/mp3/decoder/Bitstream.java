@@ -415,7 +415,8 @@ public final class Bitstream implements BitstreamErrors {
             if (k + 1 < bytesize) b1 = byteread[k + 1];
             if (k + 2 < bytesize) b2 = byteread[k + 2];
             if (k + 3 < bytesize) b3 = byteread[k + 3];
-            framebuffer[b++] = ((b0 << 24) & 0xFF000000) | ((b1 << 16) & 0x00FF0000) | ((b2 << 8) & 0x0000FF00) | (b3 & 0x000000FF);
+            framebuffer[b] = ((b0 << 24) & 0xFF000000) | ((b1 << 16) & 0x00FF0000) | ((b2 << 8) & 0x0000FF00) | (b3 & 0x000000FF);
+            b++;
         }
         wordpointer = 0;
         bitindex = 0;
@@ -483,9 +484,12 @@ public final class Bitstream implements BitstreamErrors {
             while (len > 0) {
                 int bytesread = source.read(b, offs, len);
                 if (bytesread == -1) {
-                    while (len-- > 0) {
-                        b[offs++] = 0;
+                    while (len > 0) {
+                        len--;
+                        b[offs] = 0;
+                        offs++;
                     }
+                    len--;
                     break;
                 }
                 nRead = nRead + bytesread;

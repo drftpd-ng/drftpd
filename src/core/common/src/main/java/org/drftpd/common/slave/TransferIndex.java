@@ -36,7 +36,8 @@ public final class TransferIndex implements Serializable {
 
     public TransferIndex() {
         synchronized (mutex) {
-            _index = transfers++;
+            _index = transfers;
+            transfers++;
         }
     }
 

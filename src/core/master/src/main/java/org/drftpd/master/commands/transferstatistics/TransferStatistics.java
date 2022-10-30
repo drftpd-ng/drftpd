@@ -278,7 +278,8 @@ public class TransferStatistics extends CommandInterface {
         int i = 0;
 
         for (User user : users2) {
-            if (++i > count) {
+            ++i;
+            if (i > count) {
                 break;
             }
 

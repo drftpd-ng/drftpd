@@ -60,7 +60,8 @@ public class RequestData implements Serializable {
         StringBuilder output = new StringBuilder();
         int cnt = 1;
         for (RequestEntry request : _requests) {
-            output.append("Request #").append(cnt++).append(" - ").append(request.getName()).append("\n");
+            output.append("Request #").append(cnt).append(" - ").append(request.getName()).append("\n");
+            cnt++;
         }
         return output.toString();
     }
