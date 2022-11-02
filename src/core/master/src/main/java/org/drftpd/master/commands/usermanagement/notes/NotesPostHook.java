@@ -58,8 +58,7 @@ public class NotesPostHook {
             Map<String, Object> env = new HashMap<>();
             int cnt = 1;
             for (String note : notes.getNotes()) {
-                env.put("number", cnt);
-                cnt++;
+                env.put("number", cnt++);
                 env.put("note", note);
                 response.addComment(request.getSession().jprintf(_bundle, "note", env, myUser));
             }

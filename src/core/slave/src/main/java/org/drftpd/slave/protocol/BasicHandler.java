@@ -404,8 +404,7 @@ public class BasicHandler extends AbstractHandler {
             logger.debug("Skipping send of {} as no files changed since last merge", path);
         }
 
-        --remergeDepth;
-        if (remergeDepth == 0) {
+        if (--remergeDepth == 0) {
             sendResponse(new AsyncResponseSiteBotMessage("Merge done"));
         }
     }
@@ -468,8 +467,7 @@ public class BasicHandler extends AbstractHandler {
             logger.debug("Skipping send of {} as no files changed since last merge", path);
         }
 
-        --remergeConcurrentDepth;
-        if (remergeConcurrentDepth == 0) {
+        if (--remergeConcurrentDepth == 0) {
             sendResponse(new AsyncResponseSiteBotMessage("Merge done"));
         }
     }

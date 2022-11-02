@@ -77,8 +77,7 @@ public class TopTrialAnnouncer extends AbstractAnnouncer {
             ArrayList<User> users = event.getUsers();
             for (User user : users) {
                 Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
-                ++passed;
-                env.put("num", passed);
+                env.put("num", ++passed);
                 env.put("bytes", Bytes.formatBytes(user.getUploadedBytesForPeriod(event.getPeriod())));
                 env.put("files", user.getUploadedFilesForPeriod(event.getPeriod()));
                 env.put("name", user.getName());

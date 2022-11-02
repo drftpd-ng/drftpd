@@ -98,8 +98,7 @@ public class Job {
      * @param transferNum The amount of transfers
      */
     private Job(FileHandle file, int priority, int transferNum) {
-        _index = jobIndexCount;
-        jobIndexCount++;
+        _index = jobIndexCount++;
         _timeCreated = System.currentTimeMillis();
         _timeSpent = 0;
         _slaveTransfer = null;

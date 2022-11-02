@@ -329,27 +329,19 @@ public class Crypt {
     private static int fourBytesToInt(byte[] b, int offset) {
         int value;
 
-        value = byteToUnsigned(b[offset]);
-        offset++;
-        value |= (byteToUnsigned(b[offset]) << 8);
-        offset++;
-        value |= (byteToUnsigned(b[offset]) << 16);
-        offset++;
-        value |= (byteToUnsigned(b[offset]) << 24);
-        offset++;
+        value = byteToUnsigned(b[offset++]);
+        value |= (byteToUnsigned(b[offset++]) << 8);
+        value |= (byteToUnsigned(b[offset++]) << 16);
+        value |= (byteToUnsigned(b[offset++]) << 24);
 
         return (value);
     }
 
     private static final void intToFourBytes(int iValue, byte[] b, int offset) {
-        b[offset] = (byte) ((iValue) & 0xff);
-        offset++;
-        b[offset] = (byte) ((iValue >>> 8) & 0xff);
-        offset++;
-        b[offset] = (byte) ((iValue >>> 16) & 0xff);
-        offset++;
-        b[offset] = (byte) ((iValue >>> 24) & 0xff);
-        offset++;
+        b[offset++] = (byte) ((iValue) & 0xff);
+        b[offset++] = (byte) ((iValue >>> 8) & 0xff);
+        b[offset++] = (byte) ((iValue >>> 16) & 0xff);
+        b[offset++] = (byte) ((iValue >>> 24) & 0xff);
     }
 
     private static final void PERM_OP(int a, int b, int n, int m, int[] results) {
@@ -430,13 +422,11 @@ public class Crypt {
                     | skb[6][(d >>> 15) & 0x3f]
                     | skb[7][((d >>> 21) & 0x0f) | ((d >>> 22) & 0x30)];
 
-            schedule[j] = ((t << 16) | (s & 0x0000ffff));
-            j++;
+            schedule[j++] = ((t << 16) | (s & 0x0000ffff));
             s = ((s >>> 16) | (t & 0xffff0000));
 
             s = (s << 4) | (s >>> 28);
-            schedule[j] = s;
-            j++;
+            schedule[j++] = s;
         }
 
         return (schedule);

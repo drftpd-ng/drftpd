@@ -183,10 +183,8 @@ public class GlobPattern {
                     buffer.append('\\');
                     if (ch == pattern.length - 1) {
                         buffer.append('\\');
-                    } else if (__isGlobMetaCharacter(pattern[ch + 1])) {
-                        ++ch;
-                        buffer.append(pattern[ch]);
-                    }
+                    } else if (__isGlobMetaCharacter(pattern[ch + 1]))
+                        buffer.append(pattern[++ch]);
                     else
                         buffer.append('\\');
                     break;

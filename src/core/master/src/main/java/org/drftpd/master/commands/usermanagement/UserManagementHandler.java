@@ -1773,8 +1773,7 @@ public class UserManagementHandler extends CommandInterface {
 
         CommandResponse response = null;
 
-        while (count > 0) {
-            count--;
+        while (count-- > 0) {
             try {
                 CommandResponse currentResponse = doListConnections(request, "bw", false, false, false, false, false, true, false);
                 if (response == null) {
@@ -1788,7 +1787,6 @@ public class UserManagementHandler extends CommandInterface {
                 //Handle exception
             }
         }
-        count--;
         return response;
 
     }
