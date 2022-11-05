@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.drftpd</groupId>
         <artifactId>drftpd-imdb</artifactId>
-        <version>4.0.9-SNAPSHOT</version>
+        <version>4.0.10-SNAPSHOT</version>
         <relativePath>../</relativePath>
     </parent>
 
