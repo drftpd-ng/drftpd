@@ -37,6 +37,7 @@ public class MediaInfo implements Serializable {
     public static final Key<MediaInfo> MEDIAINFO = new Key<>(MediaInfo.class, "mediainfo");
     private static final Logger logger = LogManager.getLogger(MediaInfo.class);
     private static final String MEDIAINFO_COMMAND = "mediainfo";
+    private static final String MKVALIDATOR_COMMAND = "mkvalidator";
     private String _fileName = "";
     private long _checksum;
     private boolean _sampleOk = true;
@@ -57,6 +58,8 @@ public class MediaInfo implements Serializable {
     public MediaInfo() { }
 
     public static boolean hasWorkingMediaInfo() {
+        boolean mediainfo_works = false;
+        boolean mkvalidator_works = false;
         try {
             ProcessBuilder builder = new ProcessBuilder(MEDIAINFO_COMMAND, "--version");
             Process proc = builder.start();
@@ -64,11 +67,22 @@ public class MediaInfo implements Serializable {
             if (status != 0) {
                 throw new RuntimeException("Exist code of " + MEDIAINFO_COMMAND + " --version yielded exit code " + status);
             }
-            return true;
+            mediainfo_works = true;
         } catch(Exception e) {
             logger.fatal("Something went wrong trying to see if " + MEDIAINFO_COMMAND + " binary exists and works", e);
         }
-        return false;
+        try {
+            ProcessBuilder builder = new ProcessBuilder(MKVALIDATOR_COMMAND, "--version");
+            Process proc = builder.start();
+            int status = proc.waitFor();
+            if (status != 0) {
+                throw new RuntimeException("Exist code of " + MKVALIDATOR_COMMAND + " --version yielded exit code " + status);
+            }
+            mkvalidator_works = true;
+        } catch(Exception e) {
+            logger.fatal("Something went wrong trying to see if " + MKVALIDATOR_COMMAND + " binary exists and works", e);
+        }
+        return mediainfo_works && mkvalidator_works;
     }
 
     public static MediaInfo getMediaInfoFromFile(File file) throws IOException {
@@ -152,7 +166,7 @@ public class MediaInfo implements Serializable {
                 }
                 break;
             case "MKV":
-                builder = new ProcessBuilder("mkvalidator", "--quiet", "--no-warn", filePath);
+                builder = new ProcessBuilder(MKVALIDATOR_COMMAND, "--quiet", "--no-warn", filePath);
                 builder.redirectErrorStream(true);
                 pDD = builder.start();
                 stdout = new BufferedReader(new InputStreamReader(pDD.getInputStream()));
@@ -171,7 +185,7 @@ public class MediaInfo implements Serializable {
                 try {
                     pDD.waitFor();
                 } catch (InterruptedException e) {
-                    logger.error("ERROR: mkvalidator process interrupted");
+                    logger.error("ERROR: {}} process interrupted", MKVALIDATOR_COMMAND);
                 }
                 pDD.destroy();
                 break;

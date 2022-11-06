@@ -167,6 +167,9 @@ public class Slave extends SslConfigurationLoader {
         }
         _timeout = Integer.parseInt(PropertyHelper.getProperty(p, "slave.timeout", String.valueOf(actualTimeout)));
 
+        // Initialize this before we connect a socket
+        _central = new SlaveProtocolCentral(this);
+
         try {
             _socket = (SSLSocket) SSLService.getSSLService().sslSocketFactory(_sslConfig).createSocket();
         } catch (IOException | SSLServiceException e) {
@@ -198,8 +201,6 @@ public class Slave extends SslConfigurationLoader {
         _sout.flush();
         _sin = new ObjectInputStream(new BufferedInputStream(_socket.getInputStream()));
 
-        _central = new SlaveProtocolCentral(this);
-
         _sout.writeObject(slaveName);
         _sout.flush();
         _sout.reset();
@@ -220,6 +221,8 @@ public class Slave extends SslConfigurationLoader {
             int maxport = Integer.parseInt(p.getProperty("slave.portto"));
             _portRange = new PortRange(minport, maxport, _bufferSize);
         } catch (NumberFormatException e) {
+            logger.warn("Unable to read port range from config, falling back to default random port range " +
+                    "specified by the operating system");
             _portRange = new PortRange(_bufferSize);
         }
 

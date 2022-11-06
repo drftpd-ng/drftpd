@@ -41,6 +41,9 @@ public class MediaInfoHandler extends AbstractHandler {
 
     public MediaInfoHandler(SlaveProtocolCentral central) {
         super(central);
+        if (!MediaInfo.hasWorkingMediaInfo()) {
+            throw new RuntimeException("Failed to initialize mediainfo plugin");
+        }
         logger.info("Handler initialized");
     }
 
