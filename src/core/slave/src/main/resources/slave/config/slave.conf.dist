@@ -78,13 +78,7 @@ protocol.2=TLSv1.3
 # Default: [false]
 ignore.partialremerge=false
 
-# Settings this to true will make remerge go faster
-#  by threading the remerge process.
-# Default: [true]
-threadedremerge=true
-
-# Settings this to true will make remerge go faster
-#  by threading the remerge process.
+# Settings this to true will make remerge go faster by threading the remerge process.
 # Default: [true]
 threadedremerge=true
 
