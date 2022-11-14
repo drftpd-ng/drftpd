@@ -83,6 +83,16 @@ ignore.partialremerge=false
 # Default: [true]
 threadedremerge=true
 
+# Settings this to true will make remerge go faster
+#  by threading the remerge process.
+# Default: [true]
+threadedremerge=true
+
+# When threadedremerge is enabled this controls how many threads will be spawned for the remerge.
+# 0 means it will do a calculation based on cpu's anything higher will override this
+# Default: [0]
+threadedthreads=0
+
 # Setting this to true will list the slave roots concurrently
 #  during remerge. This should only be set if the slave has more than
 #  one root and more than one CPU otherwise it will likely be slower
