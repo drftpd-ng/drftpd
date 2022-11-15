@@ -44,13 +44,11 @@ public class RootCollection {
         validateRoots(roots);
         _roots = new ArrayList<>(roots);
         _slave = slave;
-        if (_slave.concurrentRootIteration()) {
-            int numThreads = Math.min(_roots.size(), Runtime.getRuntime().availableProcessors());
-            _pool = new ThreadPoolExecutor(numThreads, numThreads, 300, TimeUnit.SECONDS,
-                    new LinkedBlockingQueue<>(), new RootListHandlerThreadFactory(),
-                    new ThreadPoolExecutor.CallerRunsPolicy());
-            _pool.allowCoreThreadTimeOut(true);
-        }
+        int numThreads = Math.min(_roots.size(), Runtime.getRuntime().availableProcessors());
+        _pool = new ThreadPoolExecutor(numThreads, numThreads, 300, TimeUnit.SECONDS,
+                new LinkedBlockingQueue<>(), new RootListHandlerThreadFactory(),
+                new ThreadPoolExecutor.CallerRunsPolicy());
+        _pool.allowCoreThreadTimeOut(true);
     }
 
     private static void validateRoots(Collection<Root> roots) throws IOException {
@@ -133,59 +131,40 @@ public class RootCollection {
     /**
      * Returns a sorted (alphabetical) list of inodes in the path given
      *
-     * @param path
+     * @param path The path to get file listing off
+     * @param concurrent Whether we should concurrently work on all roots
      * @return
      */
-    public TreeSet<String> getLocalInodes(String path) {
+    public TreeSet<String> getLocalInodes(String path, boolean concurrent) {
         TreeSet<String> files = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
-        for (Root root : _roots) {
-            String[] fileArray = root.getFile(path).list();
-            if (fileArray == null) continue;
-            files.addAll(Arrays.asList(fileArray));
+        if (concurrent) {
+            CountDownLatch latch = new CountDownLatch(_roots.size());
+            String[][] rootFiles = new String[_roots.size()][];
+            for (int i = 0; i < _roots.size(); i++) {
+                _pool.execute(new RootListHandler(rootFiles, i, latch, path));
+            }
+            while (true) {
+                try {
+                    latch.await();
+                    break;
+                } catch (InterruptedException e) {
+                    // Loop around and wait again
+                }
+            }
+            for (int i = 0; i < _roots.size(); i++) {
+                if (rootFiles[i] != null) {
+                    files.addAll(Arrays.asList(rootFiles[i]));
+                }
+            }
+        } else {
+            for (int i = 0; i < _roots.size(); i++) {
+                File rootPath = _roots.get(i).getFile(path);
+                if (rootPath.exists()) {
+                    files.addAll(Arrays.asList(rootPath.list()));
+                }
+            }
         }
         return files;
-    }
-
-    /**
-     * Returns a sorted (alphabetical) list of inodes in the path given along with
-     * a file object pointing to the file and the most recent last modified for the
-     * path across the root collection
-     *
-     * @param path
-     * @return
-     */
-    public RootPathContents getLocalInodesConcurrent(String path) {
-        CountDownLatch latch = new CountDownLatch(_roots.size());
-        File[][] rootFiles = new File[_roots.size()][];
-        Long[] rootLastModified = new Long[_roots.size()];
-        TreeMap<String, File> files = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-        for (int i = 0; i < _roots.size(); i++) {
-            _pool.execute(new RootListHandler(rootFiles, i, latch, path, rootLastModified));
-        }
-        while (true) {
-            try {
-                latch.await();
-                break;
-            } catch (InterruptedException e) {
-                // Loop around and wait again
-            }
-        }
-        long lastModified = Long.MIN_VALUE;
-        for (int i = 0; i < _roots.size(); i++) {
-            if (rootFiles[i] != null) {
-                for (int j = 0; j < rootFiles[i].length; j++) {
-                    if (!files.containsKey(rootFiles[i][j].getName())) {
-                        files.put(rootFiles[i][j].getName(), rootFiles[i][j]);
-                    }
-                }
-            }
-            if (rootLastModified[i] != null) {
-                if (rootLastModified[i] > lastModified) {
-                    lastModified = rootLastModified[i];
-                }
-            }
-        }
-        return new RootPathContents(lastModified, files);
     }
 
     public long getLastModifiedForPath(String path) {
@@ -243,8 +222,7 @@ public class RootCollection {
 
     // Get root which has most of the tree structure that we have.
     public PhysicalFile getFile(String path) throws FileNotFoundException {
-        return new PhysicalFile(getRootForFile(path).getPath() + File.separatorChar
-                + path);
+        return new PhysicalFile(getRootForFile(path).getPath() + File.separatorChar + path);
     }
 
     public List<File> getMultipleFiles(String path) throws FileNotFoundException {
@@ -321,28 +299,25 @@ public class RootCollection {
 
     private class RootListHandler implements Runnable {
 
-        private final File[][] _files;
+        private final String[][] _files;
         private final int _root;
         private final CountDownLatch _latch;
         private final String _path;
-        private final Long[] _rootLastModified;
 
-        public RootListHandler(File[][] files, int root, CountDownLatch latch, String path, Long[] rootLastModified) {
+        public RootListHandler(String[][] files, int root, CountDownLatch latch, String path) {
             _files = files;
             _root = root;
             _latch = latch;
             _path = path;
-            _rootLastModified = rootLastModified;
         }
 
         public void run() {
             Thread currThread = Thread.currentThread();
-            currThread.setName("Root List Handler - " + currThread.getId()
-                    + " - processing root " + _root + " - " + _path);
+            currThread.setName("Root List Handler[" + currThread.getId() + "] " +
+                    "- processing root " + _root + " - " + _path);
             File rootPath = _roots.get(_root).getFile(_path);
             if (rootPath.exists()) {
-                _files[_root] = rootPath.listFiles();
-                _rootLastModified[_root] = rootPath.lastModified();
+                _files[_root] = rootPath.list();
             }
             _latch.countDown();
             currThread.setName(RootListHandlerThreadFactory.getIdleThreadName(currThread.getId()));
@@ -352,7 +327,7 @@ public class RootCollection {
 
 class RootListHandlerThreadFactory implements ThreadFactory {
     public static String getIdleThreadName(long threadId) {
-        return "Root List Handler - " + threadId + " - Waiting for root to process";
+        return "Root List Handler[" + threadId + "] - Waiting for root to process";
     }
 
     public Thread newThread(Runnable r) {

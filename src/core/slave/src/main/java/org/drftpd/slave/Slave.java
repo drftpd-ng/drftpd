@@ -116,6 +116,8 @@ public class Slave extends SslConfigurationLoader {
 
     private boolean _threadedRemerge;
 
+    private int _threadedThreads;
+
     private boolean _concurrentRootIteration;
 
     private InetAddress _bindIP;
@@ -167,6 +169,36 @@ public class Slave extends SslConfigurationLoader {
         }
         _timeout = Integer.parseInt(PropertyHelper.getProperty(p, "slave.timeout", String.valueOf(actualTimeout)));
 
+        _uploadChecksums = p.getProperty("enableuploadchecksums", "true").equals("true");
+        _downloadChecksums = p.getProperty("enabledownloadchecksums", "true").equals("true");
+        _bufferSize = Integer.parseInt(p.getProperty("bufferSize", "0"));
+        _maxPathLength = Integer.parseInt(p.getProperty("maxPathLength", "4096"));
+
+        _concurrentRootIteration = p.getProperty("concurrent.root.iteration", "false").equalsIgnoreCase("true");
+        _roots = getDefaultRootBasket();
+        loadDiskSelection(p);
+
+        _transfers = new ConcurrentHashMap<TransferIndex, Transfer>();
+
+        try {
+            int minport = Integer.parseInt(p.getProperty("slave.portfrom"));
+            int maxport = Integer.parseInt(p.getProperty("slave.portto"));
+            _portRange = new PortRange(minport, maxport, _bufferSize);
+        } catch (NumberFormatException e) {
+            logger.warn("Unable to read port range from config, falling back to default random port range " +
+                    "specified by the operating system");
+            _portRange = new PortRange(_bufferSize);
+        }
+
+        _ignorePartialRemerge = p.getProperty("ignore.partialremerge", "false").equalsIgnoreCase("true");
+        _threadedRemerge = p.getProperty("threadedremerge", "false").equalsIgnoreCase("true");
+        _threadedThreads = 0;
+        try {
+            _threadedThreads = Integer.parseInt(p.getProperty("threadedthreads", "0"));
+        } catch (NumberFormatException e) {
+            logger.warn("Unable to read threadedthreads from config, falling back to cpu core calculation");
+        }
+
         // Initialize this before we connect a socket
         _central = new SlaveProtocolCentral(this);
 
@@ -204,30 +236,6 @@ public class Slave extends SslConfigurationLoader {
         _sout.writeObject(slaveName);
         _sout.flush();
         _sout.reset();
-
-        _uploadChecksums = p.getProperty("enableuploadchecksums", "true").equals("true");
-        _downloadChecksums = p.getProperty("enabledownloadchecksums", "true").equals("true");
-        _bufferSize = Integer.parseInt(p.getProperty("bufferSize", "0"));
-        _maxPathLength = Integer.parseInt(p.getProperty("maxPathLength", "4096"));
-
-        _concurrentRootIteration = p.getProperty("concurrent.root.iteration", "false").equalsIgnoreCase("true");
-        _roots = getDefaultRootBasket(p);
-        loadDiskSelection(p);
-
-        _transfers = new ConcurrentHashMap<>();
-
-        try {
-            int minport = Integer.parseInt(p.getProperty("slave.portfrom"));
-            int maxport = Integer.parseInt(p.getProperty("slave.portto"));
-            _portRange = new PortRange(minport, maxport, _bufferSize);
-        } catch (NumberFormatException e) {
-            logger.warn("Unable to read port range from config, falling back to default random port range " +
-                    "specified by the operating system");
-            _portRange = new PortRange(_bufferSize);
-        }
-
-        _ignorePartialRemerge = p.getProperty("ignore.partialremerge", "false").equalsIgnoreCase("true");
-        _threadedRemerge = p.getProperty("threadedremerge", "false").equalsIgnoreCase("true");
     }
 
     public Properties getConfig() {
@@ -275,11 +283,11 @@ public class Slave extends SslConfigurationLoader {
         return _diskSelection;
     }
 
-    public RootCollection getDefaultRootBasket(Properties cfg) throws IOException {
+    private RootCollection getDefaultRootBasket() throws IOException {
         ArrayList<Root> roots = new ArrayList<>();
 
         for (int i = 1; true; i++) {
-            String rootString = cfg.getProperty("slave.root." + i);
+            String rootString = _cfg.getProperty("slave.root." + i);
 
             if (rootString == null) {
                 break;
@@ -620,6 +628,10 @@ public class Slave extends SslConfigurationLoader {
 
     public boolean threadedRemerge() {
         return _threadedRemerge;
+    }
+
+    public int threadedThreads() {
+        return _threadedThreads;
     }
 
     public boolean concurrentRootIteration() {
