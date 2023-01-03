@@ -533,7 +533,8 @@ public class Slave extends SslConfigurationLoader {
                         "renameTo(" + fromfile + ", " + tofile + ") failed to create destination folder");
             }
 
-            if (tofile.exists() || fromfile.getName().equalsIgnoreCase(toName)) {
+            // TODO: We ignore case sensitivity here. Windows will spawn an error, Linux will find this fine
+            if (tofile.exists()) {
                 throw new FileExistsException(
                         "cannot rename from " + fromfile + " to " + tofile + ", destination exists");
             }
