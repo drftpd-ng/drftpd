@@ -43,10 +43,10 @@ public class RemoteSlaveTest {
     @Test
     public void testEquals() {
         DummySlaveManager sm = new DummySlaveManager();
-        GlobalContext gc = new GC();
+        GC gc = new GC();
 
         //sm.setGlobalContext(gc); -zubov
-        ((GC) gc).setSlaveManager(sm);
+        gc.setSlaveManager(sm);
 
         RemoteSlave rslave1 = new DummyRemoteSlave("test1");
         RemoteSlave rslave2 = new DummyRemoteSlave("test1");
