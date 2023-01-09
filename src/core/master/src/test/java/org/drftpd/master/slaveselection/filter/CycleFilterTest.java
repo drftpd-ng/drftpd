@@ -36,7 +36,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class CycleFilterTest {
 
     @Test
-    public void testProcess() throws NoAvailableSlaveException, ObjectNotFoundException {
+    public void testProcess() throws Exception {
         RemoteSlave[] rslaves = {
                 new DummyRemoteSlave("slave1"),
                 new DummyRemoteSlave("slave2"),

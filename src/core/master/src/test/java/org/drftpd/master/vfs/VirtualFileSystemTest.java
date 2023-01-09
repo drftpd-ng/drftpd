@@ -97,7 +97,7 @@ public class VirtualFileSystemTest {
     }
 
     @Test
-    public void testRename() throws FileNotFoundException, FileExistsException {
+    public void testRename() throws Exception {
         //vfs.getRoot().createDirectory("Test", "drftpd", "drftpd");
         VirtualFileSystemInode inode = vfs.getInodeByPath("/Test");
         ((VirtualFileSystemDirectory) inode).createFile("testme", "drftpd", "drftpd", "testSlave");

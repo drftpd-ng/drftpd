@@ -42,7 +42,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class MinfreespaceFilterTest {
 
     @Test
-    public void testSimple() throws ObjectNotFoundException, NoAvailableSlaveException {
+    public void testSimple() throws Exception {
         Properties p = new Properties();
         p.put("1.multiplier", "1");
         p.put("1.minfreespace", "100MB");

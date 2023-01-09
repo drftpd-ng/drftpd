@@ -39,7 +39,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class BandwidthFilterTest {
 
     @Test
-    public void testBandwidth() throws NoAvailableSlaveException, ObjectNotFoundException {
+    public void testBandwidth() throws Exception {
         Properties p = new Properties();
         p.put("1.multiplier", "3");
 
