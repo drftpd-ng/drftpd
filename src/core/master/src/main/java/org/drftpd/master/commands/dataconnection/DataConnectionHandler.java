@@ -433,7 +433,7 @@ public class DataConnectionHandler extends CommandInterface {
         }
 
         switch (cmd) {
-            case "RETR": {
+            case "RETR" -> {
                 FileHandle file;
                 try {
                     file = conn.getCurrentDirectory().getFile(ts.getPretRequest().getArgument(), user);
@@ -447,7 +447,7 @@ public class DataConnectionHandler extends CommandInterface {
                 ts.setTransferFile(file);
                 return new CommandResponse(200, "OK, planning for upcoming download");
             }
-            case "STOR": {
+            case "STOR" -> {
                 FileHandle file = null;
                 try {
                     file = conn.getCurrentDirectory().getFile(ts.getPretRequest().getArgument(), user);
@@ -474,8 +474,9 @@ public class DataConnectionHandler extends CommandInterface {
                 ts.setTransferFile(file);
                 return new CommandResponse(200, "OK, planning for upcoming upload");
             }
-            default:
+            default -> {
                 return StandardCommandManager.genericResponse("RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM");
+            }
         }
     }
 
@@ -527,22 +528,21 @@ public class DataConnectionHandler extends CommandInterface {
         }
 
         switch (Character.toUpperCase(request.getArgument().charAt(0))) {
-            case 'C':
+            case 'C' -> {
 
                 //clear
                 conn.getTransferState().setSendFilesEncrypted(false);
-
                 return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-
-            case 'P':
+            }
+            case 'P' -> {
 
                 //private
                 conn.getTransferState().setSendFilesEncrypted(true);
-
                 return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-
-            default:
+            }
+            default -> {
                 return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+            }
         }
     }
 

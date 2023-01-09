@@ -334,12 +334,11 @@ public class GroupManagementHandler extends CommandInterface {
             env.put("targetgroup", groupToChange.getName());
 
             switch (command) {
-                case "ratio":
+                case "ratio" -> {
                     // [# min] [# max]
                     if (commandArguments.length != 2) {
                         return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
                     }
-
                     try {
                         float minRatio = Float.parseFloat(commandArguments[0]);
                         float maxRatio = Float.parseFloat(commandArguments[1]);
@@ -360,8 +359,8 @@ public class GroupManagementHandler extends CommandInterface {
                     } catch (NumberFormatException ex) {
                         return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
                     }
-                    break;
-                case "slots":
+                }
+                case "slots" -> {
                     try {
                         if (commandArguments.length != 1) {
                             return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
@@ -376,8 +375,8 @@ public class GroupManagementHandler extends CommandInterface {
                     } catch (NumberFormatException ex) {
                         return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
                     }
-                    break;
-                case "leechslots":
+                }
+                case "leechslots" -> {
                     try {
                         if (commandArguments.length != 1) {
                             return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
@@ -392,10 +391,9 @@ public class GroupManagementHandler extends CommandInterface {
                     } catch (NumberFormatException ex) {
                         return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
                     }
-                    break;
-                case "created":
+                }
+                case "created" -> {
                     Date myDate;
-
                     if (commandArguments.length != 0) {
                         try {
                             myDate = new SimpleDateFormat("yyyy-MM-dd").parse(commandArguments[0]);
@@ -407,14 +405,11 @@ public class GroupManagementHandler extends CommandInterface {
                     } else {
                         myDate = new Date();
                     }
-
                     logger.info("'{}' changed created for group '{}' from '{}' to '{}'", currentUser.getName(), groupToChange.getName(), groupToChange.getCreated(), myDate);
                     groupToChange.setCreated(myDate);
-
                     response = new CommandResponse(200, session.jprintf(_bundle, "changegroup.created.success", env, request.getUser()));
-                    break;
-                default:
-                    throw new ImproperUsageException();
+                }
+                default -> throw new ImproperUsageException();
             }
 
             groupToChange.commit();

@@ -158,14 +158,14 @@ public class MediaInfo implements Serializable {
 
         // Calculate valid filesize for mp4, mkv and avi
         switch (realFormat) {
-            case "MP4":
+            case "MP4" -> {
                 IsoFile isoFile = new IsoFile(filePath);
                 if (isoFile.getSize() != mediaInfo.getActFileSize()) {
                     mediaInfo.setSampleOk(false);
                     mediaInfo.setCalFileSize(isoFile.getSize());
                 }
-                break;
-            case "MKV":
+            }
+            case "MKV" -> {
                 builder = new ProcessBuilder(MKVALIDATOR_COMMAND, "--quiet", "--no-warn", filePath);
                 builder.redirectErrorStream(true);
                 pDD = builder.start();
@@ -188,8 +188,8 @@ public class MediaInfo implements Serializable {
                     logger.error("ERROR: {}} process interrupted", MKVALIDATOR_COMMAND);
                 }
                 pDD.destroy();
-                break;
-            case "AVI":
+            }
+            case "AVI" -> {
                 if (mediaInfo.getGeneralInfo() != null && mediaInfo.getGeneralInfo().get("File size") != null &&
                         !mediaInfo.getVideoInfos().isEmpty() && mediaInfo.getVideoInfos().get(0) != null &&
                         mediaInfo.getVideoInfos().get(0).containsKey("Stream size") &&
@@ -215,7 +215,7 @@ public class MediaInfo implements Serializable {
                     mediaInfo.setSampleOk(false);
                     mediaInfo.setCalFileSize(0L);
                 }
-                break;
+            }
         }
 
         // Check container format type

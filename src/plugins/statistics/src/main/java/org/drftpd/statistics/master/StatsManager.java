@@ -121,25 +121,17 @@ public class StatsManager implements PluginInterface {
         for (CreditLimitPathPermission perm : list) {
             if (perm.checkPath(dir) && perm.check(user)) {
                 if (perm.getDirection() == direction) {
-                    long bytes = 0L;
-                    switch (perm.getPeriod()) {
-                        case "ALL":
-                            bytes = direction == StatsHandler.DIRECTION_UP ?
-                                    user.getUploadedBytes() : user.getDownloadedBytes();
-                            break;
-                        case "DAY":
-                            bytes = direction == StatsHandler.DIRECTION_UP ?
-                                    user.getUploadedBytesDay() : user.getDownloadedBytesDay();
-                            break;
-                        case "WEEK":
-                            bytes = direction == StatsHandler.DIRECTION_UP ?
-                                    user.getUploadedBytesWeek() : user.getDownloadedBytesWeek();
-                            break;
-                        case "MONTH":
-                            bytes = direction == StatsHandler.DIRECTION_UP ?
-                                    user.getUploadedBytesMonth() : user.getDownloadedBytesMonth();
-                            break;
-                    }
+                    long bytes = switch (perm.getPeriod()) {
+                        case "ALL" -> direction == StatsHandler.DIRECTION_UP ?
+                                user.getUploadedBytes() : user.getDownloadedBytes();
+                        case "DAY" -> direction == StatsHandler.DIRECTION_UP ?
+                                user.getUploadedBytesDay() : user.getDownloadedBytesDay();
+                        case "WEEK" -> direction == StatsHandler.DIRECTION_UP ?
+                                user.getUploadedBytesWeek() : user.getDownloadedBytesWeek();
+                        case "MONTH" -> direction == StatsHandler.DIRECTION_UP ?
+                                user.getUploadedBytesMonth() : user.getDownloadedBytesMonth();
+                        default -> 0L;
+                    };
                     if (bytes > perm.getBytes()) {
                         return perm;
                     }

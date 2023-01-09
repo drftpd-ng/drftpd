@@ -298,46 +298,34 @@ public class ConfigManager implements ConfigInterface {
                  */
 
                 switch (drct) {
-                    case "login_prompt":
-                        _loginPrompt = line.substring("login_prompt".length()).trim();
-                        break;
-                    case "max_users":
+                    case "login_prompt" -> _loginPrompt = line.substring("login_prompt".length()).trim();
+                    case "max_users" -> {
                         _maxUsersTotal = Integer.parseInt(st.nextToken());
                         _maxUsersExempt = Integer.parseInt(st.nextToken());
-                        break;
-                    case "pasv_addr":
-                        _pasvAddr = st.nextToken();
-                        break;
-                    case "pasv_ports":
+                    }
+                    case "pasv_addr" -> _pasvAddr = st.nextToken();
+                    case "pasv_ports" -> {
                         String[] temp = st.nextToken().split("-");
                         _portRange = new PortRange(Integer.parseInt(temp[0]), Integer.parseInt(temp[1]), 0);
-                        break;
-                    case "hide_ips":
-                        _hideIps = st.nextToken().equalsIgnoreCase("true");
-                        break;
-                    case "allow_connections":
-                        getPermissionsMap().put("allow_connections", new Permission(Permission.makeUsers(st)));
-                        break;
-                    case "allow_connections_deny_reason":
-                        _allowConnectionsDenyReason = line.substring("allow_connections_deny_reason".length()).trim();
-                        break;
-                    case "exempt":
-                        getPermissionsMap().put("exempt", new Permission(Permission.makeUsers(st)));
-                        break;
-                    case "bouncer_ips":
+                    }
+                    case "hide_ips" -> _hideIps = st.nextToken().equalsIgnoreCase("true");
+                    case "allow_connections" ->
+                            getPermissionsMap().put("allow_connections", new Permission(Permission.makeUsers(st)));
+                    case "allow_connections_deny_reason" ->
+                            _allowConnectionsDenyReason = line.substring("allow_connections_deny_reason".length()).trim();
+                    case "exempt" -> getPermissionsMap().put("exempt", new Permission(Permission.makeUsers(st)));
+                    case "bouncer_ips" -> {
                         ArrayList<InetAddress> ips = new ArrayList<>();
                         while (st.hasMoreTokens()) {
                             ips.add(InetAddress.getByName(st.nextToken()));
                         }
                         _bouncerIps = ips;
-                        break;
-                    case "hideinstats":
+                    }
+                    case "hideinstats" -> {
                         while (st.hasMoreTokens())
                             hideInStats = hideInStats + st.nextToken() + " ";
-                        break;
-                    default:
-                        handleLine(drct, st);
-                        break;
+                    }
+                    default -> handleLine(drct, st);
                 }
             }
         } catch (IOException e) {

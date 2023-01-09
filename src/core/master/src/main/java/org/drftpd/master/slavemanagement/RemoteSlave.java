@@ -523,18 +523,15 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 
     public final void setLastDirection(char direction, long l) {
         switch (direction) {
-            case Transfer.TRANSFER_RECEIVING_UPLOAD:
+            case Transfer.TRANSFER_RECEIVING_UPLOAD -> {
                 setLastUploadReceiving(l);
-
                 return;
-
-            case Transfer.TRANSFER_SENDING_DOWNLOAD:
+            }
+            case Transfer.TRANSFER_SENDING_DOWNLOAD -> {
                 setLastDownloadSending(l);
-
                 return;
-
-            default:
-                throw new IllegalArgumentException();
+            }
+            default -> throw new IllegalArgumentException();
         }
     }
 
@@ -846,18 +843,13 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
                 }
 
                 switch (ar.getIndex()) {
-                    case "Remerge":
-                        putRemergeQueue(new RemergeMessage((AsyncResponseRemerge) ar, this));
-                        break;
-                    case "DiskStatus":
-                        _status = ((AsyncResponseDiskStatus) ar)
-                                .getDiskStatus();
-                        break;
-                    case "TransferStatus":
+                    case "Remerge" -> putRemergeQueue(new RemergeMessage((AsyncResponseRemerge) ar, this));
+                    case "DiskStatus" -> _status = ((AsyncResponseDiskStatus) ar)
+                            .getDiskStatus();
+                    case "TransferStatus" -> {
                         TransferStatus ats = ((AsyncResponseTransferStatus) ar)
                                 .getTransferStatus();
                         RemoteTransfer rt;
-
                         try {
                             rt = getTransfer(ats.getTransferIndex());
                         } catch (SlaveUnavailableException e1) {
@@ -866,14 +858,12 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
                             // slave is not online
                             return;
                         }
-
                         rt.updateTransferStatus(ats);
-
                         if (ats.isFinished()) {
                             removeTransfer(ats.getTransferIndex());
                         }
-                        break;
-                    default:
+                    }
+                    default -> {
                         _indexWithCommands.put(ar.getIndex(), ar);
                         if (pingIndex != null
                                 && pingIndex.equals(ar.getIndex())) {
@@ -887,7 +877,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
                                 _commandMonitor.notifyAll();
                             }
                         }
-                        break;
+                    }
                 }
             }
         } catch (Throwable e) {

@@ -82,14 +82,11 @@ public class XferLog extends FtpListener {
         char direction;
 
         switch (event.getCommand()) {
-            case "STOR":
-                direction = 'i';
-                break;
-            case "RETR":
-                direction = 'o';
-                break;
-            default:
+            case "STOR" -> direction = 'i';
+            case "RETR" -> direction = 'o';
+            default -> {
                 return;
+            }
         }
 
         char transferType;

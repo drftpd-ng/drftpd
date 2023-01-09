@@ -143,43 +143,43 @@ public class GlobPattern {
 
         for (ch = 0; ch < pattern.length; ch++) {
             switch (pattern[ch]) {
-                case '*':
+                case '*' -> {
                     if (inCharSet)
                         buffer.append('*');
                     else {
                         buffer.append(".*");
                     }
-                    break;
-                case '?':
+                }
+                case '?' -> {
                     if (inCharSet)
                         buffer.append('?');
                     else {
                         buffer.append('.');
                     }
-                    break;
-                case '[':
+                }
+                case '[' -> {
                     inCharSet = true;
                     buffer.append(pattern[ch]);
-
                     if (ch + 1 < pattern.length) {
                         switch (pattern[ch + 1]) {
-                            case '!':
-                            case '^':
+                            case '!', '^' -> {
                                 buffer.append('^');
                                 ++ch;
                                 continue;
-                            case ']':
+                            }
+                            case ']' -> {
                                 buffer.append(']');
                                 ++ch;
                                 continue;
+                            }
                         }
                     }
-                    break;
-                case ']':
+                }
+                case ']' -> {
                     inCharSet = false;
                     buffer.append(pattern[ch]);
-                    break;
-                case '\\':
+                }
+                case '\\' -> {
                     buffer.append('\\');
                     if (ch == pattern.length - 1) {
                         buffer.append('\\');
@@ -187,12 +187,12 @@ public class GlobPattern {
                         buffer.append(pattern[++ch]);
                     else
                         buffer.append('\\');
-                    break;
-                default:
+                }
+                default -> {
                     if (!inCharSet && __isPerl5MetaCharacter(pattern[ch]))
                         buffer.append('\\');
                     buffer.append(pattern[ch]);
-                    break;
+                }
             }
         }
 

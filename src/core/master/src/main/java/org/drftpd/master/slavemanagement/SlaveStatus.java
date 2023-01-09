@@ -128,18 +128,11 @@ public class SlaveStatus {
     }
 
     public int getThroughputDirection(char c) {
-        switch (c) {
-            case Transfer.TRANSFER_RECEIVING_UPLOAD:
-                return getThroughputReceiving();
-
-            case Transfer.TRANSFER_SENDING_DOWNLOAD:
-                return getThroughputSending();
-
-            case Transfer.TRANSFER_UNKNOWN:
-                return getThroughput();
-
-            default:
-                throw new IllegalArgumentException();
-        }
+        return switch (c) {
+            case Transfer.TRANSFER_RECEIVING_UPLOAD -> getThroughputReceiving();
+            case Transfer.TRANSFER_SENDING_DOWNLOAD -> getThroughputSending();
+            case Transfer.TRANSFER_UNKNOWN -> getThroughput();
+            default -> throw new IllegalArgumentException();
+        };
     }
 }

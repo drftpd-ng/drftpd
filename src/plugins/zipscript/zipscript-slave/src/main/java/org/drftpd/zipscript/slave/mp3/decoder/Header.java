@@ -569,15 +569,12 @@ public final class Header {
      * Return Layer version.
      */
     public String layer_string() {
-        switch (h_layer) {
-            case 1:
-                return "I";
-            case 2:
-                return "II";
-            case 3:
-                return "III";
-        }
-        return null;
+        return switch (h_layer) {
+            case 1 -> "I";
+            case 2 -> "II";
+            case 3 -> "III";
+            default -> null;
+        };
     }
 
     /**
@@ -621,27 +618,30 @@ public final class Header {
      */
     public String sample_frequency_string() {
         switch (h_sample_frequency) {
-            case THIRTYTWO:
+            case THIRTYTWO -> {
                 if (h_version == MPEG1)
                     return "32 kHz";
                 else if (h_version == MPEG2_LSF)
                     return "16 kHz";
                 else    // SZD
                     return "8 kHz";
-            case FOURTYFOUR_POINT_ONE:
+            }
+            case FOURTYFOUR_POINT_ONE -> {
                 if (h_version == MPEG1)
                     return "44.1 kHz";
                 else if (h_version == MPEG2_LSF)
                     return "22.05 kHz";
                 else    // SZD
                     return "11.025 kHz";
-            case FOURTYEIGHT:
+            }
+            case FOURTYEIGHT -> {
                 if (h_version == MPEG1)
                     return "48 kHz";
                 else if (h_version == MPEG2_LSF)
                     return "24 kHz";
                 else    // SZD
                     return "12 kHz";
+            }
         }
         return (null);
     }
@@ -650,17 +650,13 @@ public final class Header {
      * Returns Mode.
      */
     public String mode_string() {
-        switch (h_mode) {
-            case STEREO:
-                return "Stereo";
-            case JOINT_STEREO:
-                return "Joint stereo";
-            case DUAL_CHANNEL:
-                return "Dual channel";
-            case SINGLE_CHANNEL:
-                return "Single channel";
-        }
-        return null;
+        return switch (h_mode) {
+            case STEREO -> "Stereo";
+            case JOINT_STEREO -> "Joint stereo";
+            case DUAL_CHANNEL -> "Dual channel";
+            case SINGLE_CHANNEL -> "Single channel";
+            default -> null;
+        };
     }
 
     /**
@@ -669,15 +665,13 @@ public final class Header {
      * @return MPEG-1 or MPEG-2 LSF or MPEG-2.5 LSF
      */
     public String version_string() {
-        switch (h_version) {
-            case MPEG1:
-                return "MPEG-1";
-            case MPEG2_LSF:
-                return "MPEG-2 LSF";
-            case MPEG25_LSF:    // SZD
-                return "MPEG-2.5 LSF";
-        }
-        return (null);
+        return switch (h_version) {
+            case MPEG1 -> "MPEG-1";
+            case MPEG2_LSF -> "MPEG-2 LSF";
+            case MPEG25_LSF ->    // SZD
+                    "MPEG-2.5 LSF";
+            default -> (null);
+        };
     }
 
     /**

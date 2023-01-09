@@ -42,18 +42,10 @@ public class TopTrialEvent {
         _min = min;
 
         switch (_period) {
-            case 1:
-                _periodstr = "MONTHUP";
-                break;
-            case 2:
-                _periodstr = "WKUP";
-                break;
-            case 3:
-                _periodstr = "DAYUP";
-                break;
-            default:
-                _periodstr = "UNKNOWN";
-                break;
+            case 1 -> _periodstr = "MONTHUP";
+            case 2 -> _periodstr = "WKUP";
+            case 3 -> _periodstr = "DAYUP";
+            default -> _periodstr = "UNKNOWN";
         }
     }
 

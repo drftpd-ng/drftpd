@@ -69,15 +69,9 @@ public class SpeedTest extends CommandInterface {
             _unit = 'K';
         }
         switch (_unit) {
-            case 'K':
-                _unitSuffix = "km";
-                break;
-            case 'M':
-                _unitSuffix = "mi";
-                break;
-            case 'N':
-                _unitSuffix = "nmi";
-                break;
+            case 'K' -> _unitSuffix = "km";
+            case 'M' -> _unitSuffix = "mi";
+            case 'N' -> _unitSuffix = "nmi";
         }
     }
 

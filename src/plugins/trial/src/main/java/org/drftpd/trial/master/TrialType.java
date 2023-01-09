@@ -70,15 +70,9 @@ public abstract class TrialType {
             throw new RuntimeException("Invalid Period for " + confnum + ".period - Skipping Config");
         }
         switch (_period) {
-            case 1:
-                _periodstr = "MONTHUP";
-                break;
-            case 2:
-                _periodstr = "WKUP";
-                break;
-            case 3:
-                _periodstr = "DAYUP";
-                break;
+            case 1 -> _periodstr = "MONTHUP";
+            case 2 -> _periodstr = "WKUP";
+            case 3 -> _periodstr = "DAYUP";
         }
 
         _euroTime = false;
@@ -144,19 +138,16 @@ public abstract class TrialType {
         // 3 = daily | 2 = weekly | 1 = monthly
 
         switch (_period) {
-            case 1: {
+            case 1 -> {
                 cal.set(Calendar.DAY_OF_MONTH, 1);
                 cal.add(Calendar.MONTH, 1);
-                break;
             }
-            case 2: {
+            case 2 -> {
                 cal.set(Calendar.DAY_OF_WEEK, cal.getFirstDayOfWeek());
                 cal.add(Calendar.WEEK_OF_MONTH, 1);
-                break;
             }
-            case 3: {
+            case 3 -> {
                 cal.add(Calendar.DAY_OF_MONTH, 1);
-                break;
             }
         }
 

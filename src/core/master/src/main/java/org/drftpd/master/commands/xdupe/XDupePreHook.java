@@ -71,7 +71,7 @@ public class XDupePreHook {
 
         for (FileHandle file : files) {
             switch (xdupe) {
-                case 1:
+                case 1 -> {
                     if (file.getName().length() > 66)
                         response.addComment("X-DUPE: " + file.getName().substring(0, 65));
                     else if (file.getName().length() + mode1or4.length() > 66) {
@@ -80,17 +80,21 @@ public class XDupePreHook {
                     } else
                         mode1or4 = (mode1or4.length() > 0 ? mode1or4 + " " : "") + file.getName();
                     continue;
-                case 2:
+                }
+                case 2 -> {
                     response.addComment("X-DUPE: " + (file.getName().length() > 66
                             ? file.getName().substring(0, 65)
                             : file.getName()));
                     continue;
-                case 3:
+                }
+                case 3 -> {
                     response.addComment("X-DUPE: " + file.getName());
                     continue;
-                case 4:
+                }
+                case 4 -> {
                     if (mode1or4.length() + file.getName().length() <= 1010)
                         mode1or4 = (mode1or4.length() > 0 ? mode1or4 + " " : "") + file.getName();
+                }
             }
         }
 

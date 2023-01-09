@@ -94,9 +94,8 @@ public class BasicAnnouncer extends AbstractAnnouncer {
         env.put("message", event.getMessage());
 
         switch (event.getCommand()) {
-            case "ADDSLAVE":
+            case "ADDSLAVE" -> {
                 SlaveStatus status;
-
                 try {
                     status = event.getRSlave().getSlaveStatusAvailable();
                 } catch (SlaveUnavailableException e) {
@@ -104,17 +103,11 @@ public class BasicAnnouncer extends AbstractAnnouncer {
 
                     return;
                 }
-
                 SlaveManagement.fillEnvWithSlaveStatus(env, status);
-
                 outputSimpleEvent(ReplacerUtils.jprintf("addslave", env, _bundle), "addslave");
-                break;
-            case "DELSLAVE":
-                outputSimpleEvent(ReplacerUtils.jprintf("delslave", env, _bundle), "delslave");
-                break;
-            case "MSGSLAVE":
-                outputSimpleEvent(ReplacerUtils.jprintf("msgslave", env, _bundle), "msgslave");
-                break;
+            }
+            case "DELSLAVE" -> outputSimpleEvent(ReplacerUtils.jprintf("delslave", env, _bundle), "delslave");
+            case "MSGSLAVE" -> outputSimpleEvent(ReplacerUtils.jprintf("msgslave", env, _bundle), "msgslave");
         }
     }
 

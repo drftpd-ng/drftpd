@@ -132,42 +132,42 @@ public class DailyStats implements UserResetPreHookInterface {
 
         for (int i=0; i < initialUsers.size(); ++i) {
             switch (type) {
-                case "dayup":
+                case "dayup" -> {
                     if (initialUsers.get(i).getUploadedBytesDay() > 0) {
                         totalFiles += initialUsers.get(i).getUploadedFilesDay();
                         totalBytes += initialUsers.get(i).getUploadedBytesDay();
                     }
-                    break;
-                case "daydn":
+                }
+                case "daydn" -> {
                     if (initialUsers.get(i).getDownloadedBytesDay() > 0) {
                         totalFiles += initialUsers.get(i).getDownloadedFilesDay();
                         totalBytes += initialUsers.get(i).getDownloadedBytesDay();
                     }
-                    break;
-                case "wkup":
+                }
+                case "wkup" -> {
                     if (initialUsers.get(i).getUploadedBytesWeek() > 0) {
                         totalFiles += initialUsers.get(i).getUploadedFilesWeek();
                         totalBytes += initialUsers.get(i).getUploadedBytesWeek();
                     }
-                    break;
-                case "wkdn":
+                }
+                case "wkdn" -> {
                     if (initialUsers.get(i).getDownloadedBytesWeek() > 0) {
                         totalFiles += initialUsers.get(i).getDownloadedFilesWeek();
                         totalBytes += initialUsers.get(i).getDownloadedBytesWeek();
                     }
-                    break;
-                case "monthup":
+                }
+                case "monthup" -> {
                     if (initialUsers.get(i).getUploadedBytesMonth() > 0) {
                         totalFiles += initialUsers.get(i).getUploadedFilesMonth();
                         totalBytes += initialUsers.get(i).getUploadedBytesMonth();
                     }
-                    break;
-                case "monthdn":
+                }
+                case "monthdn" -> {
                     if (initialUsers.get(i).getDownloadedBytesMonth() > 0) {
                         totalFiles += initialUsers.get(i).getDownloadedFilesMonth();
                         totalBytes += initialUsers.get(i).getDownloadedBytesMonth();
                     }
-                    break;
+                }
             }
         }
 

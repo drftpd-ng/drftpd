@@ -116,36 +116,14 @@ public class DatedSection extends PlainSection implements TimeEventInterface {
 
     private void printPeriodicity(int type) {
         switch (type) {
-            case TOP_OF_MINUTE:
-                logger.debug("DatedSection [{}] to be rolled every minute.", getName());
-                break;
-
-            case TOP_OF_HOUR:
-                logger.debug("DatedSection [{}] to be rolled on top of every hour.", getName());
-                break;
-
-            case HALF_DAY:
-                logger.debug("DatedSection [{}] to be rolled at midday and midnight.", getName());
-                break;
-
-            case TOP_OF_DAY:
-                logger.debug("DatedSection [{}] to be rolled at midnight.", getName());
-                break;
-
-            case TOP_OF_WEEK:
-                logger.debug("DatedSection [{}] to be rolled at start of week.", getName());
-                break;
-
-            case TOP_OF_MONTH:
-                logger.debug("DatedSection [{}] to be rolled at start of every month.", getName());
-                break;
-
-            case TOP_OF_YEAR:
-                logger.debug("DatedSection [{}] to be rolled at start of new year.", getName());
-                break;
-
-            default:
-                logger.warn("Unknown periodicity for DatedSection [{}].", getName());
+            case TOP_OF_MINUTE -> logger.debug("DatedSection [{}] to be rolled every minute.", getName());
+            case TOP_OF_HOUR -> logger.debug("DatedSection [{}] to be rolled on top of every hour.", getName());
+            case HALF_DAY -> logger.debug("DatedSection [{}] to be rolled at midday and midnight.", getName());
+            case TOP_OF_DAY -> logger.debug("DatedSection [{}] to be rolled at midnight.", getName());
+            case TOP_OF_WEEK -> logger.debug("DatedSection [{}] to be rolled at start of week.", getName());
+            case TOP_OF_MONTH -> logger.debug("DatedSection [{}] to be rolled at start of every month.", getName());
+            case TOP_OF_YEAR -> logger.debug("DatedSection [{}] to be rolled at start of new year.", getName());
+            default -> logger.warn("Unknown periodicity for DatedSection [{}].", getName());
         }
     }
 
@@ -320,76 +298,59 @@ class RollingCalendar extends GregorianCalendar {
         this.setTime(now);
 
         switch (_type) {
-            case DatedSection.TOP_OF_MINUTE:
+            case DatedSection.TOP_OF_MINUTE -> {
                 this.set(Calendar.SECOND, 0);
                 this.set(Calendar.MILLISECOND, 0);
                 this.add(Calendar.MINUTE, 1);
-
-                break;
-
-            case DatedSection.TOP_OF_HOUR:
+            }
+            case DatedSection.TOP_OF_HOUR -> {
                 this.set(Calendar.MINUTE, 0);
                 this.set(Calendar.SECOND, 0);
                 this.set(Calendar.MILLISECOND, 0);
                 this.add(Calendar.HOUR_OF_DAY, 1);
-
-                break;
-
-            case DatedSection.HALF_DAY:
+            }
+            case DatedSection.HALF_DAY -> {
                 this.set(Calendar.MINUTE, 0);
                 this.set(Calendar.SECOND, 0);
                 this.set(Calendar.MILLISECOND, 0);
-
                 int hour = get(Calendar.HOUR_OF_DAY);
-
                 if (hour < 12) {
                     this.set(Calendar.HOUR_OF_DAY, 12);
                 } else {
                     this.set(Calendar.HOUR_OF_DAY, 0);
                     this.add(Calendar.DAY_OF_MONTH, 1);
                 }
-
-                break;
-
-            case DatedSection.TOP_OF_DAY:
+            }
+            case DatedSection.TOP_OF_DAY -> {
                 this.set(Calendar.HOUR_OF_DAY, 0);
                 this.set(Calendar.MINUTE, 0);
                 this.set(Calendar.SECOND, 0);
                 this.set(Calendar.MILLISECOND, 0);
                 this.add(Calendar.DATE, 1);
-
-                break;
-
-            case DatedSection.TOP_OF_WEEK:
+            }
+            case DatedSection.TOP_OF_WEEK -> {
                 this.set(Calendar.DAY_OF_WEEK, getFirstDayOfWeek());
                 this.set(Calendar.HOUR_OF_DAY, 0);
                 this.set(Calendar.SECOND, 0);
                 this.set(Calendar.MILLISECOND, 0);
                 this.add(Calendar.WEEK_OF_YEAR, 1);
-
-                break;
-
-            case DatedSection.TOP_OF_MONTH:
+            }
+            case DatedSection.TOP_OF_MONTH -> {
                 this.set(Calendar.DATE, 1);
                 this.set(Calendar.HOUR_OF_DAY, 0);
                 this.set(Calendar.SECOND, 0);
                 this.set(Calendar.MILLISECOND, 0);
                 this.add(Calendar.MONTH, 1);
-
-                break;
-
-            case DatedSection.TOP_OF_YEAR:
+            }
+            case DatedSection.TOP_OF_YEAR -> {
                 this.set(Calendar.DATE, 1);
                 this.set(Calendar.HOUR_OF_DAY, 0);
                 this.set(Calendar.SECOND, 0);
                 this.set(Calendar.MILLISECOND, 0);
                 this.set(Calendar.MONTH, 1);
                 this.add(Calendar.YEAR, 1);
-
-                break;
-
-            default:
-                throw new IllegalStateException("Unknown periodicity type.");
+            }
+            default -> throw new IllegalStateException("Unknown periodicity type.");
         }
 
         return getTime();

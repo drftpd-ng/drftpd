@@ -190,36 +190,36 @@ public class EncryptedBeanUser extends BeanUser {
         password = password.trim();
 
         switch (getEncryption()) {
-            case 1:
+            case 1 -> {
                 encryptedPassword = Encrypt(password, "MD2");
                 if (encryptedPassword != null && encryptedPassword.equals(storedPassword)) result = true;
-                break;
-            case 2:
+            }
+            case 2 -> {
                 encryptedPassword = Encrypt(password, "MD5");
                 if (encryptedPassword != null && encryptedPassword.equals(storedPassword)) result = true;
-                break;
-            case 3:
+            }
+            case 3 -> {
                 encryptedPassword = Encrypt(password, "SHA-1");
                 if (encryptedPassword != null && encryptedPassword.equals(storedPassword)) result = true;
-                break;
-            case 4:
+            }
+            case 4 -> {
                 encryptedPassword = Encrypt(password, "SHA-256");
                 if (encryptedPassword != null && encryptedPassword.equals(storedPassword)) result = true;
-                break;
-            case 5:
+            }
+            case 5 -> {
                 encryptedPassword = Encrypt(password, "SHA-384");
                 if (encryptedPassword != null && encryptedPassword.equals(storedPassword)) result = true;
-                break;
-            case 6:
+            }
+            case 6 -> {
                 encryptedPassword = Encrypt(password, "SHA-512");
                 if (encryptedPassword != null && encryptedPassword.equals(storedPassword)) result = true;
-                break;
-            case 7:
+            }
+            case 7 -> {
                 if (BCrypt.checkpw(password, storedPassword)) result = true;
-                break;
-            default:
+            }
+            default -> {
                 if (password.equals(storedPassword)) result = true;
-                break;
+            }
         }
 
         if (getEncryption() != _um.getPasscrypt()) {
@@ -241,38 +241,38 @@ public class EncryptedBeanUser extends BeanUser {
         if (((getEncryption() == 0) || (!password.equalsIgnoreCase(getPassword()))) && (_um != null)) {
             String pass;
             switch (_um.getPasscrypt()) {
-                case 1:
+                case 1 -> {
                     pass = Encrypt(password, "MD2");
                     setEncryption(1);
-                    break;
-                case 2:
+                }
+                case 2 -> {
                     pass = Encrypt(password, "MD5");
                     setEncryption(2);
-                    break;
-                case 3:
+                }
+                case 3 -> {
                     pass = Encrypt(password, "SHA-1");
                     setEncryption(3);
-                    break;
-                case 4:
+                }
+                case 4 -> {
                     pass = Encrypt(password, "SHA-256");
                     setEncryption(4);
-                    break;
-                case 5:
+                }
+                case 5 -> {
                     pass = Encrypt(password, "SHA-384");
                     setEncryption(5);
-                    break;
-                case 6:
+                }
+                case 6 -> {
                     pass = Encrypt(password, "SHA-512");
                     setEncryption(6);
-                    break;
-                case 7:
+                }
+                case 7 -> {
                     pass = BCrypt.hashpw(password, BCrypt.gensalt(_workload));
                     setEncryption(7);
-                    break;
-                default:
+                }
+                default -> {
                     pass = password;
                     setEncryption(0);
-                    break;
+                }
             }
 
             if (pass != null) {

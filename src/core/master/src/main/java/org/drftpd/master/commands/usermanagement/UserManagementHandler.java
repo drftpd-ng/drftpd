@@ -495,14 +495,12 @@ public class UserManagementHandler extends CommandInterface {
             env.put("targetuser", userToChange.getName());
 
             switch (command) {
-                case "ratio":
+                case "ratio" -> {
                     // //// Ratio //////
                     if (commandArguments.length != 1) {
                         throw new ImproperUsageException();
                     }
-
                     float ratio = Float.parseFloat(commandArguments[0]);
-
                     if (isAdmin) {
                         ////// Ratio changes by an admin //////
                         logger.info("'{}' changed ratio for '{}' from '{} to '{}'", session.getUserNull(request.getUser()).getName(), userToChange.getName(), userToChange.getKeyedMap().getObjectFloat(UserManagement.RATIO), ratio);
@@ -541,28 +539,25 @@ public class UserManagementHandler extends CommandInterface {
                     } else {
                         return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
                     }
-                    break;
-                case "credits":
+                }
+                case "credits" -> {
                     if (commandArguments.length != 1) {
                         throw new ImproperUsageException();
                     }
-
                     long credits = 0L;
-
                     try {
                         credits = Bytes.parseBytes(commandArguments[0]);
                     } catch (NumberFormatException e) {
                         return new CommandResponse(452, "The string " + commandArguments[0]
                                 + " cannot be interpreted");
                     }
-
                     logger.info("'{}' changed credits for '{}' from '{} to '{}'", session.getUserNull(request.getUser()).getName(), userToChange.getName(), userToChange.getCredits(), credits);
                     userToChange.setCredits(credits);
                     env.put("newcredits", Bytes.formatBytes(userToChange.getCredits()));
                     response.addComment(session.jprintf(_bundle,
                             "changecredits.success", env, request.getUser()));
-                    break;
-                case "comment":
+                }
+                case "comment" -> {
                     logger.info("'{}' changed comment for '{}' from '{} to '{}'", session.getUserNull(request.getUser()).getName(), userToChange.getName(), userToChange.getKeyedMap().getObjectString(
                             UserManagement.COMMENT), fullCommandArgument);
                     userToChange.getKeyedMap().setObject(UserManagement.COMMENT,
@@ -571,12 +566,11 @@ public class UserManagementHandler extends CommandInterface {
                             UserManagement.COMMENT));
                     response.addComment(session.jprintf(_bundle,
                             "changecomment.success", env, request.getUser()));
-                    break;
-                case "idle_time":
+                }
+                case "idle_time" -> {
                     if (commandArguments.length != 1) {
                         throw new ImproperUsageException();
                     }
-
                     int idleTime = Integer.parseInt(commandArguments[0]);
                     env.put("oldidletime", "" + userToChange.getIdleTime());
                     logger.info("'{}' changed idle_time for '{}' from '{} to '{}'", session.getUserNull(request.getUser()).getName(), userToChange.getName(), userToChange.getIdleTime(), idleTime);
@@ -584,8 +578,8 @@ public class UserManagementHandler extends CommandInterface {
                     env.put("newidletime", "" + idleTime);
                     response.addComment(session.jprintf(_bundle,
                             "changeidletime.success", env, request.getUser()));
-                    break;
-                case "num_logins":
+                }
+                case "num_logins" -> {
                     // [# sim logins] [# sim logins/ip]
                     try {
                         int numLogins;
@@ -619,13 +613,13 @@ public class UserManagementHandler extends CommandInterface {
                     } catch (NumberFormatException ex) {
                         return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
                     }
+                }
 
-                    // } else if ("max_dlspeed".equalsIgnoreCase(command)) {
-                    // myUser.setMaxDownloadRate(Integer.parseInt(commandArgument));
-                    // } else if ("max_ulspeed".equals(command)) {
-                    // myUser.setMaxUploadRate(Integer.parseInt(commandArgument));
-                    break;
-                case "max_sim":
+                // } else if ("max_dlspeed".equalsIgnoreCase(command)) {
+                // myUser.setMaxDownloadRate(Integer.parseInt(commandArgument));
+                // } else if ("max_ulspeed".equals(command)) {
+                // myUser.setMaxUploadRate(Integer.parseInt(commandArgument));
+                case "max_sim" -> {
                     // [# DN] [# UP]
 
                     try {
@@ -656,27 +650,23 @@ public class UserManagementHandler extends CommandInterface {
                     } catch (NumberFormatException ex) {
                         return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
                     }
-                    break;
-                case "group":
+                }
+                case "group" -> {
                     if (commandArguments.length != 1) {
                         throw new ImproperUsageException();
                     }
-
                     String newGroup = commandArguments[0];
                     Group g = session.getGroupNull(newGroup);
                     if (g == null) {
                         return new CommandResponse(550, "Unknown group");
                     }
-
                     logger.info("'{}' changed primary group for '{}' from '{}' to '{}'", currentUser.getName(), userToChange.getName(), userToChange.getGroup().getName(), g.getName());
                     userToChange.setGroup(g);
                     env.put("primgroup", userToChange.getGroup().getName());
                     response.addComment(session.jprintf(_bundle, "changeprimgroup.success", env, request.getUser()));
-
-                    break;
-                case "created":
+                }
+                case "created" -> {
                     Date myDate;
-
                     if (commandArguments.length != 0) {
                         try {
                             myDate = new SimpleDateFormat("yyyy-MM-dd").parse(commandArguments[0]);
@@ -688,38 +678,31 @@ public class UserManagementHandler extends CommandInterface {
                     } else {
                         myDate = new Date();
                     }
-
                     logger.info("'{}' changed created for '{}' from '{}' to '{}'", currentUser.getName(), userToChange.getName(), userToChange.getKeyedMap().getObject(UserManagement.CREATED, new Date(0)), myDate);
                     userToChange.getKeyedMap().setObject(UserManagement.CREATED, myDate);
-
                     response = new CommandResponse(200, session.jprintf(_bundle, "changeuser.created.success", env, request.getUser()));
-                    break;
-                case "wkly_allotment":
+                }
+                case "wkly_allotment" -> {
                     if (commandArguments.length != 1) {
                         throw new ImproperUsageException();
                     }
-
                     long weeklyAllotment = Bytes.parseBytes(commandArguments[0]);
                     logger.info("'{}' changed wkly_allotment for '{}' from '{}' to {}'", session.getUserNull(request.getUser()).getName(), userToChange.getName(), userToChange.getKeyedMap().getObjectLong(
                             UserManagement.WKLYALLOTMENT), weeklyAllotment);
                     userToChange.getKeyedMap().setObject(UserManagement.WKLYALLOTMENT,
                             weeklyAllotment);
-
                     response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-                    break;
-                case "tagline":
+                }
+                case "tagline" -> {
                     if (commandArguments.length < 1) {
                         throw new ImproperUsageException();
                     }
-
                     logger.info("'{}' changed tagline for '{}' from '{}' to '{}'", session.getUserNull(request.getUser()).getName(), userToChange.getName(), userToChange.getKeyedMap().getObjectString(UserManagement.TAGLINE), fullCommandArgument);
                     userToChange.getKeyedMap().setObject(UserManagement.TAGLINE,
                             fullCommandArgument);
-
                     response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-                    break;
-                default:
-                    throw new ImproperUsageException();
+                }
+                default -> throw new ImproperUsageException();
             }
 
             userToChange.commit();

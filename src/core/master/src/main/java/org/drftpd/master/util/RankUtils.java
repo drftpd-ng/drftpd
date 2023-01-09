@@ -139,16 +139,13 @@ class UserComparator implements Comparator<UploaderPosition> {
     }
 
     static long getType(String type, UploaderPosition user) {
-        switch (type) {
-            case "bytes":
-                return user.getBytes();
-            case "xferspeed":
-                return user.getXferspeed();
-            case "xfertime":
-                return user.getXfertime();
-        }
+        return switch (type) {
+            case "bytes" -> user.getBytes();
+            case "xferspeed" -> user.getXferspeed();
+            case "xfertime" -> user.getXfertime();
+            default -> 0;
+        };
 
-        return 0;
     }
 
     public int compare(UploaderPosition u1, UploaderPosition u2) {

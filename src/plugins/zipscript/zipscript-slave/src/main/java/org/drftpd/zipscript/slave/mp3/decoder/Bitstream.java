@@ -298,15 +298,11 @@ public final class Bitstream implements BitstreamErrors {
         } catch (IOException ex) {
         }
 
-        boolean sync = false;
-        switch (read) {
-            case 0:
-                sync = true;
-                break;
-            case 4:
-                sync = isSyncMark(headerstring, syncmode, syncword);
-                break;
-        }
+        boolean sync = switch (read) {
+            case 0 -> true;
+            case 4 -> isSyncMark(headerstring, syncmode, syncword);
+            default -> false;
+        };
 
         return sync;
     }

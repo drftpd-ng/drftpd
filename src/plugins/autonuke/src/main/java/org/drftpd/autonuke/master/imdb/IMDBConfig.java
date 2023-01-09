@@ -92,14 +92,18 @@ public class IMDBConfig extends Config {
         if (meta != null) {
             int conf_value = Integer.valueOf(_value.replaceAll("\\D", ""));
             switch (_operator) {
-                case "<":
+                case "<" -> {
                     return meta < conf_value;
-                case "=":
+                }
+                case "=" -> {
                     return meta == conf_value;
-                case "!=":
+                }
+                case "!=" -> {
                     return meta != conf_value;
-                case ">":
+                }
+                case ">" -> {
                     return meta > conf_value;
+                }
             }
         }
         return false;

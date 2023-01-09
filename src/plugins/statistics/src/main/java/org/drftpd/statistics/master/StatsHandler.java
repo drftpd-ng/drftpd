@@ -103,33 +103,19 @@ public class StatsHandler extends ConfigHandler {
             pString = st.nextToken();
             bString = st.nextToken();
 
-            switch (dString.toUpperCase()) {
-                case "UP":
-                    direction = DIRECTION_UP;
-                    break;
-                case "DN":
-                    direction = DIRECTION_DN;
-                    break;
-                default:
-                    throw new NumberFormatException("direction value incorrect");
-            }
+            direction = switch (dString.toUpperCase()) {
+                case "UP" -> DIRECTION_UP;
+                case "DN" -> DIRECTION_DN;
+                default -> throw new NumberFormatException("direction value incorrect");
+            };
 
-            switch (pString.toUpperCase()) {
-                case PERIOD_ALL:
-                    period = PERIOD_ALL;
-                    break;
-                case PERIOD_DAY:
-                    period = PERIOD_DAY;
-                    break;
-                case PERIOD_WEEK:
-                    period = PERIOD_WEEK;
-                    break;
-                case PERIOD_MONTH:
-                    period = PERIOD_MONTH;
-                    break;
-                default:
-                    throw new NumberFormatException("period value incorrect");
-            }
+            period = switch (pString.toUpperCase()) {
+                case PERIOD_ALL -> PERIOD_ALL;
+                case PERIOD_DAY -> PERIOD_DAY;
+                case PERIOD_WEEK -> PERIOD_WEEK;
+                case PERIOD_MONTH -> PERIOD_MONTH;
+                default -> throw new NumberFormatException("period value incorrect");
+            };
 
             bytes = Bytes.parseBytes(bString);
 

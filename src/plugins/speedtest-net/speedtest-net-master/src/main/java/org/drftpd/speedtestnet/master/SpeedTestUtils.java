@@ -97,36 +97,16 @@ public class SpeedTestUtils {
                         String name = attribute.getName().getLocalPart();
                         String value = attribute.getValue();
                         switch (name) {
-                            case "url":
-                                server.setUrl(value);
-                                break;
-                            case "url2":
-                                server.setUrl2(value);
-                                break;
-                            case "lat":
-                                server.setLatitude(Double.parseDouble(value));
-                                break;
-                            case "lon":
-                                server.setLongitude(Double.parseDouble(value));
-                                break;
-                            case "name":
-                                server.setName(value);
-                                break;
-                            case "country":
-                                server.setCountry(value);
-                                break;
-                            case "cc":
-                                server.setCc(value);
-                                break;
-                            case "sponsor":
-                                server.setSponsor(value);
-                                break;
-                            case "id":
-                                server.setId(Integer.parseInt(value));
-                                break;
-                            case "host":
-                                server.setHost(value);
-                                break;
+                            case "url" -> server.setUrl(value);
+                            case "url2" -> server.setUrl2(value);
+                            case "lat" -> server.setLatitude(Double.parseDouble(value));
+                            case "lon" -> server.setLongitude(Double.parseDouble(value));
+                            case "name" -> server.setName(value);
+                            case "country" -> server.setCountry(value);
+                            case "cc" -> server.setCc(value);
+                            case "sponsor" -> server.setSponsor(value);
+                            case "id" -> server.setId(Integer.parseInt(value));
+                            case "host" -> server.setHost(value);
                         }
                     }
                     serverList.add(server);
