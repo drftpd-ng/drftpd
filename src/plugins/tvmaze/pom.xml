@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.drftpd</groupId>
         <artifactId>drftpd-plugins</artifactId>
-        <version>4.0.11-SNAPSHOT</version>
+        <version>4.0.12-SNAPSHOT</version>
         <relativePath>../</relativePath>
     </parent>
 
