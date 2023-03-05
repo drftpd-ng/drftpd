@@ -126,7 +126,7 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-        <groupId>org.drftpd</groupId>
+            <groupId>org.drftpd</groupId>
             <artifactId>drftpd-speedtestnet-common</artifactId>
             <version>${project.version}</version>
         </dependency>
