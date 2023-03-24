@@ -92,7 +92,7 @@ public class ThrottledInputStream extends InputStream {
 
     public void wake() {
         synchronized (_monitor) {
-            _monitor.notify();
+            _monitor.notifyAll();
         }
     }
 

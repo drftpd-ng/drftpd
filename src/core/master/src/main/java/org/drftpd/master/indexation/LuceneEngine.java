@@ -926,10 +926,10 @@ public class LuceneEngine implements IndexEngineInterface {
             // obtaining the objects' lock.
             // doing that we ensure that no operations are running while closing the streams.
             synchronized (_maintenanceThread) {
-                _maintenanceThread.notify();
+                _maintenanceThread.notifyAll();
             }
             synchronized (_backupThread) {
-                _backupThread.notify();
+                _backupThread.notifyAll();
             }
 
             while (_maintenanceThread.isAlive() || _backupThread.isAlive()) {
