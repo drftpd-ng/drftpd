@@ -171,7 +171,7 @@ public class ZipscriptZipHandler extends AbstractHandler {
         Matcher m = p.matcher(dizString);
 
         if (m.find()) {
-            total = Integer.valueOf(m.group(1).replaceAll("[oOxX]", "0"));
+            total = Integer.parseInt(m.group(1).replaceAll("[oOxX]", "0"));
         }
 
         return total;

@@ -373,7 +373,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
                 }
             } else if (remergeMode.equalsIgnoreCase("disconnect")) {
                 try {
-                    skipAgeCutoff = Long.valueOf(getProperty("lastOnline"));
+                    skipAgeCutoff = Long.parseLong(getProperty("lastOnline"));
                     partialRemerge = true;
                 } catch (NumberFormatException e) {
                     logger.warn("Slave partial remerge mode set to \"off\" as lastOnline time is undefined, this may " +

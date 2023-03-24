@@ -90,7 +90,7 @@ public class IMDBConfig extends Config {
      */
     private boolean handleDigitComparison(Integer meta) {
         if (meta != null) {
-            int conf_value = Integer.valueOf(_value.replaceAll("\\D", ""));
+            int conf_value = Integer.parseInt(_value.replaceAll("\\D", ""));
             switch (_operator) {
                 case "<" -> {
                     return meta < conf_value;
