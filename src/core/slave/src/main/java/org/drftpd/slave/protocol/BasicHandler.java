@@ -392,7 +392,7 @@ public class BasicHandler extends AbstractHandler {
 
             // Get a list of contents
             Set<String> inodes = _rootCollection.getLocalInodes(_path, getSlaveObject().concurrentRootIteration());
-            List<LightRemoteInode> fileList = new ArrayList<LightRemoteInode>();
+            List<LightRemoteInode> fileList = new ArrayList<>();
 
             boolean inodesModified = false;
             long pathLastModified = _rootCollection.getLastModifiedForPath(_path);

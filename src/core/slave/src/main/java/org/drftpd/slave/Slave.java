@@ -178,7 +178,7 @@ public class Slave extends SslConfigurationLoader {
         _roots = getDefaultRootBasket();
         loadDiskSelection(p);
 
-        _transfers = new ConcurrentHashMap<TransferIndex, Transfer>();
+        _transfers = new ConcurrentHashMap<>();
 
         try {
             int minport = Integer.parseInt(p.getProperty("slave.portfrom"));
