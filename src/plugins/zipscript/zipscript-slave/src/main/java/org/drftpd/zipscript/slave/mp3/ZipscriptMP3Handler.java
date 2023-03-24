@@ -54,7 +54,7 @@ public class ZipscriptMP3Handler extends AbstractHandler {
         }
     }
 
-    private MP3Info getMP3File(Slave slave, String path) throws IOException {
+    private MP3Info getMP3File(Slave slave, String path) throws IOException, java.io.FileNotFoundException {
         MP3Parser mp3parser = new MP3Parser(slave.getRoots().getFile(path));
         MP3Info mp3info = mp3parser.getMP3Info();
         return mp3info;

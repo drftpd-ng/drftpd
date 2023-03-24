@@ -29,7 +29,7 @@ public abstract class Connection {
 
     public abstract Socket connect(String[] cipherSuites, String[] sslProtocols, int bufferSize) throws IOException;
 
-    protected void setSockOpts(Socket sock) throws IOException {
+    protected void setSockOpts(Socket sock) throws java.net.SocketException {
         /*
          * IPTOS_LOWCOST (0x02)
          * IPTOS_RELIABILITY (0x04)

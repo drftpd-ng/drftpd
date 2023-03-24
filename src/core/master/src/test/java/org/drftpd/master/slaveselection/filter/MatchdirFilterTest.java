@@ -54,7 +54,7 @@ public class MatchdirFilterTest {
     }
 
     @Test
-    public void testSimple() throws Exception {
+    public void testSimple() throws NoAvailableSlaveException, ObjectNotFoundException {
         Properties p = new Properties();
         p.put("1.assign", "slave1+100, slave2-100");
         p.put("1.match", "/path1/*");
@@ -79,7 +79,7 @@ public class MatchdirFilterTest {
     }
 
     @Test
-    public void testAll() throws Exception {
+    public void testAll() throws NoAvailableSlaveException, ObjectNotFoundException {
         Properties p = new Properties();
         p.put("1.assign", "ALL+100");
         p.put("1.match", "/path2/*");
@@ -99,7 +99,7 @@ public class MatchdirFilterTest {
     }
 
     @Test
-    public void testRemove() throws Exception {
+    public void testRemove() throws NoAvailableSlaveException, ObjectNotFoundException {
         Properties p = new Properties();
         p.put("1.assign", "slave2-remove");
         p.put("1.match", "/path1/*");

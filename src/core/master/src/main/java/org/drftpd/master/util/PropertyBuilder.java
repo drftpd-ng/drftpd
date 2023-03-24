@@ -45,7 +45,7 @@ public class PropertyBuilder {
         findAndReadFiles(_baseFile);
     }
 
-    private void findAndReadFiles(File file) throws IOException {
+    private void findAndReadFiles(File file) throws IOException, java.io.FileNotFoundException {
         File[] files = file.listFiles();
 
         for (File file2 : files) {

@@ -60,7 +60,7 @@ public class SpeedTestCallable implements Callable<SpeedTestAnswer> {
     }
 
     @Override
-    public SpeedTestAnswer call() throws Exception {
+    public SpeedTestAnswer call() throws ExecutionException {
         long bytes = 0L;
         long timeStart = 0L;
         long timeStop = 0L;

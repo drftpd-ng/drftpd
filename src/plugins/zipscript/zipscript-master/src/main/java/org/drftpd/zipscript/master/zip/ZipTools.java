@@ -38,7 +38,7 @@ import java.util.Collection;
 public class ZipTools {
 
     public static Collection<FileHandle> getZipFiles(DirectoryHandle dir)
-            throws IOException {
+            throws FileNotFoundException {
         Collection<FileHandle> files = new ArrayList<>();
 
         for (FileHandle file : dir.getFilesUnchecked()) {
@@ -50,7 +50,7 @@ public class ZipTools {
     }
 
     public static long getZipTotalBytes(DirectoryHandle dir)
-            throws IOException {
+            throws IOException, FileNotFoundException {
         long totalBytes = 0;
 
         for (FileHandle file : getZipFiles(dir)) {
@@ -60,7 +60,7 @@ public class ZipTools {
     }
 
     public static long getZipLargestFileBytes(DirectoryHandle dir)
-            throws IOException {
+            throws IOException, FileNotFoundException {
         long largestFileBytes = 0;
 
         for (FileHandle file : getZipFiles(dir)) {
@@ -72,7 +72,7 @@ public class ZipTools {
     }
 
     public static long getZipTotalXfertime(DirectoryHandle dir)
-            throws IOException {
+            throws IOException, FileNotFoundException {
         long totalXfertime = 0;
 
         for (FileHandle file : getZipFiles(dir)) {
@@ -96,7 +96,7 @@ public class ZipTools {
     }
 
     public static DizStatus getDizStatus(DizInfo dizInfo, DirectoryHandle dir)
-            throws IOException {
+            throws FileNotFoundException {
         int offline = 0;
         int present = 0;
         for (FileHandle file : dir.getFilesUnchecked()) {

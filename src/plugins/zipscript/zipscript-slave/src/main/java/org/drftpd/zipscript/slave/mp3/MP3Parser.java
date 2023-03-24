@@ -38,7 +38,7 @@ public class MP3Parser {
         _mp3file = mp3file;
     }
 
-    public MP3Info getMP3Info() throws IOException {
+    public MP3Info getMP3Info() throws IOException, java.io.FileNotFoundException {
         FileInputStream in = null;
         Header frameHeader = null;
         try {

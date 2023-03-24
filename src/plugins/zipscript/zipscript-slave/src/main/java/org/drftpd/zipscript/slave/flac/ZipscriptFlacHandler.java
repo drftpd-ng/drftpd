@@ -53,7 +53,7 @@ public class ZipscriptFlacHandler extends AbstractHandler {
         }
     }
 
-    private FlacInfo getFlacFile(Slave slave, String path) throws IOException {
+    private FlacInfo getFlacFile(Slave slave, String path) throws IOException, java.io.FileNotFoundException {
         FlacParser flacparser = new FlacParser(slave.getRoots().getFile(path));
         FlacInfo flacinfo = flacparser.getFlacInfo();
         return flacinfo;

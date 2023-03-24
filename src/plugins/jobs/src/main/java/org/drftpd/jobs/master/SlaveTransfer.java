@@ -93,7 +93,7 @@ public class SlaveTransfer {
      * Returns the crc checksum of the destination transfer If CRC is disabled
      * on the destination slave, checksum = 0
      */
-    protected boolean transfer() throws SlaveException {
+    protected boolean transfer() throws DestinationSlaveException, SourceSlaveException {
         // can do encrypted slave2slave transfers by modifying the
         // first argument in issueListenToSlave() and the third option
         // in issueConnectToSlave(), maybe do an option later, is this wanted?

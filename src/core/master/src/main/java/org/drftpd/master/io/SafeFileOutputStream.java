@@ -36,7 +36,7 @@ public class SafeFileOutputStream extends OutputStream {
     // failed until it works
     private boolean failed = true;
 
-    public SafeFileOutputStream(File file) throws IOException {
+    public SafeFileOutputStream(File file) throws IOException, java.io.FileNotFoundException {
         _actualFile = file;
 
         if (!_actualFile.getAbsoluteFile().getParentFile().canWrite()) {

@@ -34,7 +34,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class HostMaskTest {
 
     @Test
-    public void testMatchesHost() throws Exception {
+    public void testMatchesHost() throws PatternSyntaxException, UnknownHostException {
         HostMask h = new HostMask("*@1.1.1.1");
         assertTrue(h.matchesHost(InetAddress.getByName("1.1.1.1")));
         assertFalse(h.matchesHost(InetAddress.getByName("1.1.1.2")));

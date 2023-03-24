@@ -54,7 +54,7 @@ public class IMDBVFSDataNFO {
         return null;
     }
 
-    public IMDBInfo getIMDBInfo() throws IOException, NoAvailableSlaveException, SlaveUnavailableException {
+    public IMDBInfo getIMDBInfo() throws IOException, NoAvailableSlaveException, SlaveUnavailableException, FileNotFoundException {
         try {
             IMDBInfo imdbInfo = getIMDBInfoFromInode(_dir);
             try {

@@ -126,7 +126,7 @@ public class Slave extends SslConfigurationLoader {
 
     private Properties _cfg;
 
-    public Slave(Properties p) throws IOException, SSLUnavailableException {
+    public Slave(Properties p) throws IOException, SSLUnavailableException, java.net.SocketException {
         super(SETTING_PREFIX);
         _cfg = p;
         try {
@@ -246,7 +246,7 @@ public class Slave extends SslConfigurationLoader {
         Slave.boot();
     }
 
-    public static void boot() throws Exception {
+    public static void boot() throws IOException, SSLUnavailableException {
         System.out.println("DrFTPD Slave starting, further logging will be done through log4j");
         Thread.currentThread().setName("Slave Main Thread");
 
@@ -338,11 +338,11 @@ public class Slave extends SslConfigurationLoader {
         _transfers.put(transfer.getTransferIndex(), transfer);
     }
 
-    public long checkSum(String path) throws IOException {
+    public long checkSum(String path) throws IOException, FileNotFoundException {
         return checkSum(_roots.getFile(path));
     }
 
-    public long checkSum(PhysicalFile file) throws IOException {
+    public long checkSum(PhysicalFile file) throws IOException, FileNotFoundException {
         logger.debug("Checksumming: {}", file.getPath());
 
         CRC32 crc32 = new CRC32();
@@ -357,7 +357,7 @@ public class Slave extends SslConfigurationLoader {
         }
     }
 
-    public void delete(String path) throws IOException {
+    public void delete(String path) throws IOException, PermissionDeniedException {
         // now deletes files as well as directories, recursive!
         Collection<Root> files;
         try {
@@ -515,7 +515,7 @@ public class Slave extends SslConfigurationLoader {
         }
     }
 
-    public void rename(String from, String toDirPath, String toName) throws IOException {
+    public void rename(String from, String toDirPath, String toName) throws PermissionDeniedException, FileExistsException {
         for (Iterator<Root> iter = _roots.iterator(); iter.hasNext(); ) {
             Root root = iter.next();
 

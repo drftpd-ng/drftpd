@@ -38,7 +38,7 @@ import java.util.Collection;
 public class SFVTools {
 
     public static Collection<FileHandle> getSFVFiles(DirectoryHandle dir, ZipscriptVFSDataSFV sfvData)
-            throws IOException, NoAvailableSlaveException, SlaveUnavailableException {
+            throws IOException, NoAvailableSlaveException, SlaveUnavailableException, FileNotFoundException {
         Collection<FileHandle> files = new ArrayList<>();
         SFVInfo sfvInfo = sfvData.getSFVInfo();
 
@@ -52,7 +52,7 @@ public class SFVTools {
     }
 
     public static long getSFVTotalBytes(DirectoryHandle dir, ZipscriptVFSDataSFV sfvData)
-            throws IOException, NoAvailableSlaveException, SlaveUnavailableException {
+            throws IOException, NoAvailableSlaveException, SlaveUnavailableException, FileNotFoundException {
         long totalBytes = 0;
 
         for (FileHandle file : getSFVFiles(dir, sfvData)) {
@@ -62,7 +62,7 @@ public class SFVTools {
     }
 
     public static long getSFVLargestFileBytes(DirectoryHandle dir, ZipscriptVFSDataSFV sfvData)
-            throws IOException, NoAvailableSlaveException, SlaveUnavailableException {
+            throws IOException, NoAvailableSlaveException, SlaveUnavailableException, FileNotFoundException {
         long largestFileBytes = 0;
 
         for (FileHandle file : getSFVFiles(dir, sfvData)) {
@@ -74,7 +74,7 @@ public class SFVTools {
     }
 
     public static long getSFVTotalXfertime(DirectoryHandle dir, ZipscriptVFSDataSFV sfvData)
-            throws IOException, NoAvailableSlaveException, SlaveUnavailableException {
+            throws IOException, NoAvailableSlaveException, SlaveUnavailableException, FileNotFoundException {
         long totalXfertime = 0;
 
         for (FileHandle file : getSFVFiles(dir, sfvData)) {
@@ -94,7 +94,7 @@ public class SFVTools {
     }
 
     public static SFVStatus getSFVStatus(SFVInfo sfvInfo, DirectoryHandle dir)
-            throws IOException {
+            throws FileNotFoundException {
         int offline = 0;
         int present = 0;
         CaseInsensitiveTreeMap<String, Long> sfvEntries = sfvInfo.getEntries();

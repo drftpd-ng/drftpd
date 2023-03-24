@@ -155,7 +155,7 @@ public class RemoteTransfer {
     }
 
     public void receiveFile(String path, char type, long position, String inetAddress, long minSpeed, long maxSpeed)
-            throws IOException, SlaveUnavailableException {
+            throws IOException, SlaveUnavailableException, java.io.FileNotFoundException {
         _path = path;
 
         String index = SlaveManager.getBasicIssuer().issueReceiveToSlave(
@@ -171,7 +171,7 @@ public class RemoteTransfer {
     }
 
     public void sendFile(String path, char type, long position, String inetAddress, long minSpeed, long maxSpeed)
-            throws IOException, SlaveUnavailableException {
+            throws IOException, SlaveUnavailableException, java.io.FileNotFoundException {
         _path = path;
         String index = SlaveManager.getBasicIssuer().issueSendToSlave(
                 _rslave, path, type, position, inetAddress, getTransferIndex(), minSpeed, maxSpeed);

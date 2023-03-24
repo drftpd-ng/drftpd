@@ -54,7 +54,7 @@ public class PassiveConnection extends Connection {
      *
      * @throws IOException Creates a PassiveConnection - If ctx==null, the Connection will not use SSL
      */
-    public PassiveConnection(SSLContext ctx, PortRange portRange, boolean useSSLClientMode, InetAddress bindIP) throws IOException {
+    public PassiveConnection(SSLContext ctx, PortRange portRange, boolean useSSLClientMode, InetAddress bindIP) throws SocketException {
         _useSSLClientMode = useSSLClientMode;
         if (ctx != null) {
             _serverSocket = portRange.getPort(ctx.getServerSocketFactory(), bindIP);
@@ -64,7 +64,7 @@ public class PassiveConnection extends Connection {
         _serverSocket.setSoTimeout(TIMEOUT);
     }
 
-    public Socket connect(String[] cipherSuites, String[] sslProtocols, int bufferSize) throws IOException {
+    public Socket connect(String[] cipherSuites, String[] sslProtocols, int bufferSize) throws IOException, SocketException {
         // bufferSize has already been set on the ServerSocket
         // just need to accept this param to comply with the Connection class
 

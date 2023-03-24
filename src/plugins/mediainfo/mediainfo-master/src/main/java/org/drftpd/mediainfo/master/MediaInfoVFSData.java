@@ -40,7 +40,7 @@ public class MediaInfoVFSData {
         _file = file;
     }
 
-    public MediaInfo getMediaInfo() throws IOException, NoAvailableSlaveException, SlaveUnavailableException {
+    public MediaInfo getMediaInfo() throws IOException, NoAvailableSlaveException, SlaveUnavailableException, FileNotFoundException {
         try {
             MediaInfo mediaInfo = getMediaInfoFromInode(_file);
             try {

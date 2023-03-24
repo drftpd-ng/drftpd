@@ -241,7 +241,7 @@ public class Transfer {
      * @throws TransferDeniedException If the connection we have is not the expected source
      */
     public TransferStatus receiveFile(String dirname, char mode, String filename, long offset, String inetAddress)
-            throws IOException, TransferDeniedException {
+            throws IOException, TransferDeniedException, FileExistsException, FileNotFoundException {
         _pathForUpload = dirname + separator + filename;
         try {
             _slave.getRoots().getFile(_pathForUpload);
@@ -305,7 +305,7 @@ public class Transfer {
      * @throws TransferDeniedException If the connection we have is not the expected source
      */
     public TransferStatus sendFile(String path, char mode, long offset, String inetAddress)
-            throws IOException, TransferDeniedException {
+            throws IOException, TransferDeniedException, FileNotFoundException {
         try {
 
             _in = new FileInputStream(new PhysicalFile(_slave.getRoots().getFile(path)));
@@ -370,7 +370,7 @@ public class Transfer {
         return finalSSLNegotiation;
     }
 
-    private void accept(String[] cipherSuites, String[] sslProtocols, int bufferSize) throws IOException {
+    private void accept(String[] cipherSuites, String[] sslProtocols, int bufferSize) throws IOException, SocketException {
         _sock = _conn.connect(cipherSuites, sslProtocols, bufferSize);
         _sock.setTcpNoDelay(true);
         _sock.setSoTimeout(100); // 0.1 seconds
@@ -409,7 +409,7 @@ public class Transfer {
      *
      * @throws IOException If anything happens during the transfer on the socket
      */
-    private void transfer(Transfer associatedUpload) throws IOException {
+    private void transfer(Transfer associatedUpload) throws IOException, TransferFailedException {
         try {
             // Register when we started this transfer
             _started = System.currentTimeMillis();

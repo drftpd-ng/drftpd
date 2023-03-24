@@ -48,7 +48,7 @@ public class ZipscriptVFSDataFlac {
         _setDir = false;
     }
 
-    public FlacInfo getFlacInfo() throws IOException, NoAvailableSlaveException {
+    public FlacInfo getFlacInfo() throws IOException, NoAvailableSlaveException, FileNotFoundException {
         try {
             FlacInfo flacinfo = getFlacInfoFromInode(_inode);
             VorbisTag vorbistag = flacinfo.getVorbisTag();

@@ -44,7 +44,7 @@ import java.util.concurrent.TimeUnit;
 public class HttpUtils {
     public static final String _userAgent = "Mozilla/5.0 (Windows NT 10.0; WOW64; rv:40.0) Gecko/20100101 Firefox/40.0";
 
-    public static String retrieveHttpAsString(String url) throws HttpException, IOException {
+    public static String retrieveHttpAsString(String url) throws HttpException, IOException, org.apache.hc.core5.http.ParseException {
         RequestConfig requestConfig = RequestConfig.custom()
                 .setResponseTimeout(5000, TimeUnit.MILLISECONDS)
                 .setConnectTimeout(5000, TimeUnit.MILLISECONDS)

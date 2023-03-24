@@ -54,7 +54,7 @@ public class ZipscriptVFSDataZip {
         return (ZipscriptZipIssuer) GlobalContext.getGlobalContext().getSlaveManager().getProtocolCentral().getIssuerForClass(ZipscriptZipIssuer.class);
     }
 
-    public DizInfo getDizInfo() throws IOException, NoAvailableSlaveException {
+    public DizInfo getDizInfo() throws NoAvailableSlaveException, FileNotFoundException {
         try {
             return getDizInfoFromInode(_dir);
         } catch (KeyNotFoundException e1) {

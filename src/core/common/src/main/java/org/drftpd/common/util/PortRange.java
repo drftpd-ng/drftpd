@@ -60,7 +60,7 @@ public class PortRange {
         _bufferSize = bufferSize;
     }
 
-    private ServerSocket createServerSocket(int port, ServerSocketFactory ssf, InetAddress bindIP) throws IOException {
+    private ServerSocket createServerSocket(int port, ServerSocketFactory ssf, InetAddress bindIP) throws IOException, java.net.SocketException {
         ServerSocket ss = ssf.createServerSocket();
         if (_bufferSize > 0) {
             ss.setReceiveBufferSize(_bufferSize);

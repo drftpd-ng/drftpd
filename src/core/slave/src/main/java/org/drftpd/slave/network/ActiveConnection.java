@@ -54,7 +54,7 @@ public class ActiveConnection extends Connection {
         _useSSLClientHandshake = useSSLClientHandshake;
     }
 
-    public Socket connect(String[] cipherSuites, String[] sslProtocols, int bufferSize) throws IOException {
+    public Socket connect(String[] cipherSuites, String[] sslProtocols, int bufferSize) throws IOException, java.net.SocketException {
         logger.debug("Connecting to {}:{}", _addr.getAddress().getHostAddress(), _addr.getPort());
 
         if (_ctx != null) {

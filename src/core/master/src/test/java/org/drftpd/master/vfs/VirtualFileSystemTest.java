@@ -47,7 +47,7 @@ public class VirtualFileSystemTest {
     }
 
     @AfterAll
-    static void tearDown() throws Exception {
+    static void tearDown() throws FileNotFoundException, java.io.IOException {
         for (String file : vfs.getRoot().getInodeNames()) {
             vfs.getRoot().getInodeByName(file).delete();
         }
@@ -97,7 +97,7 @@ public class VirtualFileSystemTest {
     }
 
     @Test
-    public void testRename() throws Exception {
+    public void testRename() throws FileNotFoundException, FileExistsException {
         //vfs.getRoot().createDirectory("Test", "drftpd", "drftpd");
         VirtualFileSystemInode inode = vfs.getInodeByPath("/Test");
         ((VirtualFileSystemDirectory) inode).createFile("testme", "drftpd", "drftpd", "testSlave");

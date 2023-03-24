@@ -198,7 +198,7 @@ public class SiteBot implements ReplyConstants, Runnable {
      * @throws IrcException              if the server would not let us join it.
      * @throws NickAlreadyInUseException if our nick is already in use on the server.
      */
-    public final synchronized void connect() throws IOException, IrcException, NickAlreadyInUseException {
+    public final synchronized void connect() throws IOException, IrcException, NickAlreadyInUseException, java.net.SocketException {
 
         ServerConfig serverConfig = _config.getServer();
         _server = serverConfig.getHostName();

@@ -40,7 +40,7 @@ public class SSLGetContext {
 
     static SSLContext _context = null;
 
-    public static SSLContext getSSLContext() throws GeneralSecurityException, IOException {
+    public static SSLContext getSSLContext() throws IOException, java.io.FileNotFoundException, java.security.NoSuchAlgorithmException, java.security.KeyStoreException, java.security.cert.CertificateException, java.security.UnrecoverableKeyException, java.security.KeyManagementException {
         // Setup a new context if we do not have one already
         if (_context == null) {
             // Create a trust manager that does not validate certificate chains

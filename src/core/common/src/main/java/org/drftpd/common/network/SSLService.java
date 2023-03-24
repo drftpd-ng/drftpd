@@ -308,14 +308,14 @@ public class SSLService {
         }
 
         @Override
-        public Socket createSocket(String host, int port) throws IOException {
+        public Socket createSocket(String host, int port) throws IOException, java.net.UnknownHostException {
             SSLSocket sslSocket = (SSLSocket) _delegate.createSocket(host, port);
             configureSSLSocket(sslSocket);
             return sslSocket;
         }
 
         @Override
-        public Socket createSocket(String host, int port, InetAddress localHost, int localPort) throws IOException {
+        public Socket createSocket(String host, int port, InetAddress localHost, int localPort) throws IOException, java.net.UnknownHostException {
             SSLSocket sslSocket = (SSLSocket) _delegate.createSocket(host, port, localHost, localPort);
             configureSSLSocket(sslSocket);
             return sslSocket;

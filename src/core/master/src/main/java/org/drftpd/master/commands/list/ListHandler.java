@@ -254,7 +254,7 @@ public class ListHandler extends CommandInterface {
         }
     }
 
-    protected ListElementsContainer listElements(DirectoryHandle dir, Session session, String user, boolean slavenames) throws IOException {
+    protected ListElementsContainer listElements(DirectoryHandle dir, Session session, String user, boolean slavenames) throws FileNotFoundException {
         ListElementsContainer container = new ListElementsContainer(session, user, _cManager);
         ArrayList<InodeHandle> tempFileList = new ArrayList<>(dir.getInodeHandles(session.getUserNull(user)));
         ArrayList<InodeHandleInterface> listFiles = container.getElements();

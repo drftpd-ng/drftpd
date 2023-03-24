@@ -47,7 +47,7 @@ public class FlacParser {
         }
     }
 
-    public FlacInfo getFlacInfo() throws IOException {
+    public FlacInfo getFlacInfo() throws IOException, java.io.FileNotFoundException {
         FileInputStream in = null;
         FLACDecoder decoder = null;
         Metadata[] metadata = null;

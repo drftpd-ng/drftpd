@@ -35,7 +35,7 @@ public class SafeFileWriter extends Writer {
 
     private boolean failed = false;
 
-    public SafeFileWriter(File file) throws IOException {
+    public SafeFileWriter(File file) throws IOException, FileNotFoundException {
         _actualFile = file;
 
         if (!_actualFile.getAbsoluteFile().getParentFile().canWrite()) {

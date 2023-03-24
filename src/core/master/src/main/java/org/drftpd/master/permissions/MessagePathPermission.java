@@ -31,7 +31,7 @@ public class MessagePathPermission extends StringPathPermission {
     private final ArrayList<String> _message;
 
     public MessagePathPermission(String pattern, String messageFile,
-                                 Collection<String> users) throws IOException {
+                                 Collection<String> users) throws IOException, java.io.FileNotFoundException {
         super(pattern, users);
 
         _message = new ArrayList<>();

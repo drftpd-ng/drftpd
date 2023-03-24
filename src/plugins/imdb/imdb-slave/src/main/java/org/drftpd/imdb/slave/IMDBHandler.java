@@ -55,7 +55,7 @@ public class IMDBHandler extends AbstractHandler {
         }
     }
 
-    private IMDBInfo getIMDBFile(Slave slave, String path) throws IOException {
+    private IMDBInfo getIMDBFile(Slave slave, String path) throws IOException, FileNotFoundException {
         BufferedReader reader = null;
         File file = slave.getRoots().getFile(path);
         CRC32 checksum = new CRC32();

@@ -55,7 +55,7 @@ public class ZipscriptHandler extends AbstractHandler {
         }
     }
 
-    private SFVInfo getSFVFile(Slave slave, String path) throws IOException {
+    private SFVInfo getSFVFile(Slave slave, String path) throws IOException, FileNotFoundException {
         BufferedReader reader = null;
         CRC32 checksum;
         try {

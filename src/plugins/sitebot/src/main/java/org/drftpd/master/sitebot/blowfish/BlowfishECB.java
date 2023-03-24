@@ -66,7 +66,7 @@ public class BlowfishECB extends Blowfish {
         super(key, "Blowfish/ECB/NoPadding");
     }
 
-    public String encrypt(String textToEncrypt) throws Exception {
+    public String encrypt(String textToEncrypt) throws java.security.InvalidKeyException, javax.crypto.IllegalBlockSizeException, javax.crypto.BadPaddingException {
         // Mode cypher in encrypt mode
         Cipher cipher = initCipher();
         cipher.init(Cipher.ENCRYPT_MODE, getSecretKeySpec());
@@ -89,7 +89,7 @@ public class BlowfishECB extends Blowfish {
         return REncrypt;
     }
 
-    public String decrypt(String textToDecrypt) throws Exception {
+    public String decrypt(String textToDecrypt) throws UnsupportedEncodingException, java.security.InvalidKeyException, javax.crypto.IllegalBlockSizeException, javax.crypto.BadPaddingException {
         if (textToDecrypt.startsWith(ECB_STANDARD_PREFIX)) {
             textToDecrypt = textToDecrypt.substring(ECB_STANDARD_PREFIX.length());
         } else if (textToDecrypt.startsWith(ECB_MCPS_PREFIX)) {

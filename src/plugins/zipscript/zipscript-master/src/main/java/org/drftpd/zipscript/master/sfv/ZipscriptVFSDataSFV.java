@@ -45,7 +45,7 @@ public class ZipscriptVFSDataSFV {
         _dir = dir;
     }
 
-    public SFVInfo getSFVInfo() throws IOException, NoAvailableSlaveException, SlaveUnavailableException {
+    public SFVInfo getSFVInfo() throws IOException, NoAvailableSlaveException, SlaveUnavailableException, FileNotFoundException {
         try {
             SFVInfo sfvInfo = getSFVInfoFromInode(_dir);
             try {

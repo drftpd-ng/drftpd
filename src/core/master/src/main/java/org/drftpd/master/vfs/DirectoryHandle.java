@@ -494,7 +494,7 @@ public class DirectoryHandle extends InodeHandle implements DirectoryHandleInter
     }
 
     public void remerge(List<LightRemoteInode> files, RemoteSlave rslave, long lastModified)
-            throws IOException {
+            throws IOException, FileNotFoundException, FileExistsException {
         Iterator<LightRemoteInode> sourceIter = files.iterator();
         // source comes pre-sorted from the slave
         List<InodeHandle> destinationList = null;

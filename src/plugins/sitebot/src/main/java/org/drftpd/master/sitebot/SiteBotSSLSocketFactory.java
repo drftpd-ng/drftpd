@@ -66,12 +66,12 @@ public class SiteBotSSLSocketFactory extends SSLSocketFactory {
     }
 
     @Override
-    public Socket createSocket(String s, int i, InetAddress inaddr, int j) throws IOException {
+    public Socket createSocket(String s, int i, InetAddress inaddr, int j) throws IOException, java.net.UnknownHostException {
         return _factory.createSocket(s, i, inaddr, j);
     }
 
     @Override
-    public Socket createSocket(String s, int i) throws IOException {
+    public Socket createSocket(String s, int i) throws IOException, java.net.UnknownHostException {
         return _factory.createSocket(s, i);
     }
 

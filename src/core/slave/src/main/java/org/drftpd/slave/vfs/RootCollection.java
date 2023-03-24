@@ -51,7 +51,7 @@ public class RootCollection {
         _pool.allowCoreThreadTimeOut(true);
     }
 
-    private static void validateRoots(Collection<Root> roots) throws IOException {
+    private static void validateRoots(Collection<Root> roots) throws IOException, FileNotFoundException {
         File[] mountsArr = File.listRoots();
         ArrayList<File> mounts = new ArrayList<>(mountsArr.length);
 
@@ -204,7 +204,7 @@ public class RootCollection {
      *
      * @throws IOException
      */
-    public File getARootFileDir(String dir) throws IOException {
+    public File getARootFileDir(String dir) throws IOException, org.drftpd.common.io.PermissionDeniedException {
         Root bestRoot = _slave.getDiskSelection().getBestRoot(dir);
 
         // to avoid this error SlaveSelectionManager MUST work

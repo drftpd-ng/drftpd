@@ -151,7 +151,7 @@ public class TvMazeUtils {
         return env;
     }
 
-    public static TvMazeInfo createTvMazeInfo(JsonObject jObj) throws Exception {
+    public static TvMazeInfo createTvMazeInfo(JsonObject jObj) throws Exception, JsonSyntaxException {
         TvMazeInfo tvmazeInfo = new TvMazeInfo();
 
         if (jObj.get("id").isJsonPrimitive()) tvmazeInfo.setID(jObj.get("id").getAsInt());
@@ -283,7 +283,7 @@ public class TvMazeUtils {
         return episodes;
     }
 
-    private static JsonObject fetchEpisodeData(String epURL) throws Exception {
+    private static JsonObject fetchEpisodeData(String epURL) throws org.apache.hc.core5.http.HttpException, IOException, JsonSyntaxException {
         String data = HttpUtils.retrieveHttpAsString(epURL);
         JsonElement root = JsonParser.parseString(data);
         return root.getAsJsonObject();

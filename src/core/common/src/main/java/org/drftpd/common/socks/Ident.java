@@ -62,7 +62,7 @@ public class Ident {
      *
      * @param s Socket whose ownership on remote end should be obtained.
      */
-    public Ident(Socket s, int connectionTimeout) throws IOException {
+    public Ident(Socket s, int connectionTimeout) throws IOException, java.net.SocketException {
 
         if (connectionTimeout < 1) {
             // connectionTimeout needs to be positive, so we revert to our default

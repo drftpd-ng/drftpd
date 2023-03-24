@@ -43,7 +43,7 @@ public class SpeedTestCallable implements Callable<SpeedTestInfo> {
     }
 
     @Override
-    public SpeedTestInfo call() throws Exception {
+    public SpeedTestInfo call() throws ExecutionException {
         // Send speedtest request to slave
         SpeedTestInfo result;
         try {

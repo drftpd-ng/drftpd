@@ -73,7 +73,7 @@ public class BlowfishCBC extends Blowfish {
         super(key, "Blowfish/CBC/NoPadding");
     }
 
-    public String decrypt(String textToDecrypt) throws Exception {
+    public String decrypt(String textToDecrypt) throws java.security.InvalidKeyException, java.security.InvalidAlgorithmParameterException, javax.crypto.IllegalBlockSizeException, javax.crypto.BadPaddingException, java.io.UnsupportedEncodingException {
         if (textToDecrypt.startsWith(CBC_PREFIX)) {
             textToDecrypt = textToDecrypt.substring(CBC_PREFIX.length());
         } else {
@@ -104,7 +104,7 @@ public class BlowfishCBC extends Blowfish {
         return new String(lFinalDecoded, ENCODED_CHARSET);
     }
 
-    public String encrypt(String rawString) throws Exception {
+    public String encrypt(String rawString) throws java.security.InvalidKeyException, java.security.InvalidAlgorithmParameterException, javax.crypto.IllegalBlockSizeException, javax.crypto.BadPaddingException {
         //1- Correct the padding
         byte[] rawStringBytes = rawString.getBytes();
         byte[] lToDecrypt = rawStringBytes.length % 8 != 0 ? correctPadding(rawStringBytes) : rawStringBytes;

@@ -49,7 +49,7 @@ public class ZipscriptVFSDataMP3 {
         _setDir = false;
     }
 
-    public MP3Info getMP3Info() throws IOException, NoAvailableSlaveException {
+    public MP3Info getMP3Info() throws IOException, NoAvailableSlaveException, FileNotFoundException {
         try {
             MP3Info mp3info = getMP3InfoFromInode(_inode);
             ID3Tag id3 = mp3info.getID3Tag();

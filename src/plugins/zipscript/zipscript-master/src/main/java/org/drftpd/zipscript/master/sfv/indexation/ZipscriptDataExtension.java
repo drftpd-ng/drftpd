@@ -87,7 +87,7 @@ public class ZipscriptDataExtension implements IndexDataExtensionInterface {
     }
 
     private SFVStatus getSFVStatus(SFVInfo sfvInfo, DirectoryHandle dir)
-            throws IOException {
+            throws FileNotFoundException {
         int offline = 0;
         int present = 0;
         CaseInsensitiveTreeMap<String, Long> sfvEntries = sfvInfo.getEntries();
@@ -105,7 +105,7 @@ public class ZipscriptDataExtension implements IndexDataExtensionInterface {
     }
 
     private DizStatus getDizStatus(DizInfo dizInfo, DirectoryHandle dir)
-            throws IOException {
+            throws FileNotFoundException {
         int offline = 0;
         int present = 0;
         for (FileHandle file : dir.getFilesUnchecked()) {
