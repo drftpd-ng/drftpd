@@ -54,8 +54,9 @@ hideinwho      /hidden_path/*   *
 
 # Appends the message contained in the file to the
 #  text that is outputed during CWD.
+# Create the necessary file(s) into "config/themes/text".
 #msgpath      <path>   <filename>   <flag/=group/-user>
-#msgpath      /incoming/   ftp-data/incoming.txt
+#msgpath      /incoming/   incoming.txt
 
 # Choose who can connect and who can't.
 # allow_connections      * => everyone can connect.

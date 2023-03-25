@@ -52,7 +52,7 @@ public class DefaultConfigHandler extends ConfigHandler {
 
     public void handleMsgPath(String directive, StringTokenizer st) {
         String pattern = st.nextToken();
-        String messageFile = st.nextToken();
+        String messageFile = "config/themes/text/" + st.nextToken();
 
         MessagePathPermission perm = null;
         try {
