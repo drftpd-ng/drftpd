@@ -72,6 +72,8 @@ import java.util.zip.CheckedInputStream;
  */
 public class Slave extends SslConfigurationLoader {
 
+    public static final boolean isWindows = System.getProperty("os.name").startsWith("Windows");
+
     private static final String SETTING_PREFIX = "master.ssl.";
 
     private static final Logger logger = LogManager.getLogger(Slave.class);
@@ -533,8 +535,9 @@ public class Slave extends SslConfigurationLoader {
                         "renameTo(" + fromfile + ", " + tofile + ") failed to create destination folder");
             }
 
-            // TODO: We ignore case sensitivity here. Windows will spawn an error, Linux will find this fine
-            if (tofile.exists()) {
+            // !Windows == true on Linux/Unix/AIX...
+            // !Windows && equalsignore == true on Windows
+            if (tofile.exists() && !(isWindows && fromfile.getName().equalsIgnoreCase(toName))) {
                 throw new FileExistsException(
                         "cannot rename from " + fromfile + " to " + tofile + ", destination exists");
             }
