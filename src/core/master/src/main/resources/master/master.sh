@@ -17,7 +17,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-#####################################################
+############################################################################
 #
 # DrFTPD service example:
 #
@@ -45,19 +45,18 @@
 # [Install]
 # WantedBy=multi-user.target
 #
-#
-####################################################
+############################################################################
 #
 # systemctl daemon-reload --user
 # systemctl enable --user drftpd-master.service
 # To start the master: systemctl start --user drftpd-master.service
 # To stop the master: systemctl stop --user drftpd-master.service
 #
-#####################################################
+############################################################################
 
 CLASSPATH="lib/*:build/*"
 # Add JVM Options here however you see fit and please check if the max memory Xmx is good enough for your master.
-JVM_OPTS="-Xms3G -Xmx3G -XX:+UseZGC"
+JVM_OPTS="-Djdk.tls.acknowledgeCloseNotify=true -Xms3G -Xmx3G -XX:+UseZGC"
 OPTIONS="-Dlog4j.configurationFile=config/log4j2-master.xml"
 PROGRAM="org.drftpd.master.Master"
 

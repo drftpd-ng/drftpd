@@ -16,7 +16,7 @@ rem # along with DrFTPD; if not, write to the Free Software
 rem # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 rem #
 
-rem ###########################################################################################################################################################################
+rem ###############################################################################
 rem #
 rem # DrFTPD service example:
 rem #
@@ -26,11 +26,11 @@ rem # or
 rem #
 rem # TO DO
 rem #
-rem ###########################################################################################################################################################################
+rem ###############################################################################
 
 set CLASSPATH=lib/*;build/*
 rem Add JVM Options here however you see fit and please check if the max memory Xmx is good enough for your master
-set JVM_OPTS=-Xms3G -Xmx3G -XX:+UseZGC
+set JVM_OPTS=-Djdk.tls.acknowledgeCloseNotify=true -Xms3G -Xmx3G -XX:+UseZGC
 set OPTIONS=-Dlog4j.configurationFile=config/log4j2-master.xml
 set PROGRAM=org.drftpd.master.Master
 

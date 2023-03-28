@@ -17,45 +17,47 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-####################################################
-#
-# DrFTPD service example:
-#
-# Wrapper like: https://commons.apache.org/proper/commons-daemon/jsvc.html
-# 
-# or
-#
-# Put the below unit into: ~/.config/systemd/user/drftpd-slave.service
-#
-# [Unit]
-# Description=DrFTPD Slave
-# After=network.target
-# StartLimitIntervalSec=500
-# StartLimitBurst=5
-# #If disk is in fstab or systemd you can require them to be mounted before starting slave (optional)
-# #Requires=mnt-ftp1.mount mnt-ftp2.mount
-#
-# [Service]
-# Restart=on-failure
-# RestartSec=5s
-# Type=simple
-# UMask=007
-# WorkingDirectory=/home/slaveusername/slave
-# ExecStart=/home/slaveusername/slave/slave.sh
-#
-# [Install]
-# WantedBy=multi-user.target
-#
-####################################################
-# systemctl daemon-reload --user
-# systemctl enable --user drftpd-slave.service
-# To start the slave: systemctl start --user drftpd-slave.service
-# To stop the slave: systemctl stop --user drftpd-slave.service
-####################################################
+#######################################################################################################
+#                                                                                                      
+# DrFTPD service example:                                                                              
+#                                                                                                      
+# Wrapper like: https://commons.apache.org/proper/commons-daemon/jsvc.html                             
+#                                                                                                      
+# or                                                                                                   
+#                                                                                                      
+# Put the below unit into: ~/.config/systemd/user/drftpd-slave.service                                 
+#                                                                                                      
+# [Unit]                                                                                               
+# Description=DrFTPD Slave                                                                             
+# After=network.target                                                                                 
+# StartLimitIntervalSec=500                                                                            
+# StartLimitBurst=5                                                                                    
+# #If disk is in fstab or systemd you can require them to be mounted before starting slave (optional)  
+# #Requires=mnt-ftp1.mount mnt-ftp2.mount                                                              
+#                                                                                                      
+# [Service]                                                                                            
+# Restart=on-failure                                                                                   
+# RestartSec=5s                                                                                        
+# Type=simple                                                                                          
+# UMask=007                                                                                            
+# WorkingDirectory=/home/slaveusername/slave                                                           
+# ExecStart=/home/slaveusername/slave/slave.sh                                                         
+#                                                                                                      
+# [Install]                                                                                            
+# WantedBy=multi-user.target                                                                           
+#                                                                                                      
+#######################################################################################################
+#                                                                                                      
+# systemctl daemon-reload --user                                                                       
+# systemctl enable --user drftpd-slave.service                                                         
+# To start the slave: systemctl start --user drftpd-slave.service                                      
+# To stop the slave: systemctl stop --user drftpd-slave.service                                        
+#                                                                                                      
+#######################################################################################################
 
 CLASSPATH="lib/*:build/*"
 # Add JVM Options here however you see fit and please check if the max memory Xmx is good enough for your slave.
-JVM_OPTS="-Xms1G -Xmx1G -XX:+UseZGC"
+JVM_OPTS="-Djdk.tls.acknowledgeCloseNotify=true -Xms1G -Xmx1G -XX:+UseZGC"
 OPTIONS="-Dlog4j.configurationFile=config/log4j2-slave.xml"
 PROGRAM="org.drftpd.slave.Slave"
 
