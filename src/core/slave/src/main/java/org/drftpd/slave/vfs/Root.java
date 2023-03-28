@@ -78,6 +78,4 @@ public class Root {
         Root r = (Root) arg0;
         return r.getPath().equals(getPath());
     }
-
-
 }

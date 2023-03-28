@@ -41,7 +41,6 @@ import org.drftpd.slave.exceptions.FileExistsException;
 import org.drftpd.slave.network.AsyncResponseDiskStatus;
 import org.drftpd.slave.network.AsyncResponseTransferStatus;
 import org.drftpd.slave.network.Transfer;
-import org.drftpd.slave.protocol.QueuedOperation;
 import org.drftpd.slave.protocol.SlaveProtocolCentral;
 import org.drftpd.slave.vfs.Root;
 import org.drftpd.slave.vfs.RootCollection;
@@ -60,8 +59,6 @@ import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 
@@ -72,9 +69,9 @@ import java.util.zip.CheckedInputStream;
  */
 public class Slave extends SslConfigurationLoader {
 
-    public static final String VERSION = "DrFTPD 4.0.12-git";
-
     public static final boolean isWindows = System.getProperty("os.name").startsWith("Windows");
+
+    public static final String VERSION = "DrFTPD 4.0.12-git";
 
     private static final String SETTING_PREFIX = "master.ssl.";
 
@@ -521,13 +518,22 @@ public class Slave extends SslConfigurationLoader {
         }
     }
 
+    /**
+     * Rename a location on the (slave) local file system from A to B
+     * NOTE: master allows destination to exist and expects us to merge
+     * @param from The source location we need to rename from
+     * @param toDirPath The destination parent path to rename/move too
+     * @param toName The destination name under parent to rename/move too
+     * @throws IOException if any I/O related issue has arisen throw it
+     */
     public void rename(String from, String toDirPath, String toName) throws IOException {
-        for (Iterator<Root> iter = _roots.iterator(); iter.hasNext(); ) {
-            Root root = iter.next();
+        for (Iterator<Root> rootItems = _roots.iterator(); rootItems.hasNext(); ) {
+            Root root = rootItems.next();
 
             File fromfile = root.getFile(from);
 
             if (!fromfile.exists()) {
+                logger.debug("rename(), from ["+from+"] not found in root ["+root.getPath()+"], skipping");
                 continue;
             }
 
@@ -539,11 +545,22 @@ public class Slave extends SslConfigurationLoader {
                         "renameTo(" + fromfile + ", " + tofile + ") failed to create destination folder");
             }
 
-            // !Windows == true on Linux/Unix/AIX...
-            // !Windows && equalsignore == true on Windows
-            if (tofile.exists() && !(isWindows && fromfile.getName().equalsIgnoreCase(toName))) {
-                throw new FileExistsException(
-                        "cannot rename from " + fromfile + " to " + tofile + ", destination exists");
+            // Handle windows case insensitivity
+            if (isWindows) {
+                // We check full path as we can still move to a different path and case if needed - TODO: verify
+                if (fromfile.getPath().equalsIgnoreCase(tofile.getPath())) {
+                    logger.debug("rename(), found from ["+fromfile.getPath()+"] to match ["+tofile.getPath()+"]. " +
+                            "However we seem to have a case difference, ignoring");
+                    continue;
+                }
+            }
+
+            // Master allows destination to exist, just how should we handle collisions (ignoring for now)
+            if (tofile.exists()) {
+                logger.error("rename(), tofile ["+tofile.getPath()+"] exists (from: ["+fromfile.getPath()+"]. " +
+                        "This used to cause an I/O exception, however master assumes we can merge, " +
+                        "so silently not doing anything (for now) - ISSUE");
+                continue;
             }
 
             if (!fromfile.renameTo(tofile)) {
