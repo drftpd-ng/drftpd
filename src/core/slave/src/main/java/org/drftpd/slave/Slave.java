@@ -72,6 +72,8 @@ import java.util.zip.CheckedInputStream;
  */
 public class Slave extends SslConfigurationLoader {
 
+    public static final String VERSION = "DrFTPD 4.0.12-git";
+
     public static final boolean isWindows = System.getProperty("os.name").startsWith("Windows");
 
     private static final String SETTING_PREFIX = "master.ssl.";
@@ -249,7 +251,9 @@ public class Slave extends SslConfigurationLoader {
     }
 
     public static void boot() throws Exception {
-        System.out.println("DrFTPD Slave starting, further logging will be done through log4j");
+        System.out.println(VERSION + " Slave starting.");
+        System.out.println("https://github.com/drftpd-ng/drftpd");
+        System.out.println("Further logging will be done using (mostly) log4j, check logs/");
         Thread.currentThread().setName("Slave Main Thread");
 
         Properties p = ConfigLoader.loadConfig("slave.conf");
