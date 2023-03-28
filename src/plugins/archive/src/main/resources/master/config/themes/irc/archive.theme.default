@@ -1,5 +1,5 @@
-# @version $Id: ArchiveAnnouncer.irc.properties 2032 2010-02-17 12:15:19Z scitz0 $
-#----------------------------------------------------------------------------------
+###############################################################################
+#
 # Variables are:
 # ${type} = archive type
 # ${srcdir} = source dir of what's being archived
@@ -12,13 +12,18 @@
 # Difference between finish and finish.move is finish.move is called when 
 #    there is a different destination dir than src dir 
 #
-#----------------------------------------------------------------------------------
-archive.start=${color}15${bold}ARCHIVING:${bold}${coloroff} '${color}15${srcdir}/${rls}${coloroff}' (${color}15${files}${coloroff} File(s))
+###############################################################################
 
-archive.finish=${color}15${bold}ARCHIVED:${bold}${coloroff} '${color}15${srcdir}/${rls}${coloroff}' In ${color}15${time}${coloroff}
-archive.finish.move=${color}15${bold}ARCHIVED:${bold}${coloroff} '${color}15${rls}${coloroff}' From '${color}15${srcdir}${coloroff}' To '${color}15${destdir}${coloroff}' In ${color}15${time}${coloroff}
-
-archive.failed=${color}04${bold}ARCHIVED-FAILED:${bold}${coloroff} '${color}15${srcdir}/${rls}${coloroff}' Reason: '${color}15${reason}${coloroff}'
-
-archivequeuestats=Total Archive Actions in the Queue ${totaljobs} of which ${activejobs} are being executed
 archivequeuedetail=${uuid} - ${archivetypename} has ${jobs} jobs
+archivequeuestats=Total Archive Actions in the Queue ${totaljobs} of which ${activejobs} are being executed
+badarchivetype=ArchiveType ${archivetypename} was unable to be initialized - ${exception}
+baddir=Directory ${baddir} was unable to be found
+badslave=Unable to add ${slavename} to the slaveList
+fail=${exception}
+incompatible=ArchiveType ${archivetypename} is incompatible with this version of DrFTPD
+loadarchive=The Archive plugin must be loaded, use SITE LOADPLUGIN Archive
+success=Started ArchiveHandler for ${archivetypename} on ${dirname}
+archive.failed=${color}04${bold}ARCHIVED-FAILED:${bold}${coloroff} '${color}15${srcdir}/${rls}${coloroff}' Reason: '${color}15${reason}${coloroff}'
+archive.finish=${color}15${bold}ARCHIVED:${bold}${coloroff} '${color}15${srcdir}/${rls}${coloroff}' In ${color}15${time}${coloroff}
+archive.start=${color}15${bold}ARCHIVING:${bold}${coloroff} '${color}15${srcdir}/${rls}${coloroff}' (${color}15${files}${coloroff} File(s))
+archive.finish.move=${color}15${bold}ARCHIVED:${bold}${coloroff} '${color}15${rls}${coloroff}' From '${color}15${srcdir}${coloroff}' To '${color}15${destdir}${coloroff}' In ${color}15${time}${coloroff}
