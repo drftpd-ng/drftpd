@@ -239,7 +239,7 @@ public class Misc extends CommandInterface {
         return response;
     }
 
-    public CommandResponse doSITE_VERS(CommandRequest request) {
+    public CommandResponse doSITE_MASTERVERSION(CommandRequest request) {
         return new CommandResponse(200, GlobalContext.VERSION);
     }
 }
