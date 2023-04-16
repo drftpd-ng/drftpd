@@ -329,7 +329,6 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable<In
      * @throws FileNotFoundException if the source inode does not exist.
      */
     public void renameToUnchecked(InodeHandle toInode) throws FileExistsException, FileNotFoundException {
-        SlaveManager sm = getGlobalContext().getSlaveManager();
         if (toInode.exists() && toInode.isFile()) {
             /**
              * not relevant here, check is done in code below, maybe should refactor this slightly!
@@ -373,9 +372,10 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable<In
                         Set<String> slaves = ((VirtualFileSystemFile) inode).getSlaves();
                         for (String slaveName : slaves) {
                             try {
-                                sm.getRemoteSlave(slaveName).simpleRename(inode.getPath(), toInode.getPath(), inode.getName());
+                                getGlobalContext().getSlaveManager().getRemoteSlave(slaveName).simpleRename(inode.getPath(), toInode.getPath(), inode.getName());
                                 inode.rename(toInode.getPath() + "/" + inode.getName());
                             } catch (ObjectNotFoundException e) {
+                                // slave doesn't exist, no reason to tell it to rename this file
                             }
                         }
                     } else {
@@ -397,7 +397,7 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable<In
             Set<String> slaves = ((VirtualFileSystemFile) inode).getSlaves();
             for (String slaveName : slaves) {
                 try {
-                    sm.getRemoteSlave(slaveName).simpleRename(fromPath, toInode.getParent().getPath(), toInode.getName());
+                    getGlobalContext().getSlaveManager().getRemoteSlave(slaveName).simpleRename(fromPath, toInode.getParent().getPath(), toInode.getName());
                 } catch (ObjectNotFoundException e) {
                     // slave doesn't exist, no reason to tell it to rename this file
                 }
