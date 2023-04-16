@@ -558,6 +558,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 
     /**
      * Renames files/directories and waits for the response
+     * NOTE: We allow the destination to exist in VFS and expect the slave to 'merge' it
      */
     public void simpleRename(String from, String toDirPath, String toName) {
         String simplePath;

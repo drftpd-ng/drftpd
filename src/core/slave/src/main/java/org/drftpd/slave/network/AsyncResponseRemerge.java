@@ -36,15 +36,15 @@ public class AsyncResponseRemerge extends AsyncResponse {
 
     private final long _lastModified;
 
-    public AsyncResponseRemerge(String directoryPath,
-                                List<LightRemoteInode> inodes, long lastModified) {
+    private final List<String> _depthDirectories;
+
+    public AsyncResponseRemerge(String directoryPath, List<LightRemoteInode> inodes, long lastModified, List<String> depthDirectories) {
         super("Remerge");
         if (File.separatorChar == '\\') { // stupid win32 hack
             directoryPath = directoryPath.replaceAll("\\\\", "/");
         }
         if (directoryPath.indexOf('\\') != -1) {
-            throw new RuntimeException(
-                    "\\ is not an acceptable character in a directory path");
+            throw new RuntimeException("\\ is not an acceptable character in a directory path");
         }
         if (directoryPath.equals("")) {
             directoryPath = File.separator;
@@ -52,6 +52,7 @@ public class AsyncResponseRemerge extends AsyncResponse {
         _path = directoryPath;
         _inodes = inodes;
         _lastModified = lastModified;
+        _depthDirectories = depthDirectories;
     }
 
     public String getPath() {
@@ -65,6 +66,8 @@ public class AsyncResponseRemerge extends AsyncResponse {
     public long getLastModified() {
         return _lastModified;
     }
+
+    public List<String> getDepthDirectories() { return _depthDirectories; }
 
     public String toString() {
         return getClass().getName() + "[path=" + getPath() + "]";
