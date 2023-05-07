@@ -66,7 +66,7 @@ public class BasicHandler extends AbstractHandler {
     private static final Object remergeWaitObj = new Object();
     private static final Object mergeDepthWaitObj = new Object();
     private final ArrayList<String> mergeDepth = new ArrayList<>();
-    private final ArrayList<AsyncResponseRemerge> remergeResponses = new ArrayList<>();
+    private final ArrayList<RemergeItem> remergeResponses = new ArrayList<>();
 
     public BasicHandler(SlaveProtocolCentral central) {
         super(central);
@@ -277,12 +277,12 @@ public class BasicHandler extends AbstractHandler {
 
                 // Check if we can send stuff to the master
                 synchronized(remergeResponses) {
-                    Iterator<AsyncResponseRemerge> rrIterator = remergeResponses.iterator();
+                    Iterator<RemergeItem> rrIterator = remergeResponses.iterator();
                     while(rrIterator.hasNext()) {
-                        AsyncResponseRemerge arr = rrIterator.next();
+                        RemergeItem ri = rrIterator.next();
                         int foundDirectories = 0;
-                        synchronized (mergeDepth) {
-                            for (String path : arr.getDepthDirectories()) {
+                        synchronized (mergeDepthWaitObj) {
+                            for (String path : ri.getDepthDirectories()) {
                                 for (String dir : mergeDepth) {
                                     if (dir.startsWith(path)) {
                                         foundDirectories+=1;
@@ -290,11 +290,11 @@ public class BasicHandler extends AbstractHandler {
                                 }
                             }
                         }
-                        if (foundDirectories >= arr.getDepthDirectories().size()) {
-                            logger.debug("Sending {} to the master", arr.getPath());
+                        if (foundDirectories >= ri.getDepthDirectories().size()) {
+                            logger.debug("Sending {} to the master", ri.getAsyncResponseRemerge().getPath());
                             rrIterator.remove();
-                            sendResponse(arr);
-                            updateDepth(arr.getPath() + "/");
+                            sendResponse(ri.getAsyncResponseRemerge());
+                            updateDepth(ri.getAsyncResponseRemerge().getPath() + "/");
                         }
                     }
                 }
@@ -389,7 +389,7 @@ public class BasicHandler extends AbstractHandler {
         }
         logger.debug("updateDepth - Checking [{}]", path);
         boolean add = true;
-        synchronized (mergeDepth) {
+        synchronized (mergeDepthWaitObj) {
             for (String dir : mergeDepth) {
                 if (path.startsWith(dir)) {
                     dir = path;
@@ -498,7 +498,8 @@ public class BasicHandler extends AbstractHandler {
             }
             if (!_partialRemerge || inodesModified) {
                 synchronized(remergeResponses) {
-                    remergeResponses.add(new AsyncResponseRemerge(_path, fileList, pathLastModified, dirList));
+                    remergeResponses.add(new RemergeItem(dirList, new AsyncResponseRemerge(_path, fileList, pathLastModified)));
+                    // remergeResponses.add(new AsyncResponseRemerge(_path, fileList, pathLastModified, dirList));
                 }
             } else {
                 updateDepth(_path + "/");
@@ -518,6 +519,24 @@ public class BasicHandler extends AbstractHandler {
             t.setPriority(Thread.MIN_PRIORITY);
             t.setName(getIdleThreadName(t.getId()));
             return t;
+        }
+    }
+
+    static class RemergeItem {
+        private final List<String> _dd;
+        private final AsyncResponseRemerge _arr;
+
+        public RemergeItem(List<String> dd, AsyncResponseRemerge arr) {
+            _dd = dd;
+            _arr = arr;
+        }
+
+        public List<String> getDepthDirectories() {
+            return _dd;
+        }
+
+        public AsyncResponseRemerge getAsyncResponseRemerge() {
+            return _arr;
         }
     }
 }
