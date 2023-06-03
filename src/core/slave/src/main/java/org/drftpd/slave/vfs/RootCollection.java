@@ -170,6 +170,7 @@ public class RootCollection {
     public long getLastModifiedForPath(String path) {
         long lastModified = Long.MIN_VALUE;
         for (Root root : _roots) {
+            // This will return 0L if the path does not exist on given root
             long rootLastModified = root.getFile(path).lastModified();
             if (rootLastModified > lastModified) {
                 lastModified = rootLastModified;
