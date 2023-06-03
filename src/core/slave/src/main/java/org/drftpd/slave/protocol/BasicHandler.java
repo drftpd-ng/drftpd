@@ -268,11 +268,29 @@ public class BasicHandler extends AbstractHandler {
             logger.debug("Remerging started");
             _pool.execute(new HandleRemergeThread(getSlaveObject().getRoots(), basePath, partialRemerge, skipAgeCutoff));
 
+            // Keep track of last remerge message being send
+            long lastRemergeMessageSend = System.currentTimeMillis();
+            long reportIdle = 30000L;
+
             while (_pool.getActiveCount() > 0 || remergeResponses.size() > 0) {
                 // First check if we are still online, bail if not
                 if (!getSlaveObject().isOnline()) {
                     // Slave has shut down, no need to continue with remerge
                     return null;
+                }
+
+                // Handle being idle for a long period
+                if ((System.currentTimeMillis() - lastRemergeMessageSend) >= reportIdle) {
+                    logger.warn("We have pending items in our queue but have not send anything for 30 seconds");
+                    logger.warn("Queue: {}, Active threads: {}, Pending responses: {}",
+                            _pool.getQueue().size(), _pool.getActiveCount(), remergeResponses.size());
+                    synchronized (remergeResponses) {
+                        for (RemergeItem ri : remergeResponses) {
+                            logger.warn("Path [{}] in queue", ri.getAsyncResponseRemerge().getPath());
+                        }
+                    }
+                    // Double the report interval
+                    reportIdle *= 2;
                 }
 
                 // Check if we can send stuff to the master
@@ -294,6 +312,7 @@ public class BasicHandler extends AbstractHandler {
                             logger.debug("Sending {} to the master", ri.getAsyncResponseRemerge().getPath());
                             rrIterator.remove();
                             sendResponse(ri.getAsyncResponseRemerge());
+                            lastRemergeMessageSend = System.currentTimeMillis();
                             updateDepth(ri.getAsyncResponseRemerge().getPath() + "/");
                         }
                     }
@@ -425,8 +444,6 @@ public class BasicHandler extends AbstractHandler {
 
         public void run() {
             Thread currThread = Thread.currentThread();
-
-            // Remerge depth???
 
             // Sanity check
             if (!getSlaveObject().isOnline()) {
