@@ -222,7 +222,7 @@ public class EncryptedBeanUser extends BeanUser {
             }
         }
 
-        if (getEncryption() != _um.getPasscrypt()) {
+        if (result && (getEncryption() != _um.getPasscrypt())) {
             logger.debug("Converting Password To Current Encryption");
             setEncryption(0);
             this.setPassword(password);
