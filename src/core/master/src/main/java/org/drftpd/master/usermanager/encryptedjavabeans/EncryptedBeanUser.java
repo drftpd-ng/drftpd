@@ -96,7 +96,7 @@ public class EncryptedBeanUser extends BeanUser {
             this.setUploadedTimeForPeriod(i, user.getUploadedTimeForPeriod(i));
         }
 
-        this.setEncryption(0);
+        this.setEncryption(EncryptedBeanUserManager.PASSCRYPT_DEFAULT);
         this.setPassword(user.getPassword());
 
         this.commit();
@@ -190,31 +190,31 @@ public class EncryptedBeanUser extends BeanUser {
         password = password.trim();
 
         switch (getEncryption()) {
-            case 1 -> {
+            case EncryptedBeanUserManager.PASSCRYPT_MD2 -> {
                 encryptedPassword = Encrypt(password, "MD2");
                 if (encryptedPassword != null && encryptedPassword.equals(storedPassword)) result = true;
             }
-            case 2 -> {
+            case EncryptedBeanUserManager.PASSCRYPT_MD5 -> {
                 encryptedPassword = Encrypt(password, "MD5");
                 if (encryptedPassword != null && encryptedPassword.equals(storedPassword)) result = true;
             }
-            case 3 -> {
+            case EncryptedBeanUserManager.PASSCRYPT_SHA1 -> {
                 encryptedPassword = Encrypt(password, "SHA-1");
                 if (encryptedPassword != null && encryptedPassword.equals(storedPassword)) result = true;
             }
-            case 4 -> {
+            case EncryptedBeanUserManager.PASSCRYPT_SHA256 -> {
                 encryptedPassword = Encrypt(password, "SHA-256");
                 if (encryptedPassword != null && encryptedPassword.equals(storedPassword)) result = true;
             }
-            case 5 -> {
+            case EncryptedBeanUserManager.PASSCRYPT_SHA384 -> {
                 encryptedPassword = Encrypt(password, "SHA-384");
                 if (encryptedPassword != null && encryptedPassword.equals(storedPassword)) result = true;
             }
-            case 6 -> {
+            case EncryptedBeanUserManager.PASSCRYPT_SHA512 -> {
                 encryptedPassword = Encrypt(password, "SHA-512");
                 if (encryptedPassword != null && encryptedPassword.equals(storedPassword)) result = true;
             }
-            case 7 -> {
+            case EncryptedBeanUserManager.PASSCRYPT_BCRYPT -> {
                 if (BCrypt.checkpw(password, storedPassword)) result = true;
             }
             default -> {
@@ -224,7 +224,7 @@ public class EncryptedBeanUser extends BeanUser {
 
         if (result && (getEncryption() != _um.getPasscrypt())) {
             logger.debug("Converting Password To Current Encryption");
-            setEncryption(0);
+            setEncryption(EncryptedBeanUserManager.PASSCRYPT_DEFAULT);
             this.setPassword(password);
             super.commit();
         }
@@ -240,38 +240,35 @@ public class EncryptedBeanUser extends BeanUser {
     public void setPassword(String password) {
         if (((getEncryption() == 0) || (!password.equalsIgnoreCase(getPassword()))) && (_um != null)) {
             String pass;
-            switch (_um.getPasscrypt()) {
-                case 1 -> {
+            int encryptionMethod = _um.getPasscrypt();
+            switch (encryptionMethod) {
+                case EncryptedBeanUserManager.PASSCRYPT_NONE -> {
+                    pass = password;
+                }
+                case EncryptedBeanUserManager.PASSCRYPT_MD2 -> {
                     pass = Encrypt(password, "MD2");
-                    setEncryption(1);
                 }
-                case 2 -> {
+                case EncryptedBeanUserManager.PASSCRYPT_MD5 -> {
                     pass = Encrypt(password, "MD5");
-                    setEncryption(2);
                 }
-                case 3 -> {
+                case EncryptedBeanUserManager.PASSCRYPT_SHA1 -> {
                     pass = Encrypt(password, "SHA-1");
-                    setEncryption(3);
                 }
-                case 4 -> {
+                case EncryptedBeanUserManager.PASSCRYPT_SHA256 -> {
                     pass = Encrypt(password, "SHA-256");
-                    setEncryption(4);
                 }
-                case 5 -> {
+                case EncryptedBeanUserManager.PASSCRYPT_SHA384 -> {
                     pass = Encrypt(password, "SHA-384");
-                    setEncryption(5);
                 }
-                case 6 -> {
+                case EncryptedBeanUserManager.PASSCRYPT_SHA512 -> {
                     pass = Encrypt(password, "SHA-512");
-                    setEncryption(6);
                 }
-                case 7 -> {
+                case EncryptedBeanUserManager.PASSCRYPT_BCRYPT -> {
                     pass = BCrypt.hashpw(password, BCrypt.gensalt(_workload));
-                    setEncryption(7);
                 }
                 default -> {
                     pass = password;
-                    setEncryption(0);
+                    encryptionMethod = EncryptedBeanUserManager.PASSCRYPT_DEFAULT;
                 }
             }
 
@@ -279,6 +276,7 @@ public class EncryptedBeanUser extends BeanUser {
                 if (pass.length() < 2) {
                     logger.debug("Failed To Set Password, Length Too Short");
                 } else {
+                    setEncryption(encryptionMethod);
                     super.setPassword(pass);
                 }
             }

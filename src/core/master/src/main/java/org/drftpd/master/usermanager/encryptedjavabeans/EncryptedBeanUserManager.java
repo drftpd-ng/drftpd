@@ -35,7 +35,18 @@ public class EncryptedBeanUserManager extends BeanUserManager {
 
     protected static final Logger logger = LogManager.getLogger(EncryptedBeanUserManager.class);
 
-    private int _passcrypt = 0;
+    public static final int PASSCRYPT_NONE = 0;
+    public static final int PASSCRYPT_MD2 = 1;
+    public static final int PASSCRYPT_MD5 = 2;
+    public static final int PASSCRYPT_SHA1 = 3;
+    public static final int PASSCRYPT_SHA256 = 4;
+    public static final int PASSCRYPT_SHA384 = 5;
+    public static final int PASSCRYPT_SHA512 = 6;
+    public static final int PASSCRYPT_BCRYPT = 7;
+
+    public static final int PASSCRYPT_DEFAULT = PASSCRYPT_NONE;
+
+    private int _passcrypt = PASSCRYPT_DEFAULT;
 
     /*
      * Constructor to read encryption type, and subscribe to events
@@ -58,23 +69,23 @@ public class EncryptedBeanUserManager extends BeanUserManager {
         Properties cfg = ConfigLoader.loadConfig("encryptedbeanuser.conf");
         String passcrypt = cfg.getProperty("passcrypt");
         if (passcrypt == null) {
-            _passcrypt = 0;
+            _passcrypt = PASSCRYPT_DEFAULT;
         } else if (passcrypt.equalsIgnoreCase("md2")) {
-            _passcrypt = 1;
+            _passcrypt = PASSCRYPT_MD2;
         } else if (passcrypt.equalsIgnoreCase("md5")) {
-            _passcrypt = 2;
+            _passcrypt = PASSCRYPT_MD5;
         } else if (passcrypt.equalsIgnoreCase("sha-1")) {
-            _passcrypt = 3;
+            _passcrypt = PASSCRYPT_SHA1;
         } else if (passcrypt.equalsIgnoreCase("sha-256")) {
-            _passcrypt = 4;
+            _passcrypt = PASSCRYPT_SHA256;
         } else if (passcrypt.equalsIgnoreCase("sha-384")) {
-            _passcrypt = 5;
+            _passcrypt = PASSCRYPT_SHA384;
         } else if (passcrypt.equalsIgnoreCase("sha-512")) {
-            _passcrypt = 6;
+            _passcrypt = PASSCRYPT_SHA512;
         } else if (passcrypt.equalsIgnoreCase("bcrypt")) {
-            _passcrypt = 7;
+            _passcrypt = PASSCRYPT_BCRYPT;
         } else {
-            _passcrypt = 0;
+            _passcrypt = PASSCRYPT_DEFAULT;
         }
     }
 
