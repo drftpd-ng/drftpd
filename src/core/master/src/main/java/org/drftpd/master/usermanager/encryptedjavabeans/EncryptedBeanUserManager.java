@@ -43,6 +43,8 @@ public class EncryptedBeanUserManager extends BeanUserManager {
     public static final int PASSCRYPT_SHA384 = 5;
     public static final int PASSCRYPT_SHA512 = 6;
     public static final int PASSCRYPT_BCRYPT = 7;
+    public static final int PASSCRYPT_GLFTPD = 8;
+    public static final int PASSCRYPT_ARGON2 = 9;
 
     public static final int PASSCRYPT_DEFAULT = PASSCRYPT_NONE;
 
@@ -70,6 +72,9 @@ public class EncryptedBeanUserManager extends BeanUserManager {
         String passcrypt = cfg.getProperty("passcrypt");
         if (passcrypt == null) {
             _passcrypt = PASSCRYPT_DEFAULT;
+        }
+        else if (passcrypt.equalsIgnoreCase("none")) {
+            _passcrypt = PASSCRYPT_NONE;
         } else if (passcrypt.equalsIgnoreCase("md2")) {
             _passcrypt = PASSCRYPT_MD2;
         } else if (passcrypt.equalsIgnoreCase("md5")) {
@@ -84,6 +89,10 @@ public class EncryptedBeanUserManager extends BeanUserManager {
             _passcrypt = PASSCRYPT_SHA512;
         } else if (passcrypt.equalsIgnoreCase("bcrypt")) {
             _passcrypt = PASSCRYPT_BCRYPT;
+        } else if (passcrypt.equalsIgnoreCase("glftpd")) {
+            _passcrypt = PASSCRYPT_GLFTPD;
+        } else if (passcrypt.equalsIgnoreCase("argon2")) {
+            _passcrypt = PASSCRYPT_ARGON2;
         } else {
             _passcrypt = PASSCRYPT_DEFAULT;
         }
