@@ -40,12 +40,8 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+import java.sql.Array;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -68,6 +64,9 @@ public class BasicHandler extends AbstractHandler {
     private static final AtomicBoolean _remerging = new AtomicBoolean();
     private final ThreadPoolExecutor _pool;
     private static final Object remergeWaitObj = new Object();
+    private static final Object mergeDepthWaitObj = new Object();
+    private final ArrayList<String> mergeDepth = new ArrayList<>();
+    private final ArrayList<RemergeItem> remergeResponses = new ArrayList<>();
 
     public BasicHandler(SlaveProtocolCentral central) {
         super(central);
@@ -264,16 +263,64 @@ public class BasicHandler extends AbstractHandler {
             sendResponse(new AsyncResponseSiteBotMessage(remergeDecision));
 
             _remerging.set(true);
+            // Start with a empty list!
+            mergeDepth.clear();
             logger.debug("Remerging started");
             _pool.execute(new HandleRemergeThread(getSlaveObject().getRoots(), basePath, partialRemerge, skipAgeCutoff));
 
-            while (_pool.getActiveCount() > 0) {
+            // Keep track of last remerge message being send
+            long lastRemergeMessageSend = System.currentTimeMillis();
+            long reportIdle = 30000L;
+
+            while (_pool.getActiveCount() > 0 || remergeResponses.size() > 0) {
+                // First check if we are still online, bail if not
                 if (!getSlaveObject().isOnline()) {
                     // Slave has shut down, no need to continue with remerge
                     return null;
                 }
+
+                // Handle being idle for a long period
+                if ((System.currentTimeMillis() - lastRemergeMessageSend) >= reportIdle) {
+                    logger.warn("We have pending items in our queue but have not sent anything for 30 seconds");
+                    logger.warn("Queue: {}, Active threads: {}, Pending responses: {}",
+                            _pool.getQueue().size(), _pool.getActiveCount(), remergeResponses.size());
+                    synchronized (remergeResponses) {
+                        for (RemergeItem ri : remergeResponses) {
+                            logger.warn("Path [{}] in queue", ri.getAsyncResponseRemerge().getPath());
+                        }
+                    }
+                    // Double the report interval
+                    reportIdle *= 2;
+                }
+
+                // Check if we can send stuff to the master
+                synchronized(remergeResponses) {
+                    Iterator<RemergeItem> rrIterator = remergeResponses.iterator();
+                    while(rrIterator.hasNext()) {
+                        RemergeItem ri = rrIterator.next();
+                        int foundDirectories = 0;
+                        synchronized (mergeDepthWaitObj) {
+                            for (String path : ri.getDepthDirectories()) {
+                                for (String dir : mergeDepth) {
+                                    if (dir.startsWith(path)) {
+                                        foundDirectories+=1;
+                                    }
+                                }
+                            }
+                        }
+                        if (foundDirectories >= ri.getDepthDirectories().size()) {
+                            logger.debug("Sending {} to the master", ri.getAsyncResponseRemerge().getPath());
+                            rrIterator.remove();
+                            sendResponse(ri.getAsyncResponseRemerge());
+                            lastRemergeMessageSend = System.currentTimeMillis();
+                            updateDepth(ri.getAsyncResponseRemerge().getPath() + "/");
+                        }
+                    }
+                }
+
                 try {
-                    logger.debug("Queue: {}, Active threads: {}, sleeping", _pool.getQueue().size(), _pool.getActiveCount());
+                    logger.debug("Queue: {}, Active threads: {}, Pending responses: {}, sleeping 1 second",
+                            _pool.getQueue().size(), _pool.getActiveCount(), remergeResponses.size());
                     Thread.sleep(1000);
                 } catch (InterruptedException e) {
                     // Either we have been woken properly in which case we will exit the
@@ -283,6 +330,8 @@ public class BasicHandler extends AbstractHandler {
 
             logger.debug("Remerging done");
             _remerging.set(false);
+            // Make sure we do not hog memory and clear the list
+            mergeDepth.clear();
             return new AsyncResponse(ac.getIndex());
         } catch (Throwable e) {
             logger.error("Exception during merging", e);
@@ -352,6 +401,33 @@ public class BasicHandler extends AbstractHandler {
         return new AsyncResponseSSLCheck(ac.getIndex(), getSlaveObject().getSSLContext() != null);
     }
 
+    private void updateDepth(String path) {
+        // Hack to ensure we do not use double //...
+        if (path.equalsIgnoreCase("//")) {
+            path = "/";
+        }
+        logger.debug("updateDepth - Checking [{}]", path);
+        boolean add = true;
+        synchronized (mergeDepthWaitObj) {
+            for (String dir : mergeDepth) {
+                if (path.startsWith(dir)) {
+                    add = false;
+                    break;
+                }
+
+                if (dir.startsWith(path)) {
+                    add = false;
+                    break;
+                }
+            }
+
+            if (add) {
+                logger.debug("updateDepth - Adding [{}]", path);
+                mergeDepth.add(path);
+            }
+        }
+    }
+
     private class HandleRemergeThread implements Runnable {
         private RootCollection _rootCollection = null;
         private String _path = null;
@@ -367,8 +443,6 @@ public class BasicHandler extends AbstractHandler {
 
         public void run() {
             Thread currThread = Thread.currentThread();
-
-            // Remerge depth???
 
             // Sanity check
             if (!getSlaveObject().isOnline()) {
@@ -393,6 +467,7 @@ public class BasicHandler extends AbstractHandler {
             // Get a list of contents
             Set<String> inodes = _rootCollection.getLocalInodes(_path, getSlaveObject().concurrentRootIteration());
             List<LightRemoteInode> fileList = new ArrayList<LightRemoteInode>();
+            ArrayList<String> dirList = new ArrayList<>();
 
             boolean inodesModified = false;
             long pathLastModified = _rootCollection.getLastModifiedForPath(_path);
@@ -432,14 +507,18 @@ public class BasicHandler extends AbstractHandler {
                     inodesModified = true;
                 }
                 if (file.isDirectory()) {
+                    dirList.add(fullPath + "/");
                     _pool.execute(new HandleRemergeThread(_rootCollection, fullPath, _partialRemerge, _skipAgeCutoff));
                 }
                 fileList.add(new LightRemoteInode(file));
             }
             if (!_partialRemerge || inodesModified) {
-                logger.debug("Sending {} to the master", _path);
-                sendResponse(new AsyncResponseRemerge(_path, fileList, pathLastModified));
+                synchronized(remergeResponses) {
+                    remergeResponses.add(new RemergeItem(dirList, new AsyncResponseRemerge(_path, fileList, pathLastModified)));
+                    // remergeResponses.add(new AsyncResponseRemerge(_path, fileList, pathLastModified, dirList));
+                }
             } else {
+                updateDepth(_path + "/");
                 logger.debug("Skipping send of {} as no files changed since last merge", _path);
             }
             currThread.setName(RemergeThreadFactory.getIdleThreadName(currThread.getId()));
@@ -456,6 +535,24 @@ public class BasicHandler extends AbstractHandler {
             t.setPriority(Thread.MIN_PRIORITY);
             t.setName(getIdleThreadName(t.getId()));
             return t;
+        }
+    }
+
+    static class RemergeItem {
+        private final List<String> _dd;
+        private final AsyncResponseRemerge _arr;
+
+        public RemergeItem(List<String> dd, AsyncResponseRemerge arr) {
+            _dd = dd;
+            _arr = arr;
+        }
+
+        public List<String> getDepthDirectories() {
+            return _dd;
+        }
+
+        public AsyncResponseRemerge getAsyncResponseRemerge() {
+            return _arr;
         }
     }
 }

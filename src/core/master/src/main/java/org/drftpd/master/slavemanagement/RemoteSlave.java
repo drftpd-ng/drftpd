@@ -558,6 +558,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 
     /**
      * Renames files/directories and waits for the response
+     * NOTE: We allow the destination to exist in VFS and expect the slave to 'merge' it
      */
     public void simpleRename(String from, String toDirPath, String toName) {
         String simplePath;
@@ -782,17 +783,16 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
                     ar = readAsyncResponse();
                     _lastResponseReceived = System.currentTimeMillis();
                 } catch (SlaveUnavailableException e3) {
-                    // no reason for slave thread to be running if the slave is
-                    // not online
+                    // no reason for slave thread to be running if the slave is not online
+                    logger.warn("Slave unavailable catched while we were running, exiting");
                     return;
                 } catch (SocketTimeoutException e) {
                     // handled below
                 }
 
                 if ((getActualTimeout() > (System.currentTimeMillis() - _lastResponseReceived))
-                        && ((getActualTimeout() / 2 < (System
-                        .currentTimeMillis() - _lastResponseReceived)) || (getActualTimeout() / 2 < (System
-                        .currentTimeMillis() - _lastCommandSent)))) {
+                        && ((getActualTimeout() / 2 < (System.currentTimeMillis() - _lastResponseReceived))
+                        || (getActualTimeout() / 2 < (System.currentTimeMillis() - _lastCommandSent)))) {
                     if (pingIndex != null) {
                         logger.error("Ping lost, no response from slave, sending new ping to slave");
                         _indexPool.push(pingIndex);
@@ -831,24 +831,20 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
                     continue;
                 }
 
-                if (!(ar instanceof AsyncResponseRemerge)
-                        && !(ar instanceof AsyncResponseTransferStatus)) {
+                if (!(ar instanceof AsyncResponseRemerge) && !(ar instanceof AsyncResponseTransferStatus)) {
                     logger.debug("Received: {}", ar);
                 }
 
                 if (ar instanceof AsyncResponseTransfer) {
                     AsyncResponseTransfer art = (AsyncResponseTransfer) ar;
-                    addTransfer((art.getConnectInfo().getTransferIndex()),
-                            new RemoteTransfer(art.getConnectInfo(), this));
+                    addTransfer((art.getConnectInfo().getTransferIndex()), new RemoteTransfer(art.getConnectInfo(), this));
                 }
 
                 switch (ar.getIndex()) {
                     case "Remerge" -> putRemergeQueue(new RemergeMessage((AsyncResponseRemerge) ar, this));
-                    case "DiskStatus" -> _status = ((AsyncResponseDiskStatus) ar)
-                            .getDiskStatus();
+                    case "DiskStatus" -> _status = ((AsyncResponseDiskStatus) ar).getDiskStatus();
                     case "TransferStatus" -> {
-                        TransferStatus ats = ((AsyncResponseTransferStatus) ar)
-                                .getTransferStatus();
+                        TransferStatus ats = ((AsyncResponseTransferStatus) ar).getTransferStatus();
                         RemoteTransfer rt;
                         try {
                             rt = getTransfer(ats.getTransferIndex());
@@ -865,8 +861,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
                     }
                     default -> {
                         _indexWithCommands.put(ar.getIndex(), ar);
-                        if (pingIndex != null
-                                && pingIndex.equals(ar.getIndex())) {
+                        if (pingIndex != null && pingIndex.equals(ar.getIndex())) {
                             fetchResponse(pingIndex);
                             pingIndex = null;
                         } else if (ar.getIndex().equals("SiteBotMessage")) {
@@ -881,14 +876,13 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
                 }
             }
         } catch (Throwable e) {
+            logger.error("Slave thread threw an error, dropping slave offline", e);
             setOffline("error: " + e.getMessage());
-            logger.error("", e);
         }
     }
 
     private int getActualTimeout() {
-        return Integer.parseInt(getProperty("timeout", Integer
-                .toString(SlaveManager.actualTimeout)));
+        return Integer.parseInt(getProperty("timeout", Integer.toString(SlaveManager.actualTimeout)));
     }
 
     private void removeTransfer(TransferIndex transferIndex) {
@@ -1185,7 +1179,9 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
     }
 
     public void putRemergeQueue(RemergeMessage message) {
-        logger.debug("REMERGE: putting message into queue");
+        if (!message.isCompleted()) {
+            logger.debug("REMERGE: putting message into queue. (path: {})", message.getDirectory());
+        }
         try {
             _remergeQueue.put(message);
         } catch (InterruptedException e) {

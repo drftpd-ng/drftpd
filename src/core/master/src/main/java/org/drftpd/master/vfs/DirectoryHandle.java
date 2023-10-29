@@ -17,6 +17,8 @@
  */
 package org.drftpd.master.vfs;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.drftpd.common.io.PermissionDeniedException;
 import org.drftpd.common.slave.LightRemoteInode;
 import org.drftpd.master.GlobalContext;
@@ -34,6 +36,7 @@ import java.util.*;
  * @version $Id$
  */
 public class DirectoryHandle extends InodeHandle implements DirectoryHandleInterface {
+    protected static final Logger logger = LogManager.getLogger(DirectoryHandle.class.getName());
 
     public DirectoryHandle(String path) {
         super(path);
@@ -93,14 +96,12 @@ public class DirectoryHandle extends InodeHandle implements DirectoryHandleInter
     }
 
     @Override
-    public VirtualFileSystemDirectory getInode()
-            throws FileNotFoundException {
+    public VirtualFileSystemDirectory getInode() throws FileNotFoundException {
         VirtualFileSystemInode inode = super.getInode();
         if (inode instanceof VirtualFileSystemDirectory) {
             return (VirtualFileSystemDirectory) inode;
         }
-        throw new ClassCastException(
-                "DirectoryHandle object pointing to Inode:" + inode);
+        throw new ClassCastException("DirectoryHandle object pointing to Inode:" + inode);
     }
 
     /**
@@ -493,9 +494,9 @@ public class DirectoryHandle extends InodeHandle implements DirectoryHandleInter
         rslave.simpleDelete(getPath() + lrf.getPath());
     }
 
-    public void remerge(List<LightRemoteInode> files, RemoteSlave rslave, long lastModified)
-            throws IOException {
-        Iterator<LightRemoteInode> sourceIter = files.iterator();
+    public void remerge(List<LightRemoteInode> files, RemoteSlave remoteSlave, long lastModified) throws IOException {
+        logger.debug("[{}][{}] Handling remerge request", getPath(), remoteSlave.getName());
+        Iterator<LightRemoteInode> sourceItr = files.iterator();
         // source comes pre-sorted from the slave
         List<InodeHandle> destinationList = null;
         try {
@@ -510,30 +511,30 @@ public class DirectoryHandle extends InodeHandle implements DirectoryHandleInter
                 // not finding the dir and trying to create it.
             }
 
-            // lets try this again, this time, if it doesn't work, we throw an
+            // let's try this again, this time, if it doesn't work, we throw an
             // IOException up the chain
             destinationList = new ArrayList<>(getInodeHandlesUnchecked());
         }
         try {
             // Update the last modified on the dir, this allows us to get a correct
             // timestamp on higher level dirs created recursively when remerging a
-            // lower level. Additionally if the same dir exists on multiple slaves it
+            // lower level. Additionally, if the same dir exists on multiple slaves it
             // ensures we use the latest timestamp for the dir from all slaves in the
             // VFS
             compareAndUpdateLastModified(lastModified);
         } catch (FileNotFoundException e) {
-            // Not sure this should be able to happen, for now log an error
+            // Not sure if this should be able to happen, for now log an error
             logger.error("Directory not found but was there a second ago!", e);
         }
         destinationList.sort(VirtualFileSystem.INODE_HANDLE_CASE_INSENSITIVE_COMPARATOR);
-        Iterator<InodeHandle> destinationIter = destinationList.iterator();
+        Iterator<InodeHandle> destinationItr = destinationList.iterator();
         LightRemoteInode source = null;
         InodeHandle destination = null;
-        if (sourceIter.hasNext()) {
-            source = sourceIter.next();
+        if (sourceItr.hasNext()) {
+            source = sourceItr.next();
         }
-        if (destinationIter.hasNext()) {
-            destination = destinationIter.next();
+        if (destinationItr.hasNext()) {
+            destination = destinationItr.next();
         }
         while (true) {
 			/*logger.debug("loop, [destination="
@@ -541,19 +542,18 @@ public class DirectoryHandle extends InodeHandle implements DirectoryHandleInter
 					+ "][source="
 					+ (source == null ? "null" : source.getName()) + "]");
 			*/
-            // source & destination are set at the "next to process" one OR are
-            // null and at the end of that list
+            // source & destination are set at the "next to process" one OR are null and at the end of that list
 
-            // case1 : source list is out, remove slave from all remaining
-            // files/directories
+            // case1 : source list is out, remove slave from all remaining files/directories
             if (source == null) {
+                logger.debug("[{}][{}] hit case 1 (source == null)", getPath(), remoteSlave.getName());
                 while (destination != null) {
                     // can removeSlave()'s from all types of Inodes, no type
                     // checking needed
-                    destination.removeSlave(rslave);
+                    destination.removeSlave(remoteSlave);
 
-                    if (destinationIter.hasNext()) {
-                        destination = destinationIter.next();
+                    if (destinationItr.hasNext()) {
+                        destination = destinationItr.next();
                     } else {
                         destination = null;
                     }
@@ -564,39 +564,38 @@ public class DirectoryHandle extends InodeHandle implements DirectoryHandleInter
 
             // case2: destination list is out, add files
             if (destination == null) {
+                logger.debug("[{}][{}] hit case 2 (destination == null)", getPath(), remoteSlave.getName());
 
                 while (source != null) {
                     if (source.isFile()) {
                         try {
-                            createRemergedFile(source, rslave, false);
+                            createRemergedFile(source, remoteSlave, false);
                         } catch (FileExistsException e) {
                             // File created by another slaves thread since this thread
                             // listed the directory, just need to add this slave to the
                             // list for the file
                             try {
-                                getFileUnchecked(source.getName()).addSlave(rslave);
+                                getFileUnchecked(source.getName()).addSlave(remoteSlave);
                             } catch (ObjectNotValidException e1) {
-                                // File has collided with a dir/link in VFS, create this
-                                // as a collision
+                                // File has collided with a dir/link in VFS, create this as a collision
                                 if (collisionhandle()) {
-                                    collisionHandler(source, rslave);
+                                    collisionHandler(source, remoteSlave);
                                 } else {
                                     try {
-                                        createRemergedFile(source, rslave, true);
-                                    } catch (FileExistsException e2) {
+                                        createRemergedFile(source, remoteSlave, true);
+                                    } catch (FileExistsException ignored) {
                                     }
                                     continue;
                                 }
                             }
                         }
                     } else {
-                        throw new IOException(
-                                source.getName()
-                                        + " from slave " + rslave.getName() +
-                                        " isDirectory() -- this shouldn't happen, this directory should already be created through a previous remerge process");
+                        throw new IOException("[" + getPath() + "][" + remoteSlave.getName() + "] case 2 - " +
+                                "source " + source.getName() + " is not a file -- this shouldn't happen. " +
+                                "This source should already be created through a previous remerge process");
                     }
-                    if (sourceIter.hasNext()) {
-                        source = sourceIter.next();
+                    if (sourceItr.hasNext()) {
+                        source = sourceItr.next();
                     } else {
                         source = null;
                     }
@@ -607,51 +606,52 @@ public class DirectoryHandle extends InodeHandle implements DirectoryHandleInter
 
             // both source and destination are non-null
             // we don't know which one is first alphabetically
-            int compare = source.getName().compareToIgnoreCase(
-                    destination.getName());
+            int compare = source.getName().compareToIgnoreCase(destination.getName());
             // compare is < 0, source comes before destination
             // compare is > 0, source comes after destination
             // compare is == 0, they have the same name
+
+            logger.debug("[{}][{}] hit case 3 (source and destination are not null). Compare: {}", getPath(),
+                    remoteSlave.getName(), compare);
 
             if (compare < 0) {
                 if (source.isFile()) {
                     // add the file
                     try {
-                        createRemergedFile(source, rslave, false);
+                        createRemergedFile(source, remoteSlave, false);
                     } catch (FileExistsException e) {
                         // File created by another slaves thread since this thread
                         // listed the directory, just need to add this slave to the
                         // list for the file
                         try {
-                            getFileUnchecked(source.getName()).addSlave(rslave);
+                            getFileUnchecked(source.getName()).addSlave(remoteSlave);
                         } catch (ObjectNotValidException e1) {
                             // File has collided with a dir/link in VFS, create this
                             // as a collision
                             if (collisionhandle()) {
-                                collisionHandler(source, rslave);
+                                collisionHandler(source, remoteSlave);
                             } else {
-                                createRemergedFile(source, rslave, true);
+                                createRemergedFile(source, remoteSlave, true);
                             }
                         }
                     }
                 } else {
-                    throw new IOException(
-                            source.getName()
-                                    + " from slave " + rslave.getName() +
-                                    " isDirectory() -- this shouldn't happen, this directory should already be created through a previous remerge process");
+                    throw new IOException("[" + getPath() + "][" + remoteSlave.getName() + "] case 3 - " +
+                            "source " + source.getName() + " is not a file -- this shouldn't happen. " +
+                            "This source should already be created through a previous remerge process");
                 }
                 // advance one runner
-                if (sourceIter.hasNext()) {
-                    source = sourceIter.next();
+                if (sourceItr.hasNext()) {
+                    source = sourceItr.next();
                 } else {
                     source = null;
                 }
             } else if (compare > 0) {
                 // remove the slave
-                destination.removeSlave(rslave);
+                destination.removeSlave(remoteSlave);
                 // advance one runner
-                if (destinationIter.hasNext()) {
-                    destination = destinationIter.next();
+                if (destinationItr.hasNext()) {
+                    destination = destinationItr.next();
                 } else {
                     destination = null;
                 }
@@ -660,17 +660,17 @@ public class DirectoryHandle extends InodeHandle implements DirectoryHandleInter
                     // this is bad, links don't exist on slaves
                     // name collision
                     if (source.isFile()) {
-                        logger.warn("In remerging {}, a file on the slave ({}" + VirtualFileSystem.separator + "{}) collided with a link on the master", rslave.getName(), getPath(), source.getName());
+                        logger.warn("In remerging {}, a file on the slave ({}" + VirtualFileSystem.separator + "{}) collided with a link on the master", remoteSlave.getName(), getPath(), source.getName());
                         // set crc now?
                         if (collisionhandle()) {
-                            collisionHandler(source, rslave);
+                            collisionHandler(source, remoteSlave);
                         } else {
-                            createRemergedFile(source, rslave, true);
+                            createRemergedFile(source, remoteSlave, true);
                         }
                     } else { // source.isDirectory()
                         // Nothing to worry about
                         // Just log it for your info and move on
-                        logger.warn("In remerging {}, a directory on the slave ({}" + VirtualFileSystem.separator + "{}) collided with a link on the master", rslave.getName(), getPath(), source.getName());
+                        logger.warn("In remerging {}, a directory on the slave ({}" + VirtualFileSystem.separator + "{}) collided with a link on the master", remoteSlave.getName(), getPath(), source.getName());
                     }
                 } else if (source.isFile() && destination.isFile()) {
                     // both files
@@ -682,32 +682,32 @@ public class DirectoryHandle extends InodeHandle implements DirectoryHandleInter
                         destinationCRC = 0L;
                     }
 
-                    if (rslave.remergeChecksums() && destinationCRC == 0L && source.length() != 0L
+                    if (remoteSlave.remergeChecksums() && destinationCRC == 0L && source.length() != 0L
                             && source.length() == destinationFile.getSize()) {
                         // source file and dest file same size but no crc found in vfs, get crc from slave
-                        rslave.putCRCQueue(destinationFile);
+                        remoteSlave.putCRCQueue(destinationFile);
                     }
 
                     if (source.length() != destinationFile.getSize()) {
                         // handle collision
                         Set<RemoteSlave> rslaves = destinationFile.getSlaves();
-                        if (rslaves.contains(rslave) && rslaves.size() == 1) {
+                        if (rslaves.contains(remoteSlave) && rslaves.size() == 1) {
                             // size of the file has changed, but since this is the only slave with the file, just change the size
                             destinationFile.setSize(source.length());
                         } else {
-                            if (rslaves.contains(rslave)) {
+                            if (rslaves.contains(remoteSlave)) {
                                 // the master thought the slave had the file, it's not the same size anymore, remove it
-                                destinationFile.removeSlave(rslave);
+                                destinationFile.removeSlave(remoteSlave);
                             }
-                            logger.warn("In remerging {}, a file on the slave ({}" + VirtualFileSystem.separator + "{}) collided with a file on the master", rslave.getName(), getPath(), source.getName());
+                            logger.warn("In remerging {}, a file on the slave ({}" + VirtualFileSystem.separator + "{}) collided with a file on the master", remoteSlave.getName(), getPath(), source.getName());
                             if (collisionhandle()) {
-                                collisionHandler(source, rslave);
+                                collisionHandler(source, remoteSlave);
                             } else {
-                                createRemergedFile(source, rslave, true);
+                                createRemergedFile(source, remoteSlave, true);
                             }
                         }
                     } else {
-                        destinationFile.addSlave(rslave);
+                        destinationFile.addSlave(remoteSlave);
                     }
                 } else if (source.isDirectory() && destination.isDirectory()) {
                     // this is good, do nothing other than take up this case
@@ -717,26 +717,26 @@ public class DirectoryHandle extends InodeHandle implements DirectoryHandleInter
                     if (source.isDirectory()) { // & destination.isFile()
                         // we don't care about directories on the slaves, let's
                         // just skip it
-                        logger.warn("In remerging {}, a directory on the slave ({}" + VirtualFileSystem.separator + "{}) collided with a file on the master", rslave.getName(), getPath(), source.getName());
+                        logger.warn("In remerging {}, a directory on the slave ({}" + VirtualFileSystem.separator + "{}) collided with a file on the master", remoteSlave.getName(), getPath(), source.getName());
                     } else {
                         // source.isFile() && destination.isDirectory()
                         // handle collision
                         if (collisionhandle()) {
-                            collisionHandler(source, rslave);
+                            collisionHandler(source, remoteSlave);
                         } else {
-                            createRemergedFile(source, rslave, true);
+                            createRemergedFile(source, remoteSlave, true);
                         }
                         // set crc now?
                     }
                 }
                 // advance both runners, they were equal
-                if (destinationIter.hasNext()) {
-                    destination = destinationIter.next();
+                if (destinationItr.hasNext()) {
+                    destination = destinationItr.next();
                 } else {
                     destination = null;
                 }
-                if (sourceIter.hasNext()) {
-                    source = sourceIter.next();
+                if (sourceItr.hasNext()) {
+                    source = sourceItr.next();
                 } else {
                     source = null;
                 }

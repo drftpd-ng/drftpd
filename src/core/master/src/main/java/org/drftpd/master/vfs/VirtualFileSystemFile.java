@@ -44,8 +44,10 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
 
     private long _size;
 
+    private static final Object _slavesLock = new Object();
+
     public VirtualFileSystemFile(String username, String group, long size, String initialSlave) {
-        this(username, group, size, new HashSet<>(Arrays.asList(initialSlave)));
+        this(username, group, size, new HashSet<>(Collections.singletonList(initialSlave)));
     }
 
     public VirtualFileSystemFile(String username, String group, long size,
@@ -59,13 +61,15 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
      * @return a set of which slaves have this file.
      */
     public Set<String> getSlaves() {
-        synchronized (_slaves) {
+        synchronized (_slavesLock) {
             return new HashSet<>(_slaves);
         }
     }
 
     public void setSlaves(Set<String> slaves) {
-        _slaves = slaves;
+        synchronized (_slavesLock) {
+            _slaves = slaves;
+        }
     }
 
     @Override
@@ -83,11 +87,11 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
     /**
      * Add a slave to the list of slaves that contain this file.
      *
-     * @param rslave
+     * @param rslave The slave name to be added
      */
     public void addSlave(String rslave) {
         boolean added;
-        synchronized (_slaves) {
+        synchronized (_slavesLock) {
             added = _slaves.add(rslave);
         }
         if (added) {
@@ -108,7 +112,7 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
     /**
      * Changes the CRC32.
      *
-     * @param checksum
+     * @param checksum the checksum to be set
      */
     public void setChecksum(long checksum) {
         getKeyedMap().setObject(CRC, checksum);
@@ -125,7 +129,7 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
     /**
      * Changes the xfertime of the File.
      *
-     * @param xfertime
+     * @param xfertime the transfer time for this file
      */
     public void setXfertime(long xfertime) {
         getKeyedMap().setObject(XFERTIME, xfertime);
@@ -135,12 +139,12 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
     /**
      * Remove the slave from slave list.
      *
-     * @param rslave
+     * @param rslave The slave name to be removed
      */
     public void removeSlave(String rslave) {
         boolean isEmpty;
         boolean removed;
-        synchronized (_slaves) {
+        synchronized (_slavesLock) {
             removed = _slaves.remove(rslave);
             isEmpty = _slaves.isEmpty();
         }
@@ -151,7 +155,6 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
             delete();
         } else if (removed) {
             commit();
-
             getVFS().notifySlavesChanged(this, _slaves);
         }
     }
@@ -219,7 +222,7 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
     }
 
     public boolean isAvailable() {
-        synchronized (_slaves) {
+        synchronized (_slavesLock) {
             for (String slave : _slaves) {
                 try {
                     if (GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(slave).isAvailable()) {
@@ -313,7 +316,7 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
     /**
      * Modifies the size of the File.
      *
-     * @param size
+     * @param size The new size for this file
      */
     @Override
     public synchronized void setSize(long size) {
@@ -321,13 +324,11 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
             if (size < 0) {
                 throw new IllegalArgumentException("File size cannot be < 0");
             }
-            if (getParent() == null) {
-                // we haven't been assigned a parent yet
-                _size = size;
-            } else {
+            // Update parent if we have been assigned a parent
+            if (getParent() != null) {
                 getParent().addSize(size - _size); // adjust parent by difference.
-                _size = size;
             }
+            _size = size;
             if (isInodeLoaded()) {
                 commit();
                 getVFS().notifySizeChanged(this, _size);
@@ -337,7 +338,7 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
 
     protected Map<String, AtomicInteger> getSlaveRefCounts() {
         Map<String, AtomicInteger> slaveRefCounts = new TreeMap<>();
-        synchronized (_slaves) {
+        synchronized (_slavesLock) {
             for (String slave : _slaves) {
                 slaveRefCounts.put(slave, new AtomicInteger(1));
             }
