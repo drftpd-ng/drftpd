@@ -93,7 +93,7 @@ public class CommitManager {
      * Adds a {@link Commitable} object to the commit queue.
      * If the object is already present on the queue, this call is just ignored.
      *
-     * @param object
+     * @param object The Commitable object
      */
     public void add(Commitable object) {
         if (contains(object)) {
@@ -104,9 +104,21 @@ public class CommitManager {
         _queueSize.incrementAndGet();
     }
 
+    /**
+     * Writes the requested {@link Commitable} object immediately and bypasses the queue
+     *
+     * @param object The Commitable object
+     */
+    public void writeImmediately(Commitable object) {
+        ClassLoader prevCL = Thread.currentThread().getContextClassLoader();
+        writeCommitable(object);
+        Thread.currentThread().setContextClassLoader(prevCL);
+    }
 
     /**
-     * @param object
+     * Remove a {@link Commitable} object from the queue
+     *
+     * @param object The Commitable object
      * @return true if the object was removed from the CommitQueue, false otherwise.
      */
     public boolean remove(Commitable object) {
@@ -128,6 +140,7 @@ public class CommitManager {
      */
     public boolean contains(Commitable object) {
         if (object == null) return false;
+
         for (CommitableWrapper cw : _commitQueue) {
             if (cw != null && cw.equals(object)) {
                 return true;

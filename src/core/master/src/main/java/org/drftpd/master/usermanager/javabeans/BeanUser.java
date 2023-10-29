@@ -72,7 +72,7 @@ public class BeanUser extends AbstractUser {
     }
 
     public void commit() {
-        CommitManager.getCommitManager().add(this);
+        CommitManager.getCommitManager().writeImmediately(this);
     }
 
     public void purge() {
