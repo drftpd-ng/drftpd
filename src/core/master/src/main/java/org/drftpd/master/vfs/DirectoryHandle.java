@@ -17,6 +17,8 @@
  */
 package org.drftpd.master.vfs;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.drftpd.common.io.PermissionDeniedException;
 import org.drftpd.common.slave.LightRemoteInode;
 import org.drftpd.master.GlobalContext;
@@ -34,6 +36,7 @@ import java.util.*;
  * @version $Id$
  */
 public class DirectoryHandle extends InodeHandle implements DirectoryHandleInterface {
+    protected static final Logger logger = LogManager.getLogger(DirectoryHandle.class.getName());
 
     public DirectoryHandle(String path) {
         super(path);

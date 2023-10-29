@@ -17,6 +17,8 @@
  */
 package org.drftpd.master.vfs;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.master.usermanager.User;
 
@@ -27,6 +29,7 @@ import java.io.FileNotFoundException;
  * @version $Id$
  */
 public class LinkHandle extends InodeHandle implements LinkHandleInterface {
+    protected static final Logger logger = LogManager.getLogger(LinkHandle.class.getName());
 
     public LinkHandle(String path) {
         super(path);
