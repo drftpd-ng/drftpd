@@ -66,7 +66,7 @@ public class BeanGroup extends AbstractGroup {
     }
 
     public void commit() {
-        CommitManager.getCommitManager().add(this);
+        CommitManager.getCommitManager().writeImmediately(this);
     }
 
     public void purge() {

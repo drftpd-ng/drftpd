@@ -207,7 +207,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
     }
 
     public void commit() {
-        CommitManager.getCommitManager().add(this);
+        CommitManager.getCommitManager().writeImmediately(this);
     }
 
     public final int compareTo(RemoteSlave o) {
