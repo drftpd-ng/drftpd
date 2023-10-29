@@ -24,6 +24,7 @@ import org.drftpd.master.commands.*;
 import org.drftpd.master.network.Session;
 import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.master.util.Time;
+import org.drftpd.master.vfs.CommitManager;
 import org.drftpd.slave.exceptions.ObjectNotFoundException;
 
 import java.lang.management.*;
@@ -38,12 +39,10 @@ public class ServerStatus extends CommandInterface {
 
     private ResourceBundle _bundle;
 
-
     public void initialize(String method, String pluginName, StandardCommandManager cManager) {
         super.initialize(method, pluginName, cManager);
         StatusSubscriber.checkSubscription();
         _bundle = cManager.getResourceBundle();
-
     }
 
     public CommandResponse doMasterUptime(CommandRequest request) {
@@ -112,18 +111,15 @@ public class ServerStatus extends CommandInterface {
             throw new ImproperUsageException();
         }
 
-        String args = request.getArgument().replaceAll(",", " ");
+        String args = request.getArgument().toLowerCase().replaceAll(",", " ");
         StringTokenizer st = new StringTokenizer(args);
-        boolean isAll = false;
+        boolean isAll = args.contains("all");
 
-        if (args.contains("all")) {
-            // avoid output repetition
-            // ex: gc, vm, all
-            isAll = true;
-        }
+        // avoid output repetition
+        // ex: gc, vm, all
 
         while (st.hasMoreTokens()) {
-            String arg = st.nextToken().toLowerCase().trim();
+            String arg = st.nextToken().trim();
             if (arg.equals("all")) {
                 // avoid output repetition
                 isAll = true;
@@ -192,6 +188,14 @@ public class ServerStatus extends CommandInterface {
                 response.addComment(session.jprintf(_bundle, env, "status.gcinfo"));
             }
 
+            if (arg.equals("cm") || isAll) {
+                CommitManager cm = CommitManager.getCommitManager();
+                env.put("cm.queue", cm.getQueueSize());
+                env.put("cm.state", cm.getThreadState());
+
+                response.addComment(session.jprintf(_bundle, env, "status.cminfo"));
+            }
+
             if (isAll) {
                 // no need to output repeated
                 break;
@@ -201,4 +205,3 @@ public class ServerStatus extends CommandInterface {
         return response;
     }
 } 
-

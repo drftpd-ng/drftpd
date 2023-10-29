@@ -9,3 +9,4 @@ status.slave.offline=${slave}: OFFLINE.
 status.slave.uptime=${slave} has been online for ${uptime}.
 status.threads=Threads running: ${current.threads} / Peak thread count: ${max.threads} / Amount of created threads since startup: ${total.threads}.
 status.vminfo=JVM: ${vm.name} vers. ${vm.version} by ${vm.vendor}.
+status.cminfo=CM: Queue size: ${cm.queue}. Thread state: ${cm.state}.
