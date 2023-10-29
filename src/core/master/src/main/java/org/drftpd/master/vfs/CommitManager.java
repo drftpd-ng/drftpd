@@ -31,8 +31,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * This classes handle all XML commits.
- * The main purpose of having this is to avoiding serializing the same object tons of times,
- * even if it data was not changed.
+ * The main purpose of having this is to avoid serializing the same object tons of times,
+ * even if its data was not changed.
  *
  * @author zubov
  * @version $Id$
@@ -80,6 +80,13 @@ public class CommitManager {
         _isStarted = true;
         _commitThread = new Thread(new CommitHandler());
         _commitThread.start();
+    }
+
+    /**
+     * Get the state of the internal thread
+     */
+    public Thread.State getThreadState() {
+        return _commitThread.getState();
     }
 
     /**

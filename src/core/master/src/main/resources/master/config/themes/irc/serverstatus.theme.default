@@ -9,3 +9,4 @@ status.slave.offline=${color}15${bold}${slave}${coloroff}: ${color}4${bold}OFFLI
 status.slave.uptime=${color}15${bold}UPTIME${bold}${coloroff}: ${bold}${slave}${bold} has been online for ${uptime}.
 status.threads=${color}15${bold}THREADS${coloroff}: ${bold}${current.threads}${bold} running (peak: ${bold}${max.threads}${bold}) / Created threads since the startup: ${bold}${total.threads}${bold}.
 status.vminfo=${color}15${bold}JVM${coloroff}: ${bold}${vm.name}${bold} vers. ${bold}${vm.version}${bold} by ${bold}${vm.vendor}.
+status.cminfo=${color}15${bold}CM${coloroff}: Queue size: ${bold}${cm.queue}${bold}. Thread state: ${bold}${cm.state}${bold}.
