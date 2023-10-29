@@ -281,7 +281,7 @@ public class BasicHandler extends AbstractHandler {
 
                 // Handle being idle for a long period
                 if ((System.currentTimeMillis() - lastRemergeMessageSend) >= reportIdle) {
-                    logger.warn("We have pending items in our queue but have not send anything for 30 seconds");
+                    logger.warn("We have pending items in our queue but have not sent anything for 30 seconds");
                     logger.warn("Queue: {}, Active threads: {}, Pending responses: {}",
                             _pool.getQueue().size(), _pool.getActiveCount(), remergeResponses.size());
                     synchronized (remergeResponses) {
@@ -411,7 +411,6 @@ public class BasicHandler extends AbstractHandler {
         synchronized (mergeDepthWaitObj) {
             for (String dir : mergeDepth) {
                 if (path.startsWith(dir)) {
-                    dir = path;
                     add = false;
                     break;
                 }
