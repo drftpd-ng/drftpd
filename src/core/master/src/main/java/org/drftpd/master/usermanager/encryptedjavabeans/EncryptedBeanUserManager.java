@@ -48,7 +48,7 @@ public class EncryptedBeanUserManager extends BeanUserManager {
 
     public static final int PASSCRYPT_DEFAULT = PASSCRYPT_NONE;
 
-    private int _passcrypt = PASSCRYPT_DEFAULT;
+    protected int _passcrypt = PASSCRYPT_DEFAULT;
 
     /*
      * Constructor to read encryption type, and subscribe to events
@@ -67,7 +67,7 @@ public class EncryptedBeanUserManager extends BeanUserManager {
     /*
      * Reads the Password Encryption into memory for user
      */
-    private void readPasscrypt() {
+    protected void readPasscrypt() {
         Properties cfg = ConfigLoader.loadConfig("encryptedbeanuser.conf");
         String passcrypt = cfg.getProperty("passcrypt");
         if (passcrypt == null) {

@@ -17,6 +17,7 @@
  */
 package org.drftpd.master.master.usermanager;
 
+import org.drftpd.master.tests.DummyEncryptedBeanUserManager;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -28,22 +29,6 @@ import org.drftpd.master.usermanager.encryptedjavabeans.EncryptedBeanUserManager
  * @version $Id$
  */
 public class EncryptedBeanUserTest {
-
-    private class TestEncryptedBeanUserManager extends EncryptedBeanUserManager {
-        public Integer testPasscrypt = null;
-
-        public TestEncryptedBeanUserManager() {
-            super();
-        }
-
-        @Override
-        protected int getPasscrypt() {
-            if (testPasscrypt != null) {
-                return testPasscrypt;
-            }
-            return super.getPasscrypt();
-        }
-    }
 
     private class TestEncryptedBeanUser extends EncryptedBeanUser {
         public String testPassword = null;
@@ -65,8 +50,8 @@ public class EncryptedBeanUserTest {
     public void testBcryptPasswordHash() {
         // Test that a password can be hashed with bcrypt.
         // An improvement could be to have the hashing use a fixed salt value, and then verify the hash.
-        TestEncryptedBeanUserManager manager = new TestEncryptedBeanUserManager();
-        manager.testPasscrypt = EncryptedBeanUserManager.PASSCRYPT_BCRYPT;
+        DummyEncryptedBeanUserManager manager = new DummyEncryptedBeanUserManager(EncryptedBeanUserManager.PASSCRYPT_BCRYPT);
+
 
         EncryptedBeanUser user = new EncryptedBeanUser(manager, "bcrypt");
         user.setPassword("abc123xyz");
@@ -77,8 +62,7 @@ public class EncryptedBeanUserTest {
 
     @Test
     public void testBcryptPasswordVerify() {
-        TestEncryptedBeanUserManager manager = new TestEncryptedBeanUserManager();
-        manager.testPasscrypt = EncryptedBeanUserManager.PASSCRYPT_BCRYPT;
+        DummyEncryptedBeanUserManager manager = new DummyEncryptedBeanUserManager(EncryptedBeanUserManager.PASSCRYPT_BCRYPT);
 
         TestEncryptedBeanUser user = new TestEncryptedBeanUser(manager, "glftpd");
         user.setEncryption(EncryptedBeanUserManager.PASSCRYPT_BCRYPT);
@@ -92,8 +76,8 @@ public class EncryptedBeanUserTest {
     public void testGlftpdPasswordHash() {
         // Test that a password can be hashed with glftpd's password hashing algorithm.
         // An improvement could be to have the hashing use a fixed salt value, and then verify the hash.
-        TestEncryptedBeanUserManager manager = new TestEncryptedBeanUserManager();
-        manager.testPasscrypt = EncryptedBeanUserManager.PASSCRYPT_GLFTPD;
+        DummyEncryptedBeanUserManager manager = new DummyEncryptedBeanUserManager(EncryptedBeanUserManager.PASSCRYPT_GLFTPD);
+
 
         EncryptedBeanUser user = new EncryptedBeanUser(manager, "glftpd");
         user.setPassword("glftpd");
@@ -104,8 +88,8 @@ public class EncryptedBeanUserTest {
 
     @Test
     public void testGlftpdPasswordVerify() {
-        TestEncryptedBeanUserManager manager = new TestEncryptedBeanUserManager();
-        manager.testPasscrypt = EncryptedBeanUserManager.PASSCRYPT_GLFTPD;
+        DummyEncryptedBeanUserManager manager = new DummyEncryptedBeanUserManager(EncryptedBeanUserManager.PASSCRYPT_GLFTPD);
+
 
         TestEncryptedBeanUser user = new TestEncryptedBeanUser(manager, "glftpd");
         user.setEncryption(EncryptedBeanUserManager.PASSCRYPT_GLFTPD);
@@ -119,8 +103,7 @@ public class EncryptedBeanUserTest {
     public void testArgon2PasswordHash() {
         // Test that a password can be hashed with argon2.
         // An improvement could be to have the hashing use a fixed parameters, and then verify the hash.
-        TestEncryptedBeanUserManager manager = new TestEncryptedBeanUserManager();
-        manager.testPasscrypt = EncryptedBeanUserManager.PASSCRYPT_ARGON2;
+        DummyEncryptedBeanUserManager manager = new DummyEncryptedBeanUserManager(EncryptedBeanUserManager.PASSCRYPT_ARGON2);
 
         TestEncryptedBeanUser user = new TestEncryptedBeanUser(manager, "argon2");
         user.setEncryption(EncryptedBeanUserManager.PASSCRYPT_ARGON2);
@@ -132,8 +115,7 @@ public class EncryptedBeanUserTest {
 
     @Test
     public void testArgon2PasswordVerify() {
-        TestEncryptedBeanUserManager manager = new TestEncryptedBeanUserManager();
-        manager.testPasscrypt = EncryptedBeanUserManager.PASSCRYPT_ARGON2;
+        DummyEncryptedBeanUserManager manager = new DummyEncryptedBeanUserManager(EncryptedBeanUserManager.PASSCRYPT_ARGON2);
 
         TestEncryptedBeanUser user = new TestEncryptedBeanUser(manager, "argon2");
         user.setEncryption(EncryptedBeanUserManager.PASSCRYPT_ARGON2);
