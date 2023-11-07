@@ -247,7 +247,7 @@ public class SiteBot implements ReplyConstants, Runnable {
             logger.info("*** Connected to server [{}:{}]", _server, _port);
         } catch (IOException e) {
             // Something failed during connecting, call reconnect() to try another server
-            logger.warn("Connection to {}:{} failed, retrying or trying next server if one is available", _server, _port);
+            logger.warn("Connection to {}:{} failed with error {}, retrying or trying next server if one is available", _server, _port, e.getMessage());
             reconnect();
             return;
         }

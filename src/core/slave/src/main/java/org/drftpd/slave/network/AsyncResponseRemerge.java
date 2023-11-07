@@ -36,15 +36,13 @@ public class AsyncResponseRemerge extends AsyncResponse {
 
     private final long _lastModified;
 
-    public AsyncResponseRemerge(String directoryPath,
-                                List<LightRemoteInode> inodes, long lastModified) {
+    public AsyncResponseRemerge(String directoryPath, List<LightRemoteInode> inodes, long lastModified) {
         super("Remerge");
         if (File.separatorChar == '\\') { // stupid win32 hack
             directoryPath = directoryPath.replaceAll("\\\\", "/");
         }
         if (directoryPath.indexOf('\\') != -1) {
-            throw new RuntimeException(
-                    "\\ is not an acceptable character in a directory path");
+            throw new RuntimeException("\\ is not an acceptable character in a directory path");
         }
         if (directoryPath.equals("")) {
             directoryPath = File.separator;

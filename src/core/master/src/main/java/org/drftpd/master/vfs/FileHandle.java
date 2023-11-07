@@ -17,6 +17,8 @@
  */
 package org.drftpd.master.vfs;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.exceptions.SlaveUnavailableException;
 import org.drftpd.master.slavemanagement.RemoteSlave;
@@ -33,6 +35,7 @@ import java.util.Set;
  * @version $Id$
  */
 public class FileHandle extends InodeHandle implements FileHandleInterface {
+    protected static final Logger logger = LogManager.getLogger(FileHandle.class.getName());
 
     public FileHandle(String path) {
         super(path);
