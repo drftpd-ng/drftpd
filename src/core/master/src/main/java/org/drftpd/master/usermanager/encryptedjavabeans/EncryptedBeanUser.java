@@ -21,8 +21,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.drftpd.master.usermanager.javabeans.BeanUser;
 import org.drftpd.master.usermanager.javabeans.BeanUserManager;
+import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.security.crypto.bcrypt.BCrypt;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.Pbkdf2PasswordEncoder;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -178,6 +179,63 @@ public class EncryptedBeanUser extends BeanUser {
     }
 
     /*
+     * Glftpd uses PBKDF2-HMAC-SHA1 for hashing passwords. The hash is stored as:
+     *   "$" + salt + "$" + hash
+     * Both salt and hash are in hex
+     * 
+     * When encoding passwords:
+     *   salt is the first 4 bytes (8 hex characters)
+     *   hash is the next 20 bytes (40 hex characters)
+     * 
+     * glftpd's password code can be found in bin/sources/PassChk/passchk.c in any glftpd release
+     */
+
+     /*
+     * Get a glftpd compatible password encoder
+     */
+    private Pbkdf2PasswordEncoder getGlftpdPasswordEncoder() {
+        final int GLFTPD_SHA_SALT_LEN = 4;
+        final int GLFTPD_ITERATIONS = 100;
+        final int GLFTPD_SHA1_HASH_WIDTH = 160;
+
+        return new Pbkdf2PasswordEncoder("", GLFTPD_SHA_SALT_LEN, GLFTPD_ITERATIONS, GLFTPD_SHA1_HASH_WIDTH);
+    }
+
+    /*
+     * Check if a password matches a glftpd password hash
+     */
+    private boolean glftpdPasswordMatches(String password, String storedPassword) {
+        String[] parts = storedPassword.split("\\$");
+        if ((parts.length != 3) || (parts.length > 0 && parts[0].length() != 0) || (parts.length > 1 && parts[1].length() != 8) || (parts.length > 2 && parts[2].length() != 40))
+        {
+                logger.error("glftpdPasswordMatches: incorrect hash length, expected 48 bytes");
+                return false;
+        }
+
+        String encodedPassword = parts[1] + parts[2];
+
+        return getGlftpdPasswordEncoder().matches(password, encodedPassword);
+    }
+
+    /*
+     * Hash a password with glftpd's password hashing algorithm
+     */
+    private String glftpdPasswordEncode(String password) {
+        String hash = getGlftpdPasswordEncoder().encode(password);
+
+        if (hash.length() != 48)
+        {
+                logger.error("glftpdPasswordEncode: incorrect hash length, expected 48 bytes");
+                throw new UnsupportedOperationException("glftpdPasswordEncode: incorrect hash length, expected 48 bytes");
+        }
+
+        String salt = hash.substring(0, 8);
+        String digest = hash.substring(8);
+
+        return "$" + salt + "$" + digest;
+    }
+
+    /*
      * This checks the passwords first 3 lets to see which encryption/hash its using
      * then it try's to decode it, and if its not using the right now, it will convert it
      * to the current encryption type
@@ -217,11 +275,19 @@ public class EncryptedBeanUser extends BeanUser {
             case EncryptedBeanUserManager.PASSCRYPT_BCRYPT -> {
                 if (BCrypt.checkpw(password, storedPassword)) result = true;
             }
+            case EncryptedBeanUserManager.PASSCRYPT_GLFTPD -> {
+                if (glftpdPasswordMatches(password, storedPassword)) result = true;
+            }
+            case EncryptedBeanUserManager.PASSCRYPT_ARGON2 -> {
+                Argon2PasswordEncoder encoder = new Argon2PasswordEncoder();
+                if (encoder.matches(password, storedPassword)) result = true;
+            }
             default -> {
                 if (password.equals(storedPassword)) result = true;
             }
         }
 
+        // TODO: if argon2 is the default, check Argon2PasswordEncoder.upgradeEncoding and rehash if necessary
         if (result && (getEncryption() != _um.getPasscrypt())) {
             logger.debug("Converting Password To Current Encryption");
             setEncryption(EncryptedBeanUserManager.PASSCRYPT_DEFAULT);
@@ -238,7 +304,7 @@ public class EncryptedBeanUser extends BeanUser {
      */
     @Override
     public void setPassword(String password) {
-        if (((getEncryption() == 0) || (!password.equalsIgnoreCase(getPassword()))) && (_um != null)) {
+        if (((getEncryption() == EncryptedBeanUserManager.PASSCRYPT_NONE) || (!password.equalsIgnoreCase(getPassword()))) && (_um != null)) {
             String pass;
             int encryptionMethod = _um.getPasscrypt();
             switch (encryptionMethod) {
@@ -266,9 +332,16 @@ public class EncryptedBeanUser extends BeanUser {
                 case EncryptedBeanUserManager.PASSCRYPT_BCRYPT -> {
                     pass = BCrypt.hashpw(password, BCrypt.gensalt(_workload));
                 }
+                case EncryptedBeanUserManager.PASSCRYPT_GLFTPD -> {
+                    pass = glftpdPasswordEncode(password);
+                }
+                case EncryptedBeanUserManager.PASSCRYPT_ARGON2 -> {
+                    Argon2PasswordEncoder encoder = new Argon2PasswordEncoder();
+                    pass = encoder.encode(password);
+                }
                 default -> {
-                    pass = password;
-                    encryptionMethod = EncryptedBeanUserManager.PASSCRYPT_DEFAULT;
+                    logger.error("Failed to set password, unknown password hash format");
+                    throw new UnsupportedOperationException("Failed to set password, unknown password hash format");
                 }
             }
 
