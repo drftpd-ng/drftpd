@@ -267,6 +267,10 @@ public class Slave extends SslConfigurationLoader {
         s.setOnline(true);
         try {
             s.listenForCommands();
+        } catch (IOException e) {
+            logger.fatal("Fatal IOException during main boot() process, Slave stopping", e);
+        } catch (Exception e) {
+            logger.fatal("Fatal Exception during main boot() process, Slave stopping", e);
         } finally {
             s.shutdown();
         }
@@ -304,7 +308,9 @@ public class Slave extends SslConfigurationLoader {
     }
 
     public void shutdown() {
+        logger.warn("Shutdown() called");
         if (_sin != null) {
+            logger.warn("Closing _sin");
             try {
                 _sin.close();
             } catch (IOException ignored) {
@@ -312,6 +318,7 @@ public class Slave extends SslConfigurationLoader {
             _sin = null;
         }
         if (_sout != null) {
+            logger.warn("Closing _sout");
             try {
                 _sout.flush();
                 _sout.close();
@@ -320,6 +327,7 @@ public class Slave extends SslConfigurationLoader {
             _sout = null;
         }
         if (_socket != null) {
+            logger.warn("Closing _socket");
             try {
                 _socket.close();
             } catch (IOException ignored) {
@@ -334,6 +342,7 @@ public class Slave extends SslConfigurationLoader {
     }
 
     public void setOnline(boolean online) {
+        logger.info("Setting slave status online to: "+online);
         _online = online;
     }
 
