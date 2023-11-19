@@ -76,10 +76,11 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
     private transient boolean _isRemerging;
     private transient boolean _remergeChecksums;
     private transient int _prevSocketTimeout;
-    private transient long _lastDownloadSending = 0;
-    private transient long _lastUploadReceiving = 0;
+    private transient long _lastDownloadSending = 0L;
+    private transient long _lastUploadReceiving = 0L;
     private transient long _lastResponseReceived = System.currentTimeMillis();
     private transient long _lastCommandSent = System.currentTimeMillis();
+    private transient long _lastRemergeCommandReceived = 0L;
     private final String _name;
     private transient DiskStatus _status;
     private HostMaskCollection _ipMasks;
@@ -698,22 +699,50 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
      * returns an AsyncResponse for that index and throws any exceptions thrown
      * on the Slave side
      */
-    public AsyncResponse fetchResponse(String index, int wait)
-            throws SlaveUnavailableException, RemoteIOException {
+    public AsyncResponse fetchResponse(String index, int wait) throws SlaveUnavailableException, RemoteIOException {
         long total = System.currentTimeMillis();
+        long lastUpdate = 0L;
+        long reportIdle = 60000L;
 
         while (isOnline() && !_indexWithCommands.containsKey(index)) {
+            // will wait a maximum of 100 milliseconds before waking up
+            // Any longer and we risk slow exchange of commands between master and slave
             try {
                 synchronized (_commandMonitor) {
-                    _commandMonitor.wait(1000);
+                    _commandMonitor.wait(100);
                 }
-
-                // will wait a maximum of 1000 milliseconds before waking up
             } catch (InterruptedException e) {
+                // Ignore interupt
             }
 
             if ((wait != 0) && ((System.currentTimeMillis() - total) >= wait)) {
                 setOffline("Slave has taken too long while waiting for reply " + index);
+            }
+
+            // Handle remerge status reporting if we are remerging
+            if (isRemerging()) {
+                // Only do something if we have not received a remerge command from slave in 15 seconds
+                if ((System.currentTimeMillis() - _lastRemergeCommandReceived) >= reportIdle) {
+                    if (lastUpdate >= 0L && (System.currentTimeMillis() - lastUpdate) <= reportIdle) {
+                        // skip for at least 15 seconds, not spamming the log
+                        continue;
+                    }
+
+                    // We have not received remerge data from slave, report current master status for this slave
+                    logger.warn("We are still remerging, but have not received remerge command from Slave in {} " +
+                            "seconds", (reportIdle / 1000));
+                    logger.warn("remergeQueue: {}, remergePaused: {}, Last remerge command received: {}",
+                            _remergeQueue.size(), _remergePaused.get(), _lastRemergeCommandReceived);
+
+                    // Set last remerge report
+                    lastUpdate = System.currentTimeMillis();
+
+                    // Incremental back-off untill we are out of this
+                    reportIdle *= 2;
+                } else {
+                    // reset reportIdle if we continue
+                    reportIdle = 60000L;
+                }
             }
         }
 
@@ -909,7 +938,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 
     private void setOfflineReal(String reason) {
         // If remerging and remerge is paused, wake it
-        if (_isRemerging) {
+        if (isRemerging()) {
             if (_remergePaused.get()) {
                 try {
                     SlaveManager.getBasicIssuer().issueRemergeResumeToSlave(this);
@@ -918,10 +947,11 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
                 }
                 _remergePaused.set(false);
             }
-            _isRemerging = false;
+            setRemerging(false);
         }
         // If the slave is still processing the remerge queue clear all
         // outstanding entries
+        _lastRemergeCommandReceived = 0L;
         _remergeQueue.clear();
         _crcQueue.clear();
         if (_sin != null) {
@@ -1184,6 +1214,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
         }
         try {
             _remergeQueue.put(message);
+            _lastRemergeCommandReceived = System.currentTimeMillis();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }

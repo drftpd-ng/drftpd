@@ -291,6 +291,9 @@ public class BasicHandler extends AbstractHandler {
                     }
                     // Double the report interval
                     reportIdle *= 2;
+                } else {
+                    // reset reportIdle if we continue
+                    reportIdle = 30000L;
                 }
 
                 // Check if we can send stuff to the master
