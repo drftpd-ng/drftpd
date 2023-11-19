@@ -94,6 +94,36 @@
                 </Delete>
             </DefaultRolloverStrategy>
         </RollingFile>
+        <RollingFile name="commands" fileName="${baseDir}/commands.log" filePattern="${baseDir}/$${date:yyyy-MM}/index-%d{yyyy-MM-dd}.log.gz">
+            <PatternLayout pattern="%p %d{ISO8601} [%t] %c %x - %m%n" />
+            <CronTriggeringPolicy schedule="0 0 0 * * ?" />
+            <DefaultRolloverStrategy>
+                <Delete basePath="${baseDir}" maxDepth="2">
+                    <IfFileName glob="*/commands-*.log.gz" />
+                    <IfLastModified age="90d" />
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingFile>
+        <RollingFile name="vfs" fileName="${baseDir}/vfs.log" filePattern="${baseDir}/$${date:yyyy-MM}/index-%d{yyyy-MM-dd}.log.gz">
+            <PatternLayout pattern="%p %d{ISO8601} [%t] %c %x - %m%n" />
+            <CronTriggeringPolicy schedule="0 0 0 * * ?" />
+            <DefaultRolloverStrategy>
+                <Delete basePath="${baseDir}" maxDepth="2">
+                    <IfFileName glob="*/vfs-*.log.gz" />
+                    <IfLastModified age="90d" />
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingFile>
+        <RollingFile name="events" fileName="${baseDir}/events.log" filePattern="${baseDir}/$${date:yyyy-MM}/index-%d{yyyy-MM-dd}.log.gz">
+            <PatternLayout pattern="%p %d{ISO8601} [%t] %c %x - %m%n" />
+            <CronTriggeringPolicy schedule="0 0 0 * * ?" />
+            <DefaultRolloverStrategy>
+                <Delete basePath="${baseDir}" maxDepth="2">
+                    <IfFileName glob="*/events-*.log.gz" />
+                    <IfLastModified age="90d" />
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingFile>
     </Appenders>
     <Loggers>
         <Logger name="org.drftpd.master.commands.usermanagement" level="warn" additivity="false">
@@ -128,6 +158,15 @@
         </Logger>
         <Logger name="org.drftpd.master.network.BaseFtpConnection.service" level="warn" additivity="false">
             <AppenderRef ref="root" />
+        </Logger>
+        <Logger name="org.drftpd.master.commands" level="warn" additivity="false">
+            <AppenderRef ref="commands" />
+        </Logger>
+        <Logger name="org.drftpd.master.vfs" level="warn" additivity="false">
+            <AppenderRef ref="vfs" />
+        </Logger>
+        <Logger name="org.bushe.swing.event" level="warn" additivity="false">
+            <AppenderRef ref="events" />
         </Logger>
         <Root level="warn">
             <AppenderRef ref="root" />
