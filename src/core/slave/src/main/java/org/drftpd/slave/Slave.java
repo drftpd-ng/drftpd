@@ -153,8 +153,6 @@ public class Slave extends SslConfigurationLoader {
         // slave
         String slaveName = PropertyHelper.getProperty(p, "slave.name");
 
-        logger.info("Slave {} connecting to master at {}", slaveName, masterIsa);
-
         // Initialize to null
         _bindIP = null;
         try {
@@ -199,6 +197,9 @@ public class Slave extends SslConfigurationLoader {
         } catch (NumberFormatException e) {
             logger.warn("Unable to read threadedthreads from config, falling back to cpu core calculation");
         }
+
+        logger.info("Slave {} connecting to master at {}. Configuration: Conccurrent Root Iteration: {}",
+                slaveName, masterIsa, _concurrentRootIteration);
 
         // Initialize this before we connect a socket
         _central = new SlaveProtocolCentral(this);

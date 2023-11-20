@@ -297,15 +297,17 @@ public class BasicHandler extends AbstractHandler {
                 }
 
                 // Check if we can send stuff to the master
+                int sentResponses = 0;
                 synchronized(remergeResponses) {
-                    Iterator<RemergeItem> rrIterator = remergeResponses.iterator();
-                    while(rrIterator.hasNext()) {
-                        RemergeItem ri = rrIterator.next();
+                    ListIterator<RemergeItem> rrIterator = remergeResponses.listIterator(remergeResponses.size());
+                    while(rrIterator.hasPrevious()) {
+                        RemergeItem ri = rrIterator.previous();
+                        logger.debug("Remerge item [{}] with depth directories: [{}]", ri.getAsyncResponseRemerge().getPath(), Arrays.asList(ri.getDepthDirectories()));
                         int foundDirectories = 0;
                         synchronized (mergeDepthWaitObj) {
                             for (String path : ri.getDepthDirectories()) {
                                 for (String dir : mergeDepth) {
-                                    if (dir.startsWith(path)) {
+                                    if (dir.compareTo(path) == 0) {
                                         foundDirectories+=1;
                                     }
                                 }
@@ -317,17 +319,22 @@ public class BasicHandler extends AbstractHandler {
                             sendResponse(ri.getAsyncResponseRemerge());
                             lastRemergeMessageSend = System.currentTimeMillis();
                             updateDepth(ri.getAsyncResponseRemerge().getPath() + "/");
+                            sentResponses+=1;
                         }
                     }
                 }
 
-                try {
-                    logger.debug("Queue: {}, Active threads: {}, Pending responses: {}, sleeping 1 second",
-                            _pool.getQueue().size(), _pool.getActiveCount(), remergeResponses.size());
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    // Either we have been woken properly in which case we will exit the
-                    // loop or we have not in which case we will wait again.
+                // Do not do a busy loop when we are not sending anything to master, better to sleep for 0.2 second
+                logger.debug("We have sent {} respponses to master", sentResponses);
+                if (sentResponses <= 1) {
+                    try {
+                        logger.debug("Queue: {}, Active threads: {}, Pending responses: {}, sleeping 0.2 second",
+                                _pool.getQueue().size(), _pool.getActiveCount(), remergeResponses.size());
+                        Thread.sleep(200);
+                    } catch (InterruptedException e) {
+                        // Either we have been woken properly in which case we will exit the
+                        // loop or we have not in which case we will wait again.
+                    }
                 }
             }
 
@@ -413,12 +420,7 @@ public class BasicHandler extends AbstractHandler {
         boolean add = true;
         synchronized (mergeDepthWaitObj) {
             for (String dir : mergeDepth) {
-                if (path.startsWith(dir)) {
-                    add = false;
-                    break;
-                }
-
-                if (dir.startsWith(path)) {
+                if (dir.compareTo(path) == 0) {
                     add = false;
                     break;
                 }
