@@ -303,23 +303,15 @@ public class BasicHandler extends AbstractHandler {
                     while(rrIterator.hasPrevious()) {
                         RemergeItem ri = rrIterator.previous();
                         logger.debug("Remerge item [{}] with depth directories: [{}]", ri.getAsyncResponseRemerge().getPath(), Arrays.asList(ri.getDepthDirectories()));
-                        int foundDirectories = 0;
                         synchronized (mergeDepthWaitObj) {
-                            for (String path : ri.getDepthDirectories()) {
-                                for (String dir : mergeDepth) {
-                                    if (dir.compareTo(path) == 0) {
-                                        foundDirectories+=1;
-                                    }
-                                }
+                            if (mergeDepth.containsAll(ri.getDepthDirectories())) {
+                                logger.debug("Sending {} to the master", ri.getAsyncResponseRemerge().getPath());
+                                rrIterator.remove();
+                                sendResponse(ri.getAsyncResponseRemerge());
+                                lastRemergeMessageSend = System.currentTimeMillis();
+                                updateDepth(ri.getAsyncResponseRemerge().getPath() + "/");
+                                sentResponses += 1;
                             }
-                        }
-                        if (foundDirectories >= ri.getDepthDirectories().size()) {
-                            logger.debug("Sending {} to the master", ri.getAsyncResponseRemerge().getPath());
-                            rrIterator.remove();
-                            sendResponse(ri.getAsyncResponseRemerge());
-                            lastRemergeMessageSend = System.currentTimeMillis();
-                            updateDepth(ri.getAsyncResponseRemerge().getPath() + "/");
-                            sentResponses+=1;
                         }
                     }
                 }
@@ -416,17 +408,9 @@ public class BasicHandler extends AbstractHandler {
         if (path.equalsIgnoreCase("//")) {
             path = "/";
         }
-        logger.debug("updateDepth - Checking [{}]", path);
-        boolean add = true;
-        synchronized (mergeDepthWaitObj) {
-            for (String dir : mergeDepth) {
-                if (dir.compareTo(path) == 0) {
-                    add = false;
-                    break;
-                }
-            }
 
-            if (add) {
+        synchronized (mergeDepthWaitObj) {
+            if (!mergeDepth.contains(path)) {
                 logger.debug("updateDepth - Adding [{}]", path);
                 mergeDepth.add(path);
             }
@@ -518,9 +502,15 @@ public class BasicHandler extends AbstractHandler {
                 fileList.add(new LightRemoteInode(file));
             }
             if (!_partialRemerge || inodesModified) {
-                synchronized(remergeResponses) {
-                    remergeResponses.add(new RemergeItem(dirList, new AsyncResponseRemerge(_path, fileList, pathLastModified)));
-                    // remergeResponses.add(new AsyncResponseRemerge(_path, fileList, pathLastModified, dirList));
+                AsyncResponseRemerge arr = new AsyncResponseRemerge(_path, fileList, pathLastModified);
+                if (dirList.size() == 0) {
+                    logger.debug("Sending {} to the master, bypassing queue as no depth directories", _path);
+                    sendResponse(arr);
+                    updateDepth(_path + "/");
+                } else {
+                    synchronized (remergeResponses) {
+                        remergeResponses.add(new RemergeItem(dirList, arr));
+                    }
                 }
             } else {
                 updateDepth(_path + "/");
