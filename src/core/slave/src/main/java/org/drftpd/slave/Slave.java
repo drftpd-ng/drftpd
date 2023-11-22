@@ -55,7 +55,9 @@ import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.NoSuchFileException;
 import java.security.GeneralSecurityException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -396,11 +398,26 @@ public class Slave extends SslConfigurationLoader {
                 }
                 logger.info("DELETEDIR: {}", path);
             } else if (file.isFile()) {
-                File dir = new PhysicalFile(file.getParentFile());
-                logger.info("DELETE: {}", path);
-                logger.info("rmfile: {}", file.getPath());
-                if (!file.delete()) {
-                    throw new PermissionDeniedException("delete failed on " + path);
+                Path physicalPath = Path.of(file.getPath());
+                File dir = physicalPath.toFile();
+                logger.info("DELETE: {}, rmfile: {}", path, physicalPath);
+                try {
+                    Files.delete(physicalPath);
+                } catch (NoSuchFileException e) {
+                    logger.error("Trying to delete file, but caught NoSuchFileException. BUG?", e);
+                } catch (DirectoryNotEmptyException e) {
+                    logger.error("Trying to delete file, but caught DirectoryNotEmptyException. BUG?", e);
+                } catch (IOException e) {
+                    // Sometimes we hit OS cache issues, so lets wait 0.1 seconds to see if that solves it.
+                    // If the file exists after this we bail
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException ignored) {}
+
+                    if (file.exists()) {
+                        logger.error("Delete of {} failed", physicalPath, e);
+                        throw new PermissionDeniedException("delete failed on " + path);
+                    }
                 }
 
                 String[] dirList = dir.list();
