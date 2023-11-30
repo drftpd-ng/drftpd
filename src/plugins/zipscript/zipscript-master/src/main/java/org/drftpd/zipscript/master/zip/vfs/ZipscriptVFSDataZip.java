@@ -82,8 +82,11 @@ public class ZipscriptVFSDataZip {
         }
         if (dizInfo != null) {
             if (dizInfo.isValid()) {
+                logger.debug("Found valid diz info for {}", _dir);
                 _dir.addPluginMetaData(DizInfo.DIZINFO, dizInfo);
                 return dizInfo;
+            } else {
+                logger.warn("We found diz information, but not valid for {}", _dir);
             }
         }
         throw new FileNotFoundException("No usable zip files found in directory");

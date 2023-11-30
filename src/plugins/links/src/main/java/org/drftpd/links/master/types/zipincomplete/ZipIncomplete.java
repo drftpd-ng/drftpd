@@ -17,6 +17,9 @@
  */
 package org.drftpd.links.master.types.zipincomplete;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import org.drftpd.links.master.LinkType;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.vfs.DirectoryHandle;
@@ -32,10 +35,10 @@ import java.util.Properties;
  */
 
 public class ZipIncomplete extends LinkType {
+    protected static final Logger logger = LogManager.getLogger(ZipIncomplete.class);
 
     public ZipIncomplete(Properties p, int confnum, String type) {
         super(p, confnum, type);
-
     }
 
     /*
@@ -54,7 +57,6 @@ public class ZipIncomplete extends LinkType {
     @Override
     public void doDeleteLink(DirectoryHandle targetDir) {
         deleteLink(targetDir, targetDir.getPath(), targetDir.getName());
-
     }
 
     /*

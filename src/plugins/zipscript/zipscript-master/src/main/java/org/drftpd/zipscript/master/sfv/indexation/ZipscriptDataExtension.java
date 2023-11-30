@@ -17,9 +17,13 @@
  */
 package org.drftpd.zipscript.master.sfv.indexation;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.NumericField;
+
 import org.drftpd.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.common.vfs.CaseInsensitiveTreeMap;
 import org.drftpd.master.indexation.IndexDataExtensionInterface;
@@ -39,6 +43,8 @@ import java.io.IOException;
  * @version $Id$
  */
 public class ZipscriptDataExtension implements IndexDataExtensionInterface {
+
+    private static final Logger logger = LogManager.getLogger(ZipscriptDataExtension.class);
 
     private static final NumericField FIELD_PRESENT = new NumericField("present", Field.Store.YES, Boolean.TRUE);
     private static final NumericField FIELD_MISSING = new NumericField("missing", Field.Store.YES, Boolean.TRUE);
@@ -118,6 +124,7 @@ public class ZipscriptDataExtension implements IndexDataExtensionInterface {
                 }
             }
         }
+        logger.debug("getDizStatus(), dir: {}, total: {}, offline: {}, present: {}", dir, dizInfo.getTotal(), offline, present);
         return new DizStatus(dizInfo.getTotal(), offline, present);
     }
 }

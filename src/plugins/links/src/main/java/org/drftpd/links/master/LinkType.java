@@ -39,6 +39,7 @@ import java.util.regex.Pattern;
 public abstract class LinkType {
     protected static final Logger logger = LogManager.getLogger(LinkType.class);
 
+    private final int _confnum;
     private final String _dirname;
     private final String _eventtype;
     private SectionInterface _section;
@@ -52,6 +53,7 @@ public abstract class LinkType {
      * Loads all the .conf information for the specific type
      */
     public LinkType(Properties p, int confnum, String type) {
+        _confnum = confnum;
         _eventtype = type;
         _dirname = p.getProperty(confnum + ".dirname", "%").trim();
         String section = p.getProperty(confnum + ".section", "*").trim();
@@ -72,7 +74,6 @@ public abstract class LinkType {
         if (_linkname.isEmpty()) {
             throw new RuntimeException("Invalid LinkName for " + confnum + ".linkname - Skipping Config");
         }
-
     }
 
     /*
@@ -149,7 +150,6 @@ public abstract class LinkType {
             } catch (FileNotFoundException e) {
                 return false;
             }
-
         }
         return true;
     }
@@ -158,7 +158,6 @@ public abstract class LinkType {
      * This will create the link file in the proper folder based on the .conf file
      *
      * It will also check and make sure it does not exist as an AddParentDir, but if it does, creates the link accordingly
-     *
      */
     protected void createLink(DirectoryHandle targetDir, String dirPath, String linkName) {
         SectionInterface section = GlobalContext.getGlobalContext().getSectionManager().lookup(targetDir);
@@ -232,13 +231,11 @@ public abstract class LinkType {
                 logger.debug("Unable to create LinkDir - Aborting ({})", getDirName(targetDir));
                 return;
             }
-
         }
 
         /*
          * Create the link now that all info has been retrieved
          */
-
         LinkHandle link = null;
         try {
             link = linkDir.getLinkUnchecked(linkNameFinal);
@@ -266,7 +263,6 @@ public abstract class LinkType {
         } catch (FileNotFoundException e) {
             // linkDir has been deleted, ignore
         }
-
     }
 
     /*
@@ -281,6 +277,7 @@ public abstract class LinkType {
             if (totalMat.find()) {
                 linkNameFinal = getLinkName().replace("${dirname}", dirPath.substring(dirPath.substring(0, dirPath.lastIndexOf("/")).lastIndexOf("/") + 1).replace("/", "-"));
             }
+
             /*
              * Get section information for link
              */
@@ -307,7 +304,6 @@ public abstract class LinkType {
                 } catch (FileNotFoundException e) {
                     // Link no longer exists....ignore
                 }
-
             } catch (FileNotFoundException e1) {
                 // Not Found, ignore
             } catch (ObjectNotValidException e1) {
@@ -454,4 +450,11 @@ public abstract class LinkType {
      * Abstract class used to fix links
      */
     public abstract void doFixLink(DirectoryHandle targetDir);
+
+    /*
+     * Override toString to provide logical output
+     */
+    public String toString() {
+        return _confnum + "." + _eventtype + "#section=" + _section + "#linkname=" + _linkname;
+    }
 }

@@ -17,6 +17,9 @@
  */
 package org.drftpd.links.master.types.sfvmissing;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import org.drftpd.links.master.LinkType;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.FileHandle;
@@ -31,6 +34,7 @@ import java.util.Set;
  */
 
 public class SFVMissing extends LinkType {
+    protected static final Logger logger = LogManager.getLogger(SFVMissing.class);
 
     public SFVMissing(Properties p, int confnum, String type) {
         super(p, confnum, type);
@@ -42,6 +46,7 @@ public class SFVMissing extends LinkType {
      */
     @Override
     public void doCreateLink(DirectoryHandle targetDir) {
+        logger.debug("doCreateLink() for {}", targetDir);
         try {
             if (targetDir.getName().matches(getAddParentDir())) {
                 doDeleteLink(targetDir.getParent());
@@ -87,5 +92,4 @@ public class SFVMissing extends LinkType {
             // No Files found - Ignore
         }
     }
-
 }

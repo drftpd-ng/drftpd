@@ -88,7 +88,7 @@ public class LinkManager implements PluginInterface {
         Class<?>[] SIG = {Properties.class, int.class, String.class};
 
         if (!_typesMap.containsKey(type)) {
-            // if we can't find one filter that will be enough to brake the whole chain.
+            // if we can't find one filter that will be enough to break the whole chain.
             logger.error("Link Type: {} wasn't loaded.", type);
 
         } else {
@@ -107,24 +107,34 @@ public class LinkManager implements PluginInterface {
 
         Set<Class<? extends LinkType>> LinkTypes = new Reflections("org.drftpd").getSubTypesOf(LinkType.class);
         for (Class<? extends LinkType> linkType : LinkTypes) {
+            logger.debug("Loading link type - {}", linkType.getSimpleName());
             typesMap.put(linkType.getSimpleName(), linkType);
         }
         _typesMap = typesMap;
     }
 
-    public void loadConf() {
-        initTypes();
-        _links = new ArrayList<>();
+    private void loadLinks() {
+        ArrayList<LinkType> links = new ArrayList<>();
         Properties props = ConfigLoader.loadPluginConfig("links.conf");
         int count = 1;
         String type;
         while ((type = PropertyHelper.getProperty(props, count + ".type", null)) != null) {
             LinkType linkType = getLinkType(count, type, props);
             if (linkType != null) {
+                logger.debug("Loaded link configuration item {} with type {}", count, type);
                 _links.add(linkType);
+            } else {
+                logger.warn("link configuration item {} with type {} not found, ignoring", count, type);
             }
             count++;
         }
+        logger.info("Loaded {} link configuration items", links.size());
+        _links = links;
+    }
+
+    public void loadConf() {
+        initTypes();
+        loadLinks();
     }
 
     /*
@@ -140,8 +150,10 @@ public class LinkManager implements PluginInterface {
     @EventSubscriber
     public void onVirtualFileSystemDeleteEvent(VirtualFileSystemInodeDeletedEvent vfsevent) {
         if (vfsevent.getInode().isDirectory()) {
+            logger.debug("Caught VirtualFileSystemInodeDeletedEvent for directory {}, Checking links", vfsevent.getInode());
             for (LinkType link : getLinks()) {
                 if ((link.getDeleteOnContains("wipe")) || (link.getDeleteOnContains("rmd"))) {
+                    logger.debug("Checking [{}] for delete action for {}", link, vfsevent.getInode());
                     link.doDeleteLink(new DirectoryHandle(vfsevent.getInode().getPath()));
                 }
             }

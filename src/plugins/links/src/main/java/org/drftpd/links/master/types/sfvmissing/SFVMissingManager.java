@@ -19,8 +19,10 @@ package org.drftpd.links.master.types.sfvmissing;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
+
 import org.drftpd.common.extensibility.PluginDependencies;
 import org.drftpd.common.extensibility.PluginInterface;
 import org.drftpd.links.master.LinkManager;
@@ -113,6 +115,7 @@ public class SFVMissingManager implements PluginInterface {
     @EventSubscriber
     public void onVirtualFileSystemInodeDeletedEvent(VirtualFileSystemInodeDeletedEvent vfsevent) {
         if (vfsevent.getInode().isFile()) {
+            logger.debug("Caught VirtualFileSystemInodeDeletedEvent - isFile() - {}", vfsevent.getInode());
             if (vfsevent.getInode().getParent().exists()) {
                 try {
                     for (FileHandle file : vfsevent.getInode().getParent().getFilesUnchecked()) {
@@ -141,6 +144,7 @@ public class SFVMissingManager implements PluginInterface {
                 }
             }
         } else if (vfsevent.getInode().isDirectory()) {
+            logger.debug("Caught VirtualFileSystemInodeDeletedEvent - isDirectory() - {}", vfsevent.getInode());
             if (vfsevent.getInode().getParent().exists()) {
                 for (LinkType link : _linkmanager.getLinks()) {
                     if (link.getEventType().equals("sfvmissing")) {
@@ -158,8 +162,6 @@ public class SFVMissingManager implements PluginInterface {
                     }
                 }
             }
-
         }
     }
-
 }
