@@ -122,7 +122,7 @@ public class LinkManager implements PluginInterface {
             LinkType linkType = getLinkType(count, type, props);
             if (linkType != null) {
                 logger.debug("Loaded link configuration item {} with type {}", count, type);
-                _links.add(linkType);
+                links.add(linkType);
             } else {
                 logger.warn("link configuration item {} with type {} not found, ignoring", count, type);
             }
