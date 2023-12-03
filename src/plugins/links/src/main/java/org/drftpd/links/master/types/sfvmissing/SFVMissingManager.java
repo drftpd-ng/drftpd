@@ -115,7 +115,7 @@ public class SFVMissingManager implements PluginInterface {
     @EventSubscriber
     public void onVirtualFileSystemInodeDeletedEvent(VirtualFileSystemInodeDeletedEvent vfsevent) {
         if (vfsevent.getInode().isFile()) {
-            logger.debug("Caught VirtualFileSystemInodeDeletedEvent - isFile() - {}", vfsevent.getInode());
+            // logger.debug("Caught VirtualFileSystemInodeDeletedEvent - isFile() - {}", vfsevent.getInode());
             if (vfsevent.getInode().getParent().exists()) {
                 try {
                     for (FileHandle file : vfsevent.getInode().getParent().getFilesUnchecked()) {
@@ -144,19 +144,21 @@ public class SFVMissingManager implements PluginInterface {
                 }
             }
         } else if (vfsevent.getInode().isDirectory()) {
-            logger.debug("Caught VirtualFileSystemInodeDeletedEvent - isDirectory() - {}", vfsevent.getInode());
+            // logger.debug("Caught VirtualFileSystemInodeDeletedEvent - isDirectory() - {}", vfsevent.getInode());
             if (vfsevent.getInode().getParent().exists()) {
+                // If the parent exists we could now be missing a .sfv and if so we need a link.
                 for (LinkType link : _linkmanager.getLinks()) {
                     if (link.getEventType().equals("sfvmissing")) {
                         try {
-                            for (DirectoryHandle dir : vfsevent.getInode().getParent().getDirectoriesUnchecked()) {
-                                if (dir.getName().matches(link.getAddParentDir())) {
-                                    // Already has a dir in it that SHOULD have a sfv
+                            for (FileHandle file : vfsevent.getInode().getParent().getFilesUnchecked()) {
+                                if (file.getName().toLowerCase().endsWith(".sfv")) {
+                                    // there is a .sfv in here, ignore
                                     return;
                                 }
                             }
-                        } catch (FileNotFoundException e) {
-                            // no dirs found....dir must not longer exist - Ignore
+                        } catch(FileNotFoundException e) {
+                            // Directory does not exist or no files found, not an issue - Ignore
+                            return;
                         }
                         link.doCreateLink(vfsevent.getInode().getParent());
                     }
