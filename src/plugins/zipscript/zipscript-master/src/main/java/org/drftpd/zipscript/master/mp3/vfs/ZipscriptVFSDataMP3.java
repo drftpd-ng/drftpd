@@ -17,6 +17,8 @@
  */
 package org.drftpd.zipscript.master.mp3.vfs;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.drftpd.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.common.exceptions.RemoteIOException;
 import org.drftpd.master.GlobalContext;
@@ -40,8 +42,9 @@ import java.io.IOException;
  */
 public class ZipscriptVFSDataMP3 {
 
-    private final InodeHandle _inode;
+    private static final Logger logger = LogManager.getLogger(ZipscriptVFSDataMP3.class);
 
+    private final InodeHandle _inode;
     private boolean _setDir;
 
     public ZipscriptVFSDataMP3(InodeHandle inode) {
@@ -49,22 +52,28 @@ public class ZipscriptVFSDataMP3 {
         _setDir = false;
     }
 
+    private boolean isMP3InfoValid(MP3Info mp3info) {
+        ID3Tag id3 = mp3info.getID3Tag();
+        if (id3 != null && id3.getGenre().length() > 0 && id3.getYear().length() > 0) {
+            return true;
+        }
+        return false;
+    }
+
     public MP3Info getMP3Info() throws IOException, NoAvailableSlaveException {
         try {
-            MP3Info mp3info = getMP3InfoFromInode(_inode);
-            ID3Tag id3 = mp3info.getID3Tag();
-            if (id3 != null && id3.getGenre().length() > 0 && id3.getYear().length() > 0) {
-                return mp3info;
+            if (isMP3InfoValid(getMP3InfoFromInode(_inode))) {
+                return getMP3InfoFromInode(_inode);
             }
         } catch (KeyNotFoundException e1) {
-            // bah, let's load it
+            logger.debug("No MP3INFO registered for inode - {}", _inode);
         }
+
         // There is no existing mp3info so we need to retrieve it and set it
         if (_inode instanceof DirectoryHandle) {
             // Find the info for the first mp3 file we come across and use that
             DirectoryHandle dir = (DirectoryHandle) _inode;
             MP3Info mp3info = null;
-            ID3Tag id3 = null;
             for (FileHandle file : dir.getFilesUnchecked()) {
                 if (file.getName().toLowerCase().endsWith(".mp3") && file.getSize() > 0 && file.getXfertime() != -1) {
                     RemoteSlave rslave = file.getASlaveForFunction();
@@ -72,8 +81,7 @@ public class ZipscriptVFSDataMP3 {
                     try {
                         index = getMP3Issuer().issueMP3FileToSlave(rslave, file.getPath());
                         mp3info = fetchMP3InfoFromIndex(rslave, index);
-                        id3 = mp3info.getID3Tag();
-                        if (id3 != null && id3.getGenre().length() > 0 && id3.getYear().length() > 0) {
+                        if (isMP3InfoValid(mp3info)) {
                             break;
                         }
                     } catch (SlaveUnavailableException e) {
@@ -83,6 +91,16 @@ public class ZipscriptVFSDataMP3 {
                     }
                 }
             }
+
+            // We wait potentially very long above for mp3 info and we could have gotten mp3info by now, so check that
+            try {
+                if (isMP3InfoValid(getMP3InfoFromInode(_inode))) {
+                    return getMP3InfoFromInode(_inode);
+                }
+            } catch (KeyNotFoundException e1) {
+                logger.debug("No MP3INFO registered for inode (2) - {}", dir);
+            }
+
             if (mp3info != null) {
                 dir.addPluginMetaData(MP3Info.MP3INFO, mp3info);
                 return mp3info;
@@ -90,21 +108,23 @@ public class ZipscriptVFSDataMP3 {
             throw new FileNotFoundException("No usable mp3 files found in directory");
         } else if (_inode instanceof FileHandle) {
             FileHandle file = (FileHandle) _inode;
+
+            // Get Parent (directory)
+            DirectoryHandle dir = file.getParent();
+
             MP3Info mp3info = null;
-            ID3Tag id3 = null;
             if (file.getSize() > 0 && file.getXfertime() != -1) {
-                for (int i = 0; i < 5; i++) {
+                for (int i = 0; i < 2; i++) { // TODO: Changed this from 5 to 2, why do we retry?
                     RemoteSlave rslave = file.getASlaveForFunction();
                     String index;
                     try {
                         index = getMP3Issuer().issueMP3FileToSlave(rslave, file.getPath());
                         mp3info = fetchMP3InfoFromIndex(rslave, index);
-                        id3 = mp3info.getID3Tag();
-                        if (id3 != null && id3.getGenre().length() > 0 && id3.getYear().length() > 0) {
+                        if (isMP3InfoValid(mp3info)) {
                             break;
-                        } else {
-                            mp3info = null;
                         }
+
+                        mp3info = null;
                     } catch (SlaveUnavailableException e) {
                         // okay, it went offline while trying, continue
                     } catch (RemoteIOException e) {
@@ -112,25 +132,29 @@ public class ZipscriptVFSDataMP3 {
                     }
                 }
             }
-            if (mp3info == null) {
-                throw new FileNotFoundException("Unable to obtain info for MP3 file");
-            }
 
-            // Update mp3info on parent directory inode
-            DirectoryHandle dir = file.getParent();
+            // We wait potentially very long above for diz info and we could have gotten dizinfo by now, so check that
             try {
-                getMP3InfoFromInode(dir);
+                if (isMP3InfoValid(getMP3InfoFromInode(dir))) {
+                    return getMP3InfoFromInode(dir);
+                }
             } catch (KeyNotFoundException e1) {
-                _setDir = true;
-                dir.addPluginMetaData(MP3Info.MP3INFO, mp3info);
+                logger.debug("No MP3INFO registered for inode (2) - {}", dir);
             }
 
-            // Update mp3info on the file inode
-            _inode.addPluginMetaData(MP3Info.MP3INFO, mp3info);
-            return mp3info;
-        } else {
-            throw new IllegalArgumentException("Inode type other than directory or file passed in");
+            if (mp3info != null) {
+                _setDir = true;
+
+                // Update mp3info on the file and parent (dir) inode
+                dir.addPluginMetaData(MP3Info.MP3INFO, mp3info);
+                _inode.addPluginMetaData(MP3Info.MP3INFO, mp3info);
+                return mp3info;
+            }
+
+            throw new FileNotFoundException("Unable to obtain info for MP3 file");
         }
+
+        throw new IllegalArgumentException("Inode type other than directory or file passed in");
     }
 
     public boolean isFirst() {

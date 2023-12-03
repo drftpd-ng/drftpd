@@ -58,7 +58,7 @@ public class ZipscriptVFSDataZip {
         try {
             return getDizInfoFromInode(_dir);
         } catch (KeyNotFoundException e1) {
-            // bah, let's load it
+            logger.debug("No DIZINFO registered for inode - {}", _dir);
         }
         // There is no existing dizinfo so we need to retrieve it and set it
         // Find the info for the first zip file we come across and use that
@@ -80,13 +80,22 @@ public class ZipscriptVFSDataZip {
                 }
             }
         }
+
+        // We wait potentially very long above for diz info and we could have gotten dizinfo by now, so check that
+        try {
+            return getDizInfoFromInode(_dir);
+        } catch (KeyNotFoundException e1) {
+            logger.debug("No DIZINFO registered for inode (2) - {}", _dir);
+        }
+
+        // We still have no valid DIZINFO on inode, so check if we have valid and register it!
         if (dizInfo != null) {
             if (dizInfo.isValid()) {
-                logger.debug("Found valid diz info for {}", _dir);
+                logger.debug("Storing DIZINFO on inode in VFS as it is valid - {}", _dir);
                 _dir.addPluginMetaData(DizInfo.DIZINFO, dizInfo);
                 return dizInfo;
             } else {
-                logger.warn("We found diz information, but not valid for {}", _dir);
+                logger.warn("Inode has no DIZINFO and the one we got from slave(s) is not valid - {}", _dir);
             }
         }
         throw new FileNotFoundException("No usable zip files found in directory");
