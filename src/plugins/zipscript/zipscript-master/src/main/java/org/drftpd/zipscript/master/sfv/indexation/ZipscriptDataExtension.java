@@ -114,17 +114,21 @@ public class ZipscriptDataExtension implements IndexDataExtensionInterface {
             throws IOException {
         int offline = 0;
         int present = 0;
+        int transferring = 0;
         for (FileHandle file : dir.getFilesUnchecked()) {
             if (file.isFile() && file.getName().toLowerCase().endsWith(".zip")) {
                 if (!file.isUploading()) {
                     present++;
+                } else {
+                    logger.debug("getDizStatus(), dir: {}, Transferring: {}", dir, file);
+                    transferring++;
                 }
                 if (!file.isAvailable()) {
                     offline++;
                 }
             }
         }
-        logger.debug("getDizStatus(), dir: {}, total: {}, offline: {}, present: {}", dir, dizInfo.getTotal(), offline, present);
+        logger.debug("getDizStatus(), dir: {}, total: {}, offline: {}, present: {}, transferring: {}", dir, dizInfo.getTotal(), offline, present, transferring);
         return new DizStatus(dizInfo.getTotal(), offline, present);
     }
 }

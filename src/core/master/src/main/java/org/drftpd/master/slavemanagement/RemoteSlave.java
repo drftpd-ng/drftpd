@@ -878,7 +878,6 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
                         try {
                             rt = getTransfer(ats.getTransferIndex());
                         } catch (SlaveUnavailableException e1) {
-
                             // no reason for slave thread to be running if the
                             // slave is not online
                             return;

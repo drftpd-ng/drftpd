@@ -40,8 +40,10 @@ public class TransferPointer {
         if (vfsInode.isFile()) {
             _vfsObject = (VirtualFileSystemFile) vfsInode;
             if (transfer.getTransferDirection() == Transfer.TRANSFER_RECEIVING_UPLOAD) {
+                logger.debug("TransferPointer() - Adding upload for {}", transfer);
                 _vfsObject.addUpload(transfer);
             } else if (transfer.getTransferDirection() == Transfer.TRANSFER_SENDING_DOWNLOAD) {
+                logger.debug("TransferPointer() - Adding download for {}", transfer);
                 _vfsObject.addDownload(transfer);
             } else {
                 throw new IllegalArgumentException("Transfer has to have a direction");
@@ -53,8 +55,10 @@ public class TransferPointer {
 
     public void unlinkPointer(RemoteTransfer transfer) {
         if (transfer.getTransferDirection() == Transfer.TRANSFER_RECEIVING_UPLOAD) {
+            logger.debug("unlinkPointer() - Removing upload for {}", transfer);
             _vfsObject.removeUpload(transfer);
         } else if (transfer.getTransferDirection() == Transfer.TRANSFER_SENDING_DOWNLOAD) {
+            logger.debug("unlinkPointer() - Removing download for {}", transfer);
             _vfsObject.removeDownload(transfer);
         } else {
             throw new IllegalArgumentException("Transfer has to have a direction");
