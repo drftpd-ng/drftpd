@@ -57,24 +57,41 @@ public class ZipscriptVFSDataZip {
     public DizInfo getDizInfo() throws IOException, NoAvailableSlaveException {
         try {
             return getDizInfoFromInode(_dir);
-        } catch (KeyNotFoundException e1) {
-            logger.debug("No DIZINFO registered for inode - {}", _dir);
-        }
+        } catch (KeyNotFoundException ignore1) {}
+
         // There is no existing dizinfo so we need to retrieve it and set it
         // Find the info for the first zip file we come across and use that
         DizInfo dizInfo = null;
         for (FileHandle file : _dir.getFilesUnchecked()) {
-            if (file.getName().toLowerCase().endsWith(".zip") && file.getSize() > 0 && file.getXfertime() != -1) {
-                RemoteSlave rslave = file.getASlaveForFunction();
-                String index;
+            // We only care for files
+            if (!file.isFile()) {
+                continue;
+            }
+            // Only care for files ending in .zip
+            if (!file.getName().toLowerCase().endsWith(".zip")) {
+                continue;
+            }
+            // Ignore any files that are not complete yet
+            if (file.isUploading()) {
+                continue;
+            }
+
+            // If we get here we have a .diz file that should be complete and we can get valid dizinfo
+            if (file.getSize() > 0 && file.getXfertime() != -1) {
                 try {
-                    index = getZipIssuer().issueZipDizInfoToSlave(rslave, file.getPath());
+                    RemoteSlave rslave = file.getASlaveForFunction();
+                    logger.debug("Trying to retrieve DIZINFO from slave {} for file {}", rslave, file);
+                    String index = getZipIssuer().issueZipDizInfoToSlave(rslave, file.getPath());
                     dizInfo = fetchDizInfoFromIndex(rslave, index);
+                } catch (NoAvailableSlaveException e) {
+                    // Not an issue, file was available but slave dropped, try next file
                 } catch (SlaveUnavailableException e) {
                     // okay, it went offline while trying, try next file
                 } catch (RemoteIOException e) {
                     // continue, the next zip might work
                 }
+
+                // If we have valid dizinfo stop the loop
                 if (dizInfo != null && dizInfo.isValid()) {
                     break;
                 }
@@ -84,9 +101,7 @@ public class ZipscriptVFSDataZip {
         // We wait potentially very long above for diz info and we could have gotten dizinfo by now, so check that
         try {
             return getDizInfoFromInode(_dir);
-        } catch (KeyNotFoundException e1) {
-            logger.debug("No DIZINFO registered for inode (2) - {}", _dir);
-        }
+        } catch (KeyNotFoundException ignore2) {}
 
         // We still have no valid DIZINFO on inode, so check if we have valid and register it!
         if (dizInfo != null) {
