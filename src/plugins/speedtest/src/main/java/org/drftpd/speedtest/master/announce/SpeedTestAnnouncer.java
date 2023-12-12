@@ -57,7 +57,7 @@ public class SpeedTestAnnouncer extends AbstractAnnouncer {
     }
 
     public String[] getEventTypes() {
-        return new String[]{"speedTest"};
+        return new String[]{"speedtest"};
     }
 
     public void setResourceBundle(ResourceBundle bundle) {
@@ -66,7 +66,7 @@ public class SpeedTestAnnouncer extends AbstractAnnouncer {
 
     @EventSubscriber
     public void onSpeedTestEvent(SpeedTestEvent event) {
-        AnnounceWriter writer = _config.getSimpleWriter("speedTest");
+        AnnounceWriter writer = _config.getSimpleWriter("speedtest");
         // Check we got a writer back, if it is null do nothing and ignore the event
         if (writer != null) {
             Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
