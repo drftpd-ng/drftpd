@@ -32,7 +32,7 @@ import java.io.FileNotFoundException;
  * @version $Id$
  */
 public class TransferPointer {
-    protected static final Logger logger = LogManager.getLogger(InodeHandle.class);
+    protected static final Logger logger = LogManager.getLogger(TransferPointer.class);
     private VirtualFileSystemFile _vfsObject = null;
 
     public TransferPointer(String path, RemoteTransfer transfer) throws FileNotFoundException {

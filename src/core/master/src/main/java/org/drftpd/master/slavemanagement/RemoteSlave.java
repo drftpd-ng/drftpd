@@ -1065,6 +1065,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
         }
 
         try {
+            logger.debug("Sending {}", rac);
             out.writeObject(rac);
             out.flush();
             out.reset();
