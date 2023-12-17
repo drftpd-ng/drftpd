@@ -79,6 +79,9 @@ public class RemoteTransfer {
                 }
                 _pointer = null;
             }
+
+            // Send out an event to inform people a transfer was complete
+            _rslave.getGlobalContext().getEventService().publishAsync(new TransferCompleteEvent(_path, _status));
         }
     }
 
@@ -149,17 +152,26 @@ public class RemoteTransfer {
             return;
         }
         logger.warn("Abort() called for [{}] with reason: {}", toString(), reason);
+
+        // We need to catch the SlaveUnavailableException if thrown but need to unlink before we update _status
+        Throwable t = null;
+
         try {
             SlaveManager.getBasicIssuer().issueAbortToSlave(_rslave, getTransferIndex(), reason);
         } catch (SlaveUnavailableException e) {
-            _status = new TransferStatus(getTransferIndex(), e);
-        } finally {
-            synchronized (TRANSFER_LOCK) {
-                if (_pointer != null && _transferDirection != Transfer.TRANSFER_UNKNOWN) {
-                    _pointer.unlinkPointer(this);
-                }
-                _pointer = null;
+            t = e;
+        }
+
+        synchronized (TRANSFER_LOCK) {
+            if (_pointer != null && _transferDirection != Transfer.TRANSFER_UNKNOWN) {
+                _pointer.unlinkPointer(this);
             }
+            _pointer = null;
+        }
+
+        // We aborted the upload so reset the TransferStatus
+        if (t != null) {
+            _status = new TransferStatus(getTransferIndex(), t);
         }
     }
 
