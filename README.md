@@ -159,6 +159,51 @@ Create new Application via Run -> Edit Configurations
 
 Start debug Slave
 
+## Docker (experimental)
+Docker images are automatically built from git tags. You can view the available images here: https://github.com/drftpd-ng/drftpd/pkgs/container/drftpd
+
+The Docker images run in rootless mode. The mounted volumes must be writable by UID 1000.
+
+A script is provided to initialize the config directory with the default config files. On first start of a container, set the entrypoint to run the initconfig script (see below). The config must be set as for a regular installation. The container can then be started with the default entrypoint.
+One may also mount existing DrFTPD directories.
+
+Example minimal compose file for the master:
+```
+  drftpd-master:
+    image: ghcr.io/drftpd-ng/drftpd:master-latest
+    environment:
+      - JAVA_TOOL_OPTIONS=-Djdk.tls.acknowledgeCloseNotify=true -Xms3G -Xmx3G -XX:+UseZGC -Dlog4j.configurationFile=config/log4j2-master.xml
+    ports:
+      - 1099:1099/tcp
+      - 2121:2121/tcp
+      - 50000-60000:50000-60000/tcp
+    # Note: UID 1000 must have write access
+    volumes:
+      - /path/to/drftpd/master/config:/home/drftpd/master/config
+      - /path/to/drftpd/master/index.bkp:/home/drftpd/master/index.bkp
+      - /path/to/drftpd/master/logs:/home/drftpd/master/logs
+      - /path/to/drftpd/master/userdata:/home/drftpd/master/userdata
+    # Optional: initialize the config directory with the default config files
+    #entrypoint: sh -c ./initconfig
+```
+
+Example minimal compose file for slaves:
+```
+  drftpd-slave:
+    image: ghcr.io/drftpd-ng/drftpd:slave-latest
+    environment:
+      - JAVA_TOOL_OPTIONS=-Djdk.tls.acknowledgeCloseNotify=true -Xms1G -Xmx1G -XX:+UseZGC -Dlog4j.configurationFile=config/log4j2-slave.xml
+    ports:
+      - 30000-33000:30000-33000/tcp
+    # Note: UID 1000 must have write access
+    volumes:
+      - /path/to/drftpd/slave/config:/home/drftpd/slave/config
+      - /path/to/drftpd/slave/logs:/home/drftpd/slave/logs
+      - /path/to/drftpd/slave/site:/home/drftpd/slave/site
+    # Optional: initialize the config directory with the default config files
+    #entrypoint: sh -c ./initconfig
+```
+
 ## Documentation (incomplete)
 You can find the documentation online at: https://github.com/drftpd-ng/drftpd/wiki
 

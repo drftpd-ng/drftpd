@@ -1,0 +1,85 @@
+name: Build and push Docker images
+
+on:
+  push:
+    tags:
+      - 4.*
+#  github.ref_name is used for tagging the image, consider this if/when dispatching workflow manually
+#  workflow_dispatch:
+  
+jobs:
+
+  docker:
+
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@f95db51fddba0c2d1ec667646a06c2ce06100226 # v3.0.0
+
+#       For logging in to Docker Hub, configure secrets accordingly
+#      - name: Login to Docker Hub
+#        if: github.event_name != 'pull_request'
+#        uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v3.0.0
+#        with:
+#          registry: docker.io
+#          username: ${{ env.DOCKERHUB_USERNAME }}
+#          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Login to GitHub Container Registry
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v3.0.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build
+        uses: docker/build-push-action@4a13e500e55cf31b7a5d59a38ab2040ab0f42f56 # v5.1.0
+        with:
+          context: .
+          platforms: linux/amd64
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Push master
+        if: github.event_name != 'pull_request'
+        uses: docker/build-push-action@4a13e500e55cf31b7a5d59a38ab2040ab0f42f56 # v5.1.0
+        with:
+          context: .
+          platforms: linux/amd64
+          push: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          target: drftpd-master
+          tags: |
+            ghcr.io/${{ github.actor }}/drftpd:master-latest
+            ghcr.io/${{ github.actor }}/drftpd:master-${{ github.ref_name }}
+#            tags for pushing to Docker Hub
+#            docker.io/${{ env.DOCKERHUB_USERNAME }}/drftpd:master-latest
+#            docker.io/${{ env.DOCKERHUB_USERNAME }}/drftpd:master-${{ github.ref_name }}
+
+      - name: Push slave
+        if: github.event_name != 'pull_request'
+        uses: docker/build-push-action@4a13e500e55cf31b7a5d59a38ab2040ab0f42f56 # v5.1.0
+        with:
+          context: .
+          platforms: linux/amd64
+          push: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          target: drftpd-slave
+          tags: |
+            ghcr.io/${{ github.actor }}/drftpd:slave-latest
+            ghcr.io/${{ github.actor }}/drftpd:slave-${{ github.ref_name }}
+#            tags for pushing to Docker Hub
+#            docker.io/${{ env.DOCKERHUB_USERNAME }}/drftpd:slave-latest
+#            docker.io/${{ env.DOCKERHUB_USERNAME }}/drftpd:slave-${{ github.ref_name }}
