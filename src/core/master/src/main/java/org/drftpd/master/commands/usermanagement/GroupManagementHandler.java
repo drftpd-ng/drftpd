@@ -148,7 +148,7 @@ public class GroupManagementHandler extends CommandInterface {
             }
 
             requestedGroup.purge();
-            response.addComment(session.jprintf(_bundle, "addgroup.success", env, request.getUser()));
+            response.addComment(session.jprintf(_bundle, "delgroup.success", env, request.getUser()));
             logger.info("'{}' purged '{}'", currentUser.getName(), requestedGroup.getName());
         } catch (GroupFileException e) {
             return new CommandResponse(452, e.getMessage());
