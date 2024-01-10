@@ -1,4 +1,4 @@
-FROM amazoncorretto:17-alpine3.18 AS baseimage
+FROM amazoncorretto:21-alpine3.18 AS baseimage
 RUN set -ux \
     && adduser drftpd -u 1000 -D -h /home/drftpd
 
