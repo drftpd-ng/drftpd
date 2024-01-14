@@ -79,9 +79,6 @@ public class RemoteTransfer {
                 }
                 _pointer = null;
             }
-
-            // Send out an event to inform people a transfer was complete
-            _rslave.getGlobalContext().getEventService().publishAsync(new TransferCompleteEvent(_path, _status));
         }
     }
 
