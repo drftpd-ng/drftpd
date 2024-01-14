@@ -66,50 +66,57 @@ public class ZipscriptVFSDataSFV {
             }
             logger.warn("Removing SFVINFO as it failed checks - {}", _dir);
             _dir.removePluginMetaData(SFVInfo.SFVINFO);
-        } catch (KeyNotFoundException e1) {
-            logger.debug("No SFVINFO registered for inode - {}", _dir);
+        } catch (KeyNotFoundException ignore1) {
         } catch (ObjectNotValidException e) {
             // the previous sfv file is no longer of type VirtualFileSystemFile
             logger.warn("Removing SFVINFO as it is no longer valid - {}", _dir);
             _dir.removePluginMetaData(SFVInfo.SFVINFO);
         }
 
+        SFVInfo sfvInfo = null;
         for (FileHandle file : _dir.getFilesUnchecked()) {
-            if (file.getSize() > 0 && file.getXfertime() != -1 && file.getName().toLowerCase().endsWith(".sfv")) {
-                SFVInfo info = null;
+            // We only care for files
+            if (!file.isFile()) {
+                continue;
+            }
+            // Only care for files ending in .zip
+            if (!file.getName().toLowerCase().endsWith(".sfv")) {
+                continue;
+            }
+            // Ignore any files that are not complete yet
+            if (file.isUploading()) {
+                continue;
+            }
 
-                // TODO: This used to be 5, changed it to 2 in the hopes we speed up this process
-                // Do not understand why we retry here?
-                for (int i = 0; i < 2; i++) {
-                    RemoteSlave rslave = file.getASlaveForFunction();
-                    String index;
-                    try {
-                        index = getSFVIssuer().issueSFVFileToSlave(rslave, file.getPath());
-                        info = fetchSFVInfoFromIndex(rslave, index);
-                    } catch (SlaveUnavailableException e) {
-                        // okay, it went offline while trying, continue
-                        continue;
-                    } catch (RemoteIOException e) {
-                        throw new IOException(e.getMessage());
-                    }
-                }
-
-                // Try one more time to load from vfs
-                // We assume the cleanup above is not needed here (again)
+            if (file.getSize() > 0 && file.getXfertime() != -1) {
                 try {
-                    return getSFVInfoFromInode(_dir);
-                } catch (KeyNotFoundException e1) {
-                    logger.debug("No SFVINFO registered for inode (2) - {}", _dir);
+                    RemoteSlave rslave = file.getASlaveForFunction();
+                    logger.debug("Trying to retrieve SFVINFO from slave {} for file {}", rslave, file);
+                    String index = getSFVIssuer().issueSFVFileToSlave(rslave, file.getPath());
+                    sfvInfo = fetchSFVInfoFromIndex(rslave, index);
+                } catch (NoAvailableSlaveException | RemoteIOException | SlaveUnavailableException e) {
+                    // There is only 1 .sfv file if it fails throw exception
+                    throw new IOException(e.getMessage());
                 }
 
-                if (info != null) {
-                    _dir.addPluginMetaData(SFVInfo.SFVINFO, info);
-                    return info;
+                // If we have valid dizinfo stop the loop
+                if (sfvInfo != null) {
+                    break;
                 }
-
-                throw new SlaveUnavailableException("No slave for SFV file available");
             }
         }
+
+        // Try one more time to load from vfs
+        // We assume the cleanup above is not needed here (again)
+        try {
+            return getSFVInfoFromInode(_dir);
+        } catch (KeyNotFoundException ignore2) {}
+
+        if (sfvInfo != null) {
+            _dir.addPluginMetaData(SFVInfo.SFVINFO, sfvInfo);
+            return sfvInfo;
+        }
+
         throw new FileNotFoundException("No SFV file in directory");
     }
 

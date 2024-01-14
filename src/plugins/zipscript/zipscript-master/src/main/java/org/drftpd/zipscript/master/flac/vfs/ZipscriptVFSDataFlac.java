@@ -64,96 +64,91 @@ public class ZipscriptVFSDataFlac {
             if (isFLACInfoValid(getFlacInfoFromInode(_inode))) {
                 return getFlacInfoFromInode(_inode);
             }
-        } catch (KeyNotFoundException e1) {
-            logger.debug("No FLACINFO registered for inode - {}", _inode);
-        }
+        } catch (KeyNotFoundException ignore1) {}
+
+        FlacInfo flacinfo = null;
+        DirectoryHandle dir = null;
 
         // There is no existing flacinfo so we need to retrieve it and set it
         if (_inode instanceof DirectoryHandle) {
             // Find the info for the first flac file we come across and use that
-            DirectoryHandle dir = (DirectoryHandle) _inode;
-            FlacInfo flacinfo = null;
+            dir = (DirectoryHandle) _inode;
+
             for (FileHandle file : dir.getFilesUnchecked()) {
-                if (file.getName().toLowerCase().endsWith(".flac") && file.getSize() > 0 && file.getXfertime() != -1) {
-                    RemoteSlave rslave = file.getASlaveForFunction();
-                    String index;
+                // We only care for files
+                if (!file.isFile()) {
+                    continue;
+                }
+                // Only care for files ending in .flac
+                if (!file.getName().toLowerCase().endsWith(".flac")) {
+                    continue;
+                }
+                // Ignore any files that are not complete yet
+                if (file.isUploading()) {
+                    continue;
+                }
+
+                if (file.getSize() > 0 && file.getXfertime() != -1) {
                     try {
-                        index = getFlacIssuer().issueFlacFileToSlave(rslave, file.getPath());
+                        RemoteSlave rslave = file.getASlaveForFunction();
+                        logger.debug("Trying to retrieve FLACINFO from slave {} for file {}", rslave, file);
+                        String index = getFlacIssuer().issueFlacFileToSlave(rslave, file.getPath());
                         flacinfo = fetchFlacInfoFromIndex(rslave, index);
-                        if (isFLACInfoValid(flacinfo)) {
-                            break;
-                        }
+                    } catch (NoAvailableSlaveException e) {
+                        // Not an issue, file was available but slave dropped, try next file
                     } catch (SlaveUnavailableException e) {
                         // okay, it went offline while trying, try next file
                     } catch (RemoteIOException e) {
                         // continue, the next flac might work
                     }
                 }
-            }
 
-            // We wait potentially very long above for flac info and we could have gotten flacinfo by now, so check that
-            try {
-                if (isFLACInfoValid(getFlacInfoFromInode(_inode))) {
-                    return getFlacInfoFromInode(_inode);
+                if (flacinfo != null && isFLACInfoValid(flacinfo)) {
+                    break;
                 }
-            } catch (KeyNotFoundException e1) {
-                logger.debug("No FLACINFO registered for inode (2) - {}", _inode);
             }
-
-            if (flacinfo != null) {
-                dir.addPluginMetaData(FlacInfo.FLACINFO, flacinfo);
-                return flacinfo;
-            }
-            throw new FileNotFoundException("No usable flac files found in directory");
         } else if (_inode instanceof FileHandle) {
             FileHandle file = (FileHandle) _inode;
 
             // Get Parent (directory)
-            DirectoryHandle dir = file.getParent();
+            dir = file.getParent();
 
-            FlacInfo flacinfo = null;
-            if (file.getSize() > 0 && file.getXfertime() != -1) {
-                for (int i = 0; i < 2; i++) { // TODO: Changed this from 5 to 2, why do we retry?
+            if (!file.isUploading() && file.getSize() > 0 && file.getXfertime() != -1) {
+                try {
                     RemoteSlave rslave = file.getASlaveForFunction();
-                    String index;
-                    try {
-                        index = getFlacIssuer().issueFlacFileToSlave(rslave, file.getPath());
-                        flacinfo = fetchFlacInfoFromIndex(rslave, index);
-                        if (isFLACInfoValid(flacinfo)) {
-                            break;
-                        }
-
-                        flacinfo = null;
-                    } catch (SlaveUnavailableException e) {
-                        // okay, it went offline while trying, continue
-                    } catch (RemoteIOException e) {
-                        throw new IOException(e.getMessage());
-                    }
+                    logger.debug("Trying to retrieve FLACINFO from slave {} for file {}", rslave, file);
+                    String index = getFlacIssuer().issueFlacFileToSlave(rslave, file.getPath());
+                    flacinfo = fetchFlacInfoFromIndex(rslave, index);
+                } catch (SlaveUnavailableException | RemoteIOException e) {
+                    throw new IOException(e.getMessage());
                 }
             }
 
-            // We wait potentially very long above for flac info and we could have gotten flacinfo by now, so check that
-            try {
-                if (isFLACInfoValid(getFlacInfoFromInode(_inode))) {
-                    return getFlacInfoFromInode(_inode);
-                }
-            } catch (KeyNotFoundException e1) {
-                logger.debug("No FLACINFO registered for inode (2) - {}", _inode);
-            }
-
-            if (flacinfo != null) {
+            if (flacinfo != null && isFLACInfoValid(flacinfo)) {
                 _setDir = true;
-
-                // Update flacinfo on the file and parent (dir) inode
-                dir.addPluginMetaData(FlacInfo.FLACINFO, flacinfo);
-                _inode.addPluginMetaData(FlacInfo.FLACINFO, flacinfo);
-                return flacinfo;
             }
-
-            throw new FileNotFoundException("Unable to obtain info for flac file");
+        } else {
+            throw new IllegalArgumentException("Unsupported Inode passed for FLACINFO extraction");
         }
 
-        throw new IllegalArgumentException("Inode type other than directory or file passed in");
+        // We wait potentially very long above for flac info and we could have gotten flacinfo by now, so check that
+        try {
+            if (isFLACInfoValid(getFlacInfoFromInode(_inode))) {
+                return getFlacInfoFromInode(_inode);
+            }
+        } catch (KeyNotFoundException ignore2) {}
+
+        if (flacinfo != null) {
+            dir.addPluginMetaData(FlacInfo.FLACINFO, flacinfo);
+            if (_inode instanceof FileHandle) {
+                _inode.addPluginMetaData(FlacInfo.FLACINFO, flacinfo);
+            }
+            return flacinfo;
+        }
+        if (_inode instanceof DirectoryHandle) {
+            throw new FileNotFoundException("No usable flac files found in directory");
+        }
+        throw new FileNotFoundException("Unable to obtain info for FLAC file");
     }
 
     public boolean isFirst() {
