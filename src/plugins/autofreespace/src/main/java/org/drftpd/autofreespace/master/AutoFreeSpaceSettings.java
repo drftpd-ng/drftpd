@@ -69,18 +69,21 @@ public class AutoFreeSpaceSettings {
             _mode = MODE_DISABLED;
         }
 
+        List<String> excludeSlaves = new ArrayList<>();
+
         // Handle excludeSlaves
         if (p.getProperty("excluded.slaves") != null) {
             for (String slaveName : p.getProperty("excluded.slaves").trim().split("\\s")) {
                 try {
                     GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(slaveName);
-                    _excludeSlaves.add(slaveName);
+                    excludeSlaves.add(slaveName);
                 } catch (ObjectNotFoundException e) {
                     logger.error("Slave with name [{}] does not exist, config error", slaveName, e);
                 }
             }
         }
 
+        _excludeSlaves = excludeSlaves;
         logger.debug("excluded Slaves set to {}", _excludeSlaves.toString());
 
         Map<String, Section> sections = new HashMap<>();
