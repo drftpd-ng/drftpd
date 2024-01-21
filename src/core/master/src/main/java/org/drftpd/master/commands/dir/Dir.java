@@ -377,6 +377,7 @@ public class Dir extends CommandInterface {
                 argument = request.getCurrentDirectory().getPath() + VirtualFileSystem.separator + argument;
             }
         }
+
         DirectoryHandle toDir;
         String newName;
         User user = request.getSession().getUserNull(request.getUser());
@@ -384,10 +385,10 @@ public class Dir extends CommandInterface {
         try {
             toDir = request.getCurrentDirectory().getDirectory(argument, user);
             // toDir exists and is a directory, so we're just changing the parent directory and not the name
-            // unless toInode and fromInode are the same (i.e. a case change)
+            // unless toInode and fromInode are the same (i.e. a case change) which we do not support
+            // They should rename to another name with a 1 added or something like on windows
             if (fromInode.isDirectory() && fromInode.equals(toDir)) {
-                toDir = request.getCurrentDirectory().getDirectory(VirtualFileSystem.stripLast(argument), user);
-                newName = VirtualFileSystem.getLast(argument);
+                return StandardCommandManager.genericResponse("RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN_FILE_EXISTS");
             } else {
                 // There are two possibilites here, the target is an existing link or a directory
                 // Check to see if a link with the target name exists
@@ -466,6 +467,10 @@ public class Dir extends CommandInterface {
         InodeHandle toInode;
         if (fromInode.isDirectory()) {
             toInode = new DirectoryHandle(toDir.getPath() + VirtualFileSystem.separator + newName);
+            // Make sure we absolutely deny rename with only case change.
+            if (fromInode.equals(toInode)) {
+                return StandardCommandManager.genericResponse("RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN_FILE_EXISTS");
+            }
         } else if (fromInode.isFile()) {
             toInode = new FileHandle(toDir.getPath() + VirtualFileSystem.separator + newName);
         } else if (fromInode.isLink()) {
@@ -475,11 +480,6 @@ public class Dir extends CommandInterface {
         }
 
         try {
-			/*logger.debug("before rename toInode-" +toInode);
-			logger.debug("before rename toInode.getPath()-" + toInode.getPath());
-			logger.debug("before rename toInode.getParent()-" + toInode.getParent());
-			logger.debug("before rename toInode.getParent().getPath()-" + toInode.getParent().getPath());*/
-
             fromInode.renameTo(request.getSession().getUserNull(request.getUser()), toInode);
         } catch (PermissionDeniedException e) {
             // The Permission Denied Exception actually tells why it is not allowed
@@ -495,11 +495,6 @@ public class Dir extends CommandInterface {
         }
 
         request.getSession().setObject(RENAMETO, toInode);
-
-		/*logger.debug("after rename toInode-" +toInode);
-		logger.debug("after rename toInode.getPath()-" + toInode.getPath());
-		logger.debug("after rename toInode.getParent()-" + toInode.getParent());
-		logger.debug("after rename toInode.getParent().getPath()-" + toInode.getParent().getPath());*/
 
         return new CommandResponse(250, request.getCommand().toUpperCase() + " command successful.");
     }
