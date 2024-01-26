@@ -99,7 +99,7 @@ public class ZipscriptVFSDataSFV {
                     throw new IOException(e.getMessage());
                 }
 
-                // If we have valid dizinfo stop the loop
+                // If we have valid sfvInfo stop the loop
                 if (sfvInfo != null) {
                     break;
                 }
