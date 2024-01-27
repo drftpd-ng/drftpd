@@ -60,6 +60,8 @@ public class ZipscriptVFSDataFlac {
     }
 
     public FlacInfo getFlacInfo() throws IOException, NoAvailableSlaveException {
+        // If this is a filehandle, we want mp3info for ALL files so it is OK if missing
+        // If this is a dirhandle it means no file was processed yet which is also OK
         try {
             if (isFLACInfoValid(getFlacInfoFromInode(_inode))) {
                 return getFlacInfoFromInode(_inode);
@@ -104,6 +106,9 @@ public class ZipscriptVFSDataFlac {
                 }
 
                 if (flacinfo != null && isFLACInfoValid(flacinfo)) {
+                    // Write the flacinfo metadata for this file as we got it here
+                    // If the directory does not have it yet we handle that below
+                    file.addPluginMetaData(FlacInfo.FLACINFO, flacinfo);
                     break;
                 }
             }
@@ -124,30 +129,36 @@ public class ZipscriptVFSDataFlac {
                 }
             }
 
+            // No point in continueing if the flacinfo we got is not valid
             if (flacinfo != null && isFLACInfoValid(flacinfo)) {
-                _setDir = true;
+                throw new FileNotFoundException("Unable to obtain info for FLAC file");
             }
+
+            // Write the flacinfo metadata for this file as we got it here
+            // If the directory does not have it yet we handle that below
+            file.addPluginMetaData(FlacInfo.FLACINFO, flacinfo);
         } else {
             throw new IllegalArgumentException("Unsupported Inode passed for FLACINFO extraction");
         }
 
-        // We wait potentially very long above for flac info and we could have gotten flacinfo by now, so check that
+        // We check the directory here and return dir mp3info if it exists.
+        // If it does not exist we set it and mark it as first (_setDir = true)
         try {
-            if (isFLACInfoValid(getFlacInfoFromInode(_inode))) {
-                return getFlacInfoFromInode(_inode);
+            if (isFLACInfoValid(getFlacInfoFromInode(dir))) {
+                return getFlacInfoFromInode(dir);
             }
         } catch (KeyNotFoundException ignore2) {}
 
         if (flacinfo != null) {
+            _setDir = true;
             dir.addPluginMetaData(FlacInfo.FLACINFO, flacinfo);
-            if (_inode instanceof FileHandle) {
-                _inode.addPluginMetaData(FlacInfo.FLACINFO, flacinfo);
-            }
             return flacinfo;
         }
         if (_inode instanceof DirectoryHandle) {
             throw new FileNotFoundException("No usable flac files found in directory");
         }
+
+        // We should not end up here, but safety net just in case
         throw new FileNotFoundException("Unable to obtain info for FLAC file");
     }
 

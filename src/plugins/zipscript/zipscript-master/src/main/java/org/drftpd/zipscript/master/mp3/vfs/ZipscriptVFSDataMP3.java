@@ -61,6 +61,8 @@ public class ZipscriptVFSDataMP3 {
     }
 
     public MP3Info getMP3Info() throws IOException, NoAvailableSlaveException {
+        // If this is a filehandle, we want mp3info for ALL files so it is OK if missing
+        // If this is a dirhandle it means no file was processed yet which is also OK
         try {
             if (isMP3InfoValid(getMP3InfoFromInode(_inode))) {
                 return getMP3InfoFromInode(_inode);
@@ -105,6 +107,9 @@ public class ZipscriptVFSDataMP3 {
                 }
 
                 if (mp3info != null && isMP3InfoValid(mp3info)) {
+                    // Write the mp3info metadata for this file as we got it here
+                    // If the directory does not have it yet we handle that below
+                    file.addPluginMetaData(MP3Info.MP3INFO, mp3info);
                     break;
                 }
             }
@@ -125,30 +130,36 @@ public class ZipscriptVFSDataMP3 {
                 }
             }
 
-            if (mp3info != null && isMP3InfoValid(mp3info)) {
-                _setDir = true;
+            // No point in continueing if the mp3info we got is not valid
+            if (mp3info == null || !isMP3InfoValid(mp3info)) {
+                throw new FileNotFoundException("Unable to obtain info for MP3 file");
             }
+
+            // Write the mp3info metadata for this file as we got it here
+            // If the directory does not have it yet we handle that below
+            file.addPluginMetaData(MP3Info.MP3INFO, mp3info);
         } else {
             throw new IllegalArgumentException("Unsupported Inode passed for MP3INFO extraction");
         }
 
-        // We wait potentially very long above for mp3 info and we could have gotten mp3info by now, so check that
+        // We check the directory here and return dir mp3info if it exists.
+        // If it does not exist we set it and mark it as first (_setDir = true)
         try {
-            if (isMP3InfoValid(getMP3InfoFromInode(_inode))) {
-                return getMP3InfoFromInode(_inode);
+            if (isMP3InfoValid(getMP3InfoFromInode(dir))) {
+                return getMP3InfoFromInode(dir);
             }
         } catch (KeyNotFoundException ignore2) {}
 
         if (mp3info != null) {
+            _setDir = true;
             dir.addPluginMetaData(MP3Info.MP3INFO, mp3info);
-            if (_inode instanceof FileHandle) {
-                _inode.addPluginMetaData(MP3Info.MP3INFO, mp3info);
-            }
             return mp3info;
         }
         if (_inode instanceof DirectoryHandle) {
             throw new FileNotFoundException("No usable mp3 files found in directory");
         }
+
+        // We should not end up here, but safety net just in case
         throw new FileNotFoundException("Unable to obtain info for MP3 file");
     }
 
