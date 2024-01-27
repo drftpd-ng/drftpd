@@ -130,7 +130,7 @@ public class ZipscriptVFSDataMP3 {
                 }
             }
 
-            // No point in continueing if the mp3info we got is not valid
+            // No point in continuing if the mp3info we got is not valid
             if (mp3info == null || !isMP3InfoValid(mp3info)) {
                 throw new FileNotFoundException("Unable to obtain info for MP3 file");
             }
