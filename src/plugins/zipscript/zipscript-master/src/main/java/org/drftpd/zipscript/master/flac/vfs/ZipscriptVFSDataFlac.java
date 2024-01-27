@@ -130,7 +130,7 @@ public class ZipscriptVFSDataFlac {
             }
 
             // No point in continuing if the flacinfo we got is not valid
-            if (flacinfo != null && isFLACInfoValid(flacinfo)) {
+            if (flacinfo == null || !isFLACInfoValid(flacinfo)) {
                 throw new FileNotFoundException("Unable to obtain info for FLAC file");
             }
 
