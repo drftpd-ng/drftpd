@@ -32,7 +32,6 @@ import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.master.vfs.InodeHandle;
 import org.drftpd.zipscript.common.mp3.ID3Tag;
 import org.drftpd.zipscript.common.mp3.MP3Info;
-import org.drftpd.zipscript.master.mp3.event.MP3Event;
 import org.drftpd.zipscript.master.mp3.vfs.ZipscriptVFSDataMP3;
 
 import java.io.FileNotFoundException;

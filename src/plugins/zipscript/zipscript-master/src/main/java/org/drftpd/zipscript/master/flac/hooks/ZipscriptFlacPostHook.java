@@ -32,7 +32,6 @@ import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.master.vfs.InodeHandle;
 import org.drftpd.zipscript.common.flac.FlacInfo;
 import org.drftpd.zipscript.common.flac.VorbisTag;
-import org.drftpd.zipscript.master.flac.event.FlacEvent;
 import org.drftpd.zipscript.master.flac.vfs.ZipscriptVFSDataFlac;
 
 import java.io.FileNotFoundException;
