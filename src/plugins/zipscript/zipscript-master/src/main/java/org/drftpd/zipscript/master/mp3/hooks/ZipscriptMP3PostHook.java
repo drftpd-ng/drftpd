@@ -160,8 +160,6 @@ public class ZipscriptMP3PostHook {
                 if (cfg.getProperty("stor.mp3info.enabled", "false").equalsIgnoreCase("true")) {
                     response.addComment(request.getSession().jprintf(_bundle, env, "stor.mp3info.text"));
                 }
-                FileHandle file = (FileHandle) inode;
-                GlobalContext.getEventService().publishAsync(new MP3Event(mp3Info, file.getParent(), mp3Data.isFirst()));
             } else {
                 response.addComment(request.getSession().jprintf(_bundle, env, "cwd.mp3info.text"));
             }

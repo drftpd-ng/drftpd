@@ -157,8 +157,6 @@ public class ZipscriptFlacPostHook {
                 if (cfg.getProperty("stor.flacinfo.enabled", "false").equalsIgnoreCase("true")) {
                     response.addComment(request.getSession().jprintf(_bundle, env, "stor.flacinfo.text"));
                 }
-                FileHandle file = (FileHandle) inode;
-                GlobalContext.getEventService().publishAsync(new FlacEvent(flacInfo, file.getParent(), flacData.isFirst()));
             } else {
                 response.addComment(request.getSession().jprintf(_bundle, env, "cwd.flacinfo.text"));
             }

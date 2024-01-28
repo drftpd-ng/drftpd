@@ -31,6 +31,7 @@ import org.drftpd.master.vfs.InodeHandle;
 import org.drftpd.zipscript.common.mp3.AsyncResponseMP3Info;
 import org.drftpd.zipscript.common.mp3.ID3Tag;
 import org.drftpd.zipscript.common.mp3.MP3Info;
+import org.drftpd.zipscript.master.mp3.event.MP3Event;
 import org.drftpd.zipscript.master.mp3.ZipscriptMP3Issuer;
 
 import java.io.FileNotFoundException;
@@ -45,11 +46,9 @@ public class ZipscriptVFSDataMP3 {
     private static final Logger logger = LogManager.getLogger(ZipscriptVFSDataMP3.class);
 
     private final InodeHandle _inode;
-    private boolean _setDir;
 
     public ZipscriptVFSDataMP3(InodeHandle inode) {
         _inode = inode;
-        _setDir = false;
     }
 
     private boolean isMP3InfoValid(MP3Info mp3info) {
@@ -143,7 +142,7 @@ public class ZipscriptVFSDataMP3 {
         }
 
         // We check the directory here and return dir mp3info if it exists.
-        // If it does not exist we set it and mark it as first (_setDir = true)
+        // If it does not exist we set it
         try {
             if (isMP3InfoValid(getMP3InfoFromInode(dir))) {
                 return getMP3InfoFromInode(dir);
@@ -151,8 +150,8 @@ public class ZipscriptVFSDataMP3 {
         } catch (KeyNotFoundException ignore2) {}
 
         if (mp3info != null) {
-            _setDir = true;
             dir.addPluginMetaData(MP3Info.MP3INFO, mp3info);
+            GlobalContext.getEventService().publishAsync(new MP3Event(mp3info, dir, true));
             return mp3info;
         }
         if (_inode instanceof DirectoryHandle) {
@@ -161,10 +160,6 @@ public class ZipscriptVFSDataMP3 {
 
         // We should not end up here, but safety net just in case
         throw new FileNotFoundException("Unable to obtain info for MP3 file");
-    }
-
-    public boolean isFirst() {
-        return _setDir;
     }
 
     private MP3Info getMP3InfoFromInode(InodeHandle vfsInodeHandle) throws FileNotFoundException, KeyNotFoundException {

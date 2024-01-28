@@ -31,6 +31,7 @@ import org.drftpd.master.vfs.InodeHandle;
 import org.drftpd.zipscript.common.flac.AsyncResponseFlacInfo;
 import org.drftpd.zipscript.common.flac.FlacInfo;
 import org.drftpd.zipscript.common.flac.VorbisTag;
+import org.drftpd.zipscript.master.flac.event.FlacEvent;
 import org.drftpd.zipscript.master.flac.ZipscriptFlacIssuer;
 
 import java.io.FileNotFoundException;
@@ -44,11 +45,9 @@ public class ZipscriptVFSDataFlac {
     private static final Logger logger = LogManager.getLogger(ZipscriptVFSDataFlac.class);
 
     private final InodeHandle _inode;
-    private boolean _setDir;
 
     public ZipscriptVFSDataFlac(InodeHandle inode) {
         _inode = inode;
-        _setDir = false;
     }
 
     private boolean isFLACInfoValid(FlacInfo flacinfo) {
@@ -142,7 +141,7 @@ public class ZipscriptVFSDataFlac {
         }
 
         // We check the directory here and return dir mp3info if it exists.
-        // If it does not exist we set it and mark it as first (_setDir = true)
+        // If it does not exist we set it
         try {
             if (isFLACInfoValid(getFlacInfoFromInode(dir))) {
                 return getFlacInfoFromInode(dir);
@@ -150,8 +149,8 @@ public class ZipscriptVFSDataFlac {
         } catch (KeyNotFoundException ignore2) {}
 
         if (flacinfo != null) {
-            _setDir = true;
             dir.addPluginMetaData(FlacInfo.FLACINFO, flacinfo);
+            GlobalContext.getEventService().publishAsync(new FlacEvent(flacinfo, dir, true));
             return flacinfo;
         }
         if (_inode instanceof DirectoryHandle) {
@@ -160,10 +159,6 @@ public class ZipscriptVFSDataFlac {
 
         // We should not end up here, but safety net just in case
         throw new FileNotFoundException("Unable to obtain info for FLAC file");
-    }
-
-    public boolean isFirst() {
-        return _setDir;
     }
 
     private FlacInfo getFlacInfoFromInode(InodeHandle vfsInodeHandle) throws FileNotFoundException, KeyNotFoundException {
