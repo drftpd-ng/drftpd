@@ -44,7 +44,7 @@ public class RootCollection {
         validateRoots(roots);
         _roots = new ArrayList<>(roots);
         _slave = slave;
-        int numThreads = Math.min(_roots.size(), Runtime.getRuntime().availableProcessors());
+        int numThreads = _roots.size() * _slave.rootCollectionThreads();
         logger.debug("Initializing the pool with {} threads", numThreads);
         _pool = new ThreadPoolExecutor(numThreads, numThreads, 300, TimeUnit.SECONDS,
                 new LinkedBlockingQueue<>(), new RootListHandlerThreadFactory(),

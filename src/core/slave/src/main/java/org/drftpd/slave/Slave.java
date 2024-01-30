@@ -121,6 +121,8 @@ public class Slave extends SslConfigurationLoader {
 
     private int _threadedThreads;
 
+    private int _rootCollectionThreads;
+
     private boolean _concurrentRootIteration;
 
     private InetAddress _bindIP;
@@ -198,6 +200,12 @@ public class Slave extends SslConfigurationLoader {
             _threadedThreads = Integer.parseInt(p.getProperty("threadedthreads", "0"));
         } catch (NumberFormatException e) {
             logger.warn("Unable to read threadedthreads from config, falling back to cpu core calculation");
+        }
+        _rootCollectionThreads = 3;
+        try {
+            _threadedThreads = Integer.parseInt(p.getProperty("rootCollectionThreads", "3"));
+        } catch (NumberFormatException e) {
+            logger.warn("Unable to read rootCollectionThreads from config, falling back to 3");
         }
 
         logger.info("Slave {} connecting to master at {}. Configuration: Conccurrent Root Iteration: {}",
@@ -684,6 +692,10 @@ public class Slave extends SslConfigurationLoader {
 
     public int threadedThreads() {
         return _threadedThreads;
+    }
+
+    public int rootCollectionThreads() {
+        return _rootCollectionThreads;
     }
 
     public boolean concurrentRootIteration() {
