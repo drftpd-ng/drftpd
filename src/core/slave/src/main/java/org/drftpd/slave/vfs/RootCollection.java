@@ -46,7 +46,7 @@ public class RootCollection {
         _slave = slave;
         int numThreads = _roots.size() * _slave.rootCollectionThreads();
         logger.debug("Initializing the pool with {} threads", numThreads);
-        _pool = new ThreadPoolExecutor(numThreads, numThreads, 300, TimeUnit.SECONDS,
+        _pool = new ThreadPoolExecutor(1, numThreads, 300, TimeUnit.SECONDS,
                 new LinkedBlockingQueue<>(), new RootListHandlerThreadFactory(),
                 new ThreadPoolExecutor.CallerRunsPolicy());
         _pool.allowCoreThreadTimeOut(true);

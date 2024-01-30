@@ -178,6 +178,14 @@ public class Slave extends SslConfigurationLoader {
         _maxPathLength = Integer.parseInt(p.getProperty("maxPathLength", "4096"));
 
         _concurrentRootIteration = p.getProperty("concurrent.root.iteration", "false").equalsIgnoreCase("true");
+
+        _rootCollectionThreads = 3;
+        try {
+            _rootCollectionThreads = Integer.parseInt(p.getProperty("rootCollectionThreads", "3"));
+        } catch (NumberFormatException e) {
+            logger.warn("Unable to read rootCollectionThreads from config, falling back to 3");
+        }
+
         _roots = getDefaultRootBasket();
         loadDiskSelection(p);
 
@@ -200,12 +208,6 @@ public class Slave extends SslConfigurationLoader {
             _threadedThreads = Integer.parseInt(p.getProperty("threadedthreads", "0"));
         } catch (NumberFormatException e) {
             logger.warn("Unable to read threadedthreads from config, falling back to cpu core calculation");
-        }
-        _rootCollectionThreads = 3;
-        try {
-            _threadedThreads = Integer.parseInt(p.getProperty("rootCollectionThreads", "3"));
-        } catch (NumberFormatException e) {
-            logger.warn("Unable to read rootCollectionThreads from config, falling back to 3");
         }
 
         logger.info("Slave {} connecting to master at {}. Configuration: Conccurrent Root Iteration: {}",
