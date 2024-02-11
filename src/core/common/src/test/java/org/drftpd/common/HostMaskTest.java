@@ -21,7 +21,6 @@ import org.drftpd.common.util.HostMask;
 import org.junit.jupiter.api.Test;
 
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.regex.PatternSyntaxException;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -41,6 +40,12 @@ public class HostMaskTest {
         h = new HostMask("1.*.*.*");
         assertTrue(h.matchesHost(InetAddress.getByName("1.2.3.4")));
         assertFalse(h.matchesHost(InetAddress.getByName("2.2.3.4")));
+        h = new HostMask("5.*.7.8");
+        assertTrue(h.matchesHost(InetAddress.getByName("5.6.7.8")));
+        assertFalse(h.matchesHost(InetAddress.getByName("6.6.7.8")));
+        h = new HostMask("9.10.*.12");
+        assertTrue(h.matchesHost(InetAddress.getByName("9.10.11.12")));
+        assertFalse(h.matchesHost(InetAddress.getByName("9.10.11.5")));
     }
 
     @Test
