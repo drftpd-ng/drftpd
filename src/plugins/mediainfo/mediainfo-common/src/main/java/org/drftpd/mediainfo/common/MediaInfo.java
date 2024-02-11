@@ -159,10 +159,11 @@ public class MediaInfo implements Serializable {
         // Calculate valid filesize for mp4, mkv and avi
         switch (realFormat) {
             case "MP4" -> {
-                IsoFile isoFile = new IsoFile(filePath);
-                if (isoFile.getSize() != mediaInfo.getActFileSize()) {
-                    mediaInfo.setSampleOk(false);
-                    mediaInfo.setCalFileSize(isoFile.getSize());
+                try (IsoFile isoFile = new IsoFile(filePath)) {
+                    if (isoFile.getSize() != mediaInfo.getActFileSize()) {
+                        mediaInfo.setSampleOk(false);
+                        mediaInfo.setCalFileSize(isoFile.getSize());
+                    }
                 }
             }
             case "MKV" -> {
