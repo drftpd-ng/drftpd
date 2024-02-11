@@ -31,6 +31,7 @@ import org.drftpd.master.vfs.InodeHandle;
 import org.drftpd.zipscript.common.mp3.AsyncResponseMP3Info;
 import org.drftpd.zipscript.common.mp3.ID3Tag;
 import org.drftpd.zipscript.common.mp3.MP3Info;
+import org.drftpd.zipscript.master.mp3.event.MP3Event;
 import org.drftpd.zipscript.master.mp3.ZipscriptMP3Issuer;
 
 import java.io.FileNotFoundException;
@@ -45,11 +46,9 @@ public class ZipscriptVFSDataMP3 {
     private static final Logger logger = LogManager.getLogger(ZipscriptVFSDataMP3.class);
 
     private final InodeHandle _inode;
-    private boolean _setDir;
 
     public ZipscriptVFSDataMP3(InodeHandle inode) {
         _inode = inode;
-        _setDir = false;
     }
 
     private boolean isMP3InfoValid(MP3Info mp3info) {
@@ -61,104 +60,106 @@ public class ZipscriptVFSDataMP3 {
     }
 
     public MP3Info getMP3Info() throws IOException, NoAvailableSlaveException {
+        // If this is a filehandle, we want mp3info for ALL files so it is OK if missing
+        // If this is a dirhandle it means no file was processed yet which is also OK
         try {
             if (isMP3InfoValid(getMP3InfoFromInode(_inode))) {
                 return getMP3InfoFromInode(_inode);
             }
-        } catch (KeyNotFoundException e1) {
-            logger.debug("No MP3INFO registered for inode - {}", _inode);
-        }
+        } catch (KeyNotFoundException ignore1) {}
 
         // There is no existing mp3info so we need to retrieve it and set it
+        MP3Info mp3info = null;
+        DirectoryHandle dir = null;
+
         if (_inode instanceof DirectoryHandle) {
             // Find the info for the first mp3 file we come across and use that
-            DirectoryHandle dir = (DirectoryHandle) _inode;
-            MP3Info mp3info = null;
+            dir = (DirectoryHandle) _inode;
+
             for (FileHandle file : dir.getFilesUnchecked()) {
-                if (file.getName().toLowerCase().endsWith(".mp3") && file.getSize() > 0 && file.getXfertime() != -1) {
-                    RemoteSlave rslave = file.getASlaveForFunction();
-                    String index;
+                // We only care for files
+                if (!file.isFile()) {
+                    continue;
+                }
+                // Only care for files ending in .mp3
+                if (!file.getName().toLowerCase().endsWith(".mp3")) {
+                    continue;
+                }
+                // Ignore any files that are not complete yet
+                if (file.isUploading()) {
+                    continue;
+                }
+
+                if (file.getSize() > 0 && file.getXfertime() != -1) {
                     try {
-                        index = getMP3Issuer().issueMP3FileToSlave(rslave, file.getPath());
+                        RemoteSlave rslave = file.getASlaveForFunction();
+                        logger.debug("Trying to retrieve MP3INFO from slave {} for file {}", rslave, file);
+                        String index = getMP3Issuer().issueMP3FileToSlave(rslave, file.getPath());
                         mp3info = fetchMP3InfoFromIndex(rslave, index);
-                        if (isMP3InfoValid(mp3info)) {
-                            break;
-                        }
+                    } catch (NoAvailableSlaveException e) {
+                        // Not an issue, file was available but slave dropped, try next file
                     } catch (SlaveUnavailableException e) {
                         // okay, it went offline while trying, try next file
                     } catch (RemoteIOException e) {
                         // continue, the next mp3 might work
                     }
                 }
-            }
 
-            // We wait potentially very long above for mp3 info and we could have gotten mp3info by now, so check that
-            try {
-                if (isMP3InfoValid(getMP3InfoFromInode(_inode))) {
-                    return getMP3InfoFromInode(_inode);
+                if (mp3info != null && isMP3InfoValid(mp3info)) {
+                    // Write the mp3info metadata for this file as we got it here
+                    // If the directory does not have it yet we handle that below
+                    file.addPluginMetaData(MP3Info.MP3INFO, mp3info);
+                    break;
                 }
-            } catch (KeyNotFoundException e1) {
-                logger.debug("No MP3INFO registered for inode (2) - {}", dir);
             }
-
-            if (mp3info != null) {
-                dir.addPluginMetaData(MP3Info.MP3INFO, mp3info);
-                return mp3info;
-            }
-            throw new FileNotFoundException("No usable mp3 files found in directory");
         } else if (_inode instanceof FileHandle) {
             FileHandle file = (FileHandle) _inode;
 
             // Get Parent (directory)
-            DirectoryHandle dir = file.getParent();
+            dir = file.getParent();
 
-            MP3Info mp3info = null;
-            if (file.getSize() > 0 && file.getXfertime() != -1) {
-                for (int i = 0; i < 2; i++) { // TODO: Changed this from 5 to 2, why do we retry?
+            if (!file.isUploading() && file.getSize() > 0 && file.getXfertime() != -1) {
+                try {
                     RemoteSlave rslave = file.getASlaveForFunction();
-                    String index;
-                    try {
-                        index = getMP3Issuer().issueMP3FileToSlave(rslave, file.getPath());
-                        mp3info = fetchMP3InfoFromIndex(rslave, index);
-                        if (isMP3InfoValid(mp3info)) {
-                            break;
-                        }
-
-                        mp3info = null;
-                    } catch (SlaveUnavailableException e) {
-                        // okay, it went offline while trying, continue
-                    } catch (RemoteIOException e) {
-                        throw new IOException(e.getMessage());
-                    }
+                    logger.debug("Trying to retrieve MP3INFO from slave {} for file {}", rslave, file);
+                    String index = getMP3Issuer().issueMP3FileToSlave(rslave, file.getPath());
+                    mp3info = fetchMP3InfoFromIndex(rslave, index);
+                } catch (SlaveUnavailableException | RemoteIOException e) {
+                    throw new IOException(e.getMessage());
                 }
             }
 
-            // We wait potentially very long above for diz info and we could have gotten dizinfo by now, so check that
-            try {
-                if (isMP3InfoValid(getMP3InfoFromInode(dir))) {
-                    return getMP3InfoFromInode(dir);
-                }
-            } catch (KeyNotFoundException e1) {
-                logger.debug("No MP3INFO registered for inode (2) - {}", dir);
+            // No point in continuing if the mp3info we got is not valid
+            if (mp3info == null || !isMP3InfoValid(mp3info)) {
+                throw new FileNotFoundException("Unable to obtain info for MP3 file");
             }
 
-            if (mp3info != null) {
-                _setDir = true;
-
-                // Update mp3info on the file and parent (dir) inode
-                dir.addPluginMetaData(MP3Info.MP3INFO, mp3info);
-                _inode.addPluginMetaData(MP3Info.MP3INFO, mp3info);
-                return mp3info;
-            }
-
-            throw new FileNotFoundException("Unable to obtain info for MP3 file");
+            // Write the mp3info metadata for this file as we got it here
+            // If the directory does not have it yet we handle that below
+            file.addPluginMetaData(MP3Info.MP3INFO, mp3info);
+        } else {
+            throw new IllegalArgumentException("Unsupported Inode passed for MP3INFO extraction");
         }
 
-        throw new IllegalArgumentException("Inode type other than directory or file passed in");
-    }
+        // We check the directory here and return dir mp3info if it exists.
+        // If it does not exist we set it
+        try {
+            if (isMP3InfoValid(getMP3InfoFromInode(dir))) {
+                return getMP3InfoFromInode(dir);
+            }
+        } catch (KeyNotFoundException ignore2) {}
 
-    public boolean isFirst() {
-        return _setDir;
+        if (mp3info != null) {
+            dir.addPluginMetaData(MP3Info.MP3INFO, mp3info);
+            GlobalContext.getEventService().publishAsync(new MP3Event(mp3info, dir, true));
+            return mp3info;
+        }
+        if (_inode instanceof DirectoryHandle) {
+            throw new FileNotFoundException("No usable mp3 files found in directory");
+        }
+
+        // We should not end up here, but safety net just in case
+        throw new FileNotFoundException("Unable to obtain info for MP3 file");
     }
 
     private MP3Info getMP3InfoFromInode(InodeHandle vfsInodeHandle) throws FileNotFoundException, KeyNotFoundException {

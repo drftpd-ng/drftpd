@@ -705,11 +705,11 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
         long reportIdle = 60000L;
 
         while (isOnline() && !_indexWithCommands.containsKey(index)) {
-            // will wait a maximum of 100 milliseconds before waking up
+            // will wait a maximum of 50 milliseconds before waking up
             // Any longer and we risk slow exchange of commands between master and slave
             try {
                 synchronized (_commandMonitor) {
-                    _commandMonitor.wait(100);
+                    _commandMonitor.wait(50);
                 }
             } catch (InterruptedException e) {
                 // Ignore interupt
@@ -1065,6 +1065,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
         }
 
         try {
+            logger.debug("Sending {}", rac);
             out.writeObject(rac);
             out.flush();
             out.reset();

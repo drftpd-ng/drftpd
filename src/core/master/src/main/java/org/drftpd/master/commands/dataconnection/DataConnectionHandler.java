@@ -968,7 +968,7 @@ public class DataConnectionHandler extends CommandInterface {
                         }
 
                         try {
-                            Thread.sleep(100);
+                            Thread.sleep(50);
                         } catch (InterruptedException ignored) {}
                     }
                 } else if (isStor) {
@@ -995,7 +995,7 @@ public class DataConnectionHandler extends CommandInterface {
                             break;
                         }
                         try {
-                            Thread.sleep(100);
+                            Thread.sleep(50);
                         } catch (InterruptedException ignored) { }
                     }
                 } else {

@@ -98,6 +98,10 @@ public class SiteBotManagement extends CommandInterface {
         for (ChannelConfig chan : bot.getConfig().getChannels()) {
             if (chan.getBlowKey() != null) {
                 if (chan.isPermitted(user) && !chan.getBlowKey().equals("")) {
+                    if (chan.getBlowMode().equalsIgnoreCase("cbc")) {
+                        outputKeys.add(chan.getName() + " - " + chan.getBlowMode() + " - cbc:" + chan.getBlowKey());
+                        continue;
+                    }
                     outputKeys.add(chan.getName() + " - " + chan.getBlowMode() + " - " + chan.getBlowKey());
                 }
             }

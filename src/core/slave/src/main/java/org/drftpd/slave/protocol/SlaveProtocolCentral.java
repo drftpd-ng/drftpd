@@ -180,6 +180,7 @@ public class SlaveProtocolCentral {
         AsyncResponse ar;
 
         try {
+            logger.debug("Invoking {}", m);
             ar = (AsyncResponse) m.invoke(ah, new Object[]{ac});
         } catch (Exception e) {
             logger.error("Unable to invoke: {}", m.toGenericString(), e);

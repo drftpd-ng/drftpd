@@ -17,6 +17,9 @@
  */
 package org.drftpd.master.network;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import org.drftpd.common.exceptions.RemoteIOException;
 import org.drftpd.common.exceptions.TransferFailedException;
 import org.drftpd.common.slave.ConnectInfo;
@@ -39,6 +42,8 @@ import java.net.InetSocketAddress;
  */
 public class RemoteTransfer {
 
+    private static final Logger logger = LogManager.getLogger(RemoteTransfer.class);
+
     private final InetSocketAddress _address;
 
     private final TransferIndex _transferIndex;
@@ -53,6 +58,8 @@ public class RemoteTransfer {
 
     private TransferPointer _pointer;
 
+    private static final Object TRANSFER_LOCK = new Object();
+
     public RemoteTransfer(ConnectInfo ci, RemoteSlave rslave)
             throws SlaveUnavailableException {
         _transferIndex = ci.getTransferIndex();
@@ -65,7 +72,8 @@ public class RemoteTransfer {
         _status = ts;
 
         if (_status.isFinished()) {
-            synchronized (this) {
+            logger.debug("updateTransferStatus() - [{}] is finished", toString());
+            synchronized (TRANSFER_LOCK) {
                 if (_pointer != null && _transferDirection != Transfer.TRANSFER_UNKNOWN) {
                     _pointer.unlinkPointer(this);
                 }
@@ -140,17 +148,27 @@ public class RemoteTransfer {
             // no need to abort a transfer that isn't transferring
             return;
         }
+        logger.warn("Abort() called for [{}] with reason: {}", toString(), reason);
+
+        // We need to catch the SlaveUnavailableException if thrown but need to unlink before we update _status
+        Throwable t = null;
+
         try {
             SlaveManager.getBasicIssuer().issueAbortToSlave(_rslave, getTransferIndex(), reason);
         } catch (SlaveUnavailableException e) {
-            _status = new TransferStatus(getTransferIndex(), e);
-        } finally {
-            synchronized (this) {
-                if (_pointer != null && _transferDirection != Transfer.TRANSFER_UNKNOWN) {
-                    _pointer.unlinkPointer(this);
-                }
-                _pointer = null;
+            t = e;
+        }
+
+        synchronized (TRANSFER_LOCK) {
+            if (_pointer != null && _transferDirection != Transfer.TRANSFER_UNKNOWN) {
+                _pointer.unlinkPointer(this);
             }
+            _pointer = null;
+        }
+
+        // We aborted the upload so reset the TransferStatus
+        if (t != null) {
+            _status = new TransferStatus(getTransferIndex(), t);
         }
     }
 
@@ -167,7 +185,9 @@ public class RemoteTransfer {
         } catch (RemoteIOException e) {
             throw e.getCause();
         }
-        _pointer = new TransferPointer(_path, this);
+        synchronized (TRANSFER_LOCK) {
+            _pointer = new TransferPointer(_path, this);
+        }
     }
 
     public void sendFile(String path, char type, long position, String inetAddress, long minSpeed, long maxSpeed)
@@ -181,7 +201,9 @@ public class RemoteTransfer {
         } catch (RemoteIOException e) {
             throw e.getCause();
         }
-        _pointer = new TransferPointer(_path, this);
+        synchronized (TRANSFER_LOCK) {
+            _pointer = new TransferPointer(_path, this);
+        }
     }
 
     public String toString() {
@@ -191,6 +213,5 @@ public class RemoteTransfer {
         } catch (TransferFailedException e) {
             return getClass().getName() + "[file=" + _path + ",status=failed]";
         }
-
     }
 }

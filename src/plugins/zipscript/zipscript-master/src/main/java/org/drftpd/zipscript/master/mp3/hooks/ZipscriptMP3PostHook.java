@@ -32,7 +32,6 @@ import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.master.vfs.InodeHandle;
 import org.drftpd.zipscript.common.mp3.ID3Tag;
 import org.drftpd.zipscript.common.mp3.MP3Info;
-import org.drftpd.zipscript.master.mp3.event.MP3Event;
 import org.drftpd.zipscript.master.mp3.vfs.ZipscriptVFSDataMP3;
 
 import java.io.FileNotFoundException;
@@ -160,8 +159,6 @@ public class ZipscriptMP3PostHook {
                 if (cfg.getProperty("stor.mp3info.enabled", "false").equalsIgnoreCase("true")) {
                     response.addComment(request.getSession().jprintf(_bundle, env, "stor.mp3info.text"));
                 }
-                FileHandle file = (FileHandle) inode;
-                GlobalContext.getEventService().publishAsync(new MP3Event(mp3Info, file.getParent(), mp3Data.isFirst()));
             } else {
                 response.addComment(request.getSession().jprintf(_bundle, env, "cwd.mp3info.text"));
             }

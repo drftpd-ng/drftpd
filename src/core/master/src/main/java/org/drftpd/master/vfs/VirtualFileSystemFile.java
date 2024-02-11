@@ -163,6 +163,10 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
         return isTransferring(_uploads);
     }
 
+    public boolean isDownloading() {
+        return isTransferring(_downloads);
+    }
+
     public boolean isTransferring() {
         return isUploading() || isDownloading();
     }
@@ -215,10 +219,6 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
             }
         }
         return false;
-    }
-
-    public boolean isDownloading() {
-        return isTransferring(_downloads);
     }
 
     public boolean isAvailable() {

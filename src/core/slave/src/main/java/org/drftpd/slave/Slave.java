@@ -121,6 +121,8 @@ public class Slave extends SslConfigurationLoader {
 
     private int _threadedThreads;
 
+    private int _rootCollectionThreads;
+
     private boolean _concurrentRootIteration;
 
     private InetAddress _bindIP;
@@ -176,6 +178,14 @@ public class Slave extends SslConfigurationLoader {
         _maxPathLength = Integer.parseInt(p.getProperty("maxPathLength", "4096"));
 
         _concurrentRootIteration = p.getProperty("concurrent.root.iteration", "false").equalsIgnoreCase("true");
+
+        _rootCollectionThreads = 3;
+        try {
+            _rootCollectionThreads = Integer.parseInt(p.getProperty("rootCollectionThreads", "3"));
+        } catch (NumberFormatException e) {
+            logger.warn("Unable to read rootCollectionThreads from config, falling back to 3");
+        }
+
         _roots = getDefaultRootBasket();
         loadDiskSelection(p);
 
@@ -684,6 +694,10 @@ public class Slave extends SslConfigurationLoader {
 
     public int threadedThreads() {
         return _threadedThreads;
+    }
+
+    public int rootCollectionThreads() {
+        return _rootCollectionThreads;
     }
 
     public boolean concurrentRootIteration() {

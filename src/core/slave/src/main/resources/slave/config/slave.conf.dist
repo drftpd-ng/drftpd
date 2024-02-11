@@ -87,6 +87,12 @@ threadedremerge=true
 # Default: [0]
 threadedthreads=0
 
+# The amount of concurrent root collection actions we allow simultaneously.
+# If you have 1 root this will allow 3 concurrent I/O actions
+# If you have 4 roots this will allow 12 concurrent I/O actions to either drive
+# NOTE: If you have ZFS or RAID setups with multiple disks and 1 root you will want to increase this.
+rootCollectionThreads=3
+
 # Setting this to true will list the slave roots concurrently
 #  during remerge. This should only be set if the slave has more than
 #  one root and more than one CPU otherwise it will likely be slower
