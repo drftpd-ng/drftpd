@@ -45,6 +45,7 @@ import org.drftpd.master.vfs.InodeHandle;
 import org.drftpd.zipscript.common.sfv.SFVInfo;
 import org.drftpd.zipscript.common.sfv.SFVStatus;
 import org.drftpd.zipscript.master.sfv.event.SFVMemberTransferEvent;
+import org.drftpd.zipscript.master.sfv.vfs.ZipscriptVFSDataSFV;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;

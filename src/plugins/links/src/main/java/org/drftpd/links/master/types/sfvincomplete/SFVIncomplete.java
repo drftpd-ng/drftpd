@@ -21,7 +21,7 @@ import org.drftpd.links.master.LinkType;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.exceptions.SlaveUnavailableException;
 import org.drftpd.master.vfs.DirectoryHandle;
-import org.drftpd.zipscript.master.sfv.ZipscriptVFSDataSFV;
+import org.drftpd.zipscript.master.sfv.vfs.ZipscriptVFSDataSFV;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;

@@ -33,7 +33,7 @@ import org.drftpd.master.vfs.VirtualFileSystem;
 import org.drftpd.zipscript.common.sfv.SFVInfo;
 import org.drftpd.zipscript.common.sfv.SFVStatus;
 import org.drftpd.zipscript.master.sfv.SFVTools;
-import org.drftpd.zipscript.master.sfv.ZipscriptVFSDataSFV;
+import org.drftpd.zipscript.master.sfv.vfs.ZipscriptVFSDataSFV;
 import org.reflections.Reflections;
 
 import java.io.FileNotFoundException;

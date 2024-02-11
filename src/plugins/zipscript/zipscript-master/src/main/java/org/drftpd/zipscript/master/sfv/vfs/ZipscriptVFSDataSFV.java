@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.drftpd.zipscript.master.sfv;
+package org.drftpd.zipscript.master.sfv.vfs;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -31,6 +31,8 @@ import org.drftpd.master.vfs.ObjectNotValidException;
 import org.drftpd.zipscript.common.sfv.AsyncResponseSFVInfo;
 import org.drftpd.zipscript.common.sfv.SFVInfo;
 import org.drftpd.zipscript.common.sfv.SFVStatus;
+import org.drftpd.zipscript.master.sfv.SFVTools;
+import org.drftpd.zipscript.master.sfv.ZipscriptIssuer;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;

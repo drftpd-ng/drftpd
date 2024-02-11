@@ -29,9 +29,8 @@ import org.drftpd.master.event.ReloadEvent;
 import org.drftpd.master.event.TransferEvent;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.exceptions.SlaveUnavailableException;
-import org.drftpd.master.usermanager.encryptedjavabeans.EncryptedBeanUserManager;
 import org.drftpd.master.vfs.event.VirtualFileSystemInodeDeletedEvent;
-import org.drftpd.zipscript.master.sfv.ZipscriptVFSDataSFV;
+import org.drftpd.zipscript.master.sfv.vfs.ZipscriptVFSDataSFV;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;

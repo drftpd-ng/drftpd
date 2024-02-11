@@ -35,7 +35,7 @@ import org.drftpd.master.usermanager.User;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.zipscript.common.sfv.SFVInfo;
-import org.drftpd.zipscript.master.sfv.ZipscriptVFSDataSFV;
+import org.drftpd.zipscript.master.sfv.vfs.ZipscriptVFSDataSFV;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
