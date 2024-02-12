@@ -21,7 +21,7 @@ import org.drftpd.common.util.PropertyHelper;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.zipscript.common.sfv.SFVStatus;
 import org.drftpd.zipscript.common.zip.DizStatus;
-import org.drftpd.zipscript.master.sfv.ZipscriptVFSDataSFV;
+import org.drftpd.zipscript.master.sfv.vfs.ZipscriptVFSDataSFV;
 import org.drftpd.zipscript.master.zip.vfs.ZipscriptVFSDataZip;
 
 import java.util.Properties;

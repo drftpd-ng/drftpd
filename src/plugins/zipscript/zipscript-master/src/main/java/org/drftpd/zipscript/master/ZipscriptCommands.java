@@ -29,7 +29,7 @@ import org.drftpd.master.network.Session;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.vfs.*;
 import org.drftpd.zipscript.common.sfv.SFVInfo;
-import org.drftpd.zipscript.master.sfv.ZipscriptVFSDataSFV;
+import org.drftpd.zipscript.master.sfv.vfs.ZipscriptVFSDataSFV;
 import org.drftpd.zipscript.master.zip.RescanPostProcessDirInterface;
 import org.reflections.Reflections;
 
