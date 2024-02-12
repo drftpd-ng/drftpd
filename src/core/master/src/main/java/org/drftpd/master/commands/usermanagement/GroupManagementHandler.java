@@ -736,10 +736,10 @@ public class GroupManagementHandler extends CommandInterface {
         while (st.hasMoreTokens()) {
             String username = st.nextToken();
             User requestedUser = session.getUserNull(username);
-            env.put("targetuser", requestedUser.getName());
             if (requestedUser == null) {
                 response.addComment(session.jprintf(_bundle, "changegroupadmin.bad.user", env, request.getUser()));
             } else {
+                env.put("targetuser", requestedUser.getName());
                 try {
                     requestedGroup.removeAdmin(requestedUser);
                     logger.info("'{}' removed group admin '{}' from group '{}'", currentUser.getName(), requestedUser.getName(), groupname);
