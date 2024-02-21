@@ -72,7 +72,11 @@ public class RemoteTransfer {
         _status = ts;
 
         if (_status.isFinished()) {
-            logger.debug("updateTransferStatus() - [{}] is finished", toString());
+            if (_status.threwException()) {
+                logger.debug("updateTransferStatus() - [{}] is finished with an exception", toString(), _status.getThrowable());
+            } else {
+                logger.debug("updateTransferStatus() - [{}] is finished", toString());
+            }
             synchronized (TRANSFER_LOCK) {
                 if (_pointer != null && _transferDirection != Transfer.TRANSFER_UNKNOWN) {
                     _pointer.unlinkPointer(this);
@@ -148,7 +152,7 @@ public class RemoteTransfer {
             // no need to abort a transfer that isn't transferring
             return;
         }
-        logger.warn("Abort() called for [{}] with reason: {}", toString(), reason);
+        logger.warn("abort() called for [{}] with reason: {}", toString(), reason);
 
         // We need to catch the SlaveUnavailableException if thrown but need to unlink before we update _status
         Throwable t = null;
@@ -157,6 +161,21 @@ public class RemoteTransfer {
             SlaveManager.getBasicIssuer().issueAbortToSlave(_rslave, getTransferIndex(), reason);
         } catch (SlaveUnavailableException e) {
             t = e;
+        }
+
+        long sleepStart = System.currentTimeMillis();
+        // We need to wait for the remote transfer to be aborted, but not infinite so add a timeout
+        while (_pointer != null) {
+            logger.debug("abort() - waiting for remote abort to be done");
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                // Ignore
+            }
+            if ((System.currentTimeMillis() - sleepStart) >= 1000) {
+                logger.error("abort() - Timed out after waiting 1 second for slave to handle abort after");
+                break;
+            }
         }
 
         synchronized (TRANSFER_LOCK) {
