@@ -173,7 +173,7 @@ public class RemoteTransfer {
                 // Ignore
             }
             if ((System.currentTimeMillis() - sleepStart) >= 1000) {
-                logger.error("abort() - Timed out after waiting 1 second for slave to handle abort after");
+                logger.error("abort() - Timed out waiting 1 second for slave to handle abort()");
                 break;
             }
         }
