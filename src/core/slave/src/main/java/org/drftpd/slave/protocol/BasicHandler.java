@@ -286,7 +286,7 @@ public class BasicHandler extends AbstractHandler {
                             _pool.getQueue().size(), _pool.getActiveCount(), remergeResponses.size());
                     synchronized (remergeResponses) {
                         for (RemergeItem ri : remergeResponses) {
-                            logger.warn("Path [{}] in queue", ri.getAsyncResponseRemerge().getPath());
+                            logger.debug("Path [{}] in queue", ri.getAsyncResponseRemerge().getPath());
                         }
                     }
                     // Double the report interval
