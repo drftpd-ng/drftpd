@@ -103,7 +103,7 @@ public class Transfer {
     }
 
     public synchronized void abort(String reason) {
-        logger.warn("Abort was requested, starting to abort transfer");
+        logger.warn("Abort was requested, starting to abort transfer. Reason: " + reason);
         try {
             _abortReason = reason;
             if (_int != null) {
@@ -446,7 +446,7 @@ public class Transfer {
                     }
                     try {
                         count = _int.read(buff);
-                    } catch(SocketTimeoutException e) {
+                    } catch (SocketTimeoutException e) {
                         logger.debug("SocketTimeoutException happened, this is expected to make other logic work");
                         count = 0;
                     }
@@ -505,11 +505,12 @@ public class Transfer {
                 logger.debug(_int);
                 throw new TransferFailedException(e, getTransferStatus());
             } catch (IOException e) {
-                logger.warn("Catched IOException, forwarding as TransferFailedException", e);
                 logger.debug(_int);
                 if (e instanceof TransferFailedException) {
+                    // Forward as is
                     throw e;
                 }
+                logger.warn("Catched IOException, forwarding as TransferFailedException", e);
                 throw new TransferFailedException(e, getTransferStatus());
             }
         } finally {
