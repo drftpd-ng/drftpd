@@ -55,10 +55,10 @@ public class MediaInfoHandler extends AbstractHandler {
     public AsyncResponse handleMediaInfo(AsyncCommandArgument ac) {
         try {
             if (MediaInfo.hasWorkingMediaInfo()) {
-                return new AsyncResponseMediaInfo(ac.getIndex(),
-                        getMediaInfo(getSlaveObject(), ac.getArgs()));
+                return new AsyncResponseMediaInfo(ac.getIndex(), getMediaInfo(getSlaveObject(), ac.getArgs()));
             }
-            return new AsyncResponse(ac.getIndex());
+            // Always return a AsyncResponseMediaInfo, master side casts it and handles null correctly
+            return new AsyncResponseMediaInfo(ac.getIndex(), null);
         } catch (IOException e) {
             return new AsyncResponseException(ac.getIndex(), e);
         }

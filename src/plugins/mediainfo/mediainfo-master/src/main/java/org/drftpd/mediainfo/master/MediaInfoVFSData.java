@@ -17,6 +17,9 @@
  */
 package org.drftpd.mediainfo.master;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import org.drftpd.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.common.exceptions.RemoteIOException;
 import org.drftpd.master.GlobalContext;
@@ -34,52 +37,66 @@ import java.io.IOException;
  * @author scitz0
  */
 public class MediaInfoVFSData {
+
+    private static final Logger logger = LogManager.getLogger(MediaInfoVFSData.class);
+
     private final FileHandle _file;
 
     public MediaInfoVFSData(FileHandle file) {
         _file = file;
     }
 
+    private boolean isMediaInfoValid(MediaInfo mediaInfo) {
+        try {
+            if (_file.exists()) {
+                if (_file.getCheckSum() == mediaInfo.getChecksum()) {
+                    return true;
+                }
+            }
+        } catch (FileNotFoundException | NoAvailableSlaveException e) {
+            // Fine, file no longer exists or issue with slave
+        }
+        return false;
+    }
+
     public MediaInfo getMediaInfo() throws IOException, NoAvailableSlaveException, SlaveUnavailableException {
         try {
-            MediaInfo mediaInfo = getMediaInfoFromInode(_file);
-            try {
-                if (_file.exists()) {
-                    if (_file.getCheckSum() == mediaInfo.getChecksum()) {
-                        // 	passed all tests
-                        return mediaInfo;
-                    }
-                }
-            } catch (FileNotFoundException e) {
-                // just continue, it couldn't find the previous media file, the line below here will remove it
-                // we will then continue to try to find a new one right afterward
+            if (isMediaInfoValid(getMediaInfoFromInode(_file))) {
+                return getMediaInfoFromInode(_file);
             }
+            // Make sure there is no mediainfo registered
             _file.removePluginMetaData(MediaInfo.MEDIAINFO);
-        } catch (KeyNotFoundException e1) {
-            // bah, let's load it
-        }
+        } catch (KeyNotFoundException ignore1) {}
 
-        for (int i = 0; i < 5; i++) {
-            MediaInfo info;
-            RemoteSlave rslave = _file.getASlaveForFunction();
-            String index;
+        MediaInfo mediainfo = null;
+
+        // Make sure the file is not still uploading, has size and transfer time
+        if (!_file.isUploading() && _file.getSize() > 0 && _file.getXfertime() != -1) {
             try {
-                index = getMediaInfoIssuer().issueMediaFileToSlave(rslave, _file.getPath());
-                info = fetchMediaInfoFromIndex(rslave, index);
+                RemoteSlave rslave = _file.getASlaveForFunction();
+                logger.debug("Trying to retrieve MEDIAINFO from slave {} for file {}", rslave, _file);
+                String index = getMediaInfoIssuer().issueMediaFileToSlave(rslave, _file.getPath());
+                mediainfo = fetchMediaInfoFromIndex(rslave, index);
+            } catch (NoAvailableSlaveException e) {
+                // Not an issue, file was available but slave dropped
             } catch (SlaveUnavailableException e) {
-                // okay, it went offline while trying, continue
-                continue;
+                // okay, it went offline while trying, try next file
             } catch (RemoteIOException e) {
                 throw new IOException(e.getMessage());
             }
-            if (info == null) {
-                throw new IOException("Failed to run mediainfo on media file");
+
+            if (mediainfo != null && isMediaInfoValid(mediainfo)) {
+                // Add data to mediainfo
+                mediainfo.setChecksum(_file.getCheckSum());
+                mediainfo.setFileName(_file.getName());
+
+                // Write the mediainfo metadata for this file as we got it here
+                _file.addPluginMetaData(MediaInfo.MEDIAINFO, mediainfo);
+                return mediainfo;
             }
-            info.setChecksum(_file.getCheckSum());
-            info.setFileName(_file.getName());
-            _file.addPluginMetaData(MediaInfo.MEDIAINFO, info);
-            return info;
         }
+
+        // If we get here we did not get valid mediainfo
         throw new SlaveUnavailableException("No slave for media file available");
     }
 
@@ -92,7 +109,6 @@ public class MediaInfoVFSData {
     }
 
     private MediaInfoIssuer getMediaInfoIssuer() {
-        return (MediaInfoIssuer) GlobalContext.getGlobalContext().getSlaveManager().
-                getProtocolCentral().getIssuerForClass(MediaInfoIssuer.class);
+        return (MediaInfoIssuer) GlobalContext.getGlobalContext().getSlaveManager().getProtocolCentral().getIssuerForClass(MediaInfoIssuer.class);
     }
 }
