@@ -262,7 +262,7 @@ public class ListHandler extends CommandInterface {
         int numOnline = container.getNumOnline();
         int numTotal = container.getNumTotal();
 
-        boolean offlineFilesEnabled = GlobalContext.getConfig().getMainProperties().getProperty("files.offline.enabled", "true").eqaulsIgnoreCase("true");
+        boolean offlineFilesEnabled = GlobalContext.getConfig().getMainProperties().getProperty("files.offline.enabled", "true").equalsIgnoreCase("true");
 
         for (InodeHandle element : tempFileList) {
             if (offlineFilesEnabled && element.isFile()) {
