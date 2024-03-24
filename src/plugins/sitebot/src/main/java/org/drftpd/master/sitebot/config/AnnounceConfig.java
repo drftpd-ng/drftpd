@@ -51,6 +51,8 @@ public class AnnounceConfig {
         _confDir = confDir;
         _eventTypes = eventTypes;
         _bot = bot;
+
+        logger.info("Loading announce configuration with ({}) types", _eventTypes.size());
         Properties cfg = ConfigLoader.loadPluginConfig(confDir + "irc.announce.conf");
         loadConfig(cfg);
     }
@@ -61,6 +63,7 @@ public class AnnounceConfig {
         HashMap<String, ArrayList<AnnounceWriter>> sectionWriters = new HashMap<>();
         HashMap<String, AnnounceWriter> simpleWriters = new HashMap<>();
         for (String type : clonedEvents) {
+            logger.debug("Checking config for announce type - ({})", type);
             // First check for any path settings for this type
             ArrayList<AnnounceWriter> pWriters = new ArrayList<>();
             for (int i = 1; ; i++) {
@@ -70,6 +73,7 @@ public class AnnounceConfig {
                 }
                 String destination = cfg.getProperty(type + ".path." + i + ".destination");
                 if (destination == null || destination.equals("")) {
+                    logger.error("{}.path.{} exists, yet {}.path.{}.destination does not. This is in an incorrect configuration", type, i, type, i);
                     continue;
                 }
                 String displayName = cfg.getProperty(type + ".path." + i + ".displayname");
@@ -100,6 +104,7 @@ public class AnnounceConfig {
                 }
                 String destination = cfg.getProperty(type + ".section." + i + ".destination");
                 if (destination == null || destination.equals("")) {
+                    logger.error("{}.section.{} exists, yet {}.section.{}.destination does not. This is in an incorrect configuration", type, i, type, i);
                     continue;
                 }
                 ArrayList<OutputWriter> writers = parseDestinations(destination);
