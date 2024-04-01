@@ -172,7 +172,7 @@ Example minimal compose file for the master:
   drftpd-master:
     image: ghcr.io/drftpd-ng/drftpd:master-latest
     environment:
-      - JAVA_TOOL_OPTIONS=-Djdk.tls.acknowledgeCloseNotify=true -Xms3G -Xmx3G -XX:+UseZGC -Dlog4j.configurationFile=config/log4j2-master.xml
+      - JAVA_TOOL_OPTIONS=-Djdk.tls.acknowledgeCloseNotify=true -Xms3G -Xmx3G -XX:+UseG1GC -Dlog4j.configurationFile=config/log4j2-master.xml
     ports:
       - 1099:1099/tcp
       - 2121:2121/tcp
@@ -192,7 +192,7 @@ Example minimal compose file for slaves:
   drftpd-slave:
     image: ghcr.io/drftpd-ng/drftpd:slave-latest
     environment:
-      - JAVA_TOOL_OPTIONS=-Djdk.tls.acknowledgeCloseNotify=true -Xms1G -Xmx1G -XX:+UseZGC -Dlog4j.configurationFile=config/log4j2-slave.xml
+      - JAVA_TOOL_OPTIONS=-Djdk.tls.acknowledgeCloseNotify=true -Xms1G -Xmx1G -XX:+UseG1GC -Dlog4j.configurationFile=config/log4j2-slave.xml
     ports:
       - 30000-33000:30000-33000/tcp
     # Note: UID 1000 must have write access

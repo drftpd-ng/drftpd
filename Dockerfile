@@ -55,7 +55,7 @@ RUN set -ux \
     && chmod a+x initconfig
 
 # Add JVM Options here however you see fit and please check if the max memory Xmx is good enough for your master.
-ENV JAVA_TOOL_OPTIONS="-Djdk.tls.acknowledgeCloseNotify=true -Xms3G -Xmx3G -XX:+UseZGC -Dlog4j.configurationFile=config/log4j2-master.xml"
+ENV JAVA_TOOL_OPTIONS="-Djdk.tls.acknowledgeCloseNotify=true -Xms3G -Xmx3G -XX:+UseG1GC -Dlog4j.configurationFile=config/log4j2-master.xml"
 ENTRYPOINT ["java", "-classpath", "lib/*:build/*", "org.drftpd.master.Master"]
 
 
@@ -79,5 +79,5 @@ RUN set -ux \
     && chmod a+x initconfig
 
 # Add JVM Options here however you see fit and please check if the max memory Xmx is good enough for your slave.
-ENV JAVA_TOOL_OPTIONS="-Djdk.tls.acknowledgeCloseNotify=true -Xms1G -Xmx1G -XX:+UseZGC -Dlog4j.configurationFile=config/log4j2-slave.xml"
+ENV JAVA_TOOL_OPTIONS="-Djdk.tls.acknowledgeCloseNotify=true -Xms1G -Xmx1G -XX:+UseG1GC -Dlog4j.configurationFile=config/log4j2-slave.xml"
 ENTRYPOINT ["java", "-classpath", "lib/*:build/*", "org.drftpd.slave.Slave"]
