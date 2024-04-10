@@ -30,7 +30,7 @@ rem #################################################################
 
 set CLASSPATH=lib/*;build/*
 rem Add JVM Options here however you see fit and please check if the max memory Xmx is good enough for your slave.
-set JVM_OPTS=-Djdk.tls.acknowledgeCloseNotify=true -Xms1G -Xmx1G -XX:+UseZGC
+set JVM_OPTS=-Djdk.tls.acknowledgeCloseNotify=true -Xms1G -Xmx1G -XX:+UseG1GC
 set OPTIONS=-Dlog4j.configurationFile=config/log4j2-slave.xml
 set PROGRAM=org.drftpd.slave.Slave
 

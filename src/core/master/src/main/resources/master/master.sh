@@ -22,7 +22,7 @@
 # DrFTPD service example:
 #
 # Wrapper like: https://commons.apache.org/proper/commons-daemon/jsvc.html
-# 
+#
 # or
 #
 # Put the below unit into: ~/.config/systemd/user/drftpd-master.service
@@ -35,7 +35,7 @@
 # StartLimitBurst=5
 #
 # [Service]
-# Restart=on-failure
+# Restart=always
 # RestartSec=5s
 # Type=simple
 # UMask=007
@@ -43,7 +43,7 @@
 # ExecStart=/home/mastersitename/master/master.sh
 #
 # [Install]
-# WantedBy=multi-user.target
+# WantedBy=default.target
 #
 ############################################################################
 #
@@ -56,7 +56,7 @@
 
 CLASSPATH="lib/*:build/*"
 # Add JVM Options here however you see fit and please check if the max memory Xmx is good enough for your master.
-JVM_OPTS="-Djdk.tls.acknowledgeCloseNotify=true -Xms3G -Xmx3G -XX:+UseZGC"
+JVM_OPTS="-Djdk.tls.acknowledgeCloseNotify=true -Xms3G -Xmx3G -XX:+UseG1GC"
 OPTIONS="-Dlog4j.configurationFile=config/log4j2-master.xml"
 PROGRAM="org.drftpd.master.Master"
 
