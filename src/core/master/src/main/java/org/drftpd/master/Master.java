@@ -127,12 +127,16 @@ public class Master {
                 server = new ServerSocket(Integer.parseInt(PropertyHelper.getProperty(cfg, "master.port")));
                 logger.info("Listening on port {}", server.getLocalPort());
             }
+            server.setPerformancePreferences(1, 1, 0);
+            server.setSoTimeout(1000); // 1 second
 
             getConnectionManager().createThreadPool();
 
             while (true) {
                 try {
                     getConnectionManager().start(server.accept());
+                } catch(SocketTimeoutException e) {
+                    // Ignore
                 } catch(IOException e) {
                     logger.error("Caught IOException while accepting new connection", e);
                     break;
@@ -154,9 +158,9 @@ public class Master {
 
     public void createThreadPool() {
         int maxAliveThreads = GlobalContext.getConfig().getMaxUsersTotal() + GlobalContext.getConfig().getMaxUsersExempt();
-        int minAliveThreads = (int) Math.round(maxAliveThreads * 0.25);
+        // int minAliveThreads = (int) Math.round(maxAliveThreads * 0.25);
 
-        _pool = new ThreadPoolExecutor(minAliveThreads, maxAliveThreads, 3 * 60, TimeUnit.SECONDS,
+        _pool = new ThreadPoolExecutor(maxAliveThreads, maxAliveThreads, Long.MAX_VALUE, TimeUnit.NANOSECONDS,
                 new SynchronousQueue<>(), new ConnectionThreadFactory(), new ThreadPoolExecutor.AbortPolicy());
         _pool.allowCoreThreadTimeOut(false);
         _pool.prestartAllCoreThreads();
@@ -312,6 +316,7 @@ public class Master {
         try {
             _pool.execute(conn);
         } catch (RejectedExecutionException e) {
+            logger.warn("The pool rejected to start connection, closing");
             conn.printOutput(new FtpReply(421, "Connection closing"));
             conn.shutdownSocket();
             _conns.remove(conn);
