@@ -54,10 +54,10 @@ public class Master {
 
     private static Master _master = null;
 
-    private HashMap<String, Properties> _cmds;
+    private HashMap<String, Properties> _cmds = null;
     private CommandManagerInterface _commandManager = null;
-    private final List<BaseFtpConnection> _conns = new Vector<>();
-    private ThreadPoolExecutor _pool;
+    private final Vector<BaseFtpConnection> _conns = new Vector();
+    private ThreadPoolExecutor _pool = null;
 
     /**
      * If you're creating a ConnectionManager object and it's not part of a TestCase
@@ -156,11 +156,15 @@ public class Master {
         return GlobalContext.getGlobalContext();
     }
 
-    public void createThreadPool() {
-        int maxAliveThreads = GlobalContext.getConfig().getMaxUsersTotal() + GlobalContext.getConfig().getMaxUsersExempt();
-        // int minAliveThreads = (int) Math.round(maxAliveThreads * 0.25);
+    private int getMaxConnections() {
+        return GlobalContext.getConfig().getMaxUsersTotal() + GlobalContext.getConfig().getMaxUsersExempt();
+    }
 
-        _pool = new ThreadPoolExecutor(maxAliveThreads, maxAliveThreads, Long.MAX_VALUE, TimeUnit.NANOSECONDS,
+    public void createThreadPool() {
+        // Make sure we can accomodate the max connections
+        _conns.ensureCapacity(getMaxConnections());
+
+        _pool = new ThreadPoolExecutor(getMaxConnections(), getMaxConnections(), Long.MAX_VALUE, TimeUnit.NANOSECONDS,
                 new SynchronousQueue<>(), new ConnectionThreadFactory(), new ThreadPoolExecutor.AbortPolicy());
         _pool.allowCoreThreadTimeOut(false);
         _pool.prestartAllCoreThreads();
@@ -172,12 +176,11 @@ public class Master {
         logger.debug("Current # of threads: {}", _pool.getPoolSize());
     }
 
-    public FtpReply canLogin(BaseFtpConnection baseConn, User user) {
+    public FtpReply canLogin(BaseFtpConnection baseConnection, User user) {
         int count = GlobalContext.getConfig().getMaxUsersTotal();
 
-        // Math.max if the integer wraps
         if (GlobalContext.getConfig().isLoginExempt(user)) {
-            count = Math.max(count, count + GlobalContext.getConfig().getMaxUsersExempt());
+            count += GlobalContext.getConfig().getMaxUsersExempt();
         }
 
         // not >= because baseConn is already included
@@ -188,20 +191,19 @@ public class Master {
         int userCount = 0;
         int ipCount = 0;
 
-        synchronized (_conns) {
-            for (BaseFtpConnection tempConnection : _conns) {
-                try {
-                    User tempUser = tempConnection.getUser();
-
-                    if (tempUser.getName().equals(user.getName())) {
-                        userCount++;
-                        if (tempConnection.getClientAddress().equals(baseConn.getClientAddress())) {
-                            ipCount++;
-                        }
+        Enumeration<BaseFtpConnection> conns = _conns.elements();
+        while (conns.hasMoreElements()) {
+            try {
+                BaseFtpConnection tempConnection = conns.nextElement();
+                if (tempConnection.getUser().getName().equals(user.getName())) {
+                    userCount++;
+                    if (tempConnection.getClientAddress().equals(baseConnection.getClientAddress())) {
+                        ipCount++;
                     }
-                } catch (NoSuchUserException ex) {
-                    // do nothing, we found our current connection, baseConn = tempConnection
                 }
+
+            } catch (NoSuchUserException ex) {
+                // do nothing, we found our current connection, baseConnection = tempConnection
             }
         }
 
@@ -224,9 +226,9 @@ public class Master {
             return new FtpReply(530, "Sorry you are banned until " + banTime + "! (" + user.getKeyedMap().getObjectString(UserManagement.BANREASON) + ")");
         }
 
-        if (!baseConn.isSecure() && GlobalContext.getConfig().checkPermission("userrejectinsecure", user)) {
+        if (!baseConnection.isSecure() && GlobalContext.getConfig().checkPermission("userrejectinsecure", user)) {
             return new FtpReply(530, "USE SECURE CONNECTION");
-        } else if (baseConn.isSecure() && GlobalContext.getConfig().checkPermission("userrejectsecure", user)) {
+        } else if (baseConnection.isSecure() && GlobalContext.getConfig().checkPermission("userrejectsecure", user)) {
             return new FtpReply(530, "USE INSECURE CONNECTION");
         }
 

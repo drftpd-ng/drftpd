@@ -74,7 +74,7 @@ public class ConfigManager implements ConfigInterface {
     private PortRange _portRange = new PortRange(0);
     private boolean _hideIps = true;
 
-    private int _maxUsersTotal = Integer.MAX_VALUE;
+    private int _maxUsersTotal = 1;
     private int _maxUsersExempt = 0;
 
     private String[] _cipherSuites = null;
