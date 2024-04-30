@@ -138,6 +138,7 @@ public class TransferState {
     }
 
     public synchronized void reset() {
+        logger.debug("reset() called");
         _rslave = null;
         resetTransfer();
 
@@ -157,6 +158,7 @@ public class TransferState {
 
     public synchronized void resetTransfer() {
         if (_transfer != null) {
+            logger.debug("resetTransfer() called");
             _transfer.abort("reset");
         }
     }

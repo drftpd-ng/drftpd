@@ -188,7 +188,7 @@ public class ZipscriptCommands extends CommandInterface {
             }
         } else {
             logger.debug("Before we start looping dirs list contains {} entries", dirs.size());
-            while (dirs.size() > 0 && !session.isAborted()) {
+            while (dirs.size() > 0 && !session.isAborted()) {  // TODO: should we honour abort here?
                 DirectoryHandle workingDir = dirs.poll();
                 if (workingDir == null) {
                     logger.error("Found a 'null' entry after polling the directories, skipping");
