@@ -61,7 +61,7 @@ public abstract class CommandInterface {
         Multimap<Integer, HookContainer> preHooks = MultimapBuilder.treeKeys().linkedListValues().build();
         Set<Method> hooksMethods = GlobalContext.getHooksMethods();
 
-        logger.debug("[{}:{}] Looking for hooks to attach here", pluginName, method);
+        logger.debug("[{}:{}] Looking for hooks to attach", pluginName, method);
         try {
             for (Method annotatedMethod : hooksMethods) {
                 Class<?> declaringClass = annotatedMethod.getDeclaringClass();
@@ -98,7 +98,7 @@ public abstract class CommandInterface {
                 m.invoke(hook.getHookInterfaceInstance(), request, response);
             } catch (Exception e) {
                 // Not that important, this just means that this post hook failed and we'll just move onto the next one
-                logger.error("Error while loading/invoking posthook {}", m.toString(), e.getCause());
+                logger.error("Error while loading/invoking posthook [{}], reason: {}", m.toString(), e.getCause());
             }
         }
     }
