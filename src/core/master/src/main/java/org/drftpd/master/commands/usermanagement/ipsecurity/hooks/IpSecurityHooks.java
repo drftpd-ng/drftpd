@@ -178,4 +178,76 @@ public class IpSecurityHooks {
         }
         return request;
     }
+
+    /*
+     * Posthook method for GADDUSER - refresh allowed ips on main socket
+     */
+    @CommandHook(commands = "doSITE_GADDUSER", priority = 9999, type = HookType.POST)
+    public CommandRequestInterface doMasterSocketRefreshGADDUSERPostCheck(CommandRequest request) {
+        GlobalContext.getGlobalContext().getConnectionManager().refreshIPMasks();
+        return request;
+    }
+
+    /*
+     * Posthook method for ADDUSER - refresh allowed ips on main socket
+     */
+    @CommandHook(commands = "doSITE_ADDUSER", priority = 9999, type = HookType.POST)
+    public CommandRequestInterface doMasterSocketRefreshADDUSERPostCheck(CommandRequest request) {
+        GlobalContext.getGlobalContext().getConnectionManager().refreshIPMasks();
+        return request;
+    }
+
+    /*
+     * Posthook method for DELUSER - refresh allowed ips on main socket
+     */
+    @CommandHook(commands = "doSITE_DELUSER", priority = 9999, type = HookType.POST)
+    public CommandRequestInterface doMasterSocketRefreshDELUSERPostCheck(CommandRequest request) {
+        GlobalContext.getGlobalContext().getConnectionManager().refreshIPMasks();
+        return request;
+    }
+
+    /*
+     * Posthook method for DELPURGE - refresh allowed ips on main socket
+     */
+    @CommandHook(commands = "doSITE_DELPURGE", priority = 9999, type = HookType.POST)
+    public CommandRequestInterface doMasterSocketRefreshDELPURGEPostCheck(CommandRequest request) {
+        GlobalContext.getGlobalContext().getConnectionManager().refreshIPMasks();
+        return request;
+    }
+
+    /*
+     * Posthook method for PURGE - refresh allowed ips on main socket
+     */
+    @CommandHook(commands = "doSITE_PURGE", priority = 9999, type = HookType.POST)
+    public CommandRequestInterface doMasterSocketRefreshPURGEPostCheck(CommandRequest request) {
+        GlobalContext.getGlobalContext().getConnectionManager().refreshIPMasks();
+        return request;
+    }
+
+    /*
+     * Posthook method for READD - refresh allowed ips on main socket
+     */
+    @CommandHook(commands = "doSITE_READD", priority = 9999, type = HookType.POST)
+    public CommandRequestInterface doMasterSocketRefreshREADDPostCheck(CommandRequest request) {
+        GlobalContext.getGlobalContext().getConnectionManager().refreshIPMasks();
+        return request;
+    }
+
+    /*
+     * Posthook method for ADDIP - refresh allowed ips on main socket
+     */
+    @CommandHook(commands = "doSITE_ADDIP", priority = 9999, type = HookType.POST)
+    public CommandRequestInterface doMasterSocketRefreshADDIPostCheck(CommandRequest request) {
+        GlobalContext.getGlobalContext().getConnectionManager().refreshIPMasks();
+        return request;
+    }
+
+    /*
+     * Posthook method for DELIP - refresh allowed ips on main socket
+     */
+    @CommandHook(commands = "doSITE_DELIP", priority = 9999, type = HookType.POST)
+    public CommandRequestInterface doMasterSocketRefreshDELIPPostCheck(CommandRequest request) {
+        GlobalContext.getGlobalContext().getConnectionManager().refreshIPMasks();
+        return request;
+    }
 }

@@ -23,6 +23,7 @@ import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.common.socks.Ident;
 import org.drftpd.common.util.HostMask;
+import org.drftpd.common.util.HostMaskCollection;
 import org.drftpd.common.util.PropertyHelper;
 import org.drftpd.master.commands.CommandManagerInterface;
 import org.drftpd.master.commands.usermanagement.UserManagement;
@@ -58,6 +59,7 @@ public class Master {
     private CommandManagerInterface _commandManager = null;
     private final Vector<BaseFtpConnection> _conns = new Vector();
     private ThreadPoolExecutor _pool = null;
+    private List<HostMaskCollection> _hostmasks = null;
 
     /**
      * If you're creating a ConnectionManager object and it's not part of a TestCase
@@ -131,6 +133,9 @@ public class Master {
             server.setSoTimeout(1000); // 1 second
 
             getConnectionManager().createThreadPool();
+
+            // Load our hostsmasks from the user manager
+            getConnectionManager().refreshIPMasks();
 
             while (true) {
                 try {
@@ -267,6 +272,20 @@ public class Master {
         }
     }
 
+    /**
+     * Refreshes the ip masks we check on new connections
+     */
+    public void refreshIPMasks() {
+        List<HostMaskCollection> hostmasks = new ArrayList<>();
+        for (User u : GlobalContext.getGlobalContext().getUserManager().getAllUsers()) {
+            // Skip if user is deleted
+            if (!u.isDeleted()) {
+                hostmasks.add(u.getHostMaskCollection());
+            }
+        }
+        _hostmasks = hostmasks;
+    }
+
     public void start(Socket sock) throws IOException {
         if (getGlobalContext().isShutdown()) {
             new PrintWriter(sock.getOutputStream()).println("421 " + getGlobalContext().getShutdownMessage());
@@ -292,11 +311,8 @@ public class Master {
         if (!bouncer_allowed) {
             // Get a list of masks that match the client IP
             // NOTE: Ident is handled later as it could introduce a timeout during accept() which is not acceptable
-            for (User u : GlobalContext.getGlobalContext().getUserManager().getAllUsers()) {
-                // Skip if user is deleted
-                if (!u.isDeleted()) {
-                    masks.addAll(u.getHostMaskCollection().getMatchingMasks(sock));
-                }
+            for (HostMaskCollection hostmasks : _hostmasks) {
+                masks.addAll(hostmasks.getMatchingMasks(sock));
             }
 
             // If we have 0 matched hostmasks handle it quickly
