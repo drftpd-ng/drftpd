@@ -40,7 +40,7 @@ import java.util.*;
  * @version $Id$
  */
 public class GroupManagementHandler extends CommandInterface {
-    private static final Logger logger = LogManager.getLogger();
+    private static final Logger logger = LogManager.getLogger(GroupManagementHandler.class);
     private static final GroupCaseInsensitiveComparator GROUP_CASE_INSENSITIVE_COMPARATOR = new GroupCaseInsensitiveComparator();
     private static final UserCaseInsensitiveComparator USER_CASE_INSENSITIVE_COMPARATOR = new UserCaseInsensitiveComparator();
     private ResourceBundle _bundle;
