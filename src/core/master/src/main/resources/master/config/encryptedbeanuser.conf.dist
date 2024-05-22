@@ -4,7 +4,7 @@
 #                                                                                                  #
 # Encrypt User Passwords In json File.                                                             #
 #                                                                                                  #
-# Valid Options: md2, md5, sha-1, sha-256, sha-384, sha-512, bcrypt                                #
+# Valid Options: md2, md5, sha-1, sha-256, sha-384, sha-512, bcrypt, glftpd, argon2                #
 #                none, clear, empty = No encryption                                                #
 #                                                                                                  #
 ####################################################################################################
