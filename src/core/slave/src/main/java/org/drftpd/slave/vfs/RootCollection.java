@@ -160,8 +160,9 @@ public class RootCollection {
         } else {
             for (int i = 0; i < _roots.size(); i++) {
                 File rootPath = _roots.get(i).getFile(path);
-                if (rootPath.exists()) {
-                    files.addAll(Arrays.asList(rootPath.list()));
+                String[] rootFiles = rootPath.list();
+                if (rootFiles != null) {
+                    files.addAll(Arrays.asList(rootFiles));
                 }
             }
         }
