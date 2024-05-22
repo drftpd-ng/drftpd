@@ -74,6 +74,8 @@ public class ZipscriptZipPostHook extends ZipTools {
 
     @CommandHook(commands = "doSTOR", priority = 13, type = HookType.POST)
     public void doZipscriptSTORZipPostCheck(CommandRequest request, CommandResponse response) {
+        logger.debug("doZipscriptSTORZipPostCheck() called");
+
         // removing this in-case of a bad transfer
         Properties cfg = ConfigLoader.loadPluginConfig("zipscript.conf");
         if (cfg.getProperty("stor.zip.integrity.check.enabled", "false").equalsIgnoreCase("true")) {
@@ -82,10 +84,12 @@ public class ZipscriptZipPostHook extends ZipTools {
                 transferFile = response.getObject(DataConnectionHandler.TRANSFER_FILE);
             } catch (KeyNotFoundException e) {
                 // We don't have a file, we shouldn't have ended up here but return anyway
+                logger.debug("doZipscriptSTORZipPostCheck() - No TRANSFER_FILE on connection (bug)?");
                 return;
             }
             if (!transferFile.exists()) {
                 // No point checking the file as it has already been deleted (i.e. an abort)
+                logger.debug("doZipscriptSTORZipPostCheck() - transferFile ({}) no longer exists, not checking", transferFile);
                 return;
             }
 
@@ -96,30 +100,30 @@ public class ZipscriptZipPostHook extends ZipTools {
                     try {
                         RemoteSlave rslave = transferFile.getASlaveForFunction();
                         String index = ZipscriptVFSDataZip.getZipIssuer().issueZipCRCToSlave(rslave, transferFile.getPath());
-                        boolean ok = getZipIntegrityFromIndex(rslave, index);
-                        if (ok) {
+                        if (getZipIntegrityFromIndex(rslave, index)) {
                             response.addComment("Zip integrity check OK");
                             if (transferFile.exists()) {
                                 try {
                                     BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
                                     RemoteSlave transferSlave = response.getObject(DataConnectionHandler.TRANSFER_SLAVE);
-                                    InetAddress transferSlaveInetAddr =
-                                            response.getObject(DataConnectionHandler.TRANSFER_SLAVE_INET_ADDRESS);
+                                    InetAddress transferSlaveInetAddr = response.getObject(DataConnectionHandler.TRANSFER_SLAVE_INET_ADDRESS);
                                     char transferType = response.getObject(DataConnectionHandler.TRANSFER_TYPE);
                                     ZipscriptVFSDataZip zipData = new ZipscriptVFSDataZip(request.getCurrentDirectory());
-                                    GlobalContext.getEventService().publishAsync(
-                                            new ZipTransferEvent(conn, "STOR", transferFile,
-                                                    conn.getClientAddress(), transferSlave, transferSlaveInetAddr,
-                                                    transferType, zipData, zipData.getDizInfo(), zipData.getDizStatus()));
+                                    GlobalContext.getEventService().publishAsync(new ZipTransferEvent(conn, "STOR",
+                                            transferFile, conn.getClientAddress(), transferSlave, transferSlaveInetAddr,
+                                            transferType, zipData, zipData.getDizInfo(), zipData.getDizStatus()));
                                 } catch (KeyNotFoundException e1) {
+                                    logger.warn("Unable to fire ZipTransferEvent for [{}]", transferFile, e1);
                                     // one or more bits of information didn't get populated correctly, have to skip the event
                                 } catch (IOException e) {
+                                    logger.warn("Unable to fire ZipTransferEvent for [{}]", transferFile, e);
                                     // Do nothing, from user perspective STOR has completed so no point informing them
                                 }
                             }
                         } else {
                             response.addComment("Zip integrity check failed, deleting file");
                             try {
+                                logger.warn("doZipscriptSTORZipPostCheck() - Zip ({}) failed integrity, deleting", transferFile);
                                 transferFile.deleteUnchecked();
                             } catch (FileNotFoundException e) {
                                 // file disappeared, not a problem as we wanted it gone anyway
@@ -199,14 +203,15 @@ public class ZipscriptZipPostHook extends ZipTools {
         if (deleFileName.toLowerCase().endsWith(".zip")) {
             try {
                 boolean noZip = true;
+                int noZips = 0;
                 // Check if there are any other zips left
                 for (FileHandle file : request.getCurrentDirectory().getFilesUnchecked()) {
                     if (file.getName().toLowerCase().endsWith(".zip")) {
-                        noZip = false;
-                        break;
+                        noZips+=1;
                     }
                 }
-                if (noZip) {
+                if (noZips <= 0) {
+                    logger.debug("doDELE() - post removing ({}) - Removing DIZINFO as there is no .zip files left in ({})", deleFileName, request.getCurrentDirectory());
                     request.getCurrentDirectory().removePluginMetaData(DizInfo.DIZINFO);
                 }
             } catch (FileNotFoundException e) {

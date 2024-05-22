@@ -881,7 +881,7 @@ public class DataConnectionHandler extends CommandInterface {
                         throw new RuntimeException();
                     }
                 } catch (NoAvailableSlaveException ex) {
-                    // TODO Might not be good to 450 reply always
+                    // TODO: Might not be good to 450 reply always
                     // from rfc: 450 Requested file action not taken. File
                     // unavailable (e.g., file busy).
                     // reset(); already done in finally block
@@ -923,7 +923,8 @@ public class DataConnectionHandler extends CommandInterface {
                 } catch (SlaveUnavailableException e) {
                     return StandardCommandManager.genericResponse("RESPONSE_450_SLAVE_UNAVAILABLE");
                 } catch (RemoteIOException e) {
-                    // couldn't talk to the slave, this is bad
+                    // couldn't talk to the slave, this is bad - TODO: Should we allow certain IO Exceptions?
+                    // This is setting stuff up, so whatever action we want it is not possible by the slave
                     ts.getTransferSlave().setOffline(e);
                     return StandardCommandManager.genericResponse("RESPONSE_450_SLAVE_UNAVAILABLE");
                 } catch (SSLUnavailableException e) {
@@ -936,13 +937,9 @@ public class DataConnectionHandler extends CommandInterface {
                 return StandardCommandManager.genericResponse("RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS");
             }
 
-            {
-                PrintWriter out = conn.getControlWriter();
-                out.write(new FtpReply(150,
-                        "File status okay; about to open data connection " +
-                                (isRetr ? "from " : "to ") + ts.getTransferSlave().getName() + ".").toString());
-                out.flush();
-            }
+            conn.getControlWriter().write(new FtpReply(150, "File status okay; about to open data connection "
+                    + (isRetr ? "from " : "to ") + ts.getTransferSlave().getName() + ".").toString());
+            conn.getControlWriter().flush();
 
             TransferStatus status = null;
             CommandResponse response = null;
@@ -981,6 +978,7 @@ public class DataConnectionHandler extends CommandInterface {
                         synchronized (ts) {
                             status = ts.getTransferStatus();
                         }
+                        // TODO - Improve abort handling here?
                         try {
                             ts.getTransferFile().setSize(status.getTransfered());
                         } catch (FileNotFoundException e) {
@@ -1075,7 +1073,7 @@ public class DataConnectionHandler extends CommandInterface {
             response.setObject(TRANSFER_SLAVE_INET_ADDRESS, ts.getAddress().getAddress());
             response.setObject(TRANSFER_TYPE, ts.getType());
             if (status == null) {
-                logger.warn("Something happened during the transfer that the 'status' object is null, not an issue");
+                logger.warn("Something happened during the transfer ({}) that the 'status' object is null, not an issue", ts.getTransferFile());
             } else {
                 response.setObject(XFER_STATUS, status);
             }
@@ -1114,11 +1112,13 @@ public class DataConnectionHandler extends CommandInterface {
             // settings like delete on abort are disabled
             try {
                 if (isStor && ts.getTransferFileCreated() && ts.getTransferFile().getSize() == 0L) {
+                    logger.debug("Deleting 0-byte file - ({})", ts.getTransferFile());
                     ts.getTransferFile().deleteUnchecked();
                 }
             } catch (FileNotFoundException e) {
                 // File already gone which is fine
             }
+            logger.debug("finally() - calling reset(conn)");
             reset(conn);
         }
     }

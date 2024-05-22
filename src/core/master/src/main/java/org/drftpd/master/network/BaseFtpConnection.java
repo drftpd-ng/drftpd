@@ -643,7 +643,7 @@ public class BaseFtpConnection extends Session implements Runnable {
         _commandCount.decrementAndGet();
 
         if (cmdResponse != null) {
-            if (!isAborted() || _ftpRequest.getCommand().equalsIgnoreCase("ABOR")) {
+            if (!isAborted() || _ftpRequest.getCommand().equalsIgnoreCase("ABOR")) {  // TODO: Does this make sense?
                 if (cmdResponse.getCurrentDirectory() != null) {
                     _currentDirectory = cmdResponse.getCurrentDirectory();
                 }

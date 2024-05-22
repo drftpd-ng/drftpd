@@ -17,6 +17,9 @@
  */
 package org.drftpd.master.commands.dataconnection.hooks;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import org.drftpd.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.common.extensibility.CommandHook;
 import org.drftpd.common.extensibility.HookType;
@@ -36,6 +39,7 @@ import java.net.InetAddress;
  * @version $Id$
  */
 public class DataConnectionPostHooks {
+    private static final Logger logger = LogManager.getLogger(DataConnectionPostHooks.class);
 
     @CommandHook(commands = "doSTOR", priority = 9999999, type = HookType.POST)
     public void doTransferEvent(CommandRequest request, CommandResponse response) {
@@ -50,20 +54,18 @@ public class DataConnectionPostHooks {
                 try {
                     BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
                     RemoteSlave transferSlave = response.getObject(DataConnectionHandler.TRANSFER_SLAVE);
-                    InetAddress transferSlaveInetAddr =
-                            response.getObject(DataConnectionHandler.TRANSFER_SLAVE_INET_ADDRESS);
+                    InetAddress transferSlaveInetAddr = response.getObject(DataConnectionHandler.TRANSFER_SLAVE_INET_ADDRESS);
                     char transferType = response.getObject(DataConnectionHandler.TRANSFER_TYPE);
-                    GlobalContext.getEventService().publishAsync(
-                            new TransferEvent(conn, eventType, transferFile,
-                                    conn.getClientAddress(), transferSlave,
-                                    transferSlaveInetAddr, transferType));
+                    GlobalContext.getEventService().publishAsync(new TransferEvent(conn, eventType, transferFile,
+                            conn.getClientAddress(), transferSlave, transferSlaveInetAddr, transferType));
                 } catch (KeyNotFoundException e1) {
                     // one or more bits of information didn't get populated correctly, have to skip the event
+                    logger.warn("Unable to fire TransferEvent for [{}]", transferFile, e1);
                 }
-
             }
         } catch (KeyNotFoundException e) {
             // shouldn't have got a 226 response and still ended up here
+            logger.error("Unexpected error while we are status '226'", e);
         }
     }
 }
