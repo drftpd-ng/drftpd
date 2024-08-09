@@ -1,37 +1,32 @@
-FROM amazoncorretto:17-alpine3.18 AS baseimage
+FROM amazoncorretto:17-alpine3.19 AS baseimage
 RUN set -ux \
     && adduser drftpd -u 1000 -D -h /home/drftpd
 
 
-# build mkvalidator
+# build mkvalidator from ./foundation-source
 FROM baseimage AS foundation
-
-# git hash of foundation-source to build
-ENV FOUNDATION_COMMIT=304f38fed89b6bfbd26d9319c3b0eb8738011c0c
-
+RUN mkdir /foundation-source
+COPY foundation-source /foundation-source/
 RUN set -ux \
     && apk update \
     && apk add \
         build-base \
         cmake \
-        git \
-    && git clone --branch master --single-branch https://github.com/Matroska-Org/foundation-source.git /foundation-source \
     && cd /foundation-source \
-    && git checkout $FOUNDATION_COMMIT \
     && echo "set(CMAKE_EXE_LINKER_FLAGS "-static")" >> CMakeLists.txt \
     && cmake -S . -B build \
     && cmake --build build
 
 
-# build drftpd
+# build drftpd from ./drftpd-source
 FROM baseimage AS drftpd-build
-
+RUN mkdir /drftpd-source
+COPY drftpd-source /drftpd-source/
 RUN set -ux \
     && apk update \
     && apk add \
         git \
         maven \
-    && git clone --depth=1 --branch master --single-branch https://github.com/drftpd-ng/drftpd.git /drftpd-source \
     && cd /drftpd-source \
     && mvn clean \
     && mvn validate \

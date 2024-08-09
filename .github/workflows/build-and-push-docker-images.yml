@@ -18,8 +18,17 @@ jobs:
       packages: write
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+      - name: Checkout drftpd
+        uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.7
+        with:
+          path: 'drftpd-source'
+
+      - name: Checkout mkvalidator
+        uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.7
+        with:
+          repository: 'Matroska-Org/foundation-source'
+          ref: '8221e51b2e43e077dfa06d7dab6f1cf5a5fb15bf'
+          path: 'foundation-source'
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@d70bba72b1f3fd22344832f00baa16ece964efeb # v3.3.0
@@ -45,6 +54,7 @@ jobs:
         uses: docker/build-push-action@2cdde995de11925a030ce8070c3d77a52ffcf1c0 # v5.3.0
         with:
           context: .
+          file: 'drftpd-source/Dockerfile'
           platforms: linux/amd64
           push: false
           cache-from: type=gha
@@ -55,6 +65,7 @@ jobs:
         uses: docker/build-push-action@2cdde995de11925a030ce8070c3d77a52ffcf1c0 # v5.3.0
         with:
           context: .
+          file: 'drftpd-source/Dockerfile'
           platforms: linux/amd64
           push: true
           cache-from: type=gha
@@ -72,6 +83,7 @@ jobs:
         uses: docker/build-push-action@2cdde995de11925a030ce8070c3d77a52ffcf1c0 # v5.3.0
         with:
           context: .
+          file: 'drftpd-source/Dockerfile'
           platforms: linux/amd64
           push: true
           cache-from: type=gha
