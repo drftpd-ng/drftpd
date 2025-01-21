@@ -35,6 +35,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -69,7 +70,10 @@ public abstract class CommandInterface {
                 int priority = annotation.priority();
                 List<String> commands = Arrays.asList(annotation.commands());
                 boolean handleClass = commands.contains(method) || commands.contains("*");
-                if (!handleClass) continue;
+                if (!handleClass) {
+                    logger.debug("[{}:{}] Skipping hook {} not wanted", pluginName, method, annotatedMethod.getName());
+                    continue;
+                }
                 // Sometimes we need to inject the command manager and sometimes not.
                 Constructor<?> declaredConstructor = declaringClass.getDeclaredConstructors()[0];
                 boolean needManager = declaredConstructor.getParameterCount() == 1;
@@ -87,6 +91,12 @@ public abstract class CommandInterface {
             logger.error("Failed to load plugins for {} extension point 'PreHook or postHook'", pluginName, e);
         }
         logger.debug("[{}:{}] Loaded [{}] prehooks and [{}] posthooks", pluginName, method, preHooks.size(), postHooks.size());
+        for (Map.Entry<Integer, HookContainer> pair : preHooks.entries()) {
+            logger.debug("[{}:{}] prehook registered [{}:{}]", pluginName, method, pair.getKey(), pair.getValue().getMethod().getName());
+        }
+        for (Map.Entry<Integer, HookContainer> pair : postHooks.entries()) {
+            logger.debug("[{}:{}] posthook registered [{}:{}]", pluginName, method, pair.getKey(), pair.getValue().getMethod().getName());
+        }
         _preHooks = preHooks;
         _postHooks = postHooks;
     }
@@ -99,6 +109,7 @@ public abstract class CommandInterface {
             } catch (Exception e) {
                 // Not that important, this just means that this post hook failed and we'll just move onto the next one
                 logger.error("Error while loading/invoking posthook [{}], reason: {}", m.toString(), e.getCause());
+                logger.error(e.toString());
             }
         }
     }
@@ -112,6 +123,7 @@ public abstract class CommandInterface {
             } catch (Exception e) {
                 // Not that important, this just means that this pre hook failed and we'll just move onto the next one
                 logger.error("Error while loading/invoking prehook [{}], reason: {}", m.toString(), e.getCause());
+                logger.error(e.toString());
             }
         }
         return request;

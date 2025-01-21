@@ -183,8 +183,7 @@ public class IpSecurityHooks {
      * Posthook method for multiple commands - refresh allowed ips on main socket
      */
     @CommandHook(commands = {"doSITE_GADDUSER", "doSITE_ADDUSER", "doSITE_DELUSER", "doSITE_DELPURGE", "doSITE_PURGE", "doSITE_READD", "doSITE_ADDIP", "doSITE_DELIP"}, priority = 9999, type = HookType.POST)
-    public CommandRequestInterface doMasterSocketRefreshPostCheck(CommandRequest request) {
+    public void doMasterSocketRefreshPostCheck(CommandRequest request, CommandResponse response) {
         GlobalContext.getGlobalContext().getConnectionManager().refreshIPMasks();
-        return request;
     }
 }
