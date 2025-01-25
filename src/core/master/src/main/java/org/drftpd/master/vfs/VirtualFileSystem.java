@@ -24,6 +24,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.drftpd.common.io.PermissionDeniedException;
 import org.drftpd.master.GlobalContext;
+import org.drftpd.master.exceptions.FatalException;
 import org.drftpd.master.io.SafeFileOutputStream;
 import org.drftpd.master.vfs.event.*;
 
@@ -119,14 +120,28 @@ public class VirtualFileSystem {
         return path;
     }
 
-    private VirtualFileSystemRoot createRootDirectory() {
+    private VirtualFileSystemRoot createRootDirectory()
+        throws FatalException {
         logger.info("Creating new root filesystem");
         logger.info("If you have already created your filesystem, then stop removing or corrupting your "
                 + dirName + " file!");
-        new File(fileSystemPath).mkdirs();
+
+        File rootPath = new File(fileSystemPath);
+        Boolean created = rootPath.mkdirs();
+        if (!created && !rootPath.exists()) {
+            logger.fatal("Error creating root filesystem: " + fileSystemPath);
+            throw new FatalException("Error creating root filesystem: " + fileSystemPath);
+        }
+
         _root = new VirtualFileSystemRoot("drftpd", "drftpd");
         File rootFile = new File(fileSystemPath);
-        _root.setFiles(rootFile.list(dirFilter));
+        String[] fileList = rootFile.list(dirFilter);
+        if (fileList == null) {
+            logger.fatal("Error getting rootDirectory file list for: " + fileSystemPath);
+            throw new FatalException("Error getting rootDirectory file list for: " + fileSystemPath);
+        }
+
+        _root.setFiles(fileList);
         _root.commit();
         _root.inodeLoadCompleted();
         return _root;
