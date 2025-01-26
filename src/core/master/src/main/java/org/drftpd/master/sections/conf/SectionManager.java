@@ -124,7 +124,7 @@ public class SectionManager implements SectionManagerInterface {
                         section.createSectionDir();
                     }
                 } catch (Exception e) {
-                    throw new FatalException("Unable To Load Section type: " + i + ".type = " + type);
+                    throw new FatalException("Unable To Load Section type: " + i + ".type = " + type, e);
                 }
             }
 
