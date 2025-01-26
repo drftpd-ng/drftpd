@@ -180,11 +180,10 @@ public class SlaveProtocolCentral {
         AsyncResponse ar;
 
         try {
-            logger.debug("Invoking {}", m);
+            logger.debug("Invoking {} with parameters {}", m.toGenericString(), ac.toString());
             ar = (AsyncResponse) m.invoke(ah, new Object[]{ac});
         } catch (Exception e) {
-            logger.error("Unable to invoke: {}", m.toGenericString(), e);
-            logger.error("Invokation for {} failed due to: {}", m.toGenericString(), e.getCause());
+            logger.error("Invokation for {} failed due to: {}", m.toGenericString(), e.getCause(), e);
             return new AsyncResponseException(ac.getIndex(), new Exception("Unable to invoke the proper handler", e));
         }
 

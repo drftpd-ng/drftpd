@@ -256,8 +256,15 @@ public class Slave extends SslConfigurationLoader {
         return _cfg;
     }
 
-    public static void main(String... args) throws Exception {
-        Slave.boot();
+    public static void main(String... args) {
+        try {
+            Slave.boot();
+        }
+        catch (Throwable th) {
+            th.printStackTrace();
+            logger.fatal("", th);
+            System.exit(1);
+        }
     }
 
     public static void boot() throws Exception {
@@ -275,15 +282,15 @@ public class Slave extends SslConfigurationLoader {
         try {
             s.sendResponse(new AsyncResponseDiskStatus(s.getDiskStatus()));
         } catch (Throwable t) {
-            logger.fatal("Error, check config on master for this slave");
+            throw new RuntimeException("Error, check config on master for this slave", t);
         }
         s.setOnline(true);
         try {
             s.listenForCommands();
         } catch (IOException e) {
-            logger.fatal("Fatal IOException during main boot() process, Slave stopping", e);
+            throw new RuntimeException("Fatal IOException during main boot() process, Slave stopping", e);
         } catch (Exception e) {
-            logger.fatal("Fatal Exception during main boot() process, Slave stopping", e);
+            throw new RuntimeException("Fatal Exception during main boot() process, Slave stopping", e);
         } finally {
             s.shutdown();
         }
@@ -514,15 +521,16 @@ public class Slave extends SslConfigurationLoader {
             } catch (ClassNotFoundException e) {
                 throw new RuntimeException(e);
             } catch (EOFException e) {
-                logger.debug("Lost connection to the master, may have been kicked offline");
-                return;
+                throw new RuntimeException("Lost connection to the master, may have been kicked offline", e);
             } catch (SocketTimeoutException e) {
                 // if no communication for slave.timeout (_timeout) time, than
                 // connection to the master is dead or there is a configuration
                 // error
-                if (_timeout < (System.currentTimeMillis() - lastCommandReceived)) {
-                    logger.error("Slave is going offline as it hasn't received any communication from the master in {} milliseconds", System.currentTimeMillis() - lastCommandReceived);
-                    throw new RuntimeException(e);
+                long millisSinceLastCommand = System.currentTimeMillis() - lastCommandReceived;
+                if (_timeout < millisSinceLastCommand) {
+                    String message = String.format("Slave is going offline as it hasn't received any communication from the master in %d milliseconds", millisSinceLastCommand);
+                    logger.error(message, e);
+                    throw new RuntimeException(message, e);
                 }
                 continue;
             }
