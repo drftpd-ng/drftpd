@@ -119,36 +119,47 @@ public class IMDBParser {
 
             String data = HttpUtils.retrieveHttpAsString(url);
 
-            if (!data.contains("<meta property='og:type' content=\"video.movie\" />")) {
+            if (!data.contains("<meta property=\"og:type\" content=\"video.movie\"/>")) {
                 logger.warn("Request for IMDB info for a Tv Show, this is not handled by this plugin. URL:{}", url);
                 return false;
             }
 
-            _title = parseData(data, "<meta property='og:title' content=\"", "(");
-            _language = parseData(data, "<td class=\"ipl-zebra-list__label\">Language</td>", "</td>").replaceAll("\\s{2,}", "|");
-            _country = parseData(data, "<td class=\"ipl-zebra-list__label\">Country</td>", "</td>").replaceAll("\\s{2,}", "|");
-            _genres = parseData(data, "<td class=\"ipl-zebra-list__label\">Genres</td>", "</td>").replaceAll("\\s{2,}", "|");
-            _director = parseData(data, "<div class=\"titlereference-overview-section\">\\n\\s+Directors?:", "</div>", false, true).replaceAll("\\s+?,\\s+?", "|");
-            String rating = parseData(data, "<span class=\"ipl-rating-star__rating\">", "</span>");
+            _title = parseData(data, "<meta property=\"og:title\" content=\"", "(");
+            _language = parseData(data, "<span class=\"ipc-metadata-list-item__label ipc-btn--not-interactable\" aria-disabled=\"false\">Languages</span>", "</ul>").replaceAll("(?<!^)([A-Z])", "|$1");
+            _country = parseData(data, "<span class=\"ipc-metadata-list-item__label ipc-btn--not-interactable\" aria-disabled=\"false\">Countries of origin</span>", "</a>").replaceAll("\\s{2,}", "|");
+            _genres = parseData(data, "<span class=\"ipc-metadata-list-item__label ipc-btn--not-interactable\" aria-disabled=\"false\">Genres</span>", "</ul>").replaceAll("(?<!^)([A-Z])", "|$1");
+            _director = parseData(data, " name-credits--crew-content\">", "</a>", false, true).replaceAll("\\s+?,\\s+?", "|");
+
+            //fallback
+            if (_language.equals("N||A")) {
+                _language = parseData(data, "<span class=\"ipc-metadata-list-item__label ipc-btn--not-interactable\" aria-disabled=\"false\">Language</span>", "</ul>").replaceAll("(?<!^)([A-Z])", "|$1");
+            }
+
+            if (_country.equals("N|A")) {
+                _country = parseData(data, "<span class=\"ipc-metadata-list-item__label ipc-btn--not-interactable\" aria-disabled=\"false\">Country of origin</span>", "</a>").replaceAll("\\s{2,}", "|");
+            }
+
+            String rating = parseData(data, "<span class=\"ipc-rating-star--rating\">", "</span>");
+
             if (!rating.equals("N|A") && (rating.length() == 1 || rating.length() == 3) && NumberUtils.isDigits(rating.replaceAll("\\D", ""))) {
                 _rating = Integer.valueOf(rating.replaceAll("\\D", ""));
                 if (rating.length() == 1) {
                     // Rating an even(single digit) number, multiply by 10
                     _rating = _rating * 10;
                 }
-                String votes = parseData(data, "<span class=\"ipl-rating-star__total-votes\">", "</span>");
+                String votes = parseData(data, "<span class=\"ipc-rating-star--voteCount\">", "</span>");
                 if (!votes.equals("N|A") && NumberUtils.isDigits(votes.replaceAll("\\D", "")))
-                    _votes = Integer.valueOf(votes.replaceAll("\\D", ""));
+                    _votes = Integer.valueOf(votes.replaceAll("\\D", "")) * 1000;
             }
-            _plot = parseData(data, "<section class=\"titlereference-section-overview\">", "</div>", true, true);
-            Pattern p = Pattern.compile("<a href=\"/title/tt\\d+/releaseinfo\">\\d{2} [a-zA-Z]{3} (\\d{4})");
-            Matcher m = p.matcher(data);
-            if (m.find() && NumberUtils.isDigits(m.group(1))) {
-                _year = Integer.valueOf(m.group(1));
+            _plot = parseData(data, "<ul class=\"ipc-metadata-list ipc-metadata-list--dividers-between ipc-metadata-list--compact ipc-metadata-list--base\" role=\"presentation\">", "</span>", true, true);
+
+			String year = parseData(data, "<span class=\"hero__primary-text-suffix\" data-testid=\"hero__primary-text-suffix\">(", ")</span>");
+            if (!year.equals("N|A") && NumberUtils.isDigits(year.replaceAll("\\D", ""))) {
+                _year = Integer.parseInt(year);
             }
-            String runtime = parseData(data, "<td class=\"ipl-zebra-list__label\">Runtime</td>", "</td>");
+            String runtime = parseData(data, "<span class=\"ipc-metadata-list-item__label ipc-btn--not-interactable\" aria-disabled=\"false\">Runtime</span>", "</li>");
             if (!runtime.equals("N|A") && NumberUtils.isDigits(runtime.replaceAll("\\D", ""))) {
-                _runtime = Integer.valueOf(runtime.replaceAll("\\D", ""));
+                _runtime = Integer.parseInt(runtime.replaceAll(".*\\((\\d+) min\\).*", "$1"));
             }
         } catch (Exception e) {
             logger.error("", e);
