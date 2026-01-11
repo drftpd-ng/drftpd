@@ -23,13 +23,6 @@ jobs:
         with:
           path: 'drftpd-source'
 
-      - name: Checkout mkvalidator
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.1.7
-        with:
-          repository: 'Matroska-Org/foundation-source'
-          ref: '8221e51b2e43e077dfa06d7dab6f1cf5a5fb15bf'
-          path: 'foundation-source'
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3.11.1
 

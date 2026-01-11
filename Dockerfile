@@ -3,21 +3,6 @@ RUN set -ux \
     && adduser drftpd -u 1000 -D -h /home/drftpd
 
 
-# build mkvalidator from ./foundation-source
-FROM baseimage AS foundation
-RUN mkdir /foundation-source
-COPY foundation-source /foundation-source/
-RUN set -ux \
-    && apk update \
-    && apk add \
-        build-base \
-        cmake \
-    && cd /foundation-source \
-    && echo "set(CMAKE_EXE_LINKER_FLAGS "-static")" >> CMakeLists.txt \
-    && cmake -S . -B build \
-    && cmake --build build
-
-
 # build drftpd from ./drftpd-source
 FROM baseimage AS drftpd-build
 RUN mkdir /drftpd-source
@@ -57,7 +42,6 @@ ENTRYPOINT ["java", "-classpath", "lib/*:build/*", "org.drftpd.master.Master"]
 # build slave image
 FROM baseimage AS drftpd-slave
 USER root
-COPY --from=foundation --chown=root:root /foundation-source/build/mkvalidator/mkvalidator /usr/local/bin/mkvalidator
 RUN set -ux \
     && apk update \
     && apk add \
