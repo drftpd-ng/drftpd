@@ -37,7 +37,6 @@ public class MediaInfo implements Serializable {
     public static final Key<MediaInfo> MEDIAINFO = new Key<>(MediaInfo.class, "mediainfo");
     private static final Logger logger = LogManager.getLogger(MediaInfo.class);
     private static final String MEDIAINFO_COMMAND = "mediainfo";
-    private static final String MKVALIDATOR_COMMAND = "mkvalidator";
     private String _fileName = "";
     private long _checksum;
     private boolean _sampleOk = true;
@@ -59,7 +58,6 @@ public class MediaInfo implements Serializable {
 
     public static boolean hasWorkingMediaInfo() {
         boolean mediainfo_works = false;
-        boolean mkvalidator_works = false;
         try {
             ProcessBuilder builder = new ProcessBuilder(MEDIAINFO_COMMAND, "--version");
             Process proc = builder.start();
@@ -71,18 +69,7 @@ public class MediaInfo implements Serializable {
         } catch(Exception e) {
             logger.fatal("Something went wrong trying to see if " + MEDIAINFO_COMMAND + " binary exists and works", e);
         }
-        try {
-            ProcessBuilder builder = new ProcessBuilder(MKVALIDATOR_COMMAND, "--version");
-            Process proc = builder.start();
-            int status = proc.waitFor();
-            if (status != 0) {
-                throw new RuntimeException("Exist code of " + MKVALIDATOR_COMMAND + " --version yielded exit code " + status);
-            }
-            mkvalidator_works = true;
-        } catch(Exception e) {
-            logger.fatal("Something went wrong trying to see if " + MKVALIDATOR_COMMAND + " binary exists and works", e);
-        }
-        return mediainfo_works && mkvalidator_works;
+        return mediainfo_works;
     }
 
     public static MediaInfo getMediaInfoFromFile(File file) throws IOException {
@@ -91,9 +78,11 @@ public class MediaInfo implements Serializable {
         String filePath = file.getAbsolutePath();
         mediaInfo.setActFileSize(file.length());
 
-        Pattern pSection = Pattern.compile("^(General|Video|Audio|Text|Chapters)( #\\d+)?$", Pattern.CASE_INSENSITIVE);
+        Pattern pSection = Pattern.compile("^(General|Video|Audio|Text|Chapters|Conformance errors)( #\\d+)?$", Pattern.CASE_INSENSITIVE);
         Pattern pValue = Pattern.compile("^(.*?)\\s+: (.*)$", Pattern.CASE_INSENSITIVE);
+        Pattern pExpectedSize = Pattern.compile("expected size at least (\\d+)");
 
+        logger.debug("Running mediainfo on file: {} (size: {})", filePath, file.length());
         ProcessBuilder builder = new ProcessBuilder(MEDIAINFO_COMMAND, filePath);
         Process pDD = builder.start();
         BufferedReader stdout = new BufferedReader(new InputStreamReader(pDD.getInputStream()));
@@ -101,18 +90,24 @@ public class MediaInfo implements Serializable {
         HashMap<String, String> props = new HashMap<>();
         String section = "";
         String line;
+        ArrayList<String> generalComplianceList = new ArrayList<>();
 
         while ((line = stdout.readLine()) != null) {
             if (!line.trim().equals("")) {
                 Matcher m = pSection.matcher(line);
                 if (m.find() && !line.equalsIgnoreCase(section)) {
+                    logger.debug("Section change: '{}' -> '{}'", section, line);
                     if (section.toLowerCase().startsWith("video")) {
+                        logger.debug("Adding video info: {}", props);
                         mediaInfo.addVideoInfo(props);
                     } else if (section.toLowerCase().startsWith("audio")) {
+                        logger.debug("Adding audio info: {}", props);
                         mediaInfo.addAudioInfo(props);
                     } else if (section.toLowerCase().startsWith("text")) {
+                        logger.debug("Adding sub info: {}", props);
                         mediaInfo.addSubInfo(props);
                     } else if (section.toLowerCase().startsWith("general")) {
+                        logger.debug("Setting general info: {}", props);
                         mediaInfo.setGeneralInfo(props);
                     }
                     section = line;
@@ -120,19 +115,29 @@ public class MediaInfo implements Serializable {
                 }
                 m = pValue.matcher(line);
                 if (m.find()) {
-                    props.put(m.group(1), m.group(2));
+                    String key = m.group(1);
+                    String value = m.group(2);
+                    props.put(key, value);
+                    if (section.toLowerCase().startsWith("general") && key.equals("General compliance")) {
+                        logger.debug("Found General compliance: {}", value);
+                        generalComplianceList.add(value);
+                    }
                 }
             }
         }
 
         // Last one
         if (section.toLowerCase().startsWith("video")) {
+            logger.debug("Adding video info (last): {}", props);
             mediaInfo.addVideoInfo(props);
         } else if (section.toLowerCase().startsWith("audio")) {
+            logger.debug("Adding audio info (last): {}", props);
             mediaInfo.addAudioInfo(props);
         } else if (section.toLowerCase().startsWith("text")) {
+            logger.debug("Adding sub info (last): {}", props);
             mediaInfo.addSubInfo(props);
         } else if (section.toLowerCase().startsWith("general")) {
+            logger.debug("Setting general info (last): {}", props);
             mediaInfo.setGeneralInfo(props);
         }
 
@@ -141,11 +146,11 @@ public class MediaInfo implements Serializable {
         try {
             exitValue = pDD.waitFor();
             if (exitValue != 0) {
-                logger.error("ERROR: mediainfo process failed with exit code {}", exitValue);
+                logger.error("ERROR: mediainfo process failed with exit code {} for file {}", exitValue, filePath);
                 return null;
             }
         } catch (InterruptedException e) {
-            logger.error("ERROR: mediainfo process interrupted");
+            logger.error("ERROR: mediainfo process interrupted for file {}", filePath);
         }
         pDD.destroy();
 
@@ -155,40 +160,56 @@ public class MediaInfo implements Serializable {
         } else {
             realFormat = getFileExtension(filePath);
         }
+        logger.debug("Detected real format: {} for file {}", realFormat, filePath);
 
         // Calculate valid filesize for mp4, mkv and avi
         switch (realFormat) {
             case "MP4" -> {
                 try (IsoFile isoFile = new IsoFile(filePath)) {
                     if (isoFile.getSize() != mediaInfo.getActFileSize()) {
+                        logger.warn("MP4: IsoFile size {} != actual file size {} for file {}", isoFile.getSize(), mediaInfo.getActFileSize(), filePath);
                         mediaInfo.setSampleOk(false);
                         mediaInfo.setCalFileSize(isoFile.getSize());
                     }
                 }
             }
             case "MKV" -> {
-                builder = new ProcessBuilder(MKVALIDATOR_COMMAND, "--quiet", "--no-warn", filePath);
-                builder.redirectErrorStream(true);
-                pDD = builder.start();
-                stdout = new BufferedReader(new InputStreamReader(pDD.getInputStream()));
-                while ((line = stdout.readLine()) != null) {
-                    if (line.contains("ERR042")) {
-                        mediaInfo.setSampleOk(false);
-                        for (String word : line.split("\\s")) {
-                            if (word.matches("^\\d+$")) {
-                                mediaInfo.setCalFileSize(Long.parseLong(word));
-                                break;
+                HashMap<String, String> generalInfo = mediaInfo.getGeneralInfo();
+                boolean incomplete = false;
+                // Check all 'General compliance' entries from parsed output
+                for (String compliance : generalComplianceList) {
+                    if (compliance.contains("File size") && compliance.contains("less than expected size")) {
+                        logger.warn("MKV: General compliance indicates file is incomplete: {}", compliance);
+                        incomplete = true;
+                        Matcher m = pExpectedSize.matcher(compliance);
+                        if (m.find()) {
+                            try {
+                                mediaInfo.setCalFileSize(Long.parseLong(m.group(1)));
+                                logger.warn("MKV: Set calculated file size to {} for file {}", m.group(1), filePath);
+                            } catch (NumberFormatException ignore) {
+                                logger.error("MKV: Failed to parse expected size from compliance string: {}", compliance);
                             }
                         }
                     }
                 }
-                stdout.close();
-                try {
-                    pDD.waitFor();
-                } catch (InterruptedException e) {
-                    logger.error("ERROR: {}} process interrupted", MKVALIDATOR_COMMAND);
+                if (generalInfo != null) {
+                    // Only check conformance errors if the field is present
+                    String conformanceErrors = generalInfo.get("Conformance errors");
+                    if (conformanceErrors != null && !conformanceErrors.equals("0")) {
+                        logger.warn("MKV: Conformance errors present: {}", conformanceErrors);
+                        incomplete = true;
+                    }
                 }
-                pDD.destroy();
+                if (incomplete) {
+                    logger.warn("MKV: Marking sample as not OK for file {}", filePath);
+                    mediaInfo.setSampleOk(false);
+                    // Delete the invalid file immediately on the slave
+                    if (file.delete()) {
+                        logger.warn("MKV: Deleted invalid file on slave: {}", filePath);
+                    } else {
+                        logger.error("MKV: Failed to delete invalid file on slave: {}", filePath);
+                    }
+                }
             }
             case "AVI" -> {
                 if (mediaInfo.getGeneralInfo() != null && mediaInfo.getGeneralInfo().get("File size") != null &&
@@ -208,11 +229,13 @@ public class MediaInfo implements Serializable {
                         audioStreamSize = Bytes.parseBytes(audioStream[0] + audioStream[1]);
                     }
                     if (videoStreamSize + audioStreamSize > fileSizeFromMediainfo) {
+                        logger.warn("AVI: Video+Audio stream size {} > file size {} for file {}", (videoStreamSize + audioStreamSize), fileSizeFromMediainfo, filePath);
                         mediaInfo.setSampleOk(false);
                         mediaInfo.setCalFileSize(videoStreamSize + audioStreamSize);
                     }
                 } else {
                     // No audio or video stream available/readable
+                    logger.warn("AVI: No audio or video stream available/readable for file {}", filePath);
                     mediaInfo.setSampleOk(false);
                     mediaInfo.setCalFileSize(0L);
                 }
@@ -222,18 +245,21 @@ public class MediaInfo implements Serializable {
         // Check container format type
         if (filePath.toUpperCase().endsWith(".MP4")) {
             if (!realFormat.equals("MP4")) {
+                logger.warn("Container extension is MP4 but detected format is {} for file {}", realFormat, filePath);
                 mediaInfo.setRealFormat(realFormat);
                 mediaInfo.setUploadedFormat("MP4");
                 mediaInfo.setSampleOk(false);
             }
         } else if (filePath.toUpperCase().endsWith(".MKV")) {
             if (!realFormat.equals("MKV")) {
+                logger.warn("Container extension is MKV but detected format is {} for file {}", realFormat, filePath);
                 mediaInfo.setRealFormat(realFormat);
                 mediaInfo.setUploadedFormat("MKV");
                 mediaInfo.setSampleOk(false);
             }
         } else if (filePath.toUpperCase().endsWith(".AVI")) {
             if (!realFormat.equals("AVI")) {
+                logger.warn("Container extension is AVI but detected format is {} for file {}", realFormat, filePath);
                 mediaInfo.setRealFormat(realFormat);
                 mediaInfo.setUploadedFormat("AVI");
                 mediaInfo.setSampleOk(false);

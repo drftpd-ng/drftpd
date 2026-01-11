@@ -47,6 +47,9 @@ public class MediaInfoVFSData {
     }
 
     private boolean isMediaInfoValid(MediaInfo mediaInfo) {
+        if (mediaInfo == null) {
+            return false;
+        }
         try {
             if (_file.exists()) {
                 if (_file.getCheckSum() == mediaInfo.getChecksum()) {
@@ -61,42 +64,88 @@ public class MediaInfoVFSData {
 
     public MediaInfo getMediaInfo() throws IOException, NoAvailableSlaveException, SlaveUnavailableException {
         try {
-            if (isMediaInfoValid(getMediaInfoFromInode(_file))) {
-                return getMediaInfoFromInode(_file);
+            MediaInfo inodeMediaInfo = null;
+            try {
+                inodeMediaInfo = getMediaInfoFromInode(_file);
+            } catch (KeyNotFoundException ignore1) {
+                logger.debug("No MediaInfo found in inode for file: {}", _file);
+            }
+            if (isMediaInfoValid(inodeMediaInfo)) {
+                logger.debug("Valid MediaInfo found in inode for file: {}", _file);
+                return inodeMediaInfo;
+            } else {
+                logger.debug("No valid MediaInfo in inode for file: {} (inodeMediaInfo: {})", _file, inodeMediaInfo);
             }
             // Make sure there is no mediainfo registered
             _file.removePluginMetaData(MediaInfo.MEDIAINFO);
-        } catch (KeyNotFoundException ignore1) {}
+        } catch (Exception e) {
+            logger.warn("Exception while checking inode MediaInfo for file {}: {}", _file, e.getMessage());
+        }
 
         MediaInfo mediainfo = null;
 
         // Make sure the file is not still uploading, has size and transfer time
+        if (_file.isUploading()) {
+            logger.debug("File is still uploading: {}", _file);
+        }
+        if (_file.getSize() <= 0) {
+            logger.debug("File size is zero or negative: {} (size: {})", _file, _file.getSize());
+        }
+        if (_file.getXfertime() == -1) {
+            logger.debug("File xfertime is -1: {}", _file);
+        }
         if (!_file.isUploading() && _file.getSize() > 0 && _file.getXfertime() != -1) {
             try {
                 RemoteSlave rslave = _file.getASlaveForFunction();
                 logger.debug("Trying to retrieve MEDIAINFO from slave {} for file {}", rslave, _file);
                 String index = getMediaInfoIssuer().issueMediaFileToSlave(rslave, _file.getPath());
                 mediainfo = fetchMediaInfoFromIndex(rslave, index);
+                logger.debug("Fetched MediaInfo from slave {} for file {}: {}", rslave, _file, mediainfo);
             } catch (NoAvailableSlaveException e) {
                 // Not an issue, file was available but slave dropped
+                logger.warn("No available slave for file {}: {}", _file, e.getMessage());
             } catch (SlaveUnavailableException e) {
                 // okay, it went offline while trying, try next file
+                logger.warn("Slave unavailable while fetching MediaInfo for file {}: {}", _file, e.getMessage());
             } catch (RemoteIOException e) {
+                logger.error("RemoteIOException while fetching MediaInfo for file {}: {}", _file, e.getMessage());
                 throw new IOException(e.getMessage());
+            } catch (Exception e) {
+                logger.error("Unexpected exception while fetching MediaInfo for file {}: {}", _file, e.getMessage());
             }
 
-            if (mediainfo != null && isMediaInfoValid(mediainfo)) {
+            if (mediainfo != null) {
+                // Check if the sample is not OK (file was invalid and deleted on slave)
+                if (!mediainfo.getSampleOk()) {
+                    logger.warn("MediaInfo indicates file {} is invalid (sampleOk=false). File should have been deleted on slave.", _file);
+                    // Try to remove the file from the VFS if it still exists
+                    try {
+                        if (_file.exists()) {
+                            _file.deleteUnchecked();
+                            logger.warn("File {} removed from VFS after invalid MediaInfo.", _file);
+                        }
+                    } catch (Exception e) {
+                        logger.error("Failed to remove file {} from VFS after invalid MediaInfo: {}", _file, e.getMessage());
+                    }
+                    throw new SlaveUnavailableException("File was invalid and has been deleted: "+_file);
+                }
+                
+                logger.debug("Fetched valid MediaInfo from slave for file: {}", _file);
                 // Add data to mediainfo
                 mediainfo.setChecksum(_file.getCheckSum());
                 mediainfo.setFileName(_file.getName());
 
                 // Write the mediainfo metadata for this file as we got it here
                 _file.addPluginMetaData(MediaInfo.MEDIAINFO, mediainfo);
+
                 return mediainfo;
+            } else {
+                logger.debug("Fetched MediaInfo from slave is null for file: {}", _file);
             }
         }
 
         // If we get here we did not get valid mediainfo
+        logger.error("No valid MediaInfo could be retrieved for file: {}. Throwing SlaveUnavailableException.", _file);
         throw new SlaveUnavailableException("No slave for media file available");
     }
 

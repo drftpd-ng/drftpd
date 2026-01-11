@@ -49,7 +49,6 @@ On the slaves you will need to:
 - Install Java SE or OpenJDK 17.
 - Add needed deps that are not present:
   - MediaInfo (CLI): https://mediaarea.net/en/MediaInfo
-  - mkvalidator tool: https://github.com/Matroska-Org/foundation-source
 
 ## Stable version
 ### Git (better way) or Release
