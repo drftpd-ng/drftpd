@@ -25,7 +25,7 @@ import org.drftpd.common.io.PermissionDeniedException;
 import org.drftpd.common.vfs.InodeHandleInterface;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.slavemanagement.RemoteSlave;
-import org.drftpd.master.slavemanagement.SlaveManager;
+
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.vfs.perms.VFSPermissions;
 import org.drftpd.slave.exceptions.FileExistsException;
@@ -35,8 +35,6 @@ import java.io.FileNotFoundException;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
-
 
 /**
  * @author zubov
@@ -128,7 +126,8 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable<In
      * Delete the inode.
      *
      * @throws FileNotFoundException     if it doesn't exists.
-     * @throws PermissionDeniedException if the user is not allowed to delete the file.
+     * @throws PermissionDeniedException if the user is not allowed to delete the
+     *                                   file.
      */
     public void delete(User user) throws FileNotFoundException, PermissionDeniedException {
         if (user == null) {
@@ -331,14 +330,15 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable<In
     public void renameToUnchecked(InodeHandle toInode) throws FileExistsException, FileNotFoundException {
         if (toInode.exists() && toInode.isFile()) {
             /**
-             * not relevant here, check is done in code below, maybe should refactor this slightly!
+             * not relevant here, check is done in code below, maybe should refactor this
+             * slightly!
              * If target exists and its a file, maybe its time to check against some SFV or
              * compare filesize and if they match delete one
              *
              * But mostly toInode is a directory.
              */
 
-            //throw new FileExistsException(toInode.getPath() + " already exists");
+            // throw new FileExistsException(toInode.getPath() + " already exists");
         } else if (!getInode().getPath().equalsIgnoreCase(toInode.getPath())
                 && toInode.exists() && toInode.isDirectory() && getInode().isDirectory()) {
             VirtualFileSystemDirectory dir = (VirtualFileSystemDirectory) getInode();
@@ -372,7 +372,8 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable<In
                         Set<String> slaves = ((VirtualFileSystemFile) inode).getSlaves();
                         for (String slaveName : slaves) {
                             try {
-                                getGlobalContext().getSlaveManager().getRemoteSlave(slaveName).simpleRename(inode.getPath(), toInode.getPath(), inode.getName());
+                                getGlobalContext().getSlaveManager().getRemoteSlave(slaveName)
+                                        .simpleRename(inode.getPath(), toInode.getPath(), inode.getName());
                                 inode.rename(toInode.getPath() + "/" + inode.getName());
                             } catch (ObjectNotFoundException e) {
                                 // slave doesn't exist, no reason to tell it to rename this file
@@ -397,13 +398,15 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable<In
             Set<String> slaves = ((VirtualFileSystemFile) inode).getSlaves();
             for (String slaveName : slaves) {
                 try {
-                    getGlobalContext().getSlaveManager().getRemoteSlave(slaveName).simpleRename(fromPath, toInode.getParent().getPath(), toInode.getName());
+                    getGlobalContext().getSlaveManager().getRemoteSlave(slaveName).simpleRename(fromPath,
+                            toInode.getParent().getPath(), toInode.getName());
                 } catch (ObjectNotFoundException e) {
                     // slave doesn't exist, no reason to tell it to rename this file
                 }
             }
         } else if (inode.isDirectory()) {
-            getGlobalContext().getSlaveManager().renameOnAllSlaves(fromPath, toInode.getParent().getPath(), toInode.getName());
+            getGlobalContext().getSlaveManager().renameOnAllSlaves(fromPath, toInode.getParent().getPath(),
+                    toInode.getName());
         } else {
             // it's a link! who cares! :)
         }
@@ -435,7 +438,7 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable<In
         try {
             checkHiddenPath(this, user);
 
-            //exception not thrown here means that the file is hidden.
+            // exception not thrown here means that the file is hidden.
             return false;
         } catch (FileNotFoundException e) {
             return true;
@@ -443,10 +446,14 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable<In
     }
 
     /**
-     * Add custom meta data provided by a plugin to the map serialized as part of the inode
-     * for future retrieval. It is safe to use custom classes and keys defined in the plugin
-     * for storing data here but be the data will be lost if the inode is deserialized when
-     * the plugin providing the classes is not loaded. This should only be used for data which
+     * Add custom meta data provided by a plugin to the map serialized as part of
+     * the inode
+     * for future retrieval. It is safe to use custom classes and keys defined in
+     * the plugin
+     * for storing data here but be the data will be lost if the inode is
+     * deserialized when
+     * the plugin providing the classes is not loaded. This should only be used for
+     * data which
      * can be repopulated as required.
      *
      * @param key    An instance of <tt>Key</tt> to store the data against
@@ -458,11 +465,14 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable<In
     }
 
     /**
-     * Remove custom meta data provided by a plugin from the map serialized as part of the inode.
+     * Remove custom meta data provided by a plugin from the map serialized as part
+     * of the inode.
      *
-     * @param key An instance of <tt>Key</tt> which was used to store the data against
-     * @return The data which was stored against the key or <tt>null</tt> if the map contained
-     * no entry for the key
+     * @param key An instance of <tt>Key</tt> which was used to store the data
+     *            against
+     * @return The data which was stored against the key or <tt>null</tt> if the map
+     *         contained
+     *         no entry for the key
      * @throws FileNotFoundException If the inode for this handle does not exist
      */
     public <T> T removePluginMetaData(Key<T> key) throws FileNotFoundException {
@@ -470,12 +480,15 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable<In
     }
 
     /**
-     * Retrieve custom meta data provided by a plugin from the map serialized as part of the inode.
+     * Retrieve custom meta data provided by a plugin from the map serialized as
+     * part of the inode.
      *
-     * @param key An instance of <tt>Key</tt> which was used to store the data against
+     * @param key An instance of <tt>Key</tt> which was used to store the data
+     *            against
      * @return The data which was stored against the key
      * @throws FileNotFoundException If the inode for this handle does not exist
-     * @throws KeyNotFoundException  If no entry exists in the map for the provided key
+     * @throws KeyNotFoundException  If no entry exists in the map for the provided
+     *                               key
      */
     public <T> T getPluginMetaData(Key<T> key) throws FileNotFoundException, KeyNotFoundException {
         return getInode().getPluginMetaData(key);
@@ -483,11 +496,16 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable<In
 
     /**
      * Add meta data provided by a plugin to the map serialized as part of the inode
-     * for future retrieval. It is not safe to use custom classes defined in the plugin
-     * for storing data here, only classes provided by the Java API or the master plugin and
-     * its parents should be used, using other classes will lead to potential memory leaks.
-     * Data stored against this map will not be lost if the plugin which stored it is not
-     * loaded at the time the inode is deserialized providing the stated conditions are met.
+     * for future retrieval. It is not safe to use custom classes defined in the
+     * plugin
+     * for storing data here, only classes provided by the Java API or the master
+     * plugin and
+     * its parents should be used, using other classes will lead to potential memory
+     * leaks.
+     * Data stored against this map will not be lost if the plugin which stored it
+     * is not
+     * loaded at the time the inode is deserialized providing the stated conditions
+     * are met.
      *
      * @param key    A unique key to store the meta data against
      * @param object The data to be stored
@@ -498,12 +516,14 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable<In
     }
 
     /**
-     * Remove meta data provided by a plugin from the map serialized as part of the inode.
+     * Remove meta data provided by a plugin from the map serialized as part of the
+     * inode.
      *
      * @param key   The key which was used when storing the data in the map
      * @param clazz A class representing the type of the object to return
-     * @return The data which was stored against the key or <tt>null</tt> if the map contained
-     * no entry for the key
+     * @return The data which was stored against the key or <tt>null</tt> if the map
+     *         contained
+     *         no entry for the key
      * @throws FileNotFoundException If the inode for this handle does not exist
      */
     public <T> T removeUntypedPluginMetaData(String key, Class<T> clazz) throws FileNotFoundException {
@@ -511,24 +531,27 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable<In
     }
 
     /**
-     * Retrieve custom meta data provided by a plugin from the map serialized as part of the inode.
+     * Retrieve custom meta data provided by a plugin from the map serialized as
+     * part of the inode.
      *
      * @param key   The key which was used when storing the data in the map
      * @param clazz A class representing the type of the object to return
-     * @return The data which was stored against the key or <tt>null</tt> if the map contained
-     * no entry for the provided key
+     * @return The data which was stored against the key or <tt>null</tt> if the map
+     *         contained
+     *         no entry for the provided key
      * @throws FileNotFoundException If the inode for this handle does not exist
      */
     public <T> T getUntypedPluginMetaData(String key, Class<T> clazz) throws FileNotFoundException {
         return getInode().getUntypedPluginMetaData(key);
     }
 
-    public Map<String, AtomicInteger> getSlaveRefCounts() throws FileNotFoundException {
+    public Map<String, Integer> getSlaveRefCounts() throws FileNotFoundException {
         return getInode().getSlaveRefCounts();
     }
 
     /**
-     * Request that a refresh notification is issued for this inode to inform VFS listeners
+     * Request that a refresh notification is issued for this inode to inform VFS
+     * listeners
      * that they may want to update any information held regarding this inode.
      *
      * @param sync Whether the refresh should processed synchronously or not

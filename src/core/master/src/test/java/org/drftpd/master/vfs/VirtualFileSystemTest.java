@@ -98,7 +98,7 @@ public class VirtualFileSystemTest {
 
     @Test
     public void testRename() throws Exception {
-        //vfs.getRoot().createDirectory("Test", "drftpd", "drftpd");
+        // vfs.getRoot().createDirectory("Test", "drftpd", "drftpd");
         VirtualFileSystemInode inode = vfs.getInodeByPath("/Test");
         ((VirtualFileSystemDirectory) inode).createFile("testme", "drftpd", "drftpd", "testSlave");
         assertEquals("/Test", inode.getPath());
@@ -111,5 +111,32 @@ public class VirtualFileSystemTest {
     public void testStripLast() {
         assertEquals("/full/path/to", VirtualFileSystem.stripLast("/full/path/to/file"));
         assertEquals("/full/path", VirtualFileSystem.stripLast("/full/path/to"));
+    }
+
+    @Test
+    public void testSlaveRefCount() throws Exception {
+        vfs.getRoot().createDirectory("SlaveRefTest", "drftpd", "drftpd");
+        VirtualFileSystemDirectory dir = (VirtualFileSystemDirectory) vfs.getInodeByPath("/SlaveRefTest");
+
+        // Initial state: empty
+        assertEquals(0, dir.getSlaveRefCounts().size());
+
+        // Add first file on slave1
+        dir.createFile("file1", "drftpd", "drftpd", "slave1");
+        assertEquals(1, dir.getSlaveRefCounts().get("slave1").intValue());
+
+        // Add second file on slave1
+        dir.createFile("file2", "drftpd", "drftpd", "slave1");
+        assertEquals(2, dir.getSlaveRefCounts().get("slave1").intValue());
+
+        // Add file on slave2
+        dir.createFile("file3", "drftpd", "drftpd", "slave2");
+        assertEquals(2, dir.getSlaveRefCounts().get("slave1").intValue());
+        assertEquals(1, dir.getSlaveRefCounts().get("slave2").intValue());
+
+        // Remove file on slave1
+        dir.getInodeByName("file1").delete();
+        assertEquals(1, dir.getSlaveRefCounts().get("slave1").intValue());
+        assertEquals(1, dir.getSlaveRefCounts().get("slave2").intValue());
     }
 }

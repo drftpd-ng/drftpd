@@ -29,8 +29,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.concurrent.atomic.AtomicInteger;
-
 
 /**
  * VirtualFileSystemInode is an abstract class used to handle basic functions
@@ -78,7 +76,7 @@ public abstract class VirtualFileSystemInode implements Commitable {
      * When called, this method will save the Inode data to the disk.
      */
     public void commit() {
-        //logger.debug("Committing " + getPath());
+        // logger.debug("Committing " + getPath());
         CommitManager.getCommitManager().add(this);
     }
 
@@ -279,11 +277,13 @@ public abstract class VirtualFileSystemInode implements Commitable {
 
         VirtualFileSystemDirectory destinationDir = null;
         try {
-            destinationDir = (VirtualFileSystemDirectory) getVFS().getInodeByPath(VirtualFileSystem.stripLast(destination));
+            destinationDir = (VirtualFileSystemDirectory) getVFS()
+                    .getInodeByPath(VirtualFileSystem.stripLast(destination));
         } catch (FileNotFoundException e) {
             throw new RuntimeException("Error in logic, this should not happen", e);
         }
-        // Ensure source/destination is flushed to ondisk VFS in case either is newly created
+        // Ensure source/destination is flushed to ondisk VFS in case either is newly
+        // created
         CommitManager.getCommitManager().flushImmediate(destinationDir);
         CommitManager.getCommitManager().flushImmediate(this);
         String fileString = "rename(" + this + ")";
@@ -385,7 +385,7 @@ public abstract class VirtualFileSystemInode implements Commitable {
         return ((VirtualFileSystemInode) obj).getPath().equalsIgnoreCase(getPath());
     }
 
-    protected abstract Map<String, AtomicInteger> getSlaveRefCounts();
+    protected abstract Map<String, Integer> getSlaveRefCounts();
 
     /**
      * Publish a refresh notification for this inode
