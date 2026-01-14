@@ -40,5 +40,6 @@ keepFree=100GB
 
 # Do not delete releases younger than X minutes (wipeAfter only used if mode = date).
 #1.section=SECTION1
+#1.path=/MP3/*
 #1.wipeAfter=43200
 

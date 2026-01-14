@@ -88,16 +88,33 @@ public class AutoFreeSpaceSettings {
 
         Map<String, Section> sections = new HashMap<>();
         int id = 1;
-        String name;
 
-        // Handle sections
-        while ((name = PropertyHelper.getProperty(p, id + ".section", null)) != null) {
-            if (!GlobalContext.getGlobalContext().getSectionManager().getSection(name).getName().equalsIgnoreCase(name)) {
-                logger.error("Section [{}] Does not exist, not creating configuration items", name);
-            } else {
-                long wipeAfter = Long.parseLong(p.getProperty(id + ".wipeAfter")) * 60000L;
-                sections.put(name, new Section(id, name, wipeAfter));
-                logger.debug("Loaded section {}, wipeAfter: {}", name, wipeAfter);
+        // Handle sections - supports both X.section=<name> and X.path=<pattern>
+        while (true) {
+            String sectionName = PropertyHelper.getProperty(p, id + ".section", null);
+            String pathPattern = PropertyHelper.getProperty(p, id + ".path", null);
+
+            // Stop if neither section nor path is configured for this id
+            if (sectionName == null && pathPattern == null) {
+                break;
+            }
+
+            long wipeAfter = Long.parseLong(p.getProperty(id + ".wipeAfter", "0")) * 60000L;
+
+            if (pathPattern != null) {
+                // Path-based configuration: use path pattern directly
+                String key = "path:" + id;
+                sections.put(key, new Section(id, null, pathPattern, wipeAfter));
+                logger.debug("Loaded path pattern [{}], wipeAfter: {}", pathPattern, wipeAfter);
+            } else if (sectionName != null) {
+                // Section-based configuration: validate section exists
+                if (!GlobalContext.getGlobalContext().getSectionManager().getSection(sectionName).getName()
+                        .equalsIgnoreCase(sectionName)) {
+                    logger.error("Section [{}] does not exist, not creating configuration items", sectionName);
+                } else {
+                    sections.put(sectionName, new Section(id, sectionName, null, wipeAfter));
+                    logger.debug("Loaded section {}, wipeAfter: {}", sectionName, wipeAfter);
+                }
             }
             id++;
         }
@@ -105,7 +122,7 @@ public class AutoFreeSpaceSettings {
 
         ArrayList<String> excludeFiles = new ArrayList<>();
         // Handle excludeFiles
-        for (int i = 1; ; i++) {
+        for (int i = 1;; i++) {
             String sec = p.getProperty("excluded.file." + i);
             if (sec == null)
                 break;
@@ -144,16 +161,20 @@ public class AutoFreeSpaceSettings {
         return _cycleTime;
     }
 
-    public int getMaxIterations() { return _maxIterations; }
+    public int getMaxIterations() {
+        return _maxIterations;
+    }
 
     static class Section {
         private final int id;
         private final String name;
+        private final String path;
         private final long wipeAfter;
 
-        public Section(int id, String name, long wipeAfter) {
+        public Section(int id, String name, String path, long wipeAfter) {
             this.id = id;
             this.name = name;
+            this.path = path;
             this.wipeAfter = wipeAfter;
         }
 
@@ -165,9 +186,20 @@ public class AutoFreeSpaceSettings {
             return this.name;
         }
 
-        public long getWipeAfter() {
-            return this.wipeAfter;
-        }
+        /**
+         * Returns the path pattern for this section.
+         * If null, use the section's base directory.
+         * Supports glob patterns like {@code /MP3/*
+         /
     }
-}
 
+    with wildcards*/
+
+    public String getPath() {
+        return this.path;
+    }
+
+    public long getWipeAfter() {
+        return this.wipeAfter;
+    }
+}}
