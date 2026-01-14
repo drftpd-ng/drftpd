@@ -37,6 +37,20 @@ public class MediaInfo implements Serializable {
     public static final Key<MediaInfo> MEDIAINFO = new Key<>(MediaInfo.class, "mediainfo");
     private static final Logger logger = LogManager.getLogger(MediaInfo.class);
     private static final String MEDIAINFO_COMMAND = "mediainfo";
+
+    // Factory for creating IsoFile instances (for testing)
+    public interface IsoFileFactory {
+        IsoFile create(String path) throws IOException;
+    }
+
+    // Default implementation uses the real constructor
+    private static IsoFileFactory _isoFileFactory = IsoFile::new;
+
+    // Setter for testing
+    protected static void setIsoFileFactory(IsoFileFactory factory) {
+        _isoFileFactory = factory;
+    }
+
     private String _fileName = "";
     private long _checksum;
     private boolean _sampleOk = true;
@@ -169,7 +183,7 @@ public class MediaInfo implements Serializable {
         switch (realFormat) {
             case "MP4" -> {
                 try {
-                    try (IsoFile isoFile = new IsoFile(filePath)) {
+                    try (IsoFile isoFile = _isoFileFactory.create(filePath)) {
                         if (isoFile.getSize() != mediaInfo.getActFileSize()) {
                             logger.warn("MP4: IsoFile size {} != actual file size {} for file {}", isoFile.getSize(),
                                     mediaInfo.getActFileSize(), filePath);
