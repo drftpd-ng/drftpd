@@ -145,7 +145,7 @@ public class Slave extends SslConfigurationLoader {
         int masterPort;
         try {
             masterPort = Integer.parseInt(PropertyHelper.getProperty(p, "master.bindport"));
-        } catch(NumberFormatException e) {
+        } catch (NumberFormatException e) {
             logger.error("Unable to parse port from configuration", e);
             throw new RuntimeException(e);
         }
@@ -165,9 +165,9 @@ public class Slave extends SslConfigurationLoader {
             if (bindIP.length() > 0) {
                 _bindIP = InetAddress.getByName(bindIP);
             }
-        } catch(UnknownHostException e) {
+        } catch (UnknownHostException e) {
             logger.warn("'bind.ip' is not a valid ip address");
-        } catch(Exception e) {
+        } catch (Exception e) {
             logger.error("Unknown error occurred trying to get 'bind.ip' config", e);
         }
         _timeout = Integer.parseInt(PropertyHelper.getProperty(p, "slave.timeout", String.valueOf(actualTimeout)));
@@ -201,6 +201,18 @@ public class Slave extends SslConfigurationLoader {
             _portRange = new PortRange(_bufferSize);
         }
 
+        ArrayList<String> protocols = new ArrayList<>();
+        for (int i = 1; true; i++) {
+            String protocol = p.getProperty("protocol." + i);
+            if (protocol == null) {
+                break;
+            }
+            protocols.add(protocol);
+        }
+        if (!protocols.isEmpty()) {
+            _sslProtocols = protocols.toArray(new String[0]);
+        }
+
         _ignorePartialRemerge = p.getProperty("ignore.partialremerge", "false").equalsIgnoreCase("true");
         _threadedRemerge = p.getProperty("threadedremerge", "false").equalsIgnoreCase("true");
         _threadedThreads = 0;
@@ -226,16 +238,21 @@ public class Slave extends SslConfigurationLoader {
             try {
                 _socket.bind(new InetSocketAddress(getBindIP(), 0));
             } catch (IOException e) {
-                throw new IOException("Unable to bind to ["+getBindIP()+":0]", e);
+                throw new IOException("Unable to bind to [" + getBindIP() + ":0]", e);
             }
         }
 
         _socket.setSoTimeout(socketTimeout);
         _socket.connect(masterIsa);
         _socket.setUseClientMode(true);
+        if (_sslProtocols != null) {
+            _socket.setEnabledProtocols(_sslProtocols);
+        }
 
-        logger.debug("[{}] Enabled ciphers for this new connection are as follows: '{}'", _socket.getRemoteSocketAddress(), Arrays.toString(_socket.getEnabledCipherSuites()));
-        logger.debug("[{}] Enabled protocols for this new connection are as follows: '{}'", _socket.getRemoteSocketAddress(), Arrays.toString(_socket.getEnabledProtocols()));
+        logger.debug("[{}] Enabled ciphers for this new connection are as follows: '{}'",
+                _socket.getRemoteSocketAddress(), Arrays.toString(_socket.getEnabledCipherSuites()));
+        logger.debug("[{}] Enabled protocols for this new connection are as follows: '{}'",
+                _socket.getRemoteSocketAddress(), Arrays.toString(_socket.getEnabledProtocols()));
 
         try {
             _socket.startHandshake();
@@ -259,8 +276,7 @@ public class Slave extends SslConfigurationLoader {
     public static void main(String... args) {
         try {
             Slave.boot();
-        }
-        catch (Throwable th) {
+        } catch (Throwable th) {
             th.printStackTrace();
             logger.fatal("", th);
             System.exit(1);
@@ -302,7 +318,8 @@ public class Slave extends SslConfigurationLoader {
             Class<?> aClass = Class.forName(desiredDs);
             _diskSelection = (DiskSelectionInterface) aClass.getConstructor(Slave.class).newInstance(this);
         } catch (Exception e) {
-            throw new RuntimeException("Cannot create instance of diskselection, check 'diskselection' in the configuration file", e);
+            throw new RuntimeException(
+                    "Cannot create instance of diskselection, check 'diskselection' in the configuration file", e);
         }
     }
 
@@ -362,7 +379,7 @@ public class Slave extends SslConfigurationLoader {
     }
 
     public void setOnline(boolean online) {
-        logger.info("Setting slave status online to: "+online);
+        logger.info("Setting slave status online to: " + online);
         _online = online;
     }
 
@@ -378,7 +395,8 @@ public class Slave extends SslConfigurationLoader {
         logger.debug("Checksumming: {}", file.getPath());
 
         CRC32 crc32 = new CRC32();
-        try (CheckedInputStream in = new CheckedInputStream(new BufferedInputStream(new FileInputStream(file)), crc32)) {
+        try (CheckedInputStream in = new CheckedInputStream(new BufferedInputStream(new FileInputStream(file)),
+                crc32)) {
             byte[] buf = new byte[16384];
             while (true) {
                 if (in.read(buf) == -1) {
@@ -399,7 +417,7 @@ public class Slave extends SslConfigurationLoader {
             return;
         }
 
-        for (Iterator<Root> iter = files.iterator(); iter.hasNext(); ) {
+        for (Iterator<Root> iter = files.iterator(); iter.hasNext();) {
             Root root = iter.next();
             PhysicalFile file = root.getFile(path);
 
@@ -425,11 +443,13 @@ public class Slave extends SslConfigurationLoader {
                 } catch (DirectoryNotEmptyException e) {
                     logger.error("Trying to delete file, but caught DirectoryNotEmptyException. BUG?", e);
                 } catch (IOException e) {
-                    // Sometimes we hit OS cache issues, so lets wait 0.1 seconds to see if that solves it.
+                    // Sometimes we hit OS cache issues, so lets wait 0.1 seconds to see if that
+                    // solves it.
                     // If the file exists after this we bail
                     try {
                         Thread.sleep(100);
-                    } catch (InterruptedException ignored) {}
+                    } catch (InterruptedException ignored) {
+                    }
 
                     if (file.exists()) {
                         logger.error("Delete of {} failed", physicalPath, e);
@@ -528,7 +548,9 @@ public class Slave extends SslConfigurationLoader {
                 // error
                 long millisSinceLastCommand = System.currentTimeMillis() - lastCommandReceived;
                 if (_timeout < millisSinceLastCommand) {
-                    String message = String.format("Slave is going offline as it hasn't received any communication from the master in %d milliseconds", millisSinceLastCommand);
+                    String message = String.format(
+                            "Slave is going offline as it hasn't received any communication from the master in %d milliseconds",
+                            millisSinceLastCommand);
                     logger.error(message, e);
                     throw new RuntimeException(message, e);
                 }
@@ -566,19 +588,21 @@ public class Slave extends SslConfigurationLoader {
     /**
      * Rename a location on the (slave) local file system from A to B
      * NOTE: master allows destination to exist and expects us to merge
-     * @param from The source location we need to rename from
+     * 
+     * @param from      The source location we need to rename from
      * @param toDirPath The destination parent path to rename/move too
-     * @param toName The destination name under parent to rename/move too
+     * @param toName    The destination name under parent to rename/move too
      * @throws IOException if any I/O related issue has arisen throw it
      */
     public void rename(String from, String toDirPath, String toName) throws IOException {
-        for (Iterator<Root> rootItems = _roots.iterator(); rootItems.hasNext(); ) {
+        for (Iterator<Root> rootItems = _roots.iterator(); rootItems.hasNext();) {
             Root root = rootItems.next();
 
             File fromfile = root.getFile(from);
 
             if (!fromfile.exists()) {
-                logger.debug("rename(), from ["+fromfile.getPath()+"] not found in root ["+root.getPath()+"], skipping");
+                logger.debug("rename(), from [" + fromfile.getPath() + "] not found in root [" + root.getPath()
+                        + "], skipping");
                 continue;
             }
 
@@ -592,19 +616,23 @@ public class Slave extends SslConfigurationLoader {
 
             // Handle windows case insensitivity
             if (isWindows) {
-                // We check full path as we can still move to a different path and case if needed - TODO: verify
+                // We check full path as we can still move to a different path and case if
+                // needed - TODO: verify
                 if (fromfile.getPath().equalsIgnoreCase(tofile.getPath())) {
-                    logger.debug("rename(), found from ["+fromfile.getPath()+"] to match ["+tofile.getPath()+"]. " +
-                            "However we seem to have a case difference, ignoring (on Windows)");
+                    logger.debug(
+                            "rename(), found from [" + fromfile.getPath() + "] to match [" + tofile.getPath() + "]. " +
+                                    "However we seem to have a case difference, ignoring (on Windows)");
                     continue;
                 }
             }
 
-            // Master allows destination to exist, just how should we handle collisions (ignoring for now)
+            // Master allows destination to exist, just how should we handle collisions
+            // (ignoring for now)
             if (tofile.exists()) {
-                logger.error("rename(), tofile ["+tofile.getPath()+"] exists (from: ["+fromfile.getPath()+"]. " +
-                        "This used to cause an I/O exception, however master assumes we can merge, " +
-                        "so silently not doing anything (for now) - ISSUE");
+                logger.error(
+                        "rename(), tofile [" + tofile.getPath() + "] exists (from: [" + fromfile.getPath() + "]. " +
+                                "This used to cause an I/O exception, however master assumes we can merge, " +
+                                "so silently not doing anything (for now) - ISSUE");
                 continue;
             }
 
@@ -667,7 +695,7 @@ public class Slave extends SslConfigurationLoader {
     public SSLContext getSSLContext() {
         try {
             return SSLGetContext.getSSLContext();
-        } catch(GeneralSecurityException | IOException e) {
+        } catch (GeneralSecurityException | IOException e) {
             return null;
         }
     }
