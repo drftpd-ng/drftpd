@@ -196,6 +196,44 @@ public class ServerStatus extends CommandInterface {
                 response.addComment(session.jprintf(_bundle, env, "status.cminfo"));
             }
 
+            if (arg.equals("cpu") || isAll) {
+                OperatingSystemMXBean omx = ManagementFactory.getOperatingSystemMXBean();
+                env.put("cpu.arch", omx.getArch());
+                env.put("cpu.cores", omx.getAvailableProcessors());
+                double loadAvg = omx.getSystemLoadAverage();
+                env.put("cpu.load", loadAvg >= 0 ? String.format("%.2f", loadAvg) : "N/A");
+                response.addComment(session.jprintf(_bundle, env, "status.cpuinfo"));
+            }
+
+            if (arg.equals("network") || isAll) {
+                Properties props = GlobalContext.getConfig().getMainProperties();
+                env.put("net.bindip", props.getProperty("master.bindhost", "0.0.0.0"));
+                env.put("net.port", props.getProperty("master.bindport", "?"));
+
+                List<RemoteSlave> slaves = GlobalContext.getGlobalContext().getSlaveManager().getSlaves();
+                int online = 0;
+                for (RemoteSlave rs : slaves) {
+                    if (rs.isOnline())
+                        online++;
+                }
+                env.put("net.slaves.online", online);
+                env.put("net.slaves.total", slaves.size());
+                response.addComment(session.jprintf(_bundle, env, "status.netinfo"));
+            }
+
+            if (arg.equals("slaves")) {
+                List<RemoteSlave> slaves = GlobalContext.getGlobalContext().getSlaveManager().getSlaves();
+                for (RemoteSlave rs : slaves) {
+                    env.clear();
+                    env.put("slave.name", rs.getName());
+                    env.put("slave.online", rs.isOnline() ? "Online" : "Offline");
+                    env.put("slave.address", rs.getRemoteAddress());
+                    env.put("slave.tls.protocol", rs.getTlsProtocol());
+                    env.put("slave.tls.cipher", rs.getTlsCipherSuite());
+                    response.addComment(session.jprintf(_bundle, env, "status.slaveinfo"));
+                }
+            }
+
             if (isAll) {
                 // no need to output repeated
                 break;
@@ -204,4 +242,4 @@ public class ServerStatus extends CommandInterface {
 
         return response;
     }
-} 
+}
