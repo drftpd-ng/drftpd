@@ -29,25 +29,28 @@
                         </goals>
                         <configuration>
                             <excludeScope>provided</excludeScope>
+                            <excludeGroupIds>${project.groupId}</excludeGroupIds>
                             <outputDirectory>${session.executionRootDirectory}/runtime/slave/lib</outputDirectory>
                         </configuration>
                     </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
                     <execution>
-                        <id>copy-generated</id>
+                        <id>copy-jar</id>
                         <phase>package</phase>
                         <goals>
-                            <goal>copy</goal>
+                            <goal>run</goal>
                         </goals>
                         <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>${project.groupId}</groupId>
-                                    <artifactId>${project.artifactId}</artifactId>
-                                    <version>${project.version}</version>
-                                    <type>${project.packaging}</type>
-                                </artifactItem>
-                            </artifactItems>
-                            <outputDirectory>${session.executionRootDirectory}/runtime/slave/build</outputDirectory>
+                            <target>
+                                <copy file="${project.build.directory}/${project.build.finalName}.jar" 
+                                      todir="${session.executionRootDirectory}/runtime/slave/build" 
+                                      failonerror="true" verbose="true"/>
+                            </target>
                         </configuration>
                     </execution>
                 </executions>
