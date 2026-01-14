@@ -135,8 +135,21 @@ public class GlobalContext {
         try {
             Path targetPath = new File(configurationPath).toPath();
             Stream<Path> pathStream = Files.walk(targetPath);
-            List<Path> confFiles = pathStream.filter(f -> f.getFileName().toString().endsWith(".conf")).collect(Collectors.toList());
+            List<Path> confFiles = pathStream.filter(f -> {
+                String name = f.getFileName().toString();
+                return name.endsWith(".conf") || name.endsWith(".conf.dist");
+            }).collect(Collectors.toList());
+
             for (Path confFile : confFiles) {
+                // If it is a dist file check if the real config exists, if so skip the dist
+                // file
+                if (confFile.toString().endsWith(".dist")) {
+                    String realConfigPath = confFile.toString().substring(0, confFile.toString().length() - 5);
+                    if (new File(realConfigPath).exists()) {
+                        continue;
+                    }
+                }
+
                 reader = new LineNumberReader(new FileReader(confFile.toFile()));
                 String curLine;
 
@@ -296,8 +309,7 @@ public class GlobalContext {
             while (!allResolve) {
                 for (Class<? extends PluginInterface> plugin : plugins) {
                     PluginDependencies annotation = plugin.getAnnotation(PluginDependencies.class);
-                    List<Class<? extends PluginInterface>> dependencies = annotation != null ?
-                            Arrays.asList(annotation.refs()) : new ArrayList<>();
+                    List<Class<? extends PluginInterface>> dependencies = annotation != null ? Arrays.asList(annotation.refs()) : new ArrayList<>();
                     List<String> depNames = dependencies.stream().map(Class::getName).collect(Collectors.toList());
                     boolean alreadyInstantiate = alreadyResolved.contains(plugin.getName());
                     if (alreadyResolved.containsAll(depNames) && !alreadyInstantiate) {
