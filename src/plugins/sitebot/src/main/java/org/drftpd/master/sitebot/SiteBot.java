@@ -96,7 +96,8 @@ public class SiteBot implements ReplyConstants, Runnable {
     private final CaseInsensitiveHashMap<String, UserDetails> _users = new CaseInsensitiveHashMap<>();
     // A HashMap of BlowfishManager objects for channels we are aware of
     private final CaseInsensitiveHashMap<String, BlowfishManager> _ciphers = new CaseInsensitiveHashMap<>();
-    /* A HashMap of DH1080 objects for users, this is used to store a
+    /*
+     * A HashMap of DH1080 objects for users, this is used to store a
      * temporary object when initiating a DH1080 request whilst we wait
      * for the response
      */
@@ -123,7 +124,8 @@ public class SiteBot implements ReplyConstants, Runnable {
 
     // A HashMap to store the available prefixes and associated mode operator
     private HashMap<String, String> _userPrefixes = new HashMap<>();
-    // prefixes as delivered from the server .. highest to lowest - default to op/voice
+    // prefixes as delivered from the server .. highest to lowest - default to
+    // op/voice
     private final String _channelPrefixes = "#&+!";
 
     public SiteBot(String confDir) throws FatalException {
@@ -134,7 +136,8 @@ public class SiteBot implements ReplyConstants, Runnable {
         Properties cfg = ConfigLoader.loadPluginConfig(_confDir + "irc.conf");
         _config = new SiteBotConfig(cfg);
 
-        // set a default mode/prefix for the users in case the server doesn't have it defined properly
+        // set a default mode/prefix for the users in case the server doesn't have it
+        // defined properly
         // default to PREFIX=(ov)@+
         _userPrefixes.put("o", "@");
         _userPrefixes.put("v", "+");
@@ -165,9 +168,11 @@ public class SiteBot implements ReplyConstants, Runnable {
         // Initialise the thread pool for executing commands
         int maxCommands = _config.getCommandsMax();
         if (_config.getCommandsQueue()) {
-            _pool = new ThreadPoolExecutor(maxCommands, maxCommands, 60L, TimeUnit.SECONDS, new LinkedBlockingQueue<>(), new CommandThreadFactory(), new ThreadPoolExecutor.AbortPolicy());
+            _pool = new ThreadPoolExecutor(maxCommands, maxCommands, 60L, TimeUnit.SECONDS, new LinkedBlockingQueue<>(),
+                    new CommandThreadFactory(), new ThreadPoolExecutor.AbortPolicy());
         } else if (_config.getCommandsBlock()) {
-            _pool = new ThreadPoolExecutor(maxCommands, maxCommands, 60L, TimeUnit.SECONDS, new SynchronousQueue<>(), new CommandThreadFactory(), new ThreadPoolExecutor.AbortPolicy());
+            _pool = new ThreadPoolExecutor(maxCommands, maxCommands, 60L, TimeUnit.SECONDS, new SynchronousQueue<>(),
+                    new CommandThreadFactory(), new ThreadPoolExecutor.AbortPolicy());
         } else {
             throw new FatalException("commands.full has an invalid value in irc.conf");
         }
@@ -194,9 +199,11 @@ public class SiteBot implements ReplyConstants, Runnable {
      * password.
      * The onConnect method is called upon success.
      *
-     * @throws IOException               if it was not possible to connect to the server.
+     * @throws IOException               if it was not possible to connect to the
+     *                                   server.
      * @throws IrcException              if the server would not let us join it.
-     * @throws NickAlreadyInUseException if our nick is already in use on the server.
+     * @throws NickAlreadyInUseException if our nick is already in use on the
+     *                                   server.
      */
     public final synchronized void connect() throws IOException, IrcException, NickAlreadyInUseException {
 
@@ -238,16 +245,19 @@ public class SiteBot implements ReplyConstants, Runnable {
                     ((SSLSocket) socket).setEnabledProtocols(sslProtocols);
                 }
                 logger.debug("[{}] Enabled ciphers for this new connection are as follows: '{}'",
-                        ((SSLSocket) socket).getRemoteSocketAddress(), Arrays.toString(((SSLSocket) socket).getEnabledCipherSuites()));
+                        ((SSLSocket) socket).getRemoteSocketAddress(),
+                        Arrays.toString(((SSLSocket) socket).getEnabledCipherSuites()));
                 logger.debug("[{}] Enabled protocols for this new connection are as follows: '{}'",
-                        ((SSLSocket) socket).getRemoteSocketAddress(), Arrays.toString(((SSLSocket) socket).getEnabledProtocols()));
+                        ((SSLSocket) socket).getRemoteSocketAddress(),
+                        Arrays.toString(((SSLSocket) socket).getEnabledProtocols()));
                 ((SSLSocket) socket).setUseClientMode(true);
                 ((SSLSocket) socket).startHandshake();
             }
             logger.info("*** Connected to server [{}:{}]", _server, _port);
         } catch (IOException e) {
             // Something failed during connecting, call reconnect() to try another server
-            logger.warn("Connection to {}:{} failed with error {}, retrying or trying next server if one is available", _server, _port, e.getMessage());
+            logger.warn("Connection to {}:{} failed with error {}, retrying or trying next server if one is available",
+                    _server, _port, e.getMessage());
             reconnect();
             return;
         }
@@ -266,12 +276,15 @@ public class SiteBot implements ReplyConstants, Runnable {
         }
         String nick = _config.getNick();
         OutputThread.sendRawLine(this, bwriter, "NICK " + nick);
+        this.setNick(nick);
         OutputThread.sendRawLine(this, bwriter, "USER " + _config.getUser() + " 8 * :" + _config.getName());
 
         _inputThread = new InputThread(this, socket, breader, bwriter);
 
-        // During our connect phase we might receive commands we cannot process yet, so we store them for later processing
-        // Certain commands expect our _hostMask to be filled with correct data for example
+        // During our connect phase we might receive commands we cannot process yet, so
+        // we store them for later processing
+        // Certain commands expect our _hostMask to be filled with correct data for
+        // example
         List<String> storedCommands = new ArrayList<>();
 
         // Read stuff back from the server to see if we connected.
@@ -279,7 +292,8 @@ public class SiteBot implements ReplyConstants, Runnable {
         int tries = 1;
         while ((line = breader.readLine()) != null) {
 
-            // Quickly process PING requests otherwise we might be kicked offline during our connecting phase
+            // Quickly process PING requests otherwise we might be kicked offline during our
+            // connecting phase
             if (line.startsWith("PING ")) {
                 this.onServerPing(line.substring(5));
                 continue;
@@ -291,7 +305,13 @@ public class SiteBot implements ReplyConstants, Runnable {
             if (secondSpace >= 0) {
                 String code = line.substring(firstSpace + 1, secondSpace);
 
-                if (code.equals("004")) {
+                if (code.equals("001")) {
+                    int thirdSpace = line.indexOf(" ", secondSpace + 1);
+                    if (thirdSpace >= 0) {
+                        nick = line.substring(secondSpace + 1, thirdSpace);
+                        this.setNick(nick);
+                    }
+                } else if (code.equals("004")) {
                     // We're connected to the server.
                     break;
                 } else if (code.equals("433")) {
@@ -299,6 +319,7 @@ public class SiteBot implements ReplyConstants, Runnable {
                         tries++;
                         nick = _config.getNick() + tries;
                         OutputThread.sendRawLine(this, bwriter, "NICK " + nick);
+                        this.setNick(nick);
                     } else {
                         socket.close();
                         _inputThread = null;
@@ -306,14 +327,14 @@ public class SiteBot implements ReplyConstants, Runnable {
                     }
                 } else if (code.equals("439")) {
                     // seems to be sent from some servers to trick fake clients into disconnecting
-                    logger.info("Received response code 439 from server.  Ignoring as this shouldn't mean anything as it is sometimes used to trap bots and spammers.");
+                    logger.info(
+                            "Received response code 439 from server.  Ignoring as this shouldn't mean anything as it is sometimes used to trap bots and spammers.");
                 } else if (code.startsWith("5") || code.startsWith("4")) {
                     socket.close();
                     _inputThread = null;
                     throw new IrcException("Could not log into the IRC server: " + line);
                 }
             }
-            this.setNick(nick);
         }
 
         // Find what the server considers our hostmask to be
@@ -321,7 +342,8 @@ public class SiteBot implements ReplyConstants, Runnable {
         String hostMask = "";
         while ((line = breader.readLine()) != null) {
 
-            // Quickly process PING requests otherwise we might be kicked offline during our connecting phase
+            // Quickly process PING requests otherwise we might be kicked offline during our
+            // connecting phase
             if (line.startsWith("PING ")) {
                 this.onServerPing(line.substring(5));
                 continue;
@@ -383,14 +405,17 @@ public class SiteBot implements ReplyConstants, Runnable {
      * This method will throw an IrcException if we have never connected
      * to an IRC server previously.
      *
-     * @throws IOException               if it was not possible to connect to the server.
+     * @throws IOException               if it was not possible to connect to the
+     *                                   server.
      * @throws IrcException              if the server would not let us join it.
-     * @throws NickAlreadyInUseException if our nick is already in use on the server.
+     * @throws NickAlreadyInUseException if our nick is already in use on the
+     *                                   server.
      * @since PircBot 0.9.9
      */
     public final synchronized void reconnect() throws IOException, IrcException, NickAlreadyInUseException {
         if (getServer() == null) {
-            throw new IrcException("Cannot reconnect to an IRC server because we were never connected to one previously!");
+            throw new IrcException(
+                    "Cannot reconnect to an IRC server because we were never connected to one previously!");
         }
         if (!_userDisconnected) {
             try {
@@ -404,7 +429,7 @@ public class SiteBot implements ReplyConstants, Runnable {
 
     /**
      * This method disconnects from the server cleanly by calling the
-     * quitServer() method.  Providing the PircBot was connected to an
+     * quitServer() method. Providing the PircBot was connected to an
      * IRC server, the onDisconnect() will be called as soon as the
      * disconnection is made by the server.
      *
@@ -505,16 +530,19 @@ public class SiteBot implements ReplyConstants, Runnable {
     }
 
     /**
-     * Sends a message to a channel or a private message to a user.  These
+     * Sends a message to a channel or a private message to a user. These
      * messages are added to the outgoing message queue and sent at the
      * earliest possible opportunity.
      * <p>
      * Some examples: -
-     * <pre>    // Send the message "Hello!" to the channel #cs.
-     *    sendMessage("#cs", "Hello!");
+     * 
+     * <pre>
+     * // Send the message "Hello!" to the channel #cs.
+     * sendMessage("#cs", "Hello!");
      *
-     *    // Send a private message to Paul that says "Hi".
-     *    sendMessage("Paul", "Hi");</pre>
+     * // Send a private message to Paul that says "Hi".
+     * sendMessage("Paul", "Hi");
+     * </pre>
      * <p>
      * You may optionally apply colours, boldness, underlining, etc to
      * the message by using the {@code Colors} class.
@@ -547,7 +575,7 @@ public class SiteBot implements ReplyConstants, Runnable {
     }
 
     /**
-     * Sends a CTCP command to a channel or user.  (Client to client protocol).
+     * Sends a CTCP command to a channel or user. (Client to client protocol).
      * Examples of such commands are "PING <number>", "FINGER", "VERSION", etc.
      * For example, if you wish to request the version of a user called "Dave",
      * then you would call {@code sendCTCPCommand("Dave", "VERSION");}.
@@ -576,7 +604,7 @@ public class SiteBot implements ReplyConstants, Runnable {
 
     /**
      * Set the mode of a channel.
-     * This method attempts to set the mode of a channel.  This
+     * This method attempts to set the mode of a channel. This
      * may require the bot to have operator status on the channel.
      * For example, if the bot has operator status, we can grant
      * operator status to "Dave" on the #cs channel
@@ -584,7 +612,7 @@ public class SiteBot implements ReplyConstants, Runnable {
      * An alternative way of doing this would be to use the op method.
      *
      * @param channel The channel on which to perform the mode change.
-     * @param mode    The new mode to apply to the channel.  This may include
+     * @param mode    The new mode to apply to the channel. This may include
      *                zero or more arguments if necessary.
      * @see #op(String, String) op
      */
@@ -593,7 +621,7 @@ public class SiteBot implements ReplyConstants, Runnable {
     }
 
     /**
-     * Sends an invitation to join a channel.  Some channels can be marked
+     * Sends an invitation to join a channel. Some channels can be marked
      * as "invite-only", so it may be useful to allow a bot to invite people
      * into it.
      *
@@ -605,8 +633,8 @@ public class SiteBot implements ReplyConstants, Runnable {
     }
 
     /**
-     * Bans a user from a channel.  An example of a valid hostmask is
-     * "*!*compu@*.18hp.net".  This may be used in conjunction with the
+     * Bans a user from a channel. An example of a valid hostmask is
+     * "*!*compu@*.18hp.net". This may be used in conjunction with the
      * kick method to permanently remove a user from a channel.
      * Successful use of this method may require the bot to have operator
      * status itself.
@@ -619,7 +647,7 @@ public class SiteBot implements ReplyConstants, Runnable {
     }
 
     /**
-     * Unbans a user from a channel.  An example of a valid hostmask is
+     * Unbans a user from a channel. An example of a valid hostmask is
      * "*!*compu@*.18hp.net".
      * Successful use of this method may require the bot to have operator
      * status itself.
@@ -681,7 +709,7 @@ public class SiteBot implements ReplyConstants, Runnable {
 
     /**
      * Set the topic for a channel.
-     * This method attempts to set the topic of a channel.  This
+     * This method attempts to set the topic of a channel. This
      * may require the bot to have operator status if the topic
      * is protected.
      *
@@ -737,7 +765,7 @@ public class SiteBot implements ReplyConstants, Runnable {
      * <p>
      * Some IRC servers support certain parameters for LIST requests.
      * One example is a parameter of ">10" to list only those channels
-     * that have more than 10 users in them.  Whether these parameters
+     * that have more than 10 users in them. Whether these parameters
      * are supported or not will depend on the IRC server software.
      *
      * @param parameters The parameters to supply when requesting the
@@ -754,7 +782,7 @@ public class SiteBot implements ReplyConstants, Runnable {
 
     /**
      * This method handles events when any line of text arrives from the server,
-     * then calling the appropriate method in the PircBot.  This method is
+     * then calling the appropriate method in the PircBot. This method is
      * protected and only called by the InputThread for this instance.
      * <p>
      * This method may not be overridden!
@@ -762,7 +790,8 @@ public class SiteBot implements ReplyConstants, Runnable {
      * @param line The raw line of text from the server.
      */
     protected void handleLine(String line) {
-        // an empty line from a (non-standard) server causes a failure later on, so skip it
+        // an empty line from a (non-standard) server causes a failure later on, so skip
+        // it
         if (line.length() == 0) {
             return;
         }
@@ -899,7 +928,8 @@ public class SiteBot implements ReplyConstants, Runnable {
                 this.removeChannel(target);
             }
             this.removeUser(target, recipient);
-            this.onKick(target, sourceNick, sourceLogin, sourceHostname, recipient, line.substring(line.indexOf(" :") + 2));
+            this.onKick(target, sourceNick, sourceLogin, sourceHostname, recipient,
+                    line.substring(line.indexOf(" :") + 2));
         } else if (command.equals("MODE")) {
             // Somebody is changing the mode on a channel or user.
             String mode = line.substring(line.indexOf(target, 2) + target.length() + 1);
@@ -961,7 +991,8 @@ public class SiteBot implements ReplyConstants, Runnable {
             try {
                 logger.debug("Delaying for '{}' milliseconds, Started", _config.getDelayAfterNickserv());
                 Thread.sleep(_config.getDelayAfterNickserv());
-            } catch (InterruptedException ignored) {}
+            } catch (InterruptedException ignored) {
+            }
             logger.debug("Delaying for '{}' milliseconds, Completed", _config.getDelayAfterNickserv());
         }
     }
@@ -972,7 +1003,9 @@ public class SiteBot implements ReplyConstants, Runnable {
             if (_config.getBlowfishEnabled()) {
                 String chanKey = chan.getBlowKey();
                 if (chanKey == null || chanKey.equals("")) {
-                    logger.error("BlowfishManager is enabled but no BlowfishManager key is set for channel {} ,the bot will not join this channel", chan.getName());
+                    logger.error(
+                            "BlowfishManager is enabled but no BlowfishManager key is set for channel {} ,the bot will not join this channel",
+                            chan.getName());
                     break;
                 }
                 cipher = new BlowfishManager(chan.getBlowKey(), chan.getBlowMode());
@@ -988,7 +1021,7 @@ public class SiteBot implements ReplyConstants, Runnable {
 
     /**
      * This method carries out the actions to be performed when the PircBot
-     * gets disconnected.  This may happen if the PircBot quits from the
+     * gets disconnected. This may happen if the PircBot quits from the
      * server, or if the connection is unexpectedly lost.
      * <p>
      * Disconnection from the IRC server is detected immediately if either
@@ -1019,7 +1052,7 @@ public class SiteBot implements ReplyConstants, Runnable {
 
     /**
      * This method is called by the PircBot when a numeric response
-     * is received from the IRC server.  We use this method to
+     * is received from the IRC server. We use this method to
      * allow PircBot to process various responses from the server
      * before then passing them on to the onServerResponse method.
      * <p>
@@ -1102,18 +1135,19 @@ public class SiteBot implements ReplyConstants, Runnable {
             if (start > 7) {
                 // grab from after the equals sign until the next variable
                 int end = response.indexOf(" ", start);
-                if (end == -1) {  // PREFIX could be at the end
+                if (end == -1) { // PREFIX could be at the end
                     end = response.length();
                 }
                 String prefixSegment = response.substring(start, end).trim();
                 int firstBracket = prefixSegment.indexOf("(");
-                // carry on processing if found, otherwise the defaults set in the constructor will be used
+                // carry on processing if found, otherwise the defaults set in the constructor
+                // will be used
                 if (firstBracket != -1) {
-                    firstBracket+=1;
+                    firstBracket += 1;
                     int secondBracket = prefixSegment.lastIndexOf(")");
                     String modeLetters = prefixSegment.substring(firstBracket, secondBracket);
                     String modeSymbols = prefixSegment.substring(secondBracket + 1);
-                    if (modeLetters.length() == modeSymbols.length()) {  // just to make sure nothing funny is going on
+                    if (modeLetters.length() == modeSymbols.length()) { // just to make sure nothing funny is going on
                         // recreate the _userPrefixes table with the server specific info
                         _userPrefixes = new HashMap<>();
                         for (int x = 0; x < modeLetters.length(); x++) {
@@ -1131,12 +1165,12 @@ public class SiteBot implements ReplyConstants, Runnable {
      * IRC server.
      * <p>
      * Numerics in the range from 001 to 099 are used for client-server
-     * connections only and should never travel between servers.  Replies
+     * connections only and should never travel between servers. Replies
      * generated in response to commands are found in the range from 200
-     * to 399.  Error replies are found in the range from 400 to 599.
+     * to 399. Error replies are found in the range from 400 to 599.
      * <p>
      * For example, we can use this method to discover the topic of a
-     * channel when we join it.  If we join the channel #test which
+     * channel when we join it. If we join the channel #test which
      * has a topic of &quot;I am King of Test&quot; then the response
      * will be &quot;{@code PircBot #test :I Am King of Test}&quot;
      * with a code of 332 to signify that this is a topic.
@@ -1157,7 +1191,7 @@ public class SiteBot implements ReplyConstants, Runnable {
      */
     protected void onServerResponse(int code, String response) {
         if (code == RPL_WHOISUSER) {
-            //parse the whois for registering user
+            // parse the whois for registering user
             String[] reply = response.split(" ");
             String nick = reply[1];
             String ident = nick + "!" + reply[2] + "@" + reply[3];
@@ -1210,7 +1244,8 @@ public class SiteBot implements ReplyConstants, Runnable {
             if (message.startsWith("+OK ") || message.startsWith("mcps ")) {
                 BlowfishManager chanCipher = _ciphers.get(channel);
                 if (chanCipher == null) {
-                    logger.error("Received encrypted message in channel {} but no Blowfish key is set for the channel!", channel);
+                    logger.error("Received encrypted message in channel {} but no Blowfish key is set for the channel!",
+                            channel);
                     return;
                 }
                 logger.debug("Encrypted message: {}", message);
@@ -1248,7 +1283,8 @@ public class SiteBot implements ReplyConstants, Runnable {
             if (message.startsWith("+OK ") || message.startsWith("mcps ")) {
                 BlowfishManager cipher = getUserDetails(sender, sender + "!" + login + "@" + hostname).getBlowCipher();
                 if (cipher == null) {
-                    /* We don't have a Blowfish key for this user already, there either
+                    /*
+                     * We don't have a Blowfish key for this user already, there either
                      * isn't one in the user DB or we can't identify the user, if DH1080
                      * is enabled a session has been initiated but it doesn't help
                      * with this message so just ignore it
@@ -1281,7 +1317,7 @@ public class SiteBot implements ReplyConstants, Runnable {
     }
 
     /**
-     * This method is called whenever an ACTION is sent from a user.  E.g.
+     * This method is called whenever an ACTION is sent from a user. E.g.
      * such events generated by typing "/me goes shopping" in most IRC clients.
      * <p>
      * The implementation of this method in the PircBot abstract class
@@ -1294,7 +1330,8 @@ public class SiteBot implements ReplyConstants, Runnable {
      * @param action   The action carried out by the user.
      */
     protected void onAction(String sender, String login, String hostname, String target, String action) {
-        logger.debug("Ignoring onAction, sender: {}, login: {}, hostname: {}, target: {}, action: {}", sender, login, hostname, target, action);
+        logger.debug("Ignoring onAction, sender: {}, login: {}, hostname: {}, target: {}, action: {}", sender, login,
+                hostname, target, action);
     }
 
     /**
@@ -1306,12 +1343,15 @@ public class SiteBot implements ReplyConstants, Runnable {
      * @param sourceNick     The nick of the user that sent the notice.
      * @param sourceLogin    The login of the user that sent the notice.
      * @param sourceHostname The hostname of the user that sent the notice.
-     * @param target         The target of the notice, be it our nick or a channel name.
+     * @param target         The target of the notice, be it our nick or a channel
+     *                       name.
      * @param notice         The notice message.
      */
-    protected void onNotice(String sourceNick, String sourceLogin, String sourceHostname, String target, String notice) {
+    protected void onNotice(String sourceNick, String sourceLogin, String sourceHostname, String target,
+            String notice) {
         if (!target.equalsIgnoreCase(getNick())) {
-            logger.debug("Ignoring notice as it is not directed against the bot, got {} and our nick is {}", target, getNick());
+            logger.debug("Ignoring notice as it is not directed against the bot, got {} and our nick is {}", target,
+                    getNick());
             return;
         }
         // We only care for DH1080 exchange messages
@@ -1325,7 +1365,7 @@ public class SiteBot implements ReplyConstants, Runnable {
             return;
         }
         DH1080 exchange;
-        //default blowfish on CBC
+        // default blowfish on CBC
         String blowfishMode = BlowfishManager.CBC;
         String exchangeKey;
 
@@ -1353,8 +1393,7 @@ public class SiteBot implements ReplyConstants, Runnable {
                         logger.warn("Ignoring CBC DH1080 exchange as it is disabled");
                         return;
                     }
-                } else
-                {
+                } else {
                     logger.error("Unknown DH1080_INIT mode requested: {}", modeRequested);
                     return;
                 }
@@ -1382,7 +1421,8 @@ public class SiteBot implements ReplyConstants, Runnable {
             }
             exchangeKey = st.nextToken().trim();
             exchange = _dh1080.get(sourceNick);
-            // For security reasons remove the DH1080 object from the map as we no longer need it
+            // For security reasons remove the DH1080 object from the map as we no longer
+            // need it
             _dh1080.remove(sourceNick);
         } else {
             logger.warn("Received unknown DH1080 command: {}", notice);
@@ -1398,7 +1438,8 @@ public class SiteBot implements ReplyConstants, Runnable {
             logger.error("Unable to calculate a shared secret key");
             return;
         }
-        getUserDetails(sourceNick, sourceNick + "!" + sourceLogin + "@" + sourceHostname).setBlowCipher(secretKey, blowfishMode);
+        getUserDetails(sourceNick, sourceNick + "!" + sourceLogin + "@" + sourceHostname).setBlowCipher(secretKey,
+                blowfishMode);
     }
 
     /**
@@ -1414,7 +1455,8 @@ public class SiteBot implements ReplyConstants, Runnable {
      * @param hostname The hostname of the user who joined the channel.
      */
     protected void onJoin(String channel, String sender, String login, String hostname) {
-        logger.debug("Ignoring onJoin, channel: {}, sender: {}, login: {}, hostname: {}", channel, sender, login, hostname);
+        logger.debug("Ignoring onJoin, channel: {}, sender: {}, login: {}, hostname: {}", channel, sender, login,
+                hostname);
     }
 
     /**
@@ -1431,7 +1473,8 @@ public class SiteBot implements ReplyConstants, Runnable {
      */
     protected void onPart(String channel, String sender, String login, String hostname) {
         logger.debug("onPart, channel: {}, sender: {}, login: {}, hostname: {}", channel, sender, login, hostname);
-        // Check whether the parting user is still in another channel with us, if not tidy up
+        // Check whether the parting user is still in another channel with us, if not
+        // tidy up
         if (isUnknownNick(sender)) {
             _users.remove(sender);
         }
@@ -1450,7 +1493,8 @@ public class SiteBot implements ReplyConstants, Runnable {
      * @param newNick  The new nick.
      */
     protected void onNickChange(String oldNick, String login, String hostname, String newNick) {
-        logger.debug("onNickChange: oldNick: {}, login: {}, hostname: {}, newNick: {}", oldNick, login, hostname, newNick);
+        logger.debug("onNickChange: oldNick: {}, login: {}, hostname: {}, newNick: {}", oldNick, login, hostname,
+                newNick);
         UserDetails user = _users.remove(oldNick);
         if (user != null) {
             user.setNick(newNick);
@@ -1472,9 +1516,13 @@ public class SiteBot implements ReplyConstants, Runnable {
      * @param recipientNick  The unfortunate recipient of the kick.
      * @param reason         The reason given by the user who performed the kick.
      */
-    protected void onKick(String channel, String kickerNick, String kickerLogin, String kickerHostname, String recipientNick, String reason) {
-        logger.debug("onKick: channel: {}, kickerNick: {}, kickerLogin: {}, kickerHostname: {}, recipientNick: {}, reason: {}", channel, kickerNick, kickerLogin, kickerHostname, recipientNick, reason);
-        // Check whether the kicked user is still in another channel with us, if not tidy up
+    protected void onKick(String channel, String kickerNick, String kickerLogin, String kickerHostname,
+            String recipientNick, String reason) {
+        logger.debug(
+                "onKick: channel: {}, kickerNick: {}, kickerLogin: {}, kickerHostname: {}, recipientNick: {}, reason: {}",
+                channel, kickerNick, kickerLogin, kickerHostname, recipientNick, reason);
+        // Check whether the kicked user is still in another channel with us, if not
+        // tidy up
         if (isUnknownNick(recipientNick)) {
             _users.remove(recipientNick);
         }
@@ -1482,7 +1530,7 @@ public class SiteBot implements ReplyConstants, Runnable {
 
     /**
      * This method is called whenever someone (possibly us) quits from the
-     * server.  We will only observe this if the user was in one of the
+     * server. We will only observe this if the user was in one of the
      * channels to which we are connected.
      * <p>
      * The implementation of this method in the PircBot abstract class
@@ -1494,7 +1542,8 @@ public class SiteBot implements ReplyConstants, Runnable {
      * @param reason         The reason given for quitting the server.
      */
     protected void onQuit(String sourceNick, String sourceLogin, String sourceHostname, String reason) {
-        logger.debug("onQuit: sourceNick: {}, sourceLogin: {}, sourceHostname: {}, reason: {}", sourceNick, sourceLogin, sourceHostname, reason);
+        logger.debug("onQuit: sourceNick: {}, sourceLogin: {}, sourceHostname: {}, reason: {}", sourceNick, sourceLogin,
+                sourceHostname, reason);
         // Remove userDetails if we have them
         _users.remove(sourceNick);
     }
@@ -1514,13 +1563,14 @@ public class SiteBot implements ReplyConstants, Runnable {
      *                the topic was already there.
      */
     protected void onTopic(String channel, String topic, String setBy, long date, boolean changed) {
-        logger.debug("ignoring onTopic: channel: {}, topic: {}, setBy: {}, date: {}, changed: {}", channel, topic, setBy, date, changed);
+        logger.debug("ignoring onTopic: channel: {}, topic: {}, setBy: {}, date: {}, changed: {}", channel, topic,
+                setBy, date, changed);
     }
 
     /**
      * After calling the listChannels() method in PircBot, the server
      * will start to send us information about each channel on the
-     * server.  You may override this method in order to receive the
+     * server. You may override this method in order to receive the
      * information about each channel as soon as it is received.
      * <p>
      * Note that certain channels, such as those marked as hidden,
@@ -1539,7 +1589,7 @@ public class SiteBot implements ReplyConstants, Runnable {
     }
 
     /**
-     * Called when the mode of a channel is set.  We process this in
+     * Called when the mode of a channel is set. We process this in
      * order to call the appropriate onOp, onDeop, etc method before
      * finally calling the override-able onMode method.
      * <p>
@@ -1695,7 +1745,8 @@ public class SiteBot implements ReplyConstants, Runnable {
      * @param mode           The mode that has been set.
      * @since PircBot 1.2.0
      */
-    protected void onUserMode(String targetNick, String sourceNick, String sourceLogin, String sourceHostname, String mode) {
+    protected void onUserMode(String targetNick, String sourceNick, String sourceLogin, String sourceHostname,
+            String mode) {
     }
 
     /**
@@ -1710,11 +1761,13 @@ public class SiteBot implements ReplyConstants, Runnable {
      * @param channel        The channel in which the mode change took place.
      * @param sourceNick     The nick of the user that performed the mode change.
      * @param sourceLogin    The login of the user that performed the mode change.
-     * @param sourceHostname The hostname of the user that performed the mode change.
+     * @param sourceHostname The hostname of the user that performed the mode
+     *                       change.
      * @param recipient      The nick of the user that got 'opped'.
      * @since PircBot 0.9.5
      */
-    protected void onOp(String channel, String sourceNick, String sourceLogin, String sourceHostname, String recipient) {
+    protected void onOp(String channel, String sourceNick, String sourceLogin, String sourceHostname,
+            String recipient) {
     }
 
     /**
@@ -1729,11 +1782,13 @@ public class SiteBot implements ReplyConstants, Runnable {
      * @param channel        The channel in which the mode change took place.
      * @param sourceNick     The nick of the user that performed the mode change.
      * @param sourceLogin    The login of the user that performed the mode change.
-     * @param sourceHostname The hostname of the user that performed the mode change.
+     * @param sourceHostname The hostname of the user that performed the mode
+     *                       change.
      * @param recipient      The nick of the user that got 'deopped'.
      * @since PircBot 0.9.5
      */
-    protected void onDeop(String channel, String sourceNick, String sourceLogin, String sourceHostname, String recipient) {
+    protected void onDeop(String channel, String sourceNick, String sourceLogin, String sourceHostname,
+            String recipient) {
     }
 
     /**
@@ -1748,11 +1803,13 @@ public class SiteBot implements ReplyConstants, Runnable {
      * @param channel        The channel in which the mode change took place.
      * @param sourceNick     The nick of the user that performed the mode change.
      * @param sourceLogin    The login of the user that performed the mode change.
-     * @param sourceHostname The hostname of the user that performed the mode change.
+     * @param sourceHostname The hostname of the user that performed the mode
+     *                       change.
      * @param recipient      The nick of the user that got 'voiced'.
      * @since PircBot 0.9.5
      */
-    protected void onVoice(String channel, String sourceNick, String sourceLogin, String sourceHostname, String recipient) {
+    protected void onVoice(String channel, String sourceNick, String sourceLogin, String sourceHostname,
+            String recipient) {
     }
 
     /**
@@ -1767,16 +1824,18 @@ public class SiteBot implements ReplyConstants, Runnable {
      * @param channel        The channel in which the mode change took place.
      * @param sourceNick     The nick of the user that performed the mode change.
      * @param sourceLogin    The login of the user that performed the mode change.
-     * @param sourceHostname The hostname of the user that performed the mode change.
+     * @param sourceHostname The hostname of the user that performed the mode
+     *                       change.
      * @param recipient      The nick of the user that got 'devoiced'.
      * @since PircBot 0.9.5
      */
-    protected void onDeVoice(String channel, String sourceNick, String sourceLogin, String sourceHostname, String recipient) {
+    protected void onDeVoice(String channel, String sourceNick, String sourceLogin, String sourceHostname,
+            String recipient) {
     }
 
     /**
-     * Called when a channel key is set.  When the channel key has been set,
-     * other users may only join that channel if they know the key.  Channel keys
+     * Called when a channel key is set. When the channel key has been set,
+     * other users may only join that channel if they know the key. Channel keys
      * are sometimes referred to as passwords.
      * <p>
      * This is a type of mode change and is also passed to the onMode
@@ -1788,11 +1847,13 @@ public class SiteBot implements ReplyConstants, Runnable {
      * @param channel        The channel in which the mode change took place.
      * @param sourceNick     The nick of the user that performed the mode change.
      * @param sourceLogin    The login of the user that performed the mode change.
-     * @param sourceHostname The hostname of the user that performed the mode change.
+     * @param sourceHostname The hostname of the user that performed the mode
+     *                       change.
      * @param key            The new key for the channel.
      * @since PircBot 0.9.5
      */
-    protected void onSetChannelKey(String channel, String sourceNick, String sourceLogin, String sourceHostname, String key) {
+    protected void onSetChannelKey(String channel, String sourceNick, String sourceLogin, String sourceHostname,
+            String key) {
     }
 
     /**
@@ -1807,15 +1868,18 @@ public class SiteBot implements ReplyConstants, Runnable {
      * @param channel        The channel in which the mode change took place.
      * @param sourceNick     The nick of the user that performed the mode change.
      * @param sourceLogin    The login of the user that performed the mode change.
-     * @param sourceHostname The hostname of the user that performed the mode change.
-     * @param key            The key that was in use before the channel key was removed.
+     * @param sourceHostname The hostname of the user that performed the mode
+     *                       change.
+     * @param key            The key that was in use before the channel key was
+     *                       removed.
      * @since PircBot 0.9.5
      */
-    protected void onRemoveChannelKey(String channel, String sourceNick, String sourceLogin, String sourceHostname, String key) {
+    protected void onRemoveChannelKey(String channel, String sourceNick, String sourceLogin, String sourceHostname,
+            String key) {
     }
 
     /**
-     * Called when a user limit is set for a channel.  The number of users in
+     * Called when a user limit is set for a channel. The number of users in
      * the channel cannot exceed this limit.
      * <p>
      * This is a type of mode change and is also passed to the onMode
@@ -1827,11 +1891,14 @@ public class SiteBot implements ReplyConstants, Runnable {
      * @param channel        The channel in which the mode change took place.
      * @param sourceNick     The nick of the user that performed the mode change.
      * @param sourceLogin    The login of the user that performed the mode change.
-     * @param sourceHostname The hostname of the user that performed the mode change.
-     * @param limit          The maximum number of users that may be in this channel at the same time.
+     * @param sourceHostname The hostname of the user that performed the mode
+     *                       change.
+     * @param limit          The maximum number of users that may be in this channel
+     *                       at the same time.
      * @since PircBot 0.9.5
      */
-    protected void onSetChannelLimit(String channel, String sourceNick, String sourceLogin, String sourceHostname, int limit) {
+    protected void onSetChannelLimit(String channel, String sourceNick, String sourceLogin, String sourceHostname,
+            int limit) {
     }
 
     /**
@@ -1846,16 +1913,17 @@ public class SiteBot implements ReplyConstants, Runnable {
      * @param channel        The channel in which the mode change took place.
      * @param sourceNick     The nick of the user that performed the mode change.
      * @param sourceLogin    The login of the user that performed the mode change.
-     * @param sourceHostname The hostname of the user that performed the mode change.
+     * @param sourceHostname The hostname of the user that performed the mode
+     *                       change.
      * @since PircBot 0.9.5
      */
     protected void onRemoveChannelLimit(String channel, String sourceNick, String sourceLogin, String sourceHostname) {
     }
 
     /**
-     * Called when a user (possibly us) gets banned from a channel.  Being
+     * Called when a user (possibly us) gets banned from a channel. Being
      * banned from a channel prevents any user with a matching hostmask from
-     * joining the channel.  For this reason, most bans are usually directly
+     * joining the channel. For this reason, most bans are usually directly
      * followed by the user being kicked :-)
      * <p>
      * This is a type of mode change and is also passed to the onMode
@@ -1867,11 +1935,13 @@ public class SiteBot implements ReplyConstants, Runnable {
      * @param channel        The channel in which the mode change took place.
      * @param sourceNick     The nick of the user that performed the mode change.
      * @param sourceLogin    The login of the user that performed the mode change.
-     * @param sourceHostname The hostname of the user that performed the mode change.
+     * @param sourceHostname The hostname of the user that performed the mode
+     *                       change.
      * @param hostmask       The hostmask of the user that has been banned.
      * @since PircBot 0.9.5
      */
-    protected void onSetChannelBan(String channel, String sourceNick, String sourceLogin, String sourceHostname, String hostmask) {
+    protected void onSetChannelBan(String channel, String sourceNick, String sourceLogin, String sourceHostname,
+            String hostmask) {
     }
 
     /**
@@ -1886,15 +1956,17 @@ public class SiteBot implements ReplyConstants, Runnable {
      * @param channel        The channel in which the mode change took place.
      * @param sourceNick     The nick of the user that performed the mode change.
      * @param sourceLogin    The login of the user that performed the mode change.
-     * @param sourceHostname The hostname of the user that performed the mode change.
+     * @param sourceHostname The hostname of the user that performed the mode
+     *                       change.
      * @param hostmask       The hostmask of the ban that is removed
      * @since PircBot 0.9.5
      */
-    protected void onRemoveChannelBan(String channel, String sourceNick, String sourceLogin, String sourceHostname, String hostmask) {
+    protected void onRemoveChannelBan(String channel, String sourceNick, String sourceLogin, String sourceHostname,
+            String hostmask) {
     }
 
     /**
-     * Called when topic protection is enabled for a channel.  Topic protection
+     * Called when topic protection is enabled for a channel. Topic protection
      * means that only operators in a channel may change the topic.
      * <p>
      * This is a type of mode change and is also passed to the onMode
@@ -1906,7 +1978,8 @@ public class SiteBot implements ReplyConstants, Runnable {
      * @param channel        The channel in which the mode change took place.
      * @param sourceNick     The nick of the user that performed the mode change.
      * @param sourceLogin    The login of the user that performed the mode change.
-     * @param sourceHostname The hostname of the user that performed the mode change.
+     * @param sourceHostname The hostname of the user that performed the mode
+     *                       change.
      * @since PircBot 0.9.5
      */
     protected void onSetTopicProtection(String channel, String sourceNick, String sourceLogin, String sourceHostname) {
@@ -1924,10 +1997,12 @@ public class SiteBot implements ReplyConstants, Runnable {
      * @param channel        The channel in which the mode change took place.
      * @param sourceNick     The nick of the user that performed the mode change.
      * @param sourceLogin    The login of the user that performed the mode change.
-     * @param sourceHostname The hostname of the user that performed the mode change.
+     * @param sourceHostname The hostname of the user that performed the mode
+     *                       change.
      * @since PircBot 0.9.5
      */
-    protected void onRemoveTopicProtection(String channel, String sourceNick, String sourceLogin, String sourceHostname) {
+    protected void onRemoveTopicProtection(String channel, String sourceNick, String sourceLogin,
+            String sourceHostname) {
     }
 
     /**
@@ -1943,10 +2018,12 @@ public class SiteBot implements ReplyConstants, Runnable {
      * @param channel        The channel in which the mode change took place.
      * @param sourceNick     The nick of the user that performed the mode change.
      * @param sourceLogin    The login of the user that performed the mode change.
-     * @param sourceHostname The hostname of the user that performed the mode change.
+     * @param sourceHostname The hostname of the user that performed the mode
+     *                       change.
      * @since PircBot 0.9.5
      */
-    protected void onSetNoExternalMessages(String channel, String sourceNick, String sourceLogin, String sourceHostname) {
+    protected void onSetNoExternalMessages(String channel, String sourceNick, String sourceLogin,
+            String sourceHostname) {
     }
 
     /**
@@ -1962,14 +2039,16 @@ public class SiteBot implements ReplyConstants, Runnable {
      * @param channel        The channel in which the mode change took place.
      * @param sourceNick     The nick of the user that performed the mode change.
      * @param sourceLogin    The login of the user that performed the mode change.
-     * @param sourceHostname The hostname of the user that performed the mode change.
+     * @param sourceHostname The hostname of the user that performed the mode
+     *                       change.
      * @since PircBot 0.9.5
      */
-    protected void onRemoveNoExternalMessages(String channel, String sourceNick, String sourceLogin, String sourceHostname) {
+    protected void onRemoveNoExternalMessages(String channel, String sourceNick, String sourceLogin,
+            String sourceHostname) {
     }
 
     /**
-     * Called when a channel is set to 'invite only' mode.  A user may only
+     * Called when a channel is set to 'invite only' mode. A user may only
      * join the channel if they are invited by someone who is already in the
      * channel.
      * <p>
@@ -1982,7 +2061,8 @@ public class SiteBot implements ReplyConstants, Runnable {
      * @param channel        The channel in which the mode change took place.
      * @param sourceNick     The nick of the user that performed the mode change.
      * @param sourceLogin    The login of the user that performed the mode change.
-     * @param sourceHostname The hostname of the user that performed the mode change.
+     * @param sourceHostname The hostname of the user that performed the mode
+     *                       change.
      * @since PircBot 0.9.5
      */
     protected void onSetInviteOnly(String channel, String sourceNick, String sourceLogin, String sourceHostname) {
@@ -2000,14 +2080,15 @@ public class SiteBot implements ReplyConstants, Runnable {
      * @param channel        The channel in which the mode change took place.
      * @param sourceNick     The nick of the user that performed the mode change.
      * @param sourceLogin    The login of the user that performed the mode change.
-     * @param sourceHostname The hostname of the user that performed the mode change.
+     * @param sourceHostname The hostname of the user that performed the mode
+     *                       change.
      * @since PircBot 0.9.5
      */
     protected void onRemoveInviteOnly(String channel, String sourceNick, String sourceLogin, String sourceHostname) {
     }
 
     /**
-     * Called when a channel is set to 'moderated' mode.  If a channel is
+     * Called when a channel is set to 'moderated' mode. If a channel is
      * moderated, then only users who have been 'voiced' or 'opped' may speak
      * or change their nicks.
      * <p>
@@ -2020,7 +2101,8 @@ public class SiteBot implements ReplyConstants, Runnable {
      * @param channel        The channel in which the mode change took place.
      * @param sourceNick     The nick of the user that performed the mode change.
      * @param sourceLogin    The login of the user that performed the mode change.
-     * @param sourceHostname The hostname of the user that performed the mode change.
+     * @param sourceHostname The hostname of the user that performed the mode
+     *                       change.
      * @since PircBot 0.9.5
      */
     protected void onSetModerated(String channel, String sourceNick, String sourceLogin, String sourceHostname) {
@@ -2038,7 +2120,8 @@ public class SiteBot implements ReplyConstants, Runnable {
      * @param channel        The channel in which the mode change took place.
      * @param sourceNick     The nick of the user that performed the mode change.
      * @param sourceLogin    The login of the user that performed the mode change.
-     * @param sourceHostname The hostname of the user that performed the mode change.
+     * @param sourceHostname The hostname of the user that performed the mode
+     *                       change.
      * @since PircBot 0.9.5
      */
     protected void onRemoveModerated(String channel, String sourceNick, String sourceLogin, String sourceHostname) {
@@ -2056,7 +2139,8 @@ public class SiteBot implements ReplyConstants, Runnable {
      * @param channel        The channel in which the mode change took place.
      * @param sourceNick     The nick of the user that performed the mode change.
      * @param sourceLogin    The login of the user that performed the mode change.
-     * @param sourceHostname The hostname of the user that performed the mode change.
+     * @param sourceHostname The hostname of the user that performed the mode
+     *                       change.
      * @since PircBot 0.9.5
      */
     protected void onSetPrivate(String channel, String sourceNick, String sourceLogin, String sourceHostname) {
@@ -2074,14 +2158,15 @@ public class SiteBot implements ReplyConstants, Runnable {
      * @param channel        The channel in which the mode change took place.
      * @param sourceNick     The nick of the user that performed the mode change.
      * @param sourceLogin    The login of the user that performed the mode change.
-     * @param sourceHostname The hostname of the user that performed the mode change.
+     * @param sourceHostname The hostname of the user that performed the mode
+     *                       change.
      * @since PircBot 0.9.5
      */
     protected void onRemovePrivate(String channel, String sourceNick, String sourceLogin, String sourceHostname) {
     }
 
     /**
-     * Called when a channel is set to be in 'secret' mode.  Such channels
+     * Called when a channel is set to be in 'secret' mode. Such channels
      * typically do not appear on a server's channel listing.
      * <p>
      * This is a type of mode change and is also passed to the onMode
@@ -2093,7 +2178,8 @@ public class SiteBot implements ReplyConstants, Runnable {
      * @param channel        The channel in which the mode change took place.
      * @param sourceNick     The nick of the user that performed the mode change.
      * @param sourceLogin    The login of the user that performed the mode change.
-     * @param sourceHostname The hostname of the user that performed the mode change.
+     * @param sourceHostname The hostname of the user that performed the mode
+     *                       change.
      * @since PircBot 0.9.5
      */
     protected void onSetSecret(String channel, String sourceNick, String sourceLogin, String sourceHostname) {
@@ -2111,7 +2197,8 @@ public class SiteBot implements ReplyConstants, Runnable {
      * @param channel        The channel in which the mode change took place.
      * @param sourceNick     The nick of the user that performed the mode change.
      * @param sourceLogin    The login of the user that performed the mode change.
-     * @param sourceHostname The hostname of the user that performed the mode change.
+     * @param sourceHostname The hostname of the user that performed the mode
+     *                       change.
      * @since PircBot 0.9.5
      */
     protected void onRemoveSecret(String channel, String sourceNick, String sourceLogin, String sourceHostname) {
@@ -2130,7 +2217,8 @@ public class SiteBot implements ReplyConstants, Runnable {
      * @param channel        The channel that we're being invited to.
      * @since PircBot 0.9.5
      */
-    protected void onInvite(String targetNick, String sourceNick, String sourceLogin, String sourceHostname, String channel) {
+    protected void onInvite(String targetNick, String sourceNick, String sourceLogin, String sourceHostname,
+            String channel) {
         if (_config.getChannelAutoJoin()) {
             for (ChannelConfig chan : _config.getChannels()) {
                 if (chan.getName().equalsIgnoreCase(channel)) {
@@ -2156,7 +2244,8 @@ public class SiteBot implements ReplyConstants, Runnable {
      * @param sourceNick     The nick of the user that sent the VERSION request.
      * @param sourceLogin    The login of the user that sent the VERSION request.
      * @param sourceHostname The hostname of the user that sent the VERSION request.
-     * @param target         The target of the VERSION request, be it our nick or a channel name.
+     * @param target         The target of the VERSION request, be it our nick or a
+     *                       channel name.
      */
     protected void onVersion(String sourceNick, String sourceLogin, String sourceHostname, String target) {
         this.sendRawLine("NOTICE " + sourceNick + " :\u0001VERSION " + _ctcpVersion + "\u0001");
@@ -2173,10 +2262,13 @@ public class SiteBot implements ReplyConstants, Runnable {
      * @param sourceNick     The nick of the user that sent the PING request.
      * @param sourceLogin    The login of the user that sent the PING request.
      * @param sourceHostname The hostname of the user that sent the PING request.
-     * @param target         The target of the PING request, be it our nick or a channel name.
-     * @param pingValue      The value that was supplied as an argument to the PING command.
+     * @param target         The target of the PING request, be it our nick or a
+     *                       channel name.
+     * @param pingValue      The value that was supplied as an argument to the PING
+     *                       command.
      */
-    protected void onPing(String sourceNick, String sourceLogin, String sourceHostname, String target, String pingValue) {
+    protected void onPing(String sourceNick, String sourceLogin, String sourceHostname, String target,
+            String pingValue) {
         this.sendRawLine("NOTICE " + sourceNick + " :\u0001PING " + pingValue + "\u0001");
     }
 
@@ -2203,7 +2295,8 @@ public class SiteBot implements ReplyConstants, Runnable {
      * @param sourceNick     The nick of the user that sent the TIME request.
      * @param sourceLogin    The login of the user that sent the TIME request.
      * @param sourceHostname The hostname of the user that sent the TIME request.
-     * @param target         The target of the TIME request, be it our nick or a channel name.
+     * @param target         The target of the TIME request, be it our nick or a
+     *                       channel name.
      */
     protected void onTime(String sourceNick, String sourceLogin, String sourceHostname, String target) {
         this.sendRawLine("NOTICE " + sourceNick + " :\u0001TIME " + new Date().toString() + "\u0001");
@@ -2219,7 +2312,8 @@ public class SiteBot implements ReplyConstants, Runnable {
      * @param sourceNick     The nick of the user that sent the FINGER request.
      * @param sourceLogin    The login of the user that sent the FINGER request.
      * @param sourceHostname The hostname of the user that sent the FINGER request.
-     * @param target         The target of the FINGER request, be it our nick or a channel name.
+     * @param target         The target of the FINGER request, be it our nick or a
+     *                       channel name.
      */
     protected void onFinger(String sourceNick, String sourceLogin, String sourceHostname, String target) {
         this.sendRawLine("NOTICE " + sourceNick + " :\u0001FINGER " + _finger + "\u0001");
@@ -2254,7 +2348,7 @@ public class SiteBot implements ReplyConstants, Runnable {
     }
 
     /**
-     * Sets the internal nick of the bot.  This is only to be called by the
+     * Sets the internal nick of the bot. This is only to be called by the
      * PircBot class in response to notification of nick changes that apply
      * to us.
      *
@@ -2310,7 +2404,7 @@ public class SiteBot implements ReplyConstants, Runnable {
      * to a server.
      *
      * @return The name of the last machine we tried to connect to. Returns
-     * null if no connection attempts have ever been made.
+     *         null if no connection attempts have ever been made.
      */
     public final String getServer() {
         return _server;
@@ -2325,7 +2419,7 @@ public class SiteBot implements ReplyConstants, Runnable {
      * to a server.
      *
      * @return The port number of the last IRC server we connected to.
-     * Returns -1 if no connection attempts have ever been made.
+     *         Returns -1 if no connection attempts have ever been made.
      * @since PircBot 0.9.9
      */
     public final int getPort() {
@@ -2340,7 +2434,7 @@ public class SiteBot implements ReplyConstants, Runnable {
      * to a server using a password.
      *
      * @return The last password that we used when connecting to an IRC server.
-     * Returns null if we have not previously connected using a password.
+     *         Returns null if we have not previously connected using a password.
      * @since PircBot 0.9.9
      */
     public final String getPassword() {
@@ -2402,12 +2496,13 @@ public class SiteBot implements ReplyConstants, Runnable {
 
     /**
      * Sets the encoding charset to be used when sending or receiving lines
-     * from the IRC server. Simply a convenience method for {@link #setEncoding(Charset) }
+     * from the IRC server. Simply a convenience method for
+     * {@link #setEncoding(Charset) }
      *
      * @param charset The charset as a string to use
-     * @throws NullPointerException         If the charset is null
-     * @throws UnsupportedCharsetException  If the passed encoding isn't supported
-     *                                      by the JMV
+     * @throws NullPointerException        If the charset is null
+     * @throws UnsupportedCharsetException If the passed encoding isn't supported
+     *                                     by the JMV
      * @see #setEncoding(Charset)
      * @since PircBot 1.0.4
      */
@@ -2421,14 +2516,14 @@ public class SiteBot implements ReplyConstants, Runnable {
 
     /**
      * Sets the encoding charset to be used when sending or receiving lines
-     * from the IRC server.  If set to null, then the platform's default
-     * charset is used.  You should only use this method if you are
+     * from the IRC server. If set to null, then the platform's default
+     * charset is used. You should only use this method if you are
      * trying to send text to an IRC server in a different charset, e.g.
-     * "GB2312" for Chinese encoding.  If a PircBot is currently connected
+     * "GB2312" for Chinese encoding. If a PircBot is currently connected
      * to a server, then it must reconnect before this change takes effect.
      *
      * @param charset The new encoding charset to be used by PircBot.
-     * @throws NullPointerException         If the charset is null
+     * @throws NullPointerException If the charset is null
      */
     public void setEncoding(Charset charset) {
         if (charset == null) {
@@ -2498,7 +2593,8 @@ public class SiteBot implements ReplyConstants, Runnable {
      * @since PircBot 0.9.10
      */
     public String toString() {
-        return "Version{" + _version + "}" + " Connected{" + isConnected() + "}" + " Server{" + _server + "}" + " Port{" + _port + "}" + " Password{" + _password + "}";
+        return "Version{" + _version + "}" + " Connected{" + isConnected() + "}" + " Server{" + _server + "}" + " Port{"
+                + _port + "}" + " Password{" + _password + "}";
     }
 
     /**
@@ -2506,25 +2602,25 @@ public class SiteBot implements ReplyConstants, Runnable {
      * <p>
      * There are some important things to note about this method:-
      * <ul>
-     *  <li>This method may not return a full list of users if you call it
-     *      before the complete nick list has arrived from the IRC server.
-     *  </li>
-     *  <li>If you wish to find out which users are in a channel as soon
-     *      as you join it, then you should override the onUserList method
-     *      instead of calling this method, as the onUserList method is only
-     *      called as soon as the full user list has been received.
-     *  </li>
-     *  <li>This method will return immediately, as it does not require any
-     *      interaction with the IRC server.
-     *  </li>
-     *  <li>The bot must be in a channel to be able to know which users are
-     *      in it.
-     *  </li>
+     * <li>This method may not return a full list of users if you call it
+     * before the complete nick list has arrived from the IRC server.
+     * </li>
+     * <li>If you wish to find out which users are in a channel as soon
+     * as you join it, then you should override the onUserList method
+     * instead of calling this method, as the onUserList method is only
+     * called as soon as the full user list has been received.
+     * </li>
+     * <li>This method will return immediately, as it does not require any
+     * interaction with the IRC server.
+     * </li>
+     * <li>The bot must be in a channel to be able to know which users are
+     * in it.
+     * </li>
      * </ul>
      *
      * @param channel The name of the channel to list.
      * @return An array of User objects. This array is empty if we are not
-     * in the channel.
+     *         in the channel.
      * @see #onUserList(String, IrcUser[]) onUserList
      * @since PircBot 1.0.0
      */
@@ -2545,14 +2641,14 @@ public class SiteBot implements ReplyConstants, Runnable {
     }
 
     /**
-     * Returns an array of all channels that we are in.  Note that if you
+     * Returns an array of all channels that we are in. Note that if you
      * call this method immediately after joining a new channel, the new
      * channel may not appear in this array as it is not possible to tell
      * if the join was successful until a response is received from the
      * IRC server.
      *
      * @return A String array containing the names of all channels that we
-     * are in.
+     *         are in.
      * @since PircBot 1.0.0
      */
     public final String[] getChannels() {
@@ -2583,7 +2679,7 @@ public class SiteBot implements ReplyConstants, Runnable {
      * @since 1.2.2
      */
     public synchronized void dispose() {
-        //System.out.println("disposing...");
+        // System.out.println("disposing...");
         _outputThread.interrupt();
         _inputThread.dispose();
     }
@@ -2687,9 +2783,11 @@ public class SiteBot implements ReplyConstants, Runnable {
     private void doNickservCommands() {
         if (_config.getNickservRegNew()) {
             if (_config.getNickservGroup()) {
-                sendRawLine("PRIVMSG nickserv :group " + _config.getNickservNick() + " " + _config.getNickservPassword());
+                sendRawLine(
+                        "PRIVMSG nickserv :group " + _config.getNickservNick() + " " + _config.getNickservPassword());
             } else {
-                sendRawLine("PRIVMSG nickserv :register " + _config.getNickservPassword() + " " + _config.getNickservEmail());
+                sendRawLine("PRIVMSG nickserv :register " + _config.getNickservPassword() + " "
+                        + _config.getNickservEmail());
             }
         }
         sendRawLine("PRIVMSG nickserv :identify " + _config.getNickservPassword());
@@ -2703,7 +2801,8 @@ public class SiteBot implements ReplyConstants, Runnable {
 
     /**
      * Handles the load of the IRC Commands.
-     * Firstly, it checks if {@code conf/plugins/irc/irccommands.conf} exists, if not it halts the daemon.
+     * Firstly, it checks if {@code conf/plugins/irc/irccommands.conf} exists, if
+     * not it halts the daemon.
      * After that it read the file and create a list of the existing commands.
      */
     private void loadCommands() {
@@ -2711,7 +2810,8 @@ public class SiteBot implements ReplyConstants, Runnable {
     }
 
     /**
-     * The HashMap should look like this:<br><code>
+     * The HashMap should look like this:<br>
+     * <code>
      * Key -> Value<br>
      * "nuke" -> Properties Object for nuke<br>
      * "unnuke" -> Properties Object for unnuke</code>
@@ -2729,7 +2829,8 @@ public class SiteBot implements ReplyConstants, Runnable {
         Properties cmd = _cmds.get(request.getCommand());
         // Check if we know of this command, if not just return
         if (cmd == null) {
-            logger.debug("Found line starting with correct command trigger {}, but no matching command found", _config.getCommandTrigger());
+            logger.debug("Found line starting with correct command trigger {}, but no matching command found",
+                    _config.getCommandTrigger());
             return;
         }
         String inputs = cmd.getProperty("input", "");
@@ -2882,14 +2983,18 @@ public class SiteBot implements ReplyConstants, Runnable {
                 listeners.add(listener);
             }
         } catch (Exception e) {
-            logger.error("Failed to load plugins for org.drftpd.master.plugins.sitebot extension point 'Listener', possibly the " + "org.drftpd.master.plugins.sitebot extension point definition has changed in the plugin.xml", e);
+            logger.error(
+                    "Failed to load plugins for org.drftpd.master.plugins.sitebot extension point 'Listener', possibly the "
+                            + "org.drftpd.master.plugins.sitebot extension point definition has changed in the plugin.xml",
+                    e);
         }
         _listeners = listeners;
     }
 
     private void loadAnnouncers(String confDir) {
         // TODO @k2r Load sitebot announcers
-        Set<Class<? extends AbstractAnnouncer>> abstractAnnouncers = new Reflections("org.drftpd").getSubTypesOf(AbstractAnnouncer.class);
+        Set<Class<? extends AbstractAnnouncer>> abstractAnnouncers = new Reflections("org.drftpd")
+                .getSubTypesOf(AbstractAnnouncer.class);
         try {
             for (Class<? extends AbstractAnnouncer> abstractAnnouncer : abstractAnnouncers) {
                 AbstractAnnouncer announcer = abstractAnnouncer.getConstructor().newInstance();
@@ -2899,7 +3004,9 @@ public class SiteBot implements ReplyConstants, Runnable {
                 _eventTypes.addAll(Arrays.asList(announcer.getEventTypes()));
             }
         } catch (Exception e) {
-            logger.error("Failed to load plugins for org.drftpd.master.plugins.sitebot extension point 'Announce', possibly the org.drftpd.master.plugins.sitebot extension point definition has changed in the plugin.xml", e);
+            logger.error(
+                    "Failed to load plugins for org.drftpd.master.plugins.sitebot extension point 'Announce', possibly the org.drftpd.master.plugins.sitebot extension point definition has changed in the plugin.xml",
+                    e);
         }
 
         // Add the fallback default type to the eventTypes list
@@ -2923,10 +3030,12 @@ public class SiteBot implements ReplyConstants, Runnable {
         _commandManager.initialize(getCommands(), themeDir);
         Properties cfg = ConfigLoader.loadPluginConfig(_confDir + "irc.conf");
         _config = new SiteBotConfig(cfg);
-        // Just call joinChannels() , this will join us to any new channels and update details
+        // Just call joinChannels() , this will join us to any new channels and update
+        // details
         // held on any existing ones
         joinChannels();
-        // Check whether each channel we are currently in is still listed in the conf, if not then part
+        // Check whether each channel we are currently in is still listed in the conf,
+        // if not then part
         ArrayList<ChannelConfig> channelConfig = _config.getChannels();
         for (String channel : _channels.keySet()) {
             boolean isConf = false;
@@ -2999,7 +3108,9 @@ public class SiteBot implements ReplyConstants, Runnable {
 
         public void run() {
             UserDetails user = getUserDetails(_nickname, _ident);
-            CommandRequestInterface cmdRequest = _commandManager.newRequest(_request.getCommand(), _request.getArgument(), new DirectoryHandle("/"), user.getFtpUser(), _service, _cmds.get(_request.getCommand()));
+            CommandRequestInterface cmdRequest = _commandManager.newRequest(_request.getCommand(),
+                    _request.getArgument(), new DirectoryHandle("/"), user.getFtpUser(), _service,
+                    _cmds.get(_request.getCommand()));
             CommandResponseInterface cmdResponse = _commandManager.execute(cmdRequest);
             if (cmdResponse != null) {
                 _service.printOutput(new IrcReply(cmdResponse));
