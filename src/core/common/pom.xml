@@ -29,6 +29,7 @@
                         </goals>
                         <configuration>
                             <excludeScope>provided</excludeScope>
+                            <excludeGroupIds>${project.groupId}</excludeGroupIds>
                             <outputDirectory>${session.executionRootDirectory}/runtime/master/lib</outputDirectory>
                         </configuration>
                     </execution>
@@ -40,6 +41,7 @@
                         </goals>
                         <configuration>
                             <excludeScope>provided</excludeScope>
+                            <excludeGroupIds>${project.groupId}</excludeGroupIds>
                             <outputDirectory>${session.executionRootDirectory}/runtime/slave/lib</outputDirectory>
                         </configuration>
                     </execution>
