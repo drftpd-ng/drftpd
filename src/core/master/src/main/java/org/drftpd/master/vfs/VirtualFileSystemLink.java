@@ -19,7 +19,6 @@ package org.drftpd.master.vfs;
 
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Lowest representation of a directory.
@@ -42,7 +41,9 @@ public class VirtualFileSystemLink extends VirtualFileSystemInode {
         commit();
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.drftpd.master.vfs.VirtualFileSystemInode#getSize()
      */
     @Override
@@ -50,7 +51,9 @@ public class VirtualFileSystemLink extends VirtualFileSystemInode {
         return 0L;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.drftpd.master.vfs.VirtualFileSystemInode#setSize(long)
      */
     @Override
@@ -63,7 +66,7 @@ public class VirtualFileSystemLink extends VirtualFileSystemInode {
         return "Link" + super.toString() + "[link=" + getLinkPath() + "]";
     }
 
-    protected Map<String, AtomicInteger> getSlaveRefCounts() {
+    protected Map<String, Integer> getSlaveRefCounts() {
         // Links don't reside on slaves so return an empty Map
         return new TreeMap<>();
     }
