@@ -34,6 +34,7 @@ import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.master.vfs.InodeHandle;
+import org.drftpd.master.vfs.ObjectNotValidException;
 
 import java.io.FileNotFoundException;
 import java.util.*;
@@ -43,7 +44,7 @@ import java.util.*;
  * @author Stevezau
  * @author scitz0
  * @version $Id$
- * adapted to drftpd 3.0.0 by Stevezau
+ *          adapted to drftpd 3.0.0 by Stevezau
  */
 
 public class AutoFreeSpace implements PluginInterface {
@@ -86,8 +87,7 @@ public class AutoFreeSpace implements PluginInterface {
             logger.info("AUTODELETE: Reloading {}", AutoFreeSpace.class.getName());
             _cleanTask.stop();
             _timer.cancel();
-        } else
-        {
+        } else {
             logger.info("AUTODELETE: Loading {}", AutoFreeSpace.class.getName());
         }
 
@@ -99,7 +99,8 @@ public class AutoFreeSpace implements PluginInterface {
         _timer = new Timer();
         _cleanTask = new MrCleanIt();
         try {
-            _timer.schedule(_cleanTask, AutoFreeSpaceSettings.getSettings().getCycleTime(), AutoFreeSpaceSettings.getSettings().getCycleTime());
+            _timer.schedule(_cleanTask, AutoFreeSpaceSettings.getSettings().getCycleTime(),
+                    AutoFreeSpaceSettings.getSettings().getCycleTime());
         } catch (IllegalStateException e) {
             logger.error("Unable to start AutoFreeSpace timer task, reload and try again");
         }
@@ -141,7 +142,8 @@ public class AutoFreeSpace implements PluginInterface {
             logger.info("MrCleanIt task started");
             try {
                 int slavesCount = 0;
-                for (RemoteSlave remoteSlave : GlobalContext.getGlobalContext().getSlaveManager().getAvailableSlaves()) {
+                for (RemoteSlave remoteSlave : GlobalContext.getGlobalContext().getSlaveManager()
+                        .getAvailableSlaves()) {
                     if (!isRunning) {
                         logger.info("Stopping loop as we should not be running");
                         break;
@@ -172,7 +174,9 @@ public class AutoFreeSpace implements PluginInterface {
         }
 
         /**
-         * Function to delete data on slave purely based on date, with a minimum per section (wipeAfter)
+         * Function to delete data on slave purely based on date, with a minimum per
+         * section (wipeAfter)
+         * 
          * @param remoteSlave The slave to check for items to be deleted
          */
         private void cleanByDate(RemoteSlave remoteSlave) throws SlaveUnavailableException {
@@ -182,7 +186,8 @@ public class AutoFreeSpace implements PluginInterface {
                 while (isRunning && deletedCount < maxIterations) {
                     InodeHandle oldestRelease = getOldestRelease(remoteSlave);
                     if (oldestRelease == null) {
-                        logger.warn("Could not find oldest release for slave [{}]. Not cleaning", remoteSlave.getName());
+                        logger.warn("Could not find oldest release for slave [{}]. Not cleaning",
+                                remoteSlave.getName());
                         break;
                     }
 
@@ -196,12 +201,16 @@ public class AutoFreeSpace implements PluginInterface {
                     }
                     deletedCount++;
                 }
-            } catch(FileNotFoundException e) {
-                logger.error("AUTODELETE: Deleted [{}] releases on slave {} before we ran into an unexpected exception: {}", deletedCount, remoteSlave.getName(), e.getCause());
+            } catch (FileNotFoundException e) {
+                logger.error(
+                        "AUTODELETE: Deleted [{}] releases on slave {} before we ran into an unexpected exception: {}",
+                        deletedCount, remoteSlave.getName(), e.getCause());
             }
             if (deletedCount > 0) {
                 if (deletedCount >= maxIterations) {
-                    logger.warn("AUTODELETE: deleted count [{}] matched maximum iterations [{}], cycleTime or max iterations might need a tweak", deletedCount, maxIterations);
+                    logger.warn(
+                            "AUTODELETE: deleted count [{}] matched maximum iterations [{}], cycleTime or max iterations might need a tweak",
+                            deletedCount, maxIterations);
                 }
                 logger.debug("AUTODELETE: Deleted [{}] releases on slave {}", deletedCount, remoteSlave.getName());
             } else {
@@ -211,6 +220,7 @@ public class AutoFreeSpace implements PluginInterface {
 
         /**
          * Function to delete data on slave purely based on free space
+         * 
          * @param remoteSlave The slave to check for items to be deleted
          */
         private void cleanBySpace(RemoteSlave remoteSlave) throws SlaveUnavailableException {
@@ -218,11 +228,15 @@ public class AutoFreeSpace implements PluginInterface {
             long freespaceMinimum = AutoFreeSpaceSettings.getSettings().getMinFreeSpace();
 
             if (freespace > freespaceMinimum) {
-                logger.debug("AUTODELETE: Space over limit for slave {}, will not clean: {}>={}", remoteSlave.getName(), Bytes.formatBytes(freespace), Bytes.formatBytes(AutoFreeSpaceSettings.getSettings().getMinFreeSpace()));
+                logger.debug("AUTODELETE: Space over limit for slave {}, will not clean: {}>={}", remoteSlave.getName(),
+                        Bytes.formatBytes(freespace),
+                        Bytes.formatBytes(AutoFreeSpaceSettings.getSettings().getMinFreeSpace()));
                 return;
             }
 
-            logger.info("AUTODELETE: Space under limit for slave {}, will clean: {}<{}", remoteSlave.getName(), Bytes.formatBytes(freespace), Bytes.formatBytes(AutoFreeSpaceSettings.getSettings().getMinFreeSpace()));
+            logger.info("AUTODELETE: Space under limit for slave {}, will clean: {}<{}", remoteSlave.getName(),
+                    Bytes.formatBytes(freespace),
+                    Bytes.formatBytes(AutoFreeSpaceSettings.getSettings().getMinFreeSpace()));
             GlobalContext.getEventService().publishAsync(new AFSEvent(null, remoteSlave));
             if (AutoFreeSpaceSettings.getSettings().getOnlyAnnounce()) {
                 return;
@@ -233,7 +247,8 @@ public class AutoFreeSpace implements PluginInterface {
             while (isRunning && deletedCount < maxIterations) {
 
                 if (freespace > freespaceMinimum) {
-                    logger.info("freespace [{}] reached the desired minimum [{}], stopping iteration", Bytes.formatBytes(freespace), Bytes.formatBytes(freespaceMinimum));
+                    logger.info("freespace [{}] reached the desired minimum [{}], stopping iteration",
+                            Bytes.formatBytes(freespace), Bytes.formatBytes(freespaceMinimum));
                     break;
                 }
 
@@ -254,24 +269,32 @@ public class AutoFreeSpace implements PluginInterface {
                         logger.info("AUTODELETE: Removing {}", oldestRelease.getName());
                         oldestRelease.deleteUnchecked(); // Throws the FileNotFoundException
                         freespace = remoteSlave.getSlaveStatus().getDiskSpaceAvailable();
-                        logger.info("AUTODELETE: Removed {}, cleared {} on {}", oldestRelease.getName(), Bytes.formatBytes(remoteSlave.getSlaveStatus().getDiskSpaceAvailable() - freespace), remoteSlave.getName());
+                        logger.info("AUTODELETE: Removed {}, cleared {} on {}", oldestRelease.getName(),
+                                Bytes.formatBytes(remoteSlave.getSlaveStatus().getDiskSpaceAvailable() - freespace),
+                                remoteSlave.getName());
                     }
                     deletedCount++;
                 } catch (FileNotFoundException e) {
-                    logger.error("AUTODELETE: Deleted [{}] releases on slave {} before we ran into an unexpected exception: {}", deletedCount, remoteSlave.getName(), e.getCause());
+                    logger.error(
+                            "AUTODELETE: Deleted [{}] releases on slave {} before we ran into an unexpected exception: {}",
+                            deletedCount, remoteSlave.getName(), e.getCause());
                     break;
                 }
 
                 if (freespaceSaved == freespace) {
                     if (!AutoFreeSpaceSettings.getSettings().getOnlyAnnounce()) {
-                        logger.warn("AUTODELETE: We tried to clean slave {}, but free space has not changed. Stopping iteration", remoteSlave.getName());
+                        logger.warn(
+                                "AUTODELETE: We tried to clean slave {}, but free space has not changed. Stopping iteration",
+                                remoteSlave.getName());
                         break;
                     }
                 }
             }
             if (deletedCount > 0) {
                 if (deletedCount >= maxIterations) {
-                    logger.warn("AUTODELETE: deleted count [{}] matched maximum iterations [{}], cycleTime or max iterations might need a tweak", deletedCount, maxIterations);
+                    logger.warn(
+                            "AUTODELETE: deleted count [{}] matched maximum iterations [{}], cycleTime or max iterations might need a tweak",
+                            deletedCount, maxIterations);
                 }
                 logger.debug("AUTODELETE: Deleted [{}] releases on slave {}", deletedCount, remoteSlave.getName());
             } else {
@@ -294,7 +317,7 @@ public class AutoFreeSpace implements PluginInterface {
 
             if (collection.isEmpty()) {
                 logger.debug("AUTODELETE: Empty section: {}, skipping", dir.getName());
-                return null; //empty section, just ignore
+                return null; // empty section, just ignore
             }
 
             TreeSet<InodeHandle> sortedCollection = new TreeSet<>(new AgeComparator());
@@ -316,7 +339,8 @@ public class AutoFreeSpace implements PluginInterface {
             return null;
         }
 
-        private boolean gotFilesOn(InodeHandle inode, RemoteSlave slave)throws NoAvailableSlaveException, FileNotFoundException {
+        private boolean gotFilesOn(InodeHandle inode, RemoteSlave slave)
+                throws NoAvailableSlaveException, FileNotFoundException {
 
             if (inode.isFile()) {
                 return ((FileHandle) inode).getAvailableSlaves().contains(slave);
@@ -334,31 +358,58 @@ public class AutoFreeSpace implements PluginInterface {
         private InodeHandle getOldestRelease(RemoteSlave slave) {
             InodeHandle oldest = null;
 
-            // Loop over all sections
-            for (SectionInterface si : GlobalContext.getGlobalContext().getSectionManager().getSections()) {
+            // Loop over all configured sections (both section-based and path-based)
+            for (AutoFreeSpaceSettings.Section section : AutoFreeSpaceSettings.getSettings().getSections().values()) {
+                DirectoryHandle baseDir = null;
+                String logContext;
 
-                // We are only interested in sections we have a config for
-                AutoFreeSpaceSettings.Section section = AutoFreeSpaceSettings.getSettings().getSections().get(si.getName());
-                if (section == null) {
-                    logger.debug("Skipping section [{}] as no configuration exists", si.getName());
+                if (section.getPath() != null) {
+                    // Path-based configuration
+                    logContext = "path:" + section.getPath();
+                    try {
+                        // Parse path pattern and find matching directories
+                        String pathPattern = section.getPath();
+                        baseDir = findDirectoryForPath(pathPattern);
+                        if (baseDir == null) {
+                            logger.debug("No directory found for path pattern [{}]", pathPattern);
+                            continue;
+                        }
+                    } catch (Exception e) {
+                        logger.warn("AUTODELETE: Error processing path pattern [{}]: {}", section.getPath(),
+                                e.getMessage());
+                        continue;
+                    }
+                } else if (section.getName() != null) {
+                    // Section-based configuration
+                    logContext = "section:" + section.getName();
+                    SectionInterface si = GlobalContext.getGlobalContext().getSectionManager()
+                            .getSection(section.getName());
+                    if (si.getName().equals("")) {
+                        logger.debug("Section [{}] not found, skipping", section.getName());
+                        continue;
+                    }
+                    baseDir = si.getBaseDirectory();
+                } else {
+                    logger.warn("AUTODELETE: Config entry has neither section nor path, skipping");
                     continue;
                 }
 
-                logger.debug("AUTODELETE: Getting oldest release in section {}", si.getName());
+                logger.debug("AUTODELETE: Getting oldest release in {}", logContext);
                 try {
-                    InodeHandle file = getOldestFile(si.getBaseDirectory(), slave);
+                    InodeHandle file = getOldestFile(baseDir, slave);
 
-                    // Quickly skip if this sections does not have anything
+                    // Quickly skip if this config does not have anything
                     if (file == null) {
                         continue;
                     }
 
-                    logger.debug("AUTODELETE: Oldest file in section {}: {}", si.getName(), file.getName());
+                    logger.debug("AUTODELETE: Oldest file in {}: {}", logContext, file.getName());
 
                     long age = System.currentTimeMillis() - file.creationTime();
                     long _wipeAfter = section.getWipeAfter();
 
-                    // (Optionally) set newest oldest if oldest is null or the newly found file is older than oldest already is
+                    // (Optionally) set newest oldest if oldest is null or the newly found file is
+                    // older than oldest already is
                     if (oldest == null || file.creationTime() < oldest.creationTime()) {
                         boolean update = false;
                         if (AutoFreeSpaceSettings.getSettings().getMode().equals(AutoFreeSpaceSettings.MODE_DATE)) {
@@ -373,9 +424,11 @@ public class AutoFreeSpace implements PluginInterface {
                             // Guard for announce.only setting
                             if (!checkedReleases.contains(file.getName())) {
                                 if (oldest == null) {
-                                    logger.debug("AUTODELETE: Oldest file: {}. Found in section {}", file.getName(), si.getName());
+                                    logger.debug("AUTODELETE: Oldest file: {}. Found in {}", file.getName(),
+                                            logContext);
                                 } else {
-                                    logger.debug("AUTODELETE: New oldest file: {} (previous oldest: {}). Found in section {}", file.getName(), oldest.getName(), si.getName());
+                                    logger.debug("AUTODELETE: New oldest file: {} (previous oldest: {}). Found in {}",
+                                            file.getName(), oldest.getName(), logContext);
                                 }
                                 oldest = file;
                             }
@@ -387,6 +440,64 @@ public class AutoFreeSpace implements PluginInterface {
             }
 
             return oldest;
+        }
+
+        /**
+         * Find a directory for the given path pattern.
+         * Supports simple patterns like /MP3/1023 or wildcard patterns like /MP3/*
+         */
+        private DirectoryHandle findDirectoryForPath(String pathPattern) {
+            try {
+                // Simple case: no wildcards, just a direct path
+                if (!pathPattern.contains("*")) {
+                    DirectoryHandle dir = GlobalContext.getGlobalContext().getRoot().getDirectoryUnchecked(pathPattern);
+                    return dir.exists() ? dir : null;
+                }
+
+                // Handle wildcard patterns - find first matching directory
+                String[] parts = pathPattern.split("/");
+                DirectoryHandle currentDir = GlobalContext.getGlobalContext().getRoot();
+
+                for (String part : parts) {
+                    if (part.isEmpty())
+                        continue;
+                    if (currentDir == null)
+                        return null;
+
+                    if (part.equals("*")) {
+                        // Wildcard - get first subdirectory
+                        Collection<DirectoryHandle> subdirs = currentDir.getDirectoriesUnchecked();
+                        if (subdirs.isEmpty()) {
+                            return null;
+                        }
+                        // Get oldest subdirectory
+                        DirectoryHandle oldestSubdir = null;
+                        for (DirectoryHandle subdir : subdirs) {
+                            try {
+                                if (oldestSubdir == null || subdir.creationTime() < oldestSubdir.creationTime()) {
+                                    oldestSubdir = subdir;
+                                }
+                            } catch (FileNotFoundException ignored) {
+                                // Skip this subdir if it was deleted
+                            }
+                        }
+                        currentDir = oldestSubdir;
+                    } else {
+                        // Exact match
+                        try {
+                            currentDir = currentDir.getDirectoryUnchecked(part);
+                            if (!currentDir.exists()) {
+                                return null;
+                            }
+                        } catch (FileNotFoundException e) {
+                            return null;
+                        }
+                    }
+                }
+                return currentDir;
+            } catch (FileNotFoundException | ObjectNotValidException e) {
+                return null;
+            }
         }
 
         private static class AgeComparator implements Comparator<InodeHandle> {
