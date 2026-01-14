@@ -55,6 +55,8 @@ import java.io.*;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLSocket;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -99,6 +101,9 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
     private final transient LinkedBlockingQueue<FileHandle> _crcQueue;
     private transient RemergeThread _remergeThread;
     private transient CrcThread _crcThread;
+    private transient String _tlsProtocol;
+    private transient String _tlsCipherSuite;
+    private transient String _remoteAddress;
 
     public RemoteSlave(String name) {
         _name = name;
@@ -357,8 +362,8 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
         long skipAgeCutoff = 0L;
 
         String remergeMode = GlobalContext.getConfig().getMainProperties().getProperty("partial.remerge.mode");
-        _remergeChecksums = GlobalContext.getConfig().getMainProperties().
-                getProperty("enableremergechecksums", "false").equalsIgnoreCase("true");
+        _remergeChecksums = GlobalContext.getConfig().getMainProperties().getProperty("enableremergechecksums", "false")
+                .equalsIgnoreCase("true");
         boolean partialRemerge = false;
         boolean instantOnline = false;
         if (remergeMode == null) {
@@ -369,8 +374,9 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
                     skipAgeCutoff = Long.parseLong(getProperty("lastConnect"));
                     partialRemerge = true;
                 } catch (NumberFormatException e) {
-                    logger.warn("Slave partial remerge mode set to \"off\" as lastConnect time is undefined, this may " +
-                            " resolve itself automatically on next slave connection");
+                    logger.warn(
+                            "Slave partial remerge mode set to \"off\" as lastConnect time is undefined, this may " +
+                                    " resolve itself automatically on next slave connection");
                 }
             } else if (remergeMode.equalsIgnoreCase("disconnect")) {
                 try {
@@ -389,7 +395,8 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
         }
         String remergeIndex;
         if (partialRemerge) {
-            remergeIndex = SlaveManager.getBasicIssuer().issueRemergeToSlave(this, "/", true, skipAgeCutoff, System.currentTimeMillis(), false);
+            remergeIndex = SlaveManager.getBasicIssuer().issueRemergeToSlave(this, "/", true, skipAgeCutoff,
+                    System.currentTimeMillis(), false);
         } else if (instantOnline) {
             remergeIndex = SlaveManager.getBasicIssuer().issueRemergeToSlave(this, "/", false, 0L, 0L, true);
         } else {
@@ -408,7 +415,8 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
         if (_remergePaused.get()) {
             String message = ("Remerge was paused on slave after completion, issuing resume so not to break manual remerges");
             GlobalContext.getEventService().publishAsync(new SlaveEvent("MSGSLAVE", message, this));
-            logger.debug("Remerge was paused on slave after completion, issuing resume so not to break manual remerges");
+            logger.debug(
+                    "Remerge was paused on slave after completion, issuing resume so not to break manual remerges");
             SlaveManager.getBasicIssuer().issueRemergeResumeToSlave(this);
             _remergePaused.set(false);
         }
@@ -416,7 +424,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 
     /**
      * @return true if the slave has synchronized its filelist since last
-     * connect
+     *         connect
      */
     public boolean isAvailable() {
         return _isAvailable;
@@ -483,7 +491,8 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
                 String fileName = destFile.substring(destFile.lastIndexOf("/") + 1);
                 String destDir = destFile.substring(0, destFile.lastIndexOf("/"));
                 try {
-                    fetchResponse(SlaveManager.getBasicIssuer().issueRenameToSlave(this, sourceFile, destDir, fileName));
+                    fetchResponse(
+                            SlaveManager.getBasicIssuer().issueRenameToSlave(this, sourceFile, destDir, fileName));
                 } catch (RemoteIOException e) {
                     if (!(e.getCause() instanceof FileNotFoundException)) {
                         throw e.getCause();
@@ -511,9 +520,11 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
     protected void makeAvailableAfterRemerge() {
         _initRemergeCompleted = true;
         setProperty("lastConnect", Long.toString(System.currentTimeMillis()));
-        if (GlobalContext.getConfig().getMainProperties().getProperty("partial.remerge.mode").equalsIgnoreCase("instant")) {
+        if (GlobalContext.getConfig().getMainProperties().getProperty("partial.remerge.mode")
+                .equalsIgnoreCase("instant")) {
             setRemerging(false);
-            GlobalContext.getEventService().publishAsync(new SlaveEvent("MSGSLAVE", "Remerge queueprocess finished", this));
+            GlobalContext.getEventService()
+                    .publishAsync(new SlaveEvent("MSGSLAVE", "Remerge queueprocess finished", this));
         } else {
             setAvailable(true);
             setRemerging(false);
@@ -559,7 +570,8 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 
     /**
      * Renames files/directories and waits for the response
-     * NOTE: We allow the destination to exist in VFS and expect the slave to 'merge' it
+     * NOTE: We allow the destination to exist in VFS and expect the slave to
+     * 'merge' it
      */
     public void simpleRename(String from, String toDirPath, String toName) {
         String simplePath;
@@ -583,9 +595,20 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
     }
 
     public synchronized void connect(Socket socket, ObjectInputStream in,
-                                     ObjectOutputStream out) {
+            ObjectOutputStream out) {
         _socket = socket;
         _sout = out;
+
+        // Extract TLS session info if this is an SSL socket
+        if (socket instanceof SSLSocket sslSocket) {
+            SSLSession session = sslSocket.getSession();
+            _tlsProtocol = session.getProtocol();
+            _tlsCipherSuite = session.getCipherSuite();
+        } else {
+            _tlsProtocol = "N/A";
+            _tlsCipherSuite = "N/A";
+        }
+        _remoteAddress = socket.getInetAddress().getHostAddress();
         _sin = in;
         if (_indexPool == null) {
             _indexPool = new LinkedBlockingDeque<>(256);
@@ -721,14 +744,16 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 
             // Handle remerge status reporting if we are remerging
             if (isRemerging()) {
-                // Only do something if we have not received a remerge command from slave in 15 seconds
+                // Only do something if we have not received a remerge command from slave in 15
+                // seconds
                 if ((System.currentTimeMillis() - _lastRemergeCommandReceived) >= reportIdle) {
                     if (lastUpdate >= 0L && (System.currentTimeMillis() - lastUpdate) <= reportIdle) {
                         // skip for at least 15 seconds, not spamming the log
                         continue;
                     }
 
-                    // We have not received remerge data from slave, report current master status for this slave
+                    // We have not received remerge data from slave, report current master status
+                    // for this slave
                     logger.warn("We are still remerging, but have not received remerge command from Slave in {} " +
                             "seconds", (reportIdle / 1000));
                     logger.warn("remergeQueue: {}, remergePaused: {}, Last remerge command received: {}",
@@ -782,6 +807,33 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
         return ((_socket != null) && _socket.isConnected());
     }
 
+    /**
+     * Returns the TLS protocol used for the connection to this slave.
+     * 
+     * @return The TLS protocol (e.g., "TLSv1.3") or "N/A" if not available
+     */
+    public String getTlsProtocol() {
+        return _tlsProtocol != null ? _tlsProtocol : "N/A";
+    }
+
+    /**
+     * Returns the TLS cipher suite used for the connection to this slave.
+     * 
+     * @return The cipher suite or "N/A" if not available
+     */
+    public String getTlsCipherSuite() {
+        return _tlsCipherSuite != null ? _tlsCipherSuite : "N/A";
+    }
+
+    /**
+     * Returns the remote IP address of this slave.
+     * 
+     * @return The remote IP address or "N/A" if not available
+     */
+    public String getRemoteAddress() {
+        return _remoteAddress != null ? _remoteAddress : "N/A";
+    }
+
     public long getCheckSumForPath(String path) throws IOException,
             SlaveUnavailableException {
         try {
@@ -821,7 +873,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 
                 if ((getActualTimeout() > (System.currentTimeMillis() - _lastResponseReceived))
                         && ((getActualTimeout() / 2 < (System.currentTimeMillis() - _lastResponseReceived))
-                        || (getActualTimeout() / 2 < (System.currentTimeMillis() - _lastCommandSent)))) {
+                                || (getActualTimeout() / 2 < (System.currentTimeMillis() - _lastCommandSent)))) {
                     if (pingIndex != null) {
                         logger.error("Ping lost, no response from slave, sending new ping to slave");
                         _indexPool.push(pingIndex);
@@ -837,21 +889,25 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
                 if (isOnline() && !_initRemergeCompleted) {
                     if (_remergePaused.get()) {
                         // Do we need to resume?
-                        if (_remergeQueue.size() <= Integer.parseInt(GlobalContext.getConfig().getMainProperties().getProperty("remerge.resume.threshold", "50"))) {
+                        if (_remergeQueue.size() <= Integer.parseInt(GlobalContext.getConfig().getMainProperties()
+                                .getProperty("remerge.resume.threshold", "50"))) {
                             _socket.setSoTimeout(_prevSocketTimeout); // Restore old time out
                             SlaveManager.getBasicIssuer().issueRemergeResumeToSlave(this);
                             _remergePaused.set(false);
-                            logger.debug("Issued remerge resume to slave, current remerge queue is {}", _remergeQueue.size());
+                            logger.debug("Issued remerge resume to slave, current remerge queue is {}",
+                                    _remergeQueue.size());
                         }
                     } else {
                         // Do we need to pause?
-                        if (_remergeQueue.size() > Integer.parseInt(GlobalContext.getConfig().getMainProperties().getProperty("remerge.pause.threshold", "250"))) {
+                        if (_remergeQueue.size() > Integer.parseInt(GlobalContext.getConfig().getMainProperties()
+                                .getProperty("remerge.pause.threshold", "250"))) {
                             SlaveManager.getBasicIssuer().issueRemergePauseToSlave(this);
                             _prevSocketTimeout = _socket.getSoTimeout();
                             // Set lower timeout so it reacts faster when queueSize goes back down
                             _socket.setSoTimeout(100);
                             _remergePaused.set(true);
-                            logger.debug("Issued remerge pause to slave, current remerge queue is {}", _remergeQueue.size());
+                            logger.debug("Issued remerge pause to slave, current remerge queue is {}",
+                                    _remergeQueue.size());
                         }
                     }
                 }
@@ -866,7 +922,8 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 
                 if (ar instanceof AsyncResponseTransfer) {
                     AsyncResponseTransfer art = (AsyncResponseTransfer) ar;
-                    addTransfer((art.getConnectInfo().getTransferIndex()), new RemoteTransfer(art.getConnectInfo(), this));
+                    addTransfer((art.getConnectInfo().getTransferIndex()),
+                            new RemoteTransfer(art.getConnectInfo(), this));
                 }
 
                 switch (ar.getIndex()) {
@@ -1087,7 +1144,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
     }
 
     public void addTransfer(TransferIndex transferIndex,
-                            RemoteTransfer transfer) {
+            RemoteTransfer transfer) {
         if (!isOnline()) {
             return;
         }
@@ -1191,7 +1248,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
         params.put(JsonWriter.PRETTY_PRINT, true);
         try (OutputStream out = new SafeFileOutputStream(
                 getGlobalContext().getSlaveManager().getSlaveFile(this.getName()));
-             JsonWriter writer = new JsonWriter(out, params)) {
+                JsonWriter writer = new JsonWriter(out, params)) {
             writer.write(this);
             logger.debug("Wrote slavefile for {}", this.getName());
         } catch (IOException | JsonIoException e) {
@@ -1261,7 +1318,9 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
                         try {
                             Thread.sleep(500);
                         } catch (InterruptedException e) {
-                            logger.debug("REMERGE QUE: thread interrupted waiting for crc queue to drain with exception {}", e.getMessage());
+                            logger.debug(
+                                    "REMERGE QUE: thread interrupted waiting for crc queue to drain with exception {}",
+                                    e.getMessage());
                         }
                     }
                     if (!_initRemergeCompleted) {
