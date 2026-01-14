@@ -114,7 +114,7 @@ public class SiteBotConfig {
         if (cfg.getProperty("ssl.strictTrust").equalsIgnoreCase("true")) {
             trustManager = new PartialTrustManager(cfg.getProperty("ssl.keystore.password"));
         }
-        for (int i = 1; ; i++) {
+        for (int i = 1;; i++) {
             String hostName = cfg.getProperty("server." + i + ".host");
             if (hostName == null) {
                 break;
@@ -122,7 +122,9 @@ public class SiteBotConfig {
             int port = Integer.parseInt(cfg.getProperty("server." + i + ".port"));
             String password = cfg.getProperty("server." + i + ".password");
             boolean ssl = cfg.getProperty("server." + i + ".use_ssl").equalsIgnoreCase("true");
-            _servers.add(new ServerConfig(hostName, port, password, ssl, trustManager));
+            String saslUsername = cfg.getProperty("server." + i + ".sasl.username");
+            String saslPassword = cfg.getProperty("server." + i + ".sasl.password");
+            _servers.add(new ServerConfig(hostName, port, password, ssl, trustManager, saslUsername, saslPassword));
         }
         _connectDelay = Long.parseLong(cfg.getProperty("connect.delay")) * 1000;
         _messageDelay = Long.parseLong(cfg.getProperty("message.sendDelay"));
@@ -131,7 +133,7 @@ public class SiteBotConfig {
         _nick = cfg.getProperty("nick");
         _user = cfg.getProperty("user");
         _userModes = cfg.getProperty("nick.usermodes");
-        for (int i = 1; ; i++) {
+        for (int i = 1;; i++) {
             String connectCommand = cfg.getProperty("connected.command." + i);
             if (connectCommand == null) {
                 break;
@@ -148,7 +150,7 @@ public class SiteBotConfig {
         _delayAfterNickserv = Long.parseLong(cfg.getProperty("services.nickserv.delayafter", "0"));
 
         _chanservEnabled = cfg.getProperty("services.chanserv.enable").equalsIgnoreCase("true");
-        for (int i = 1; ; i++) {
+        for (int i = 1;; i++) {
             String chanservInvite = cfg.getProperty("services.chanserv.invite." + i);
             if (chanservInvite == null) {
                 break;
@@ -157,7 +159,7 @@ public class SiteBotConfig {
         }
         _ctcpFinger = cfg.getProperty("ctcp.finger");
         _ctcpVersion = cfg.getProperty("ctcp.version");
-        for (int i = 1; ; i++) {
+        for (int i = 1;; i++) {
             String chanName = cfg.getProperty("channel." + i);
             if (chanName == null) {
                 break;

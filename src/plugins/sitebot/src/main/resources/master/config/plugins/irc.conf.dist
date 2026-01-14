@@ -18,6 +18,8 @@ server.1.host=127.0.0.1
 server.1.port=6697
 server.1.password=
 server.1.use_ssl=true
+server.1.sasl.username=
+server.1.sasl.password=
 
 # The time to wait (in seconds) before trying another server when connecting or
 # reconnecting.

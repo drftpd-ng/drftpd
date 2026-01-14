@@ -38,12 +38,19 @@ public class ServerConfig {
 
     private final X509TrustManager _trustManager;
 
-    public ServerConfig(String hostName, int port, String password, boolean ssl, X509TrustManager trustManager) {
+    private final String _saslUsername;
+
+    private final String _saslPassword;
+
+    public ServerConfig(String hostName, int port, String password, boolean ssl, X509TrustManager trustManager,
+            String saslUsername, String saslPassword) {
         _hostName = hostName;
         _port = port;
         _password = password;
         _ssl = ssl;
         _trustManager = trustManager;
+        _saslUsername = saslUsername;
+        _saslPassword = saslPassword;
     }
 
     public String getHostName() {
@@ -67,5 +74,13 @@ public class ServerConfig {
 
     public boolean isSsl() {
         return _ssl;
+    }
+
+    public String getSaslUsername() {
+        return _saslUsername;
+    }
+
+    public String getSaslPassword() {
+        return _saslPassword;
     }
 }
