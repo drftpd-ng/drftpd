@@ -122,9 +122,7 @@ public class GlobalContext {
             try {
                 EventServiceLocator.setEventService(EventServiceLocator.SERVICE_NAME_EVENT_BUS, eventService);
             } catch (EventServiceExistsException e) {
-                logger.error(
-                        "Error setting event service, likely something using the event bus before GlobalContext is instantiated",
-                        e);
+                logger.error("Error setting event service, likely something using the event bus before GlobalContext is instantiated", e);
             }
         }
         return _gctx;
@@ -167,16 +165,14 @@ public class GlobalContext {
                             // internal loop
                             String cmdName = curLine.substring(0, curLine.lastIndexOf("{") - 1).toLowerCase();
                             if (commandsConfig.containsKey(cmdName)) {
-                                throw new FatalException(
-                                        cmdName + " is already mapped on line " + reader.getLineNumber());
+                                throw new FatalException(cmdName + " is already mapped on line " + reader.getLineNumber());
                             }
                             Properties p = getPropertiesUntilClosed(reader);
                             logger.trace("Adding command {}", cmdName);
 
                             commandsConfig.put(cmdName, p);
                         } else {
-                            throw new FatalException(
-                                    "Expected line to end with \"{\" at line " + reader.getLineNumber());
+                            throw new FatalException("Expected line to end with \"{\" at line " + reader.getLineNumber());
                         }
                     }
                 }
@@ -305,8 +301,7 @@ public class GlobalContext {
     }
 
     private void loadPlugins() {
-        Set<Class<? extends PluginInterface>> plugins = new Reflections("org.drftpd")
-                .getSubTypesOf(PluginInterface.class);
+        Set<Class<? extends PluginInterface>> plugins = new Reflections("org.drftpd").getSubTypesOf(PluginInterface.class);
         logger.debug("We have found [{}] PluginInterface SubTypes", plugins.size());
         List<String> alreadyResolved = new ArrayList<>();
         try {
@@ -314,9 +309,7 @@ public class GlobalContext {
             while (!allResolve) {
                 for (Class<? extends PluginInterface> plugin : plugins) {
                     PluginDependencies annotation = plugin.getAnnotation(PluginDependencies.class);
-                    List<Class<? extends PluginInterface>> dependencies = annotation != null
-                            ? Arrays.asList(annotation.refs())
-                            : new ArrayList<>();
+                    List<Class<? extends PluginInterface>> dependencies = annotation != null ? Arrays.asList(annotation.refs()) : new ArrayList<>();
                     List<String> depNames = dependencies.stream().map(Class::getName).collect(Collectors.toList());
                     boolean alreadyInstantiate = alreadyResolved.contains(plugin.getName());
                     if (alreadyResolved.containsAll(depNames) && !alreadyInstantiate) {
@@ -343,8 +336,7 @@ public class GlobalContext {
             Class<?> aClass = Class.forName(desiredSm);
             _sectionManager = (SectionManagerInterface) aClass.getConstructor().newInstance();
         } catch (Exception e) {
-            throw new FatalException("Cannot create instance of SectionManager, check 'sectionmanager' in config file",
-                    e);
+            throw new FatalException("Cannot create instance of SectionManager, check 'sectionmanager' in config file", e);
         }
     }
 
@@ -355,8 +347,7 @@ public class GlobalContext {
             _indexEngine = (IndexEngineInterface) aClass.getConstructor().newInstance();
             _indexEngine.init();
         } catch (Exception e) {
-            throw new FatalException("Cannot create instance of IndexingEngine, check 'indexingengine' in config file",
-                    e);
+            throw new FatalException("Cannot create instance of IndexingEngine, check 'indexingengine' in config file", e);
         }
     }
 
@@ -379,8 +370,7 @@ public class GlobalContext {
             _usermanager = (AbstractUserManager) aClass.getConstructor().newInstance();
             _usermanager.init();
         } catch (Exception e) {
-            throw new FatalException(
-                    "Cannot create instance of usermanager, check 'usermanager' in the configuration file", e);
+            throw new FatalException("Cannot create instance of usermanager, check 'usermanager' in the configuration file", e);
         }
     }
 
@@ -468,16 +458,14 @@ public class GlobalContext {
                 }
             }
             while (GlobalContext.getEventService().getQueueSize() > 0) {
-                logger.info("Waiting for queued events to be processed - {} remaining",
-                        GlobalContext.getEventService().getQueueSize());
+                logger.info("Waiting for queued events to be processed - {} remaining", GlobalContext.getEventService().getQueueSize());
                 try {
                     Thread.sleep(1000);
                 } catch (InterruptedException ignored) {
                 }
             }
             while (CommitManager.getCommitManager().getQueueSize() > 0) {
-                logger.info("Waiting for queued commits to be drained - {} remaining",
-                        CommitManager.getCommitManager().getQueueSize());
+                logger.info("Waiting for queued commits to be drained - {} remaining", CommitManager.getCommitManager().getQueueSize());
                 try {
                     Thread.sleep(1000);
                 } catch (InterruptedException ignored) {
