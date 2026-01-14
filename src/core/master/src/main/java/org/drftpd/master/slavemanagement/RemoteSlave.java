@@ -1077,7 +1077,78 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
     }
 
     public boolean checkConnect(Socket socket) throws PatternSyntaxException {
-        return getMasks().check(socket);
+        if (!getMasks().check(socket)) {
+            return false;
+        }
+        return checkCertificate(socket);
+    }
+
+    private boolean checkCertificate(Socket socket) {
+        if (!(socket instanceof javax.net.ssl.SSLSocket)) {
+            return true; // Not an SSL socket, legacy or non-SSL logic (though drftpd requires SSL usually)
+        }
+
+        try {
+            javax.net.ssl.SSLSession session = ((javax.net.ssl.SSLSocket) socket).getSession();
+            java.security.cert.Certificate[] certs = session.getPeerCertificates();
+
+            if (certs == null || certs.length == 0) {
+                // No cert provided.
+                // If we 'need' auth, the handshake would have failed already at the protocol level?
+                // If we 'want' auth, we might fall through here.
+                // If a fingerprint is REQUIRED config-side, we must return false.
+                String configuredFingerprint = getProperty("fingerprint");
+                if (configuredFingerprint != null && !configuredFingerprint.isEmpty()) {
+                    logger.error("Slave '{}' configured with fingerprint but no client certificate presented.", getName());
+                    return false;
+                }
+                return true;
+            }
+
+            // Check signature
+            java.security.cert.X509Certificate peerCert = (java.security.cert.X509Certificate) certs[0];
+            java.security.MessageDigest digest = java.security.MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(peerCert.getEncoded());
+            String actualFingerprint = "SHA256:" + toHex(hash);
+
+            String configuredFingerprint = getProperty("fingerprint");
+
+            if (configuredFingerprint == null || configuredFingerprint.isEmpty()) {
+                logger.info("Slave '{}' connected with certificate fingerprint: {}", getName(), actualFingerprint);
+                logger.info("To enforce this certificate, add 'fingerprint={}' to the slave configuration.", actualFingerprint);
+                return true;
+            }
+
+            if (!configuredFingerprint.equalsIgnoreCase(actualFingerprint)) {
+                logger.error("Slave '{}' certificate fingerprint Mismatch! Expected: {}, Actual: {}", getName(),
+                        configuredFingerprint, actualFingerprint);
+                return false;
+            }
+
+            logger.debug("Slave '{}' certificate fingerprint verified.", getName());
+            return true;
+
+        } catch (javax.net.ssl.SSLPeerUnverifiedException e) {
+            // Peer not authenticated.
+            // If we have a fingerprint configured, we must fail.
+            String configuredFingerprint = getProperty("fingerprint");
+            if (configuredFingerprint != null && !configuredFingerprint.isEmpty()) {
+                logger.error("Slave '{}' configured with fingerprint but peer is unverified.", getName());
+                return false;
+            }
+            return true;
+        } catch (Exception e) {
+            logger.error("Error checking slave certificate", e);
+            return false;
+        }
+    }
+
+    private static String toHex(byte[] bytes) {
+        StringBuilder sb = new StringBuilder();
+        for (byte b : bytes) {
+            sb.append(String.format("%02X", b));
+        }
+        return sb.toString();
     }
 
     public String getProperty(String key) {
@@ -1332,3 +1403,51 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
         }
     }
 }
+
+
+
+
+    
+
+    
+        
+    
+
+    
+        
+            
+            
+                
+                
+            
+                
+                
+            
+            
+                
+                
+            
+            
+                
+            
+            
+            
+                
+            
+                
+                
+            
+                
+                
+            
+            
+                
+            
+                
+            
+        
+    
+
+    
+        
+    
