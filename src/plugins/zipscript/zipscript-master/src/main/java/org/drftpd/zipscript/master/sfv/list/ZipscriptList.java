@@ -62,8 +62,11 @@ public class ZipscriptList extends SFVTools implements AddListElementsInterface 
                 _statusBarProviders.add(barInterface);
             }
         } catch (Exception e) {
-            logger.error("Failed to load plugins for org.drftpd.master.commands.zipscript extension point 'ListStatusBarProvider'" +
-                    ", possibly the org.drftpd.master.commands.zipscript extension point definition has changed in the plugin.xml", e);
+            logger.error(
+                    "Failed to load plugins for org.drftpd.master.commands.zipscript extension point 'ListStatusBarProvider'"
+                            +
+                            ", possibly the org.drftpd.master.commands.zipscript extension point definition has changed in the plugin.xml",
+                    e);
         }
     }
 
@@ -88,14 +91,16 @@ public class ZipscriptList extends SFVTools implements AddListElementsInterface 
                         env.put("complete.percent", "" + (sfvstatus.getPresent() * 100)
                                 / sfvfile.getSize());
                         env.put("complete.totalbytes", Bytes.formatBytes(getSFVTotalBytes(dir, sfvData)));
-                        statusBarEntries.add(container.getSession().jprintf(bundle, "zip.statusbar.complete", env, container.getUser()));
+                        statusBarEntries.add(container.getSession().jprintf(bundle, "zip.statusbar.complete", env,
+                                container.getUser()));
 
                         if (sfvstatus.getOffline() != 0) {
                             env.put("offline.number", "" + sfvstatus.getOffline());
                             env.put("offline.percent", "" + (sfvstatus.getOffline() * 100) / sfvstatus.getPresent());
                             env.put("online.number", "" + sfvstatus.getPresent());
                             env.put("online.percent", "" + (sfvstatus.getAvailable() * 100) / sfvstatus.getPresent());
-                            statusBarEntries.add(container.getSession().jprintf(bundle, "zip.statusbar.offline", env, container.getUser()));
+                            statusBarEntries.add(container.getSession().jprintf(bundle, "zip.statusbar.offline", env,
+                                    container.getUser()));
                         }
                     }
                 }
@@ -105,17 +110,18 @@ public class ZipscriptList extends SFVTools implements AddListElementsInterface 
                         if (!file.exists()) {
                             env.put("mfilename", fileName);
                             container.getElements().add(new LightRemoteInode(
-                                    container.getSession().jprintf(bundle, "zip.files.missing.filename", env, container.getUser()),
+                                    container.getSession().jprintf(bundle, "zip.files.missing.filename", env,
+                                            container.getUser()),
                                     "drftpd", "drftpd", dir.lastModified(), 0L));
                         }
                     }
                 }
             } catch (NoAvailableSlaveException | SlaveUnavailableException e) {
-                logger.warn("No available slaves for SFV file in{}", dir.getPath());
+                logger.warn("No available slaves for SFV file in {}", dir.getPath());
             } catch (FileNotFoundException e) {
-                // no sfv file in directory - just skip it
+                logger.debug("No SFV file found in directory {}", dir.getPath());
             } catch (IOException e) {
-                // unable to read sfv - just skip it
+                logger.warn("IOException reading SFV file in {}", dir.getPath(), e);
             }
             if (statusBarEnabled) {
                 for (ZipscriptListStatusBarInterface zle : _statusBarProviders) {
@@ -127,9 +133,10 @@ public class ZipscriptList extends SFVTools implements AddListElementsInterface 
                         // Nothing to add at this time, carry on
                     }
                 }
-                String entrySeparator = container.getSession().jprintf(bundle, "zip.statusbar.separator", env, container.getUser());
+                String entrySeparator = container.getSession().jprintf(bundle, "zip.statusbar.separator", env,
+                        container.getUser());
                 StringBuilder statusBarBuilder = new StringBuilder();
-                for (Iterator<String> iter = statusBarEntries.iterator(); iter.hasNext(); ) {
+                for (Iterator<String> iter = statusBarEntries.iterator(); iter.hasNext();) {
                     String statusBarElement = iter.next();
                     statusBarBuilder.append(statusBarElement);
                     if (iter.hasNext()) {
@@ -140,7 +147,8 @@ public class ZipscriptList extends SFVTools implements AddListElementsInterface 
                 }
                 if (statusBarBuilder.length() > 0) {
                     env.put("statusbar", statusBarBuilder.toString());
-                    String statusDirName = container.getSession().jprintf(bundle, "zip.statusbar.format", env, container.getUser());
+                    String statusDirName = container.getSession().jprintf(bundle, "zip.statusbar.format", env,
+                            container.getUser());
 
                     if (statusDirName == null) {
                         throw new RuntimeException();
@@ -149,9 +157,10 @@ public class ZipscriptList extends SFVTools implements AddListElementsInterface 
                     try {
                         boolean statusBarIsDir = cfg.getProperty("statusbar.directory").equalsIgnoreCase("true");
                         container.getElements().add(
-                                new LightRemoteInode(statusDirName, "drftpd", "drftpd", statusBarIsDir, dir.lastModified(), 0L));
+                                new LightRemoteInode(statusDirName, "drftpd", "drftpd", statusBarIsDir,
+                                        dir.lastModified(), 0L));
                     } catch (FileNotFoundException e) {
-                        // dir was deleted during list operation
+                        logger.debug("Directory {} was deleted during list operation", dir.getPath());
                     }
                 }
             }
