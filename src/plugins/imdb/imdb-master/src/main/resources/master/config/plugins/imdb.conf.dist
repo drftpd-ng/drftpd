@@ -2,6 +2,11 @@
 ## IMDB Settings ##
 ####################################################################################################
 
+# IMDB URL settings - change these if IMDB changes their domain
+url.base=https://imdb.com
+url.search=https://imdb.com/find?s=all&q=
+url.title.prefix=https://imdb.com/title/
+
 # Sections plugin should announce IMDB info on races/pre.
 #race.section.x=SECTION
 
