@@ -48,7 +48,8 @@ public abstract class Session extends KeyedMap<Key<?>, Object> {
 
     public Map<String, Object> getReplacerEnvironment(Map<String, Object> inheritedEnv, User user) {
         Map<String, Object> env = new HashMap<>();
-        if (inheritedEnv != null) env.putAll(inheritedEnv);
+        if (inheritedEnv != null)
+            env.putAll(inheritedEnv);
         if (user != null) {
             for (Map.Entry<Key<?>, Object> entry : user.getKeyedMap().getAllObjects().entrySet()) {
                 String key = entry.getKey().toString();
@@ -67,10 +68,16 @@ public abstract class Session extends KeyedMap<Key<?>, Object> {
             env.put("downloaded", Bytes.formatBytes(user.getDownloadedBytes()));
             env.put("group", user.getGroup());
             env.put("groups", user.getGroups());
-            env.put("averagespeed", Bytes.formatBytes((user.getDownloadedBytes() + user.getUploadedBytes())
-                    / (((user.getDownloadedTime() + user.getUploadedTime()) / 1000) + 1)));
+            long divisor = ((user.getDownloadedTime() + user.getUploadedTime()) / 1000) + 1;
+            if (divisor == 0) {
+                env.put("averagespeed", Bytes.formatBytes(0));
+            } else {
+                env.put("averagespeed",
+                        Bytes.formatBytes((user.getDownloadedBytes() + user.getUploadedBytes()) / divisor));
+            }
             env.put("ipmasks", user.getHostMaskCollection().toString());
-            env.put("isbanned", "" + (user.getKeyedMap().getObject(UserManagement.BANTIME, new Date()).getTime() > System.currentTimeMillis()));
+            env.put("isbanned", "" + (user.getKeyedMap().getObject(UserManagement.BANTIME, new Date())
+                    .getTime() > System.currentTimeMillis()));
         }
         return env;
     }
