@@ -453,6 +453,15 @@ public class SlaveManager extends SslConfigurationLoader implements Runnable, Ti
                     continue;
                 }
 
+                if (!rSlave.checkCertificate(socket)) {
+                    out.writeObject(new AsyncCommandArgument("", "error", "TLS client certificate does not match the fingerprint pinned for " + rSlave.getName()));
+                    out.flush();
+                    logger.error("Refused connection from {} for {}: TLS client certificate does not match the pinned fingerprint", socket.getInetAddress(), rSlave.getName());
+                    socket.close();
+
+                    continue;
+                }
+
                 rSlave.connect(socket, in, out);
             } catch (Exception e) {
                 rSlave.setOffline(e);
