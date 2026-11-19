@@ -28,6 +28,7 @@ import org.apache.lucene.document.SortedDocValuesField;
 import org.apache.lucene.document.StoredField;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.CorruptIndexException;
+import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexCommit;
 import org.apache.lucene.index.IndexFormatTooNewException;
 import org.apache.lucene.index.IndexFormatTooOldException;
@@ -36,6 +37,7 @@ import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.KeepOnlyLastCommitDeletionPolicy;
 import org.apache.lucene.index.LeafReaderContext;
+import org.apache.lucene.index.SegmentInfos;
 import org.apache.lucene.index.SnapshotDeletionPolicy;
 import org.apache.lucene.index.StoredFields;
 import org.apache.lucene.index.Term;
@@ -66,6 +68,7 @@ import org.apache.lucene.store.NativeFSLockFactory;
 import org.apache.lucene.store.SimpleFSLockFactory;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.Version;
+import org.apache.lucene.util.automaton.TooComplexToDeterminizeException;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.drftpd.common.util.Bytes;
 import org.drftpd.common.util.ConfigLoader;
@@ -112,6 +115,13 @@ public class LuceneEngine implements IndexEngineInterface {
     protected static final String INDEX_DIR = "userdata/index";
     /** Suffix added to the index directory when it is moved aside because it can't be read. */
     static final String INCOMPATIBLE_SUFFIX = ".incompatible-";
+    /**
+     * Commit user data entry set to "true" while the index is not a complete image of the VFS:
+     * from the creation of an empty index replacing an unreadable one, or from the start of a
+     * rebuild, until the final commit of a successful rebuild. Every commit made meanwhile
+     * (periodic commits, shutdown) keeps it, so the next start rebuilds again.
+     */
+    static final String REBUILD_PENDING_KEY = "drftpd.rebuildPending";
 
     private static final Logger logger = LogManager.getLogger(LuceneEngine.class);
     private static final String EXCEPTION_OCCURED_WHILE_SEARCHING = "An exception occured while searching, check stack trace";
@@ -274,15 +284,17 @@ public class LuceneEngine implements IndexEngineInterface {
                 } catch (IndexFormatTooOldException | IndexFormatTooNewException | CorruptIndexException |
                          EOFException e) {
                     abortAll();
-                    Path aside = moveIndexAside();
+                    Path aside = moveIndexAside(e);
                     _movedAsideIndex = aside;
-                    _rebuildRequired = true;
                     logger.warn("The index in {} can't be read by Lucene {} ({}). It was moved to {} and a new, " +
                                     "empty index was created: it has to be rebuilt from the virtual file system " +
                                     "(SITE REBUILDINDEX). The old directory can be deleted once the rebuild is done.",
                             _indexPath, Version.LATEST, e.getMessage(), aside);
-                    Files.createDirectories(_indexPath);
                     openWriter();
+                    // persisted, so that the rebuild is resumed if the master stops before it ends
+                    setRebuildPending(_iWriter, true);
+                    _iWriter.commit();
+                    _rebuildRequired = true;
                 }
             } catch (IOException e) {
                 abortAll();
@@ -306,21 +318,66 @@ public class LuceneEngine implements IndexEngineInterface {
         _snapshotPolicy = new SnapshotDeletionPolicy(new KeepOnlyLastCommitDeletionPolicy());
         conf.setIndexDeletionPolicy(_snapshotPolicy);
 
+        boolean rebuildPending = false;
+        if (DirectoryReader.indexExists(_storage)) {
+            Map<String, String> userData = SegmentInfos.readLatestCommit(_storage).getUserData();
+            rebuildPending = "true".equals(userData.get(REBUILD_PENDING_KEY));
+        }
+
         _iWriter = new IndexWriter(_storage, conf);
         // opening a reader also opens every segment of an existing index
         _searcherManager = new SearcherManager(_iWriter, null);
+        // carry the flag over to the next commits until a rebuild clears it
+        setRebuildPending(_iWriter, rebuildPending);
         // make sure there is a commit point, needed by backups (no-op on an existing, unchanged index)
         _iWriter.commit();
+
+        if (rebuildPending) {
+            _rebuildRequired = true;
+            logger.warn("The index in {} is incomplete: a rebuild was started but did not finish. " +
+                    "It will be rebuilt again.", _indexPath);
+        }
     }
 
-    private Path moveIndexAside() throws IOException {
-        String suffix = new SimpleDateFormat("yyyyMMdd-HHmmss").format(new Date());
-        Path target = _indexPath.resolveSibling(_indexPath.getFileName() + INCOMPATIBLE_SUFFIX + suffix);
-        for (int i = 1; Files.exists(target); i++) {
-            target = _indexPath.resolveSibling(_indexPath.getFileName() + INCOMPATIBLE_SUFFIX + suffix + "-" + i);
+    private static void setRebuildPending(IndexWriter writer, boolean pending) {
+        Map<String, String> userData = pending ? Map.of(REBUILD_PENDING_KEY, "true") : Map.of();
+        writer.setLiveCommitData(userData.entrySet());
+    }
+
+    /**
+     * @return whether the last commit on disk is flagged as an incomplete index.
+     */
+    boolean isRebuildPendingOnDisk() throws IOException {
+        synchronized (_lock) {
+            return "true".equals(SegmentInfos.readLatestCommit(_storage).getUserData().get(REBUILD_PENDING_KEY));
         }
-        Files.move(_indexPath, target);
-        return target;
+    }
+
+    /**
+     * Renames the unreadable index directory. When the index path is a symbolic link (or a
+     * junction), the directory it points to is renamed and recreated empty, the link is kept.
+     */
+    private Path moveIndexAside(IOException cause) throws IndexException {
+        Path source = _indexPath;
+        Path target = null;
+        try {
+            source = _indexPath.toRealPath();
+            String suffix = new SimpleDateFormat("yyyyMMdd-HHmmss").format(new Date());
+            target = source.resolveSibling(source.getFileName() + INCOMPATIBLE_SUFFIX + suffix);
+            for (int i = 1; Files.exists(target); i++) {
+                target = source.resolveSibling(source.getFileName() + INCOMPATIBLE_SUFFIX + suffix + "-" + i);
+            }
+            Files.move(source, target);
+            Files.createDirectories(source);
+            return target;
+        } catch (IOException e) {
+            IndexException failure = new IndexException("The index in " + source + " can't be read by Lucene "
+                    + Version.LATEST + " (" + cause.getMessage() + ") and could not be renamed to "
+                    + (target == null ? "a backup name" : target) + " (" + e + "). Stop the master, move or rename "
+                    + source + " by hand, then start the master again: the index will be rebuilt.", e);
+            failure.addSuppressed(cause);
+            throw failure;
+        }
     }
 
     /**
@@ -367,12 +424,22 @@ public class LuceneEngine implements IndexEngineInterface {
             try {
                 if (_searcherManager != null)
                     _searcherManager.close();
+            } catch (Exception e) {
+                logger.error("Error closing the index searcher manager", e);
+            }
+            try {
+                // commits; a rebuild in progress is committed with its "rebuild pending" flag,
+                // so the next start sees the index is incomplete and rebuilds it again
                 if (_iWriter != null)
                     _iWriter.close();
+            } catch (Exception e) {
+                logger.error("Error closing the index writer", e);
+            }
+            try {
                 if (_storage != null)
                     _storage.close();
             } catch (Exception e) {
-                logger.error(e, e);
+                logger.error("Error closing the index directory", e);
             }
 
             _searcherManager = null;
@@ -616,7 +683,7 @@ public class LuceneEngine implements IndexEngineInterface {
         try {
             IndexWriter writer = writer();
             Term fromInodeTerm = makeFullPathTermFromInode(fromInode);
-            writer.updateDocument(fromInodeTerm, makeDocumentFromInode(toInode));
+            replaceDocument(writer, fromInodeTerm, makeFullPathTermFromInode(toInode), makeDocumentFromInode(toInode));
             if (toInode.isDirectory()) {
                 SearcherManager searcherManager = searcherManager();
                 IndexSearcher iSearcher = acquireFreshSearcher(searcherManager);
@@ -627,7 +694,8 @@ public class LuceneEngine implements IndexEngineInterface {
                         Document stored = storedFields.document(docId);
                         String oldPath = stored.get(FIELD_FULL_PATH);
                         String newPath = toInode.getPath() + oldPath.substring(fromInode.getPath().length());
-                        writer.updateDocument(new Term(FIELD_FULL_PATH, oldPath), rebuildDocument(stored, newPath));
+                        replaceDocument(writer, new Term(FIELD_FULL_PATH, oldPath), new Term(FIELD_FULL_PATH, newPath),
+                                rebuildDocument(stored, newPath));
                     }
                 } finally {
                     searcherManager.release(iSearcher);
@@ -642,6 +710,19 @@ public class LuceneEngine implements IndexEngineInterface {
     }
 
     /**
+     * Atomically deletes the documents of the old path and of the new path (an event about the
+     * renamed inode may already have indexed it there) and adds the new document.
+     */
+    private static void replaceDocument(IndexWriter writer, Term oldPath, Term newPath, Document doc)
+            throws IOException {
+        Query delete = new BooleanQuery.Builder()
+                .add(new TermQuery(oldPath), Occur.SHOULD)
+                .add(new TermQuery(newPath), Occur.SHOULD)
+                .build();
+        writer.updateDocuments(delete, List.of(doc));
+    }
+
+    /**
      * {@inheritDoc}
      * Forces the Index to be saved. Simply calls {@link IndexWriter}.commit();
      */
@@ -653,24 +734,58 @@ public class LuceneEngine implements IndexEngineInterface {
         }
     }
 
+    /**
+     * Walks the inodes to index during a rebuild (in production through the VFS refresh events,
+     * which end up in {@link #updateInode}).
+     */
+    interface InodeWalker {
+        void walk() throws IndexException, FileNotFoundException;
+    }
+
     /* {@inheritDoc} */
     public void rebuildIndex() throws IndexException, FileNotFoundException {
-        synchronized (this) {
-            if (_rebuilding) {
-                throw new IndexException("A previous rebuildindex command is already in progress.");
-            }
-            _rebuilding = true;
-        }
-
-        try {
-            // drop every document; the writer and the searchers stay open
-            writer().deleteAll();
-
+        rebuildIndex(() -> {
             DirectoryHandle root = GlobalContext.getGlobalContext().getRoot();
             root.requestRefresh(true); // Start by adding root inode
             recurseAndBuild(root); // Recursively traverse the VFS and add all inodes
-            commit(); // commit the writer so that the searcher can see the new stuff.
-            _rebuildRequired = false;
+        });
+    }
+
+    /**
+     * Empties the index and fills it again through the walker.
+     * The commit that empties the index flags it as incomplete ({@link #REBUILD_PENDING_KEY});
+     * every commit made meanwhile keeps the flag and only the final commit of a successful
+     * rebuild clears it, so an interrupted rebuild is detected on the next start.
+     */
+    void rebuildIndex(InodeWalker walker) throws IndexException, FileNotFoundException {
+        synchronized (_lock) {
+            if (_rebuilding) {
+                throw new IndexException("A previous rebuildindex command is already in progress.");
+            }
+            try {
+                IndexWriter writer = writer();
+                _rebuilding = true;
+                setRebuildPending(writer, true);
+                // drop every document; the writer and the searchers stay open
+                writer.deleteAll();
+                writer.commit();
+            } catch (RuntimeException | IOException e) {
+                _rebuilding = false;
+                _rebuildRequired = true;
+                throw new IndexException("Unable to start rebuilding the index", e);
+            }
+        }
+
+        boolean success = false;
+        try {
+            walker.walk();
+            synchronized (_lock) {
+                IndexWriter writer = writer();
+                setRebuildPending(writer, false);
+                writer.commit(); // commit the writer so that the searcher can see the new stuff.
+                _rebuildRequired = false;
+                success = true;
+            }
         } catch (IndexException e) {
             logger.error("Exception whilst rebuilding lucene index", e);
             throw e;
@@ -681,6 +796,18 @@ public class LuceneEngine implements IndexEngineInterface {
             logger.error("Exception whilst rebuilding lucene index", e);
             throw new IndexException("Unable to rebuild the index", e);
         } finally {
+            if (!success) {
+                // the index is partial: keep it flagged, no backup, rebuild again on next start
+                _rebuildRequired = true;
+                IndexWriter writer = _iWriter;
+                if (writer != null) {
+                    try {
+                        setRebuildPending(writer, true);
+                    } catch (RuntimeException e) {
+                        logger.debug("Unable to flag the index as incomplete", e);
+                    }
+                }
+            }
             _rebuilding = false;
         }
     }
@@ -744,6 +871,19 @@ public class LuceneEngine implements IndexEngineInterface {
      * @throws IllegalArgumentException if the parameters are invalid (wildcards, regex)
      */
     Query buildAdvancedQuery(String startPath, AdvancedSearchParams params) throws IllegalArgumentException {
+        try {
+            return doBuildAdvancedQuery(startPath, params);
+        } catch (TooComplexToDeterminizeException e) {
+            // wildcard patterns are turned into automata when the query is built
+            throw tooComplex(e);
+        }
+    }
+
+    private static IllegalArgumentException tooComplex(TooComplexToDeterminizeException e) {
+        return new IllegalArgumentException("Search pattern too complex, use fewer wildcards.", e);
+    }
+
+    private Query doBuildAdvancedQuery(String startPath, AdvancedSearchParams params) {
         BooleanQuery.Builder query = new BooleanQuery.Builder();
 
         if (!startPath.equals(VirtualFileSystem.separator)) {
@@ -898,7 +1038,11 @@ public class LuceneEngine implements IndexEngineInterface {
         if (!startPath.equals(VirtualFileSystem.separator)) {
             builder.add(new PrefixQuery(new Term(FIELD_PARENT_PATH, startPath + VirtualFileSystem.separator)), Occur.MUST);
         }
-        builder.add(LuceneUtils.analyze(FIELD_NAME, text), Occur.MUST);
+        try {
+            builder.add(LuceneUtils.analyze(FIELD_NAME, text), Occur.MUST);
+        } catch (TooComplexToDeterminizeException e) {
+            throw tooComplex(e);
+        }
         if (inodeType == InodeType.DIRECTORY) {
             builder.add(QUERY_DIRECTORY, Occur.MUST);
         } else if (inodeType == InodeType.FILE) {
@@ -937,9 +1081,14 @@ public class LuceneEngine implements IndexEngineInterface {
      * backup is a consistent index even though the writer keeps on indexing meanwhile.
      *
      * @param target the backup directory, created if needed
+     * @return false if no backup was made because the index is being, or must be, rebuilt
      */
-    void backupTo(Path target) throws IOException {
+    boolean backupTo(Path target) throws IOException {
         synchronized (_lock) {
+            if (_rebuilding || _rebuildRequired) {
+                // the index is empty or partial, it must not replace a good backup
+                return false;
+            }
             IndexWriter writer = writer();
             writer.commit();
             IndexCommit snapshot = _snapshotPolicy.snapshot();
@@ -957,6 +1106,7 @@ public class LuceneEngine implements IndexEngineInterface {
                 _snapshotPolicy.release(snapshot);
                 writer.deleteUnusedFiles();
             }
+            return true;
         }
     }
 
@@ -1027,7 +1177,9 @@ public class LuceneEngine implements IndexEngineInterface {
         if (_rebuilding) {
             status.put("rebuild", "in progress");
         } else if (_rebuildRequired) {
-            status.put("rebuild", "required, run SITE REBUILDINDEX (unreadable index moved to " + _movedAsideIndex + ")");
+            status.put("rebuild", "required, run SITE REBUILDINDEX" + (_movedAsideIndex == null
+                    ? " (a previous rebuild did not complete)"
+                    : " (unreadable index moved to " + _movedAsideIndex + ")"));
         }
 
         return status;

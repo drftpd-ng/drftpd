@@ -39,6 +39,9 @@ to be done by hand:
   does. Until it is done, SITE SEARCH/FIND and the dupe checks only see part of the site.
   SITE INDEXSTATUS FULL shows "rebuild: in progress" meanwhile. On large sites this takes a while
   and causes disk I/O on the master.
+- If the master is stopped before the rebuild is done, the index is flagged as incomplete and the
+  rebuild starts again on the next start. The same goes for an interrupted SITE REBUILDINDEX.
+- No index backup is made while a rebuild is required or running.
 - If the automatic rebuild fails (see the master log), run SITE REBUILDINDEX.
 - Once the new index is complete, the userdata/index.incompatible-<date> directory and the old
   backups in index.bkp (also Lucene 3.6 indexes) can be deleted.

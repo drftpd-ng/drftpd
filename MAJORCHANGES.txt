@@ -8,6 +8,10 @@
   the whole path. optimize_interval in indexation.conf is now a periodic commit interval.
   Plugins adding data to the index have to use the new IndexDataExtensionInterface /
   QueryTermExtensionInterface signatures (see LuceneUtils).
+* Sorting by "lastmodified" (nuke, approve, imdb and tvmaze listings) now really sorts on the last
+  modification date, newest first for those commands. With Lucene 3.6 that sort used a field that
+  doesn't exist and the results came out in reverse full path order, so which N results are shown
+  under a limit changes.
 
 ==== 4.0.8
 * Now compiles and runs on JDK17

@@ -562,11 +562,107 @@ public class LuceneEngineTest {
         params.setName("new");
         assertEquals(Set.of("/NEW/"), paths("/", params));
 
-        // and it is fine on the next start
+        // no backup of the empty index
+        assertFalse(_engine.backupTo(_tmp.resolve("bkp")));
+        assertFalse(Files.exists(_tmp.resolve("bkp")));
+
+        // the "rebuild pending" state is persisted: a restart before the rebuild still requires it
+        assertTrue(_engine.isRebuildPendingOnDisk());
+        _engine.closeAll();
+        _engine = newEngine(index);
+        assertTrue(_engine.isRebuildRequired());
+        assertEquals("1", _engine.getStatus().get("inodes"));
+
+        // a successful rebuild clears it
+        _engine.rebuildIndex(() -> _engine.addInode(IndexTestInodes.dir("/REBUILT", "drftpd", "drftpd", T0, 0)));
+        assertFalse(_engine.isRebuildRequired());
+        assertFalse(_engine.isRebuildPendingOnDisk());
+        assertEquals("1", _engine.getStatus().get("inodes"));
+        assertTrue(_engine.backupTo(_tmp.resolve("bkp")));
+
         _engine.closeAll();
         _engine = newEngine(index);
         assertFalse(_engine.isRebuildRequired());
+        params = new AdvancedSearchParams();
+        params.setMinSize(0);
+        assertEquals(Set.of("/REBUILT/"), paths("/", params));
+    }
+
+    @Test
+    public void rebuildReplacesTheIndexContent() throws IndexException, IOException {
+        _engine.rebuildIndex(() -> {
+            _engine.addInode(IndexTestInodes.dir("/A", "drftpd", "drftpd", T0, 0));
+            _engine.addInode(IndexTestInodes.file("/A/a.txt", "drftpd", "drftpd", T0, 10, "slave1"));
+        });
+        assertFalse(_engine.isRebuilding());
+        assertFalse(_engine.isRebuildRequired());
+        assertFalse(_engine.isRebuildPendingOnDisk());
+        AdvancedSearchParams params = new AdvancedSearchParams();
+        params.setMinSize(0);
+        assertEquals(Set.of("/A/", "/A/a.txt"), paths("/", params));
+    }
+
+    @Test
+    public void failedRebuildStaysPendingAcrossRestarts() throws IndexException, IOException {
+        assertThrows(IndexException.class, () -> _engine.rebuildIndex(() -> {
+            _engine.addInode(IndexTestInodes.dir("/A", "drftpd", "drftpd", T0, 0));
+            throw new IndexException("walk failed");
+        }));
+        assertFalse(_engine.isRebuilding());
+        assertTrue(_engine.isRebuildRequired());
+        assertTrue(_engine.isRebuildPendingOnDisk());
+        // a periodic commit after the failed rebuild keeps the flag, and no backup is made
+        _engine.commit();
+        assertTrue(_engine.isRebuildPendingOnDisk());
+        assertFalse(_engine.backupTo(_tmp.resolve("bkp")));
+
+        _engine.closeAll();
+        _engine = newEngine(indexDir());
+        assertTrue(_engine.isRebuildRequired());
+    }
+
+    @Test
+    public void shutdownDuringRebuildIsDetectedOnNextStart() throws IndexException {
+        // the master stops (shutdown hook: closeAll(), which commits) in the middle of a rebuild
+        assertThrows(IndexException.class, () -> _engine.rebuildIndex(() -> {
+            _engine.addInode(IndexTestInodes.dir("/PARTIAL", "drftpd", "drftpd", T0, 0));
+            _engine.closeAll();
+        }));
+        _engine = newEngine(indexDir());
+        assertTrue(_engine.isRebuildRequired());
+        assertTrue(_engine.getStatus().get("rebuild").startsWith("required"));
+        // the partial content was committed, flagged as incomplete
         assertEquals("1", _engine.getStatus().get("inodes"));
+    }
+
+    @Test
+    public void tooComplexWildcardsAreReportedAsInvalidArguments() {
+        // accepted by validWildcards() (no wildcard at index 1-3) but expands to a huge automaton
+        String pattern = "?bcd*a" + "?".repeat(20);
+        AdvancedSearchParams exact = new AdvancedSearchParams();
+        exact.setExact(pattern);
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> find("/", exact));
+        assertTrue(e.getMessage().contains("too complex"), e.getMessage());
+
+        AdvancedSearchParams name = new AdvancedSearchParams();
+        name.setName(pattern);
+        assertThrows(IllegalArgumentException.class, () -> find("/", name));
+
+        assertThrows(IllegalArgumentException.class, () -> _engine.findInode("/", pattern, InodeType.ANY));
+    }
+
+    @Test
+    public void renameReplacesADocumentAlreadyIndexedUnderTheNewPath() throws IndexException {
+        String renamed = "/TV/Show.S01E01.720p.HDTV-TVG";
+        // events about the renamed inodes were processed before the rename itself
+        _engine.updateInode(IndexTestInodes.dir(renamed, "bob", "grpB", T0 + 3 * DAY, 0));
+        _engine.updateInode(IndexTestInodes.file(renamed + "/show.s01e01.mkv", "bob", "grpB", T0 + 3 * DAY, 500 * MB, "slave3"));
+
+        _engine.renameInode(IndexTestInodes.dir(SHOW, "bob", "grpB", T0 + 3 * DAY, 0),
+                IndexTestInodes.dir(renamed, "bob", "grpB", T0 + 3 * DAY, 0));
+
+        assertEquals(Set.of(renamed + "/", renamed + "/show.s01e01.mkv"), paths("/TV", new AdvancedSearchParams()));
+        assertEquals("9", _engine.getStatus().get("inodes"));
     }
 
     @Test

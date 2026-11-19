@@ -55,26 +55,8 @@ public class LuceneBackupThread extends Thread {
     }
 
     public void run() {
-        String[] backups;
-        int x;
-
         while (!_stop) {
-
-            // store a limited amount of backups.
-            // the code bellow remove older backups.
-            backups = BACKUP_HOME.list();
-
-            if (backups != null) {
-                Arrays.sort(backups, String.CASE_INSENSITIVE_ORDER);
-                for (x = 0; x < backups.length; x++) {
-                    if (BACKUP_HOME.list().length < _maxNumberBackup) {
-                        break;
-                    }
-                    new PhysicalFile(BACKUP_DIRNAME + "/" + backups[x]).deleteRecursive();
-                }
-            }
-
-            if (_doBackups && !_engine.isRebuilding()) {
+            if (_doBackups) {
                 setRunning(true);
 
                 String dateTxt = sdf.format(new Date(System.currentTimeMillis()));
@@ -82,10 +64,14 @@ public class LuceneBackupThread extends Thread {
                 try {
                     // the engine commits and snapshots the commit point while copying its files,
                     // indexing goes on meanwhile and the backup is a consistent index.
-                    _engine.backupTo(Paths.get(BACKUP_DIRNAME, dateTxt));
-
-                    logger.debug("A backup of the index was created successfully.");
-                    updateLastBackupTime();
+                    // No backup is made while the index is empty or partial (rebuild required or running).
+                    if (_engine.backupTo(Paths.get(BACKUP_DIRNAME, dateTxt))) {
+                        logger.debug("A backup of the index was created successfully.");
+                        updateLastBackupTime();
+                        removeOldBackups();
+                    } else {
+                        logger.debug("Index backup skipped, the index is being rebuilt.");
+                    }
                 } catch (IOException | RuntimeException e) {
                     logger.error("Unable to backup the index", e);
                 }
@@ -98,6 +84,21 @@ public class LuceneBackupThread extends Thread {
                 }
             } catch (InterruptedException e) {
             }
+        }
+    }
+
+    /**
+     * Keeps the {@link #_maxNumberBackup} most recent backups, only called after a new backup
+     * succeeded so that old backups are never rotated out by a skipped or failed one.
+     */
+    private void removeOldBackups() {
+        String[] backups = BACKUP_HOME.list();
+        if (backups == null) {
+            return;
+        }
+        Arrays.sort(backups, String.CASE_INSENSITIVE_ORDER);
+        for (int x = 0; x < backups.length - _maxNumberBackup; x++) {
+            new PhysicalFile(BACKUP_DIRNAME + "/" + backups[x]).deleteRecursive();
         }
     }
 
