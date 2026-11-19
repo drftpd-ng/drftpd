@@ -122,6 +122,29 @@ public class FileHandle extends InodeHandle implements FileHandleInterface {
     }
 
     /**
+     * Like {@link #getASlaveForFunction()}, but skips the given slaves.
+     *
+     * @param exclude slaves that should not be returned
+     * @return an available slave for the file that is not in <tt>exclude</tt>
+     * @throws FileNotFoundException     if there's no such file, or every available slave was
+     *                                   excluded (they all reported the file as missing)
+     * @throws NoAvailableSlaveException if there's no available slave.
+     */
+    protected RemoteSlave getASlaveForFunction(Set<RemoteSlave> exclude) throws FileNotFoundException,
+            NoAvailableSlaveException {
+        for (RemoteSlave rslave : getAvailableSlaves()) {
+            if (!exclude.contains(rslave)) {
+                return rslave;
+            }
+        }
+        if (!exclude.isEmpty()) {
+            throw new FileNotFoundException(getPath() + " was not found on any available slave");
+        }
+        throw new NoAvailableSlaveException("No slaves are online for file "
+                + this);
+    }
+
+    /**
      * @return the CRC32 of the file.
      * @throws FileNotFoundException     if there's no such file.
      * @throws NoAvailableSlaveException if there's no available slave.
@@ -163,11 +186,22 @@ public class FileHandle extends InodeHandle implements FileHandleInterface {
             FileNotFoundException {
         long checksum = 0L;
         if (getSize() != 0L) {
+            // Slaves that reported the file as missing, so we don't ask them again
+            Set<RemoteSlave> missingOn = new HashSet<>();
             while (true) {
                 synchronized (getInode()) {
-                    RemoteSlave rslave = getASlaveForFunction();
+                    RemoteSlave rslave = getASlaveForFunction(missingOn);
                     try {
                         checksum = rslave.getCheckSumForPath(getPath());
+                    } catch (FileNotFoundException e) {
+                        // The slave does not have the file at this path. This is usually a race with a
+                        // delete, nuke, move or wipe of the file, not a fault of the slave, so we must
+                        // not set the slave offline for it (see #328). Try the next slave instead; if the
+                        // file itself is gone from the VFS, getInode() throws FileNotFoundException.
+                        logger.warn("Slave {} reported {} as missing while getting its checksum: {}",
+                                rslave.getName(), getPath(), e.getMessage());
+                        missingOn.add(rslave);
+                        continue;
                     } catch (IOException e) {
                         rslave.setOffline(e);
                         continue;
