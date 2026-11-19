@@ -32,6 +32,7 @@ import org.drftpd.master.commands.dataconnection.DataConnectionHandler;
 import org.drftpd.master.commands.dir.Dir;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.exceptions.SlaveUnavailableException;
+import org.drftpd.master.event.UploadRevokedEvent;
 import org.drftpd.master.network.BaseFtpConnection;
 import org.drftpd.master.network.Checksum;
 import org.drftpd.master.slavemanagement.RemoteSlave;
@@ -242,6 +243,9 @@ public class ZipscriptPostHook extends SFVTools {
                             file.getPath(), sfvFile.getName(), slaveChecksum, expectedChecksum);
                     response.addComment("checksum mismatch: " + file.getName() + " SLAVE: " + slaveChecksum
                             + " SFV: " + expectedChecksum + " - deleting file");
+                    // The uploader got credits and stats for this file when it was uploaded, take them back
+                    GlobalContext.getEventService().publish(new UploadRevokedEvent(dir, file.getName(),
+                            file.getUsername(), file.getSize(), file.getXfertime(), file.lastModified()));
                     file.deleteUnchecked();
                 } catch (FileNotFoundException e) {
                     // Already deleted, nothing to do
