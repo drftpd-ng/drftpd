@@ -96,9 +96,10 @@
             <version>32.1.3-jre</version>
         </dependency>
         <dependency>
-            <groupId>com.github.nifty-gui</groupId>
-            <artifactId>nifty</artifactId>
-            <version>1.4.3</version>
+            <!-- org.bushe.swing.event (EventBus); previously only available bundled inside nifty -->
+            <groupId>org.bushe</groupId>
+            <artifactId>eventbus</artifactId>
+            <version>1.4</version>
         </dependency>
         <dependency>
             <groupId>org.apache.lucene</groupId>
@@ -109,6 +110,13 @@
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-queries</artifactId>
             <version>3.6.2</version>
+            <exclusions>
+                <!-- Only needed by JakartaRegexpCapabilities; RegexQuery defaults to java.util.regex -->
+                <exclusion>
+                    <groupId>jakarta-regexp</groupId>
+                    <artifactId>jakarta-regexp</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>
