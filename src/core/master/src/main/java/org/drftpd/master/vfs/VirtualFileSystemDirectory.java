@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+
 /**
  * Lowest representation of a directory.<br>
  * This class deals directly w/ the actual VFS and should not be used
@@ -37,7 +38,8 @@ import java.util.TreeMap;
 public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 
     protected long _size = 0;
-    private final transient TreeMap<String, SoftReference<VirtualFileSystemInode>> _files = new CaseInsensitiveTreeMap<String, SoftReference<VirtualFileSystemInode>>();
+    private final transient TreeMap<String, SoftReference<VirtualFileSystemInode>> _files =
+            new CaseInsensitiveTreeMap<String, SoftReference<VirtualFileSystemInode>>();
     private boolean _placeHolderLastModified;
     private Map<String, Integer> _slaveRefCounts = new TreeMap<>();
 
@@ -64,8 +66,7 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
         }
         if (getCreationTime() > inode.getLastModified() ||
                 getCreationTime() > inode.getCreationTime()) {
-            setCreationTime(inode.getCreationTime() > inode.getLastModified() ? inode.getLastModified()
-                    : inode.getCreationTime());
+            setCreationTime(inode.getCreationTime() > inode.getLastModified() ? inode.getLastModified() : inode.getCreationTime());
         }
         addSize(inode.getSize());
         addChildSlaveRefCounts(inode, inode.getSlaveRefCounts());
@@ -89,7 +90,7 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
      * @throws FileExistsException if this directory already exists.
      */
     public synchronized void createDirectory(String name, String user,
-            String group) throws FileExistsException {
+                                             String group) throws FileExistsException {
         createDirectory(name, user, group, false);
     }
 
@@ -103,7 +104,7 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
      * @throws FileExistsException if this directory already exists.
      */
     protected synchronized void createDirectory(String name, String user,
-            String group, boolean placeHolderLastModified) throws FileExistsException {
+                                                String group, boolean placeHolderLastModified) throws FileExistsException {
         if (_files.containsKey(name)) {
             throw new FileExistsException("An object named " + name
                     + " already exists in " + getPath());
@@ -139,7 +140,7 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
      * @return the created directory
      */
     protected VirtualFileSystemDirectory createDirectoryRaw(String name, String user,
-            String group, boolean placeHolderLastModified) {
+                                                            String group, boolean placeHolderLastModified) {
         VirtualFileSystemDirectory inode = new VirtualFileSystemDirectory(user,
                 group, placeHolderLastModified);
         inode.setName(name);
@@ -162,7 +163,7 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
      * @throws FileExistsException if this file already exists.
      */
     public synchronized void createFile(String name, String user, String group,
-            String initialSlave) throws FileExistsException {
+                                        String initialSlave) throws FileExistsException {
         createFile(name, user, group, initialSlave, 0L, false, 0L);
     }
 
@@ -177,7 +178,7 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
      * @throws FileExistsException if this file already exists.
      */
     public synchronized void createFile(String name, String user, String group,
-            String initialSlave, long size) throws FileExistsException {
+                                        String initialSlave, long size) throws FileExistsException {
         createFile(name, user, group, initialSlave, 0L, false, size);
     }
 
@@ -194,7 +195,7 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
      * @throws FileExistsException if this file already exists.
      */
     protected synchronized void createFile(String name, String user, String group,
-            String initialSlave, long lastModified, boolean setLastModified, long size) throws FileExistsException {
+                                           String initialSlave, long lastModified, boolean setLastModified, long size) throws FileExistsException {
         if (_files.containsKey(name)) {
             throw new FileExistsException(name + " already exists");
         }
@@ -227,7 +228,7 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
      * @throws FileExistsException if this link already exists.
      */
     public synchronized void createLink(String name, String target,
-            String user, String group) throws FileExistsException {
+                                        String user, String group) throws FileExistsException {
         if (_files.containsKey(name)) {
             throw new FileExistsException(name + " already exists");
         }
@@ -267,8 +268,7 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
             try {
                 inode = getInodeByName(inodeName);
             } catch (FileNotFoundException e) {
-                // This entry is already removed from the REAL _files Set, but we're iterating
-                // over a copy
+                // This entry is already removed from the REAL _files Set, but we're iterating over a copy
                 continue;
             }
             if (inode.isDirectory()) {
@@ -314,8 +314,7 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
                 inode = sf.get();
             }
             if (inode == null) {
-                // The next line is so that we load the file from disk using the casing of the
-                // name
+                // The next line is so that we load the file from disk using the casing of the name
                 // stored against the parent directory not the casing passed by the caller
                 name = _files.ceilingKey(name);
                 inode = getVFS().loadInode(
@@ -408,21 +407,72 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
     }
 
     public void setSlaveRefCounts(Map<String, Integer> slaveRefCounts) {
-        _slaveRefCounts = slaveRefCounts;
+        Map<String, Integer> normalized = normalizeSlaveRefCounts(slaveRefCounts);
+        synchronized (_slaveRefCounts) {
+            _slaveRefCounts.clear();
+            _slaveRefCounts.putAll(normalized);
+        }
+    }
+
+    @Override
+    public void inodeLoadCompleted() {
+        // Directories saved before slave ref counts were plain Integers store them as AtomicInteger,
+        // and json-io may also read numbers back as Long: convert everything to Integer once loaded.
+        synchronized (_slaveRefCounts) {
+            Map<String, Integer> normalized = normalizeSlaveRefCounts(_slaveRefCounts);
+            _slaveRefCounts.clear();
+            _slaveRefCounts.putAll(normalized);
+        }
+        super.inodeLoadCompleted();
+    }
+
+    /**
+     * Returns a copy of the given counts with every value converted to Integer, whatever Number type
+     * it was deserialized as. Entries that are not positive are dropped, as a slave cannot hold a
+     * negative or zero number of files.
+     */
+    static Map<String, Integer> normalizeSlaveRefCounts(Map<String, ?> counts) {
+        Map<String, Integer> normalized = new TreeMap<>();
+        if (counts == null) {
+            return normalized;
+        }
+        for (Map.Entry<String, ?> entry : counts.entrySet()) {
+            Object value = entry.getValue();
+            if (!(value instanceof Number)) {
+                logger.warn("Ignoring slave ref count for slave {} with unexpected value {}", entry.getKey(), value);
+                continue;
+            }
+            int count = ((Number) value).intValue();
+            if (count > 0) {
+                normalized.put(entry.getKey(), count);
+            } else if (count < 0) {
+                logger.warn("Ignoring negative slave ref count {} for slave {}", count, entry.getKey());
+            }
+        }
+        return normalized;
+    }
+
+    /**
+     * Adds delta to the count for slave, removing the entry when it reaches 0.
+     * Must be called while holding the _slaveRefCounts lock.
+     */
+    private void adjustSlaveRefCount(String slave, int delta) {
+        int newCount = _slaveRefCounts.getOrDefault(slave, 0) + delta;
+        if (newCount > 0) {
+            _slaveRefCounts.put(slave, newCount);
+        } else {
+            if (newCount < 0) {
+                logger.warn("Slave ref count for slave {} on {} went negative ({}), resetting it to 0", slave, getPath(), newCount);
+            }
+            _slaveRefCounts.remove(slave);
+        }
     }
 
     protected void addChildSlaveRefCounts(VirtualFileSystemInode childInode, Map<String, Integer> childRefCounts) {
         if (!childRefCounts.isEmpty()) {
-            for (Map.Entry<String, Integer> refEntry : childRefCounts.entrySet()) {
-                synchronized (_slaveRefCounts) {
-                    String slave = refEntry.getKey();
-                    int countToAdd = refEntry.getValue();
-                    Integer currentCount = _slaveRefCounts.get(slave);
-                    if (currentCount == null) {
-                        _slaveRefCounts.put(slave, countToAdd);
-                    } else {
-                        _slaveRefCounts.put(slave, currentCount + countToAdd);
-                    }
+            synchronized (_slaveRefCounts) {
+                for (Map.Entry<String, Integer> refEntry : childRefCounts.entrySet()) {
+                    adjustSlaveRefCount(refEntry.getKey(), refEntry.getValue());
                 }
             }
             if (!isRoot()) {
@@ -434,27 +484,15 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 
     protected void removeChildSlaveRefCounts(VirtualFileSystemInode childInode, Map<String, Integer> childRefCounts) {
         if (!childRefCounts.isEmpty()) {
-            for (Map.Entry<String, Integer> refEntry : childRefCounts.entrySet()) {
-                synchronized (_slaveRefCounts) {
-                    String slave = refEntry.getKey();
-                    int countToRemove = refEntry.getValue();
-                    Integer currentCount = _slaveRefCounts.get(slave);
-
-                    if (currentCount == null) {
+            synchronized (_slaveRefCounts) {
+                for (Map.Entry<String, Integer> refEntry : childRefCounts.entrySet()) {
+                    if (!_slaveRefCounts.containsKey(refEntry.getKey())) {
                         // Shouldn't happen since we're removing a child, therefore we should have
                         // counts for the slaves referenced by the child
-                        logger.error(
-                                "Removing child {} from {} child contained a count of {} for slave {} but the slave has no count against this directory",
-                                childInode.getPath(), getPath(), countToRemove, slave);
+                        logger.error("Removing child {} from {} child contained a count of {} for slave {} but the slave has no count against this directory", childInode.getPath(), getPath(), refEntry.getValue(), refEntry.getKey());
                         continue;
                     }
-
-                    int newCount = currentCount - countToRemove;
-                    if (newCount <= 0) {
-                        _slaveRefCounts.remove(slave);
-                    } else {
-                        _slaveRefCounts.put(slave, newCount);
-                    }
+                    adjustSlaveRefCount(refEntry.getKey(), -refEntry.getValue());
                 }
             }
             if (!isRoot()) {
@@ -466,12 +504,7 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 
     protected void incrementSlaveRefCount(String slave) {
         synchronized (_slaveRefCounts) {
-            Integer currentCount = _slaveRefCounts.get(slave);
-            if (currentCount == null) {
-                _slaveRefCounts.put(slave, 1);
-            } else {
-                _slaveRefCounts.put(slave, currentCount + 1);
-            }
+            adjustSlaveRefCount(slave, 1);
         }
         if (!isRoot()) {
             getParent().incrementSlaveRefCount(slave);
@@ -481,18 +514,10 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 
     protected void decrementSlaveRefCount(String slave) {
         synchronized (_slaveRefCounts) {
-            Integer currentCount = _slaveRefCounts.get(slave);
-
-            if (currentCount == null) {
-                // Should be error, but keep logic safe
-                _slaveRefCounts.put(slave, 0);
+            if (_slaveRefCounts.containsKey(slave)) {
+                adjustSlaveRefCount(slave, -1);
             } else {
-                int newCount = currentCount - 1;
-                if (newCount <= 0) {
-                    _slaveRefCounts.remove(slave);
-                } else {
-                    _slaveRefCounts.put(slave, newCount);
-                }
+                logger.error("Decrementing ref count for slave {} on {} but the slave has no count against this directory", slave, getPath());
             }
         }
         if (!isRoot()) {
@@ -506,11 +531,9 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
     }
 
     protected int getRefCountForSlave(String slave) {
-        Integer slaveCount = _slaveRefCounts.get(slave);
-        if (slaveCount == null) {
-            return 0;
+        synchronized (_slaveRefCounts) {
+            return _slaveRefCounts.getOrDefault(slave, 0);
         }
-        return slaveCount;
     }
 
     protected void recalcSlaveRefCounts() {
@@ -525,16 +548,9 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
                 }
             }
             try {
-                Map<String, Integer> inodeCounts = inode.getSlaveRefCounts();
-                for (String slave : inodeCounts.keySet()) {
-                    Integer currCount = updCounts.get(slave);
-                    int countToAdd = inodeCounts.get(slave);
-
-                    if (currCount == null) {
-                        updCounts.put(slave, countToAdd);
-                    } else {
-                        updCounts.put(slave, currCount + countToAdd);
-                    }
+                // Integers are immutable, so a child's counts can no longer be modified through this map
+                for (Map.Entry<String, Integer> entry : inode.getSlaveRefCounts().entrySet()) {
+                    updCounts.merge(entry.getKey(), entry.getValue(), Integer::sum);
                 }
             } catch (FileNotFoundException e) {
                 // Inode has been deleted, skip it

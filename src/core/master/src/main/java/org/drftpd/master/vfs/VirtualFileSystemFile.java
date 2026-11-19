@@ -26,7 +26,6 @@ import org.drftpd.slave.exceptions.ObjectNotFoundException;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Lowest representation of a File object.
@@ -336,11 +335,11 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
         }
     }
 
-    protected Map<String, AtomicInteger> getSlaveRefCounts() {
-        Map<String, AtomicInteger> slaveRefCounts = new TreeMap<>();
+    protected Map<String, Integer> getSlaveRefCounts() {
+        Map<String, Integer> slaveRefCounts = new TreeMap<>();
         synchronized (_slavesLock) {
             for (String slave : _slaves) {
-                slaveRefCounts.put(slave, new AtomicInteger(1));
+                slaveRefCounts.put(slave, 1);
             }
         }
         return slaveRefCounts;

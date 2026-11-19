@@ -41,9 +41,7 @@ public class VirtualFileSystemLink extends VirtualFileSystemInode {
         commit();
     }
 
-    /*
-     * (non-Javadoc)
-     * 
+    /* (non-Javadoc)
      * @see org.drftpd.master.vfs.VirtualFileSystemInode#getSize()
      */
     @Override
@@ -51,9 +49,7 @@ public class VirtualFileSystemLink extends VirtualFileSystemInode {
         return 0L;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
+    /* (non-Javadoc)
      * @see org.drftpd.master.vfs.VirtualFileSystemInode#setSize(long)
      */
     @Override

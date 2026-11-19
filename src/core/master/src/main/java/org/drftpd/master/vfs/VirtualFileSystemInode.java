@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.TreeMap;
 
+
 /**
  * VirtualFileSystemInode is an abstract class used to handle basic functions
  * of files/dirs/links and to keep an hierarchy/organization of the FS.
@@ -76,7 +77,7 @@ public abstract class VirtualFileSystemInode implements Commitable {
      * When called, this method will save the Inode data to the disk.
      */
     public void commit() {
-        // logger.debug("Committing " + getPath());
+        //logger.debug("Committing " + getPath());
         CommitManager.getCommitManager().add(this);
     }
 
@@ -277,13 +278,11 @@ public abstract class VirtualFileSystemInode implements Commitable {
 
         VirtualFileSystemDirectory destinationDir = null;
         try {
-            destinationDir = (VirtualFileSystemDirectory) getVFS()
-                    .getInodeByPath(VirtualFileSystem.stripLast(destination));
+            destinationDir = (VirtualFileSystemDirectory) getVFS().getInodeByPath(VirtualFileSystem.stripLast(destination));
         } catch (FileNotFoundException e) {
             throw new RuntimeException("Error in logic, this should not happen", e);
         }
-        // Ensure source/destination is flushed to ondisk VFS in case either is newly
-        // created
+        // Ensure source/destination is flushed to ondisk VFS in case either is newly created
         CommitManager.getCommitManager().flushImmediate(destinationDir);
         CommitManager.getCommitManager().flushImmediate(this);
         String fileString = "rename(" + this + ")";
