@@ -308,20 +308,75 @@ public class EncryptedBeanUser extends BeanUser {
         // TODO: if argon2 is the default, check Argon2PasswordEncoder.upgradeEncoding and rehash if necessary
         if (result && (getEncryption() != _um.getPasscrypt())) {
             logger.debug("Converting Password To Current Encryption");
-            int previousEncryption = getEncryption();
-            setEncryption(EncryptedBeanUserManager.PASSCRYPT_DEFAULT);
+            int newEncryption = _um.getPasscrypt();
+            String newPassword = null;
             try {
-                this.setPassword(password);
-            } catch (IllegalArgumentException e) {
-                // e.g. bcrypt refuses passwords longer than 72 bytes; keep the existing hash
-                logger.warn("Unable to convert password of user {} to current encryption: {}", getName(), e.getMessage());
-                setEncryption(previousEncryption);
-                return result;
+                newPassword = hashWith(newEncryption, password);
+            } catch (UnsupportedOperationException e) {
+                logger.debug("Converting Password Failed", e);
             }
-            super.commit();
+            if (newPassword != null) {
+                // Hash and encryption type are set together, only once the new hash is known to be good
+                super.setPassword(newPassword);
+                setEncryption(newEncryption);
+                this.commit();
+            } else {
+                logger.warn("Could not convert password of user {} to the current encryption, keeping the old one", getName());
+            }
         }
 
         return result;
+    }
+
+    /*
+     * Hashes the password with the given encryption type without touching any state.
+     * Returns the form to store, or null if that would be too short.
+     * Throws UnsupportedOperationException for an unknown encryption type.
+     */
+    private String hashWith(int scheme, String password) {
+        String pass;
+        switch (scheme) {
+            case EncryptedBeanUserManager.PASSCRYPT_NONE -> {
+                pass = password;
+            }
+            case EncryptedBeanUserManager.PASSCRYPT_MD2 -> {
+                pass = Encrypt(password, "MD2");
+            }
+            case EncryptedBeanUserManager.PASSCRYPT_MD5 -> {
+                pass = Encrypt(password, "MD5");
+            }
+            case EncryptedBeanUserManager.PASSCRYPT_SHA1 -> {
+                pass = Encrypt(password, "SHA-1");
+            }
+            case EncryptedBeanUserManager.PASSCRYPT_SHA256 -> {
+                pass = Encrypt(password, "SHA-256");
+            }
+            case EncryptedBeanUserManager.PASSCRYPT_SHA384 -> {
+                pass = Encrypt(password, "SHA-384");
+            }
+            case EncryptedBeanUserManager.PASSCRYPT_SHA512 -> {
+                pass = Encrypt(password, "SHA-512");
+            }
+            case EncryptedBeanUserManager.PASSCRYPT_BCRYPT -> {
+                pass = BCrypt.hashpw(password, BCrypt.gensalt(_workload));
+            }
+            case EncryptedBeanUserManager.PASSCRYPT_GLFTPD -> {
+                pass = glftpdPasswordEncode(password);
+            }
+            case EncryptedBeanUserManager.PASSCRYPT_ARGON2 -> {
+                pass = getArgon2PasswordEncoder().encode(password);
+            }
+            default -> {
+                logger.error("Failed to set password, unknown password hash format");
+                throw new UnsupportedOperationException("Failed to set password, unknown password hash format");
+            }
+        }
+
+        if (pass != null && pass.length() < 2) {
+            logger.debug("Failed To Set Password, Length Too Short");
+            return null;
+        }
+        return pass;
     }
 
     /*
@@ -331,52 +386,12 @@ public class EncryptedBeanUser extends BeanUser {
     @Override
     public void setPassword(String password) {
         if (((getEncryption() == EncryptedBeanUserManager.PASSCRYPT_NONE) || (!password.equalsIgnoreCase(getPassword()))) && (_um != null)) {
-            String pass;
             int encryptionMethod = _um.getPasscrypt();
-            switch (encryptionMethod) {
-                case EncryptedBeanUserManager.PASSCRYPT_NONE -> {
-                    pass = password;
-                }
-                case EncryptedBeanUserManager.PASSCRYPT_MD2 -> {
-                    pass = Encrypt(password, "MD2");
-                }
-                case EncryptedBeanUserManager.PASSCRYPT_MD5 -> {
-                    pass = Encrypt(password, "MD5");
-                }
-                case EncryptedBeanUserManager.PASSCRYPT_SHA1 -> {
-                    pass = Encrypt(password, "SHA-1");
-                }
-                case EncryptedBeanUserManager.PASSCRYPT_SHA256 -> {
-                    pass = Encrypt(password, "SHA-256");
-                }
-                case EncryptedBeanUserManager.PASSCRYPT_SHA384 -> {
-                    pass = Encrypt(password, "SHA-384");
-                }
-                case EncryptedBeanUserManager.PASSCRYPT_SHA512 -> {
-                    pass = Encrypt(password, "SHA-512");
-                }
-                case EncryptedBeanUserManager.PASSCRYPT_BCRYPT -> {
-                    pass = BCrypt.hashpw(password, BCrypt.gensalt(_workload));
-                }
-                case EncryptedBeanUserManager.PASSCRYPT_GLFTPD -> {
-                    pass = glftpdPasswordEncode(password);
-                }
-                case EncryptedBeanUserManager.PASSCRYPT_ARGON2 -> {
-                    pass = getArgon2PasswordEncoder().encode(password);
-                }
-                default -> {
-                    logger.error("Failed to set password, unknown password hash format");
-                    throw new UnsupportedOperationException("Failed to set password, unknown password hash format");
-                }
-            }
+            String pass = hashWith(encryptionMethod, password);
 
             if (pass != null) {
-                if (pass.length() < 2) {
-                    logger.debug("Failed To Set Password, Length Too Short");
-                } else {
-                    setEncryption(encryptionMethod);
-                    super.setPassword(pass);
-                }
+                setEncryption(encryptionMethod);
+                super.setPassword(pass);
             }
         } else {
             super.setPassword(password);
