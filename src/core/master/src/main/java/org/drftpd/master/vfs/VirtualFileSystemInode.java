@@ -29,7 +29,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.concurrent.atomic.AtomicInteger;
 
 
 /**
@@ -385,7 +384,7 @@ public abstract class VirtualFileSystemInode implements Commitable {
         return ((VirtualFileSystemInode) obj).getPath().equalsIgnoreCase(getPath());
     }
 
-    protected abstract Map<String, AtomicInteger> getSlaveRefCounts();
+    protected abstract Map<String, Integer> getSlaveRefCounts();
 
     /**
      * Publish a refresh notification for this inode
