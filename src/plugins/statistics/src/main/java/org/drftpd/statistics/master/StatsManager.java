@@ -81,9 +81,20 @@ public class StatsManager implements PluginInterface {
     }
 
     public float getCreditLossRatio(DirectoryHandle dir, User user) {
-        float defaultRatio = (user.getKeyedMap().getObjectFloat(UserManagement.RATIO) == 0) ? 0 : 1;
+        float userRatio = user.getKeyedMap().getObjectFloat(UserManagement.RATIO);
+        if (isLeech(userRatio)) {
+            // Leech (ratio 0) users have unlimited credits: a creditloss line in perms.conf must not
+            // make them pay for downloads, or every download is denied with "Not enough credits"
+            return 0;
+        }
+        return getRatioPathPerm(CREDITLOSS, dir, user, 1);
+    }
 
-        return getRatioPathPerm(CREDITLOSS, dir, user, defaultRatio);
+    /**
+     * Whether a user ratio means "leech": unlimited downloads, never charged credits.
+     */
+    static boolean isLeech(float userRatio) {
+        return userRatio == 0;
     }
 
     public float getCreditCheckRatio(DirectoryHandle dir, User user) {
