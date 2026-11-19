@@ -1,31 +1,44 @@
 package org.drftpd.zipscript.slave.mp3;
 
-import org.drftpd.zipscript.common.mp3.MP3Info;
 import org.junit.jupiter.api.Test;
-import java.io.File;
-import java.io.FileWriter;
+import org.junit.jupiter.api.io.TempDir;
+
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ZipscriptMP3HandlerTest {
 
-    @Test
-    public void testInvalidMP3ReturnsNull() throws IOException {
-        // Create a temporary file that is definitely not an MP3
-        File tempFile = File.createTempFile("test-invalid", ".mp3");
-        try (FileWriter writer = new FileWriter(tempFile)) {
-            writer.write("This is not an MP3 file content.");
-        }
-        tempFile.deleteOnExit();
+    @TempDir
+    Path tmp;
 
-        // Create instance of handler (we can pass null for central since we are testing
-        // isolated method)
+    @Test
+    public void parserReportsInvalidMp3WithDedicatedException() throws IOException {
+        Path file = tmp.resolve("not-an.mp3");
+        Files.writeString(file, "This is not an MP3 file content.");
+
+        assertThrows(InvalidMP3Exception.class, () -> new MP3Parser(file.toFile()).getMP3Info());
+    }
+
+    @Test
+    public void invalidMp3ReturnsNull() throws IOException {
+        Path file = tmp.resolve("not-an.mp3");
+        Files.writeString(file, "This is not an MP3 file content.");
+
+        // The handler is not wired to a slave here, only the file-based method is tested
         ZipscriptMP3Handler handler = new ZipscriptMP3Handler(null);
 
-        // Call the package-private method with the file
-        MP3Info result = handler.getMP3InfoFromFile(tempFile);
+        assertNull(handler.getMP3InfoFromFile(file.toFile()));
+    }
 
-        // Verify it returns null instead of throwing IOException
-        assertNull(result, "Should return null for invalid MP3 file");
+    @Test
+    public void otherIOErrorsArePropagated() {
+        ZipscriptMP3Handler handler = new ZipscriptMP3Handler(null);
+
+        assertThrows(FileNotFoundException.class,
+                () -> handler.getMP3InfoFromFile(tmp.resolve("missing.mp3").toFile()));
     }
 }

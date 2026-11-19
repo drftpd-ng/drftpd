@@ -26,6 +26,7 @@ import org.drftpd.slave.protocol.SlaveProtocolCentral;
 import org.drftpd.zipscript.common.mp3.AsyncResponseMP3Info;
 import org.drftpd.zipscript.common.mp3.MP3Info;
 
+import java.io.File;
 import java.io.IOException;
 
 /**
@@ -58,15 +59,13 @@ public class ZipscriptMP3Handler extends AbstractHandler {
         return getMP3InfoFromFile(slave.getRoots().getFile(path));
     }
 
-    MP3Info getMP3InfoFromFile(java.io.File file) throws IOException {
+    MP3Info getMP3InfoFromFile(File file) throws IOException {
         MP3Parser mp3parser = new MP3Parser(file);
         try {
             return mp3parser.getMP3Info();
-        } catch (IOException e) {
-            if (e.getMessage() != null && e.getMessage().endsWith("is not a valid MP3 file")) {
-                return null;
-            }
-            throw e;
+        } catch (InvalidMP3Exception e) {
+            // Not an MP3: the master treats a null MP3Info as "no MP3 info", no need to send an error back
+            return null;
         }
     }
 }
