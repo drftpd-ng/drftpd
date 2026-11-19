@@ -432,4 +432,25 @@ public abstract class ExtendedTimedStats extends AbstractTimedStats {
         _uploadedMilliSeconds[P_MONTH] += millis;
     }
 
+    /**
+     * Removes one uploaded file from the stats of a single period, e.g. when the file is deleted.
+     * <p>
+     * Each counter is reduced by at most what it holds, so it never goes below zero. Without this,
+     * deleting a file whose upload was never counted in a period (it was uploaded before the period
+     * was reset, or not counted at all) drove the counters negative, which broke e.g. the average
+     * speed shown at login (#345).
+     *
+     * @param p      the period, one of {@link #P_ALL}, {@link #P_MONTH}, {@link #P_WEEK}, {@link #P_DAY}
+     * @param bytes  size of the file
+     * @param millis transfer time of the file
+     */
+    public void removeUploadForPeriod(int p, long bytes, long millis) {
+        if (p < 0 || p >= P_SIZE) {
+            throw new IllegalArgumentException("Invalid period " + p);
+        }
+        _uploadedBytes[p] = Math.max(0L, _uploadedBytes[p] - Math.max(0L, bytes));
+        _uploadedFiles[p] = Math.max(0, _uploadedFiles[p] - 1);
+        _uploadedMilliSeconds[p] = Math.max(0L, _uploadedMilliSeconds[p] - Math.max(0L, millis));
+    }
+
 }
