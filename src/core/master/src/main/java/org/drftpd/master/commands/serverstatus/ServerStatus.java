@@ -208,7 +208,10 @@ public class ServerStatus extends CommandInterface {
 
             if (arg.equals("network") || isAll) {
                 Properties props = GlobalContext.getConfig().getMainProperties();
-                env.put("net.bindip", props.getProperty("master.ip", "0.0.0.0"));
+                // The bind address is only shown on FTP: IRC output can go to a public channel
+                if (session instanceof BaseFtpConnection) {
+                    env.put("net.bindip", props.getProperty("master.ip", "0.0.0.0"));
+                }
                 env.put("net.port", props.getProperty("master.port", "?"));
 
                 List<RemoteSlave> slaves = GlobalContext.getGlobalContext().getSlaveManager().getSlaves();
