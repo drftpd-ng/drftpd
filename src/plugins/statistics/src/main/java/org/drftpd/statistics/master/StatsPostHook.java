@@ -102,23 +102,7 @@ public class StatsPostHook {
         long xferTime = response.getObjectLong(Dir.XFERTIME);
 
         try {
-            DirectoryHandle dir = request.getCurrentDirectory();
-            User user = GlobalContext.getGlobalContext().getUserManager().getUserByName(userName);
-
-            // updating credits
-            float ratio = StatsManager.getStatsManager().getCreditCheckRatio(dir, user);
-            long creditsCheck = (long) ratio * fileSize;
-            user.updateCredits(-creditsCheck);
-
-
-            // updating stats
-            if (!GlobalContext.getConfig().checkPathPermission("nostatsup", user, dir)) {
-                user.updateUploadedBytes(-fileSize);
-                user.updateUploadedFiles(-1);
-                user.updateUploadedTime(-xferTime);
-            }
-
-            user.commit();
+            StatsManager.getStatsManager().revokeUpload(request.getCurrentDirectory(), userName, fileSize, xferTime);
         } catch (UserFileException e) {
             response.addComment("Error updating credits & stats: " + e.getMessage());
         } catch (NoSuchUserException e) {

@@ -25,10 +25,13 @@ import org.drftpd.common.dynamicdata.Key;
 import org.drftpd.common.extensibility.PluginInterface;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.commands.usermanagement.UserManagement;
+import org.drftpd.master.event.UploadRevokedEvent;
 import org.drftpd.master.event.UserEvent;
 import org.drftpd.master.permissions.stats.CreditLimitPathPermission;
 import org.drftpd.master.permissions.stats.RatioPathPermission;
+import org.drftpd.master.usermanager.NoSuchUserException;
 import org.drftpd.master.usermanager.User;
+import org.drftpd.master.usermanager.UserFileException;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.statistics.master.metadata.StatsUserData;
 
@@ -78,6 +81,50 @@ public class StatsManager implements PluginInterface {
             u.getKeyedMap().setObject(UserManagement.LASTSEEN, new Date(event.getTime()));
             u.getKeyedMap().incrementInt(StatsUserData.LOGINS);
         }
+    }
+
+    /**
+     * The site removed an upload on the uploader's behalf (e.g. zipscript deleted a file that
+     * doesn't match an .sfv uploaded after it): take back the credits and upload stats, the same
+     * as when the file is deleted with DELE.
+     */
+    @EventSubscriber
+    public void onUploadRevokedEvent(UploadRevokedEvent event) {
+        try {
+            revokeUpload(event.getDirectory(), event.getUsername(), event.getSize(), event.getXferTime());
+        } catch (NoSuchUserException e) {
+            logger.debug("User {} does not exist, cannot remove credits for {}", event.getUsername(),
+                    event.getFileName());
+        } catch (UserFileException e) {
+            logger.warn("Error updating credits & stats of {} for {}", event.getUsername(), event.getFileName(), e);
+        }
+    }
+
+    /**
+     * Takes back the credits and upload stats a user got for uploading a file that is now removed.
+     *
+     * @param dir      the directory the file was in
+     * @param userName the user who uploaded the file
+     * @param fileSize size of the file
+     * @param xferTime transfer time of the upload
+     */
+    public void revokeUpload(DirectoryHandle dir, String userName, long fileSize, long xferTime)
+            throws NoSuchUserException, UserFileException {
+        User user = GlobalContext.getGlobalContext().getUserManager().getUserByName(userName);
+
+        // updating credits
+        float ratio = getCreditCheckRatio(dir, user);
+        long creditsCheck = (long) ratio * fileSize;
+        user.updateCredits(-creditsCheck);
+
+        // updating stats
+        if (!GlobalContext.getConfig().checkPathPermission("nostatsup", user, dir)) {
+            user.updateUploadedBytes(-fileSize);
+            user.updateUploadedFiles(-1);
+            user.updateUploadedTime(-xferTime);
+        }
+
+        user.commit();
     }
 
     public float getCreditLossRatio(DirectoryHandle dir, User user) {
