@@ -134,11 +134,13 @@ public class GlobalContext {
         LineNumberReader reader = null;
         try {
             Path targetPath = new File(configurationPath).toPath();
-            Stream<Path> pathStream = Files.walk(targetPath);
-            List<Path> confFiles = pathStream.filter(f -> {
-                String name = f.getFileName().toString();
-                return name.endsWith(".conf") || name.endsWith(".conf.dist");
-            }).collect(Collectors.toList());
+            List<Path> confFiles;
+            try (Stream<Path> pathStream = Files.walk(targetPath)) {
+                confFiles = pathStream.filter(f -> {
+                    String name = f.getFileName().toString();
+                    return name.endsWith(".conf") || name.endsWith(".conf.dist");
+                }).collect(Collectors.toList());
+            }
 
             for (Path confFile : confFiles) {
                 // If it is a dist file check if the real config exists, if so skip the dist
@@ -165,7 +167,7 @@ public class GlobalContext {
                             // internal loop
                             String cmdName = curLine.substring(0, curLine.lastIndexOf("{") - 1).toLowerCase();
                             if (commandsConfig.containsKey(cmdName)) {
-                                throw new FatalException(cmdName + " is already mapped on line " + reader.getLineNumber());
+                                throw new FatalException(cmdName + " is already mapped on line " + reader.getLineNumber() + " of " + confFile);
                             }
                             Properties p = getPropertiesUntilClosed(reader);
                             logger.trace("Adding command {}", cmdName);
@@ -176,6 +178,7 @@ public class GlobalContext {
                         }
                     }
                 }
+                reader.close();
             }
             // done reading for new commands, must be finished
         } catch (IOException e) {
@@ -309,7 +312,8 @@ public class GlobalContext {
             while (!allResolve) {
                 for (Class<? extends PluginInterface> plugin : plugins) {
                     PluginDependencies annotation = plugin.getAnnotation(PluginDependencies.class);
-                    List<Class<? extends PluginInterface>> dependencies = annotation != null ? Arrays.asList(annotation.refs()) : new ArrayList<>();
+                    List<Class<? extends PluginInterface>> dependencies = annotation != null ?
+                            Arrays.asList(annotation.refs()) : new ArrayList<>();
                     List<String> depNames = dependencies.stream().map(Class::getName).collect(Collectors.toList());
                     boolean alreadyInstantiate = alreadyResolved.contains(plugin.getName());
                     if (alreadyResolved.containsAll(depNames) && !alreadyInstantiate) {
