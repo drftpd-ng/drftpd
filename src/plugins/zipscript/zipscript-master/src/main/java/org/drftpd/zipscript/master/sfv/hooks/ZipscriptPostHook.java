@@ -111,8 +111,13 @@ public class ZipscriptPostHook extends SFVTools {
             } catch (NoAvailableSlaveException | SlaveUnavailableException e1) {
                 response.addComment(
                         "slave with .sfv offline, checksum not verified");
+            } catch (FileNotFoundException e1) {
+                // No sfv in this directory, nothing to verify against
             } catch (IOException e1) {
-                //continue without verification
+                // continue without verification, but say why
+                logger.warn("Unable to read SFV to verify checksum of {}", transferFile.getPath(), e1);
+                response.addComment("zipscript - SFV unavailable, IO error: " + e1.getMessage()
+                        + ", checksum not verified");
             }
         } else { // slave has disabled download crc
 
@@ -203,6 +208,7 @@ public class ZipscriptPostHook extends SFVTools {
             } catch (FileNotFoundException e) {
                 // No sfv found in parent dir for this file, skip check
             } catch (IOException e) {
+                logger.warn("Unable to read SFV to verify checksum of {}", transferFile.getPath(), e);
                 response.addComment(
                         "zipscript - SFV unavailable, IO error: " +
                                 e.getMessage());
@@ -346,7 +352,8 @@ public class ZipscriptPostHook extends SFVTools {
             response.addComment(ReplacerUtils.jprintf(raceTextBuilder.toString(), env));
 
         } catch (SlaveUnavailableException | NoAvailableSlaveException | IOException e) {
-            //Error fetching SFV, ignore
+            // Error fetching SFV, ignore
+            logger.debug("Unable to show race stats for {}: {}", dir.getPath(), e.getMessage());
         }
     }
 }
