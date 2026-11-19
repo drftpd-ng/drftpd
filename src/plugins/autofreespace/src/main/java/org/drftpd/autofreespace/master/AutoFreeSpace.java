@@ -370,9 +370,8 @@ public class AutoFreeSpace implements PluginInterface {
             InodeHandle oldest = null;
 
             Collection<AutoFreeSpaceSettings.Section> entries = AutoFreeSpaceSettings.getSettings().getSections().values();
-            if (entries.isEmpty() && AutoFreeSpaceSettings.getSettings().getMode().equals(AutoFreeSpaceSettings.MODE_SPACE)) {
-                // Space mode does not need per-section configuration (wipeAfter is not used):
-                // without any entry, consider every section
+            if (AutoFreeSpaceSettings.getSettings().getWipeAllSections()) {
+                // Opt-in (wipe.all.sections=true, space mode, no entry written): consider every section
                 for (SectionInterface si : GlobalContext.getGlobalContext().getSectionManager().getSections()) {
                     DirectoryHandle baseDir = si.getBaseDirectory();
                     if (baseDir.isRoot()) {

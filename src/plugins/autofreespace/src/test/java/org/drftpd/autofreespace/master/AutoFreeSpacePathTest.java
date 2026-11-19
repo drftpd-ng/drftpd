@@ -82,4 +82,38 @@ public class AutoFreeSpacePathTest {
     public void wipeAfterIsOptionalOutsideDateMode() {
         assertEquals(0L, AutoFreeSpaceSettings.parseWipeAfter(props(), 1, AutoFreeSpaceSettings.MODE_SPACE));
     }
+
+    private static boolean allSections(boolean wipeAllSections, Properties p) {
+        return AutoFreeSpaceSettings.useAllSections(AutoFreeSpaceSettings.MODE_SPACE, wipeAllSections,
+                AutoFreeSpaceSettings.countEntries(p));
+    }
+
+    @Test
+    public void noEntryDoesNotWipeAllSectionsByDefault() {
+        assertFalse(allSections(false, props()));
+    }
+
+    @Test
+    public void noEntryWipesAllSectionsWhenEnabled() {
+        assertTrue(allSections(true, props()));
+        // Only in space mode
+        assertFalse(AutoFreeSpaceSettings.useAllSections(AutoFreeSpaceSettings.MODE_DATE, true, 0));
+    }
+
+    @Test
+    public void unknownSectionNameNeverWidensToAllSections() {
+        // A typo in the only section name leaves no valid entry, which used to fall back to every section.
+        Properties p = props("1.section", "MP3Z");
+        assertTrue(AutoFreeSpaceSettings.parseEntries(p, AutoFreeSpaceSettings.MODE_SPACE, "MP3"::equalsIgnoreCase).isEmpty());
+        assertEquals(1, AutoFreeSpaceSettings.countEntries(p));
+        assertFalse(allSections(true, p));
+    }
+
+    @Test
+    public void knownSectionNameIsLoaded() {
+        Properties p = props("1.section", "MP3", "2.path", "/TV/*");
+        assertEquals(Set.of("MP3", AutoFreeSpaceSettings.PATH_KEY_PREFIX + "/TV/*"),
+                AutoFreeSpaceSettings.parseEntries(p, AutoFreeSpaceSettings.MODE_SPACE, "MP3"::equalsIgnoreCase).keySet());
+        assertFalse(allSections(true, p));
+    }
 }
