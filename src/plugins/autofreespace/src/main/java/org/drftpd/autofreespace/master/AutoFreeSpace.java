@@ -369,8 +369,22 @@ public class AutoFreeSpace implements PluginInterface {
         private InodeHandle getOldestRelease(RemoteSlave slave) {
             InodeHandle oldest = null;
 
+            Collection<AutoFreeSpaceSettings.Section> entries = AutoFreeSpaceSettings.getSettings().getSections().values();
+            if (entries.isEmpty() && AutoFreeSpaceSettings.getSettings().getMode().equals(AutoFreeSpaceSettings.MODE_SPACE)) {
+                // Space mode does not need per-section configuration (wipeAfter is not used):
+                // without any entry, consider every section
+                for (SectionInterface si : GlobalContext.getGlobalContext().getSectionManager().getSections()) {
+                    DirectoryHandle baseDir = si.getBaseDirectory();
+                    if (baseDir.isRoot()) {
+                        continue; // never treat the top level directories themselves as releases
+                    }
+                    oldest = pickOlder(oldest, baseDir, new AutoFreeSpaceSettings.Section(0, si.getName(), null, 0), slave);
+                }
+                return oldest;
+            }
+
             // Loop over all configured entries (sections and paths)
-            for (AutoFreeSpaceSettings.Section section : AutoFreeSpaceSettings.getSettings().getSections().values()) {
+            for (AutoFreeSpaceSettings.Section section : entries) {
                 for (DirectoryHandle baseDir : getBaseDirectories(section)) {
                     oldest = pickOlder(oldest, baseDir, section, slave);
                 }
