@@ -28,12 +28,15 @@ import org.drftpd.master.commands.usermanagement.UserManagement;
 import org.drftpd.master.event.UserEvent;
 import org.drftpd.master.permissions.stats.CreditLimitPathPermission;
 import org.drftpd.master.permissions.stats.RatioPathPermission;
+import org.drftpd.master.stats.ExtendedTimedStats;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.statistics.master.metadata.StatsUserData;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 /**
  * StatsManager is a class that centralizes the update of users stats.
@@ -49,6 +52,56 @@ public class StatsManager implements PluginInterface {
     public static final Key<ArrayList<CreditLimitPathPermission>> CREDITLIMIT =
             new Key<>(StatsManager.class, "creditlimit");
     private static final Logger logger = LogManager.getLogger(StatsManager.class);
+
+    /**
+     * Credits for transferring <tt>bytes</tt> at the given ratio.
+     * <p>
+     * Computed in double precision: the previous <tt>(long) ratio * bytes</tt> cast the ratio to a
+     * whole number first (1.5 became 1, 0.5 became 0), and multiplying in float loses precision
+     * for large files.
+     */
+    public static long creditsForBytes(float ratio, long bytes) {
+        return (long) ((double) ratio * bytes);
+    }
+
+    /**
+     * The stats periods an upload made at <tt>uploadTime</tt> is still counted in: always
+     * {@link ExtendedTimedStats#P_ALL}, plus month, week and day if the upload happened after the
+     * start of the current month, week and day. Uploads made before a period started were already
+     * removed from that period when it was reset, so deleting them must not subtract from it.
+     *
+     * @param uploadTime when the file was uploaded (its last-modified time)
+     * @param now        the current time, with the first day of the week set as the site uses it
+     *                   (Monday when european.cal=true)
+     */
+    public static List<Integer> getPeriodsCountingUpload(long uploadTime, Calendar now) {
+        Calendar dayStart = (Calendar) now.clone();
+        dayStart.set(Calendar.HOUR_OF_DAY, 0);
+        dayStart.set(Calendar.MINUTE, 0);
+        dayStart.set(Calendar.SECOND, 0);
+        dayStart.set(Calendar.MILLISECOND, 0);
+
+        Calendar weekStart = (Calendar) dayStart.clone();
+        while (weekStart.get(Calendar.DAY_OF_WEEK) != weekStart.getFirstDayOfWeek()) {
+            weekStart.add(Calendar.DAY_OF_MONTH, -1);
+        }
+
+        Calendar monthStart = (Calendar) dayStart.clone();
+        monthStart.set(Calendar.DAY_OF_MONTH, 1);
+
+        List<Integer> periods = new ArrayList<>();
+        periods.add(ExtendedTimedStats.P_ALL);
+        if (uploadTime >= monthStart.getTimeInMillis()) {
+            periods.add(ExtendedTimedStats.P_MONTH);
+        }
+        if (uploadTime >= weekStart.getTimeInMillis()) {
+            periods.add(ExtendedTimedStats.P_WEEK);
+        }
+        if (uploadTime >= dayStart.getTimeInMillis()) {
+            periods.add(ExtendedTimedStats.P_DAY);
+        }
+        return periods;
+    }
 
     public static StatsManager getStatsManager() {
         for (PluginInterface plugin : GlobalContext.getGlobalContext().getPlugins()) {

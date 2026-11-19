@@ -70,7 +70,8 @@ public class NukeUtils {
     public static long calculateNukedAmount(long size, float ratio,
                                             int multiplier) {
         if (size != 0 && ratio != 0 && multiplier != 0) {
-            return (long) ((size * ratio) + (size * (multiplier - 1)));
+            // double precision: size * ratio in float loses precision for large releases
+            return (long) (((double) size * ratio) + ((double) size * (multiplier - 1)));
         }
         /* If size is 0 then there are no nuked bytes.  If ratio is 0
          * then this user should not lose credits because they do not
