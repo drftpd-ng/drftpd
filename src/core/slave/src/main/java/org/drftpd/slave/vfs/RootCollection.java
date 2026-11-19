@@ -316,14 +316,14 @@ public class RootCollection {
 
         public void run() {
             Thread currThread = Thread.currentThread();
-            currThread.setName("Root List Handler[" + currThread.getId() + "] " +
+            currThread.setName("Root List Handler[" + currThread.threadId() + "] " +
                     "- processing root " + _root + " - " + _path);
             File rootPath = _roots.get(_root).getFile(_path);
             if (rootPath.exists()) {
                 _files[_root] = rootPath.list();
             }
             _latch.countDown();
-            currThread.setName(RootListHandlerThreadFactory.getIdleThreadName(currThread.getId()));
+            currThread.setName(RootListHandlerThreadFactory.getIdleThreadName(currThread.threadId()));
         }
     }
 }

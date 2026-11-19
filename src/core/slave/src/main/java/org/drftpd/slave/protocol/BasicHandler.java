@@ -440,7 +440,7 @@ public class BasicHandler extends AbstractHandler {
             }
 
             // Give the thread a logical name
-            currThread.setName("Remerge Thread["+ currThread.getId() + "] - Processing " + _path);
+            currThread.setName("Remerge Thread["+ currThread.threadId() + "] - Processing " + _path);
             while (remergePaused.get() && getSlaveObject().isOnline()) {
                 logger.debug("Remerging paused, sleeping");
                 synchronized (remergeWaitObj) {
@@ -516,7 +516,7 @@ public class BasicHandler extends AbstractHandler {
                 updateDepth(_path + "/");
                 logger.debug("Skipping send of {} as no files changed since last merge", _path);
             }
-            currThread.setName(RemergeThreadFactory.getIdleThreadName(currThread.getId()));
+            currThread.setName(RemergeThreadFactory.getIdleThreadName(currThread.threadId()));
         }
     }
 
