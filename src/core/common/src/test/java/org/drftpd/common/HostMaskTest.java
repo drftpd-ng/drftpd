@@ -66,8 +66,9 @@ public class HostMaskTest {
     public void testMatchesIPv6LongFormStillWorks() throws Exception {
         // Masks written in Java's full form, as shown in #19, keep working
         assertTrue(new HostMask("*@0:0:0:0:0:0:0:1").matchesHost(v6("::1")));
-        // A prefix with a zero group only matches the full form, e.g. 2001:db8:0:1::5
-        assertTrue(new HostMask("*@2001:db8:0:1:*").matchesHost(v6("2001:db8:0:1::5")));
+        // A prefix whose zero groups the short form compresses only matches the long form:
+        // 2001:db8:0:0:1:0:0:5 is "2001:db8::1:0:0:5" in short form
+        assertTrue(new HostMask("*@2001:db8:0:0:*").matchesHost(v6("2001:db8:0:0:1:0:0:5")));
     }
 
     @Test
