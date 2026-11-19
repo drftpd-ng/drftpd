@@ -21,6 +21,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.drftpd.common.util.PropertyHelper;
 import org.drftpd.master.cron.TimeEventInterface;
+import org.drftpd.master.cron.TimeManager;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.LinkHandle;
 import org.drftpd.master.vfs.ObjectNotValidException;
@@ -59,9 +60,14 @@ public class DatedSection extends PlainSection implements TimeEventInterface {
     public DatedSection(int i, Properties p) {
         super(i, p);
         _now = PropertyHelper.getProperty(p, i + ".now");
-        _dateFormat = new SimpleDateFormat(PropertyHelper.getProperty(p, i + ".dated"), Locale.getDefault());
+        boolean europeanCalendar = TimeManager.isEuropeanCalendarEnabled();
+        _dateFormat = createDateFormat(PropertyHelper.getProperty(p, i + ".dated"), Locale.getDefault(),
+                europeanCalendar);
 
         // rollingcalendar...
+        if (europeanCalendar) {
+            useEuropeanWeeks(rc);
+        }
         int type = computeCheckPeriod();
         printPeriodicity(type);
         rc.setType(type);
@@ -69,6 +75,38 @@ public class DatedSection extends PlainSection implements TimeEventInterface {
         // end rollingcalendar...
         logger.debug("Configured to roll at {}", rc.getNextCheckDate(new Date()));
         getGlobalContext().addTimeEvent(this);
+    }
+
+    /**
+     * Creates the formatter used for the dated directory names.
+     * <p>
+     * TimeManager fires resetWeek on Monday when <tt>european.cal=true</tt>, but week-based patterns
+     * such as <tt>YYYY-ww</tt> are formatted with the calendar of the formatter. With the default
+     * (e.g. US) locale that calendar starts weeks on Sunday, so the week number changed on Sunday and
+     * the current directory of the section pointed at a week directory that was not created until
+     * Monday (#325). For a European calendar we therefore format with ISO 8601 weeks.
+     *
+     * @param pattern           the <tt>x.dated</tt> pattern from the section configuration
+     * @param locale            the locale to format with
+     * @param europeanCalendar  whether <tt>european.cal</tt> is enabled
+     */
+    static SimpleDateFormat createDateFormat(String pattern, Locale locale, boolean europeanCalendar) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat(pattern, locale);
+        if (europeanCalendar) {
+            Calendar calendar = Calendar.getInstance(dateFormat.getTimeZone(), locale);
+            useEuropeanWeeks(calendar);
+            dateFormat.setCalendar(calendar);
+        }
+        return dateFormat;
+    }
+
+    /**
+     * ISO 8601 weeks: weeks start on Monday and week 1 is the first week with at least 4 days
+     * in the new year.
+     */
+    static void useEuropeanWeeks(Calendar calendar) {
+        calendar.setFirstDayOfWeek(Calendar.MONDAY);
+        calendar.setMinimalDaysInFirstWeek(4);
     }
 
     public DirectoryHandle getCurrentDirectory() {
@@ -85,15 +123,24 @@ public class DatedSection extends PlainSection implements TimeEventInterface {
     // logic is based on comparisons relative to 1970-01-01 00:00:00
     // GMT (the epoch).
     int computeCheckPeriod() {
+        return computeCheckPeriod(_dateFormat);
+    }
+
+    static int computeCheckPeriod(SimpleDateFormat dateFormat) {
         RollingCalendar rollingCalendar = new RollingCalendar(gmtTimeZone,
                 Locale.ENGLISH);
+        // Use the same week rules as the formatter, otherwise week patterns are misdetected.
+        // E.g. from the epoch (a Thursday) the next Sunday is still in ISO week 1, so a "YYYY-ww"
+        // section formatted with Monday-start weeks would be detected as monthly instead of weekly.
+        rollingCalendar.setFirstDayOfWeek(dateFormat.getCalendar().getFirstDayOfWeek());
+        rollingCalendar.setMinimalDaysInFirstWeek(dateFormat.getCalendar().getMinimalDaysInFirstWeek());
 
         // set sate to 1970-01-01 00:00:00 GMT
         Date epoch = new Date(0);
         /* if(datePattern != null) */
         {
             for (int i = TOP_OF_MINUTE; i <= TOP_OF_YEAR; i++) {
-                SimpleDateFormat simpleDateFormat = (SimpleDateFormat) _dateFormat
+                SimpleDateFormat simpleDateFormat = (SimpleDateFormat) dateFormat
                         .clone();
                 simpleDateFormat.setTimeZone(gmtTimeZone); // do all date
                 // formatting in GMT

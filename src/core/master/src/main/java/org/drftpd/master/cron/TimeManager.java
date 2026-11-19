@@ -126,6 +126,14 @@ public class TimeManager {
      * Checks conf file to see if european calendar is being used.
      */
     public boolean isEuropeanCalendar() {
+        return isEuropeanCalendarEnabled();
+    }
+
+    /*
+     * Static variant of isEuropeanCalendar() for code that has no TimeManager instance,
+     * such as DatedSection.
+     */
+    public static boolean isEuropeanCalendarEnabled() {
         ConfigInterface config = GlobalContext.getConfig();
         // Complain about this situation as it should not happen!
         if (config == null) {
