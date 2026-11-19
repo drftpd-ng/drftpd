@@ -15,6 +15,12 @@ merged for the first time.
 
 ## To upgrade from 4.x to the latest:
 
+Upgrading to 4.0.12 or later changes how the virtual file system stores per-slave file counts.
+Once the master has saved the file system with the new version, an older version cannot read it
+anymore, so back up userdata/vfs before upgrading if you may need to go back.
+After the first start of the new version, run SITE FIXSLAVECOUNT from the root directory (CWD /)
+to rebuild the counts.
+
 Before performing a upgrade of DrFTPD, make sure to delete the following folders:
 - src
 
