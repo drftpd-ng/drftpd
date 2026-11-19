@@ -7,8 +7,6 @@
 # The bigger this number is the more cpu/io/memory Lucene will use.
 # Default (100) seems reasonable enough, change it on your own risk.
 # A value of 0 will return all matches in the index, *NOT RECOMMENDED*
-#
-# More info: http://wiki.apache.org/lucene-java/ImproveSearchingSpeed
 max_hits=100
 
 # *ADVANCED SETTING* The larger this setting is the least Lucene will try to flush your index
@@ -18,8 +16,6 @@ max_hits=100
 # If you are not sure on what to put here, keep the default.
 # If you are experiencing too much IO due to this operation, you may want to increase this setting,
 #  but beware that increasing it will also increase memory usage.
-#
-# More info: http://wiki.apache.org/lucene-java/ImproveIndexingSpeed
 maxdocs_buffer=120
 
 # This setting works together with maxdocs_buffer but instead of flushing after specified amount
@@ -27,33 +23,28 @@ maxdocs_buffer=120
 # Keep in mind that it will flush "either or" (whichever comes first).
 # Default (16MB) is high enough that maxdocs_buffer should kick in before this one.
 # If you are not sure on what to put here, keep the default.
-#
-# More info: http://wiki.apache.org/lucene-java/ImproveIndexingSpeed
 max_rambuffer=16
 
-# Optimizing is good, but it is also expensive.
-# When you optimize you merge your index making later operations faster.
-# Highly updated sites should keep this number reasonable high, otherwise
-#  optimization will take a long time.
-# Either you choose for optimizing often (resulting super fast search/indexing) but
-#  in the other hand you will use lots of resources while optimizing OR you live with
-#  slower searches and indexing and do not use so many resources often.
+# Interval between two periodic commits of the index to disk, in minutes.
+# Changes not committed yet are lost if the master crashes (a clean shutdown commits them).
+# This setting used to trigger a full "optimize" (merge of the whole index into one segment)
+#  with Lucene 3.6. Lucene now merges segments in the background, so only the commit is left.
 #
-# Default: 15 minutes (good for medium usage/updated sites)
-# 30 minutes should be good enough for highly updated sites (maybe even higher).
-# This value represents an amount in minutes.
+# Default: 15 minutes.
 optimize_interval=15
 
-# *ADVANCED SETTING* Use native file locking.
-# Networked FileSystems usually doesn't deal very well if this, so disable it, if you are using one of them.
+# *ADVANCED SETTING* Use native file locking (OS level locks, released automatically if the
+#  master crashes).
+# Networked FileSystems usually don't deal very well with it; set it to false to use a lock file
+#  instead ("write.lock" in the index directory). With a lock file, a crash of the master leaves
+#  the file behind and it has to be removed by hand before starting the master again.
 #
-# More info:
-# - http://java.sun.com/j2se/1.5.0/docs/api/java/nio/channels/FileLock.html
-# - http://lucene.apache.org/java/2_2_0/api/org/apache/lucene/store/NativeFSLockFactory.html
-# - http://lucene.apache.org/java/2_2_0/api/org/apache/lucene/store/FSDirectory.html
+# More info: https://lucene.apache.org/core/10_0_0/core/org/apache/lucene/store/LockFactory.html
 native_locking=true
 
 # Backup configuration.
+# Backups are copies of the last commit of the index, written to the "index.bkp" directory
+#  while indexing goes on. To restore one, stop the master and replace userdata/index with it.
 # Should backups be made.
 do_backups=true
 

@@ -19,37 +19,13 @@ package org.drftpd.tvmaze.master.index;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
-import org.apache.lucene.document.NumericField;
 import org.drftpd.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.master.indexation.IndexDataExtensionInterface;
+import org.drftpd.master.indexation.LuceneUtils;
 import org.drftpd.master.vfs.event.ImmutableInodeHandle;
 import org.drftpd.tvmaze.master.metadata.TvMazeInfo;
 
 public class TvMazeDataExtension implements IndexDataExtensionInterface {
-
-    private static final Field FIELD_NAME = new Field("tvmazename", "", Field.Store.YES, Field.Index.ANALYZED);
-    private static final Field FIELD_GENRE = new Field("tvmazegenre", "", Field.Store.YES, Field.Index.ANALYZED);
-    private static final NumericField FIELD_SEASON = new NumericField("tvmazeseason", Field.Store.YES, Boolean.TRUE);
-    private static final NumericField FIELD_NUMBER = new NumericField("tvmazenumber", Field.Store.YES, Boolean.TRUE);
-    private static final Field FIELD_TYPE = new Field("tvmazetype", "", Field.Store.YES, Field.Index.ANALYZED);
-    private static final Field FIELD_STATUS = new Field("tvmazestatus", "", Field.Store.YES, Field.Index.ANALYZED);
-    private static final Field FIELD_LANGUAGE = new Field("tvmazelanguage", "", Field.Store.YES, Field.Index.ANALYZED);
-    private static final Field FIELD_COUNTRY = new Field("tvmazecountry", "", Field.Store.YES, Field.Index.ANALYZED);
-    private static final Field FIELD_NETWORK = new Field("tvmazenetwork", "", Field.Store.YES, Field.Index.ANALYZED);
-
-    @Override
-    public void initializeFields(Document doc) {
-        doc.add(FIELD_NAME);
-        doc.add(FIELD_GENRE);
-        doc.add(FIELD_SEASON);
-        doc.add(FIELD_NUMBER);
-        doc.add(FIELD_TYPE);
-        doc.add(FIELD_STATUS);
-        doc.add(FIELD_LANGUAGE);
-        doc.add(FIELD_COUNTRY);
-        doc.add(FIELD_NETWORK);
-    }
 
     @Override
     public void addData(Document doc, ImmutableInodeHandle inode) {
@@ -60,27 +36,30 @@ public class TvMazeDataExtension implements IndexDataExtensionInterface {
             // Fields will be cleared below
         }
         if (tvmazeInfo == null) {
-            FIELD_NAME.setValue("");
-            FIELD_GENRE.setValue("");
-            FIELD_SEASON.setIntValue(-1);
-            FIELD_NUMBER.setIntValue(-1);
-            FIELD_TYPE.setValue("");
-            FIELD_STATUS.setValue("");
-            FIELD_LANGUAGE.setValue("");
-            FIELD_COUNTRY.setValue("");
-            FIELD_NETWORK.setValue("");
+            LuceneUtils.addTextField(doc, "tvmazename", "");
+            LuceneUtils.addTextField(doc, "tvmazegenre", "");
+            LuceneUtils.addIntField(doc, "tvmazeseason", -1);
+            LuceneUtils.addIntField(doc, "tvmazenumber", -1);
+            LuceneUtils.addTextField(doc, "tvmazetype", "");
+            LuceneUtils.addTextField(doc, "tvmazestatus", "");
+            LuceneUtils.addTextField(doc, "tvmazelanguage", "");
+            LuceneUtils.addTextField(doc, "tvmazecountry", "");
+            LuceneUtils.addTextField(doc, "tvmazenetwork", "");
         } else {
-            FIELD_NAME.setValue(tvmazeInfo.getName());
-            FIELD_GENRE.setValue(StringUtils.join(tvmazeInfo.getGenres(), " "));
+            LuceneUtils.addTextField(doc, "tvmazename", tvmazeInfo.getName());
+            LuceneUtils.addTextField(doc, "tvmazegenre", StringUtils.join(tvmazeInfo.getGenres(), " "));
             if (tvmazeInfo.getEPList().length == 1) {
-                FIELD_SEASON.setIntValue(tvmazeInfo.getEPList()[0].getSeason());
-                FIELD_NUMBER.setIntValue(tvmazeInfo.getEPList()[0].getNumber());
+                LuceneUtils.addIntField(doc, "tvmazeseason", tvmazeInfo.getEPList()[0].getSeason());
+                LuceneUtils.addIntField(doc, "tvmazenumber", tvmazeInfo.getEPList()[0].getNumber());
+            } else {
+                LuceneUtils.addIntField(doc, "tvmazeseason", -1);
+                LuceneUtils.addIntField(doc, "tvmazenumber", -1);
             }
-            FIELD_TYPE.setValue(tvmazeInfo.getType());
-            FIELD_STATUS.setValue(tvmazeInfo.getStatus());
-            FIELD_LANGUAGE.setValue(tvmazeInfo.getLanguage());
-            FIELD_COUNTRY.setValue(tvmazeInfo.getCountry());
-            FIELD_NETWORK.setValue(tvmazeInfo.getNetwork());
+            LuceneUtils.addTextField(doc, "tvmazetype", tvmazeInfo.getType());
+            LuceneUtils.addTextField(doc, "tvmazestatus", tvmazeInfo.getStatus());
+            LuceneUtils.addTextField(doc, "tvmazelanguage", tvmazeInfo.getLanguage());
+            LuceneUtils.addTextField(doc, "tvmazecountry", tvmazeInfo.getCountry());
+            LuceneUtils.addTextField(doc, "tvmazenetwork", tvmazeInfo.getNetwork());
         }
     }
 

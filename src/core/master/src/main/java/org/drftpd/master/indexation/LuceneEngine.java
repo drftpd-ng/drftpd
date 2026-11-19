@@ -23,17 +23,50 @@ import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
-import org.apache.lucene.document.NumericField;
-import org.apache.lucene.index.*;
+import org.apache.lucene.document.NumericDocValuesField;
+import org.apache.lucene.document.SortedDocValuesField;
+import org.apache.lucene.document.StoredField;
+import org.apache.lucene.document.StringField;
+import org.apache.lucene.index.CorruptIndexException;
+import org.apache.lucene.index.IndexCommit;
+import org.apache.lucene.index.IndexFormatTooNewException;
+import org.apache.lucene.index.IndexFormatTooOldException;
+import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.IndexableField;
+import org.apache.lucene.index.KeepOnlyLastCommitDeletionPolicy;
+import org.apache.lucene.index.LeafReaderContext;
+import org.apache.lucene.index.SnapshotDeletionPolicy;
+import org.apache.lucene.index.StoredFields;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.*;
-import org.apache.lucene.search.regex.RegexQuery;
+import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.CollectorManager;
+import org.apache.lucene.search.FieldComparator;
+import org.apache.lucene.search.FieldComparatorSource;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.LeafFieldComparator;
+import org.apache.lucene.search.PrefixQuery;
+import org.apache.lucene.search.Pruning;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.Scorable;
+import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.ScoreMode;
+import org.apache.lucene.search.SearcherManager;
+import org.apache.lucene.search.SimpleCollector;
+import org.apache.lucene.search.Sort;
+import org.apache.lucene.search.SortField;
+import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.WildcardQuery;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.store.IOContext;
 import org.apache.lucene.store.NativeFSLockFactory;
+import org.apache.lucene.store.SimpleFSLockFactory;
+import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.Version;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
-import org.drftpd.common.io.PhysicalFile;
 import org.drftpd.common.util.Bytes;
 import org.drftpd.common.util.ConfigLoader;
 import org.drftpd.master.GlobalContext;
@@ -45,99 +78,114 @@ import org.drftpd.master.vfs.VirtualFileSystem;
 import org.drftpd.master.vfs.event.ImmutableInodeHandle;
 import org.reflections.Reflections;
 
-import java.io.File;
+import java.io.EOFException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.SecureRandom;
 import java.text.DateFormat;
-import java.util.*;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.regex.PatternSyntaxException;
 
 /**
- * Implementation of an Index engine based on <a href="http://lucene.apache.org">Apache Lucene</a>
+ * Implementation of an Index engine based on <a href="https://lucene.apache.org">Apache Lucene</a>.
  * <p>
- * This engine reuses {@link Field}s and {@link Document} instances as suggested by
- * <a href="http://wiki.apache.org/lucene-java/ImproveIndexingSpeed">this article</a>
- * in order to have better Indexing performance.
- *
- * @author fr0w
- * @version $Id$
+ * One document is stored per inode (see {@link #makeDocumentFromInode(ImmutableInodeHandle)}),
+ * identified by its {@code fullPath} field. Searches go through a {@link SearcherManager} that is
+ * refreshed before every query so that they see every change made so far (near real time), as the
+ * previous implementation did by opening a reader from the writer for every search.
  */
 public class LuceneEngine implements IndexEngineInterface {
     protected static final Analyzer ANALYZER = new AlphanumericalAnalyzer();
     protected static final String INDEX_DIR = "userdata/index";
+    /** Suffix added to the index directory when it is moved aside because it can't be read. */
+    static final String INCOMPATIBLE_SUFFIX = ".incompatible-";
+
     private static final Logger logger = LogManager.getLogger(LuceneEngine.class);
-    private static final String EXCEPTION_OCCURED_WHILE_SEARCHING = "An exception occured while indexing, check stack trace";
-    private static final Document INDEX_DOCUMENT = new Document();
+    private static final String EXCEPTION_OCCURED_WHILE_SEARCHING = "An exception occured while searching, check stack trace";
 
-    private static final Field FIELD_NAME = new Field("name", "", Field.Store.YES, Field.Index.ANALYZED);
-    private static final Field FIELD_FULL_NAME = new Field("fullName", "", Field.Store.YES, Field.Index.NOT_ANALYZED);
-    private static final Field FIELD_FULL_NAME_REVERSE = new Field("fullNameReverse", "", Field.Store.YES, Field.Index.NOT_ANALYZED);
-    private static final Field FIELD_PARENT_PATH = new Field("parentPath", "", Field.Store.YES, Field.Index.NOT_ANALYZED);
-    private static final Field FIELD_FULL_PATH = new Field("fullPath", "", Field.Store.YES, Field.Index.NOT_ANALYZED);
-    private static final Field FIELD_OWNER = new Field("owner", "", Field.Store.YES, Field.Index.NOT_ANALYZED);
-    private static final Field FIELD_GROUP = new Field("group", "", Field.Store.YES, Field.Index.NOT_ANALYZED);
-    private static final Field FIELD_TYPE = new Field("type", "", Field.Store.YES, Field.Index.NOT_ANALYZED);
-    private static final Field FIELD_SLAVES = new Field("slaves", "", Field.Store.YES, Field.Index.ANALYZED);
-    private static final NumericField FIELD_SLAVES_NBR = new NumericField("nbrOfSlaves", Field.Store.YES, Boolean.TRUE);
-    private static final NumericField FIELD_LASTMODIFIED = new NumericField("lastModified", Field.Store.YES, Boolean.TRUE);
-    private static final NumericField FIELD_SIZE = new NumericField("size", Field.Store.YES, Boolean.TRUE);
+    static final String FIELD_NAME = "name";
+    static final String FIELD_FULL_NAME = "fullName";
+    static final String FIELD_FULL_NAME_REVERSE = "fullNameReverse";
+    static final String FIELD_PARENT_PATH = "parentPath";
+    static final String FIELD_FULL_PATH = "fullPath";
+    static final String FIELD_OWNER = "owner";
+    static final String FIELD_GROUP = "group";
+    static final String FIELD_TYPE = "type";
+    static final String FIELD_SLAVES = "slaves";
+    static final String FIELD_SLAVES_NBR = "nbrOfSlaves";
+    static final String FIELD_LASTMODIFIED = "lastModified";
+    static final String FIELD_SIZE = "size";
 
-    private static final Field[] FIELDS = new Field[]{
-            FIELD_NAME, FIELD_FULL_NAME, FIELD_FULL_NAME_REVERSE, FIELD_PARENT_PATH, FIELD_FULL_PATH, FIELD_OWNER, FIELD_GROUP, FIELD_TYPE, FIELD_SLAVES
-    };
-    private static final NumericField[] NUMERICFIELDS = new NumericField[]{
-            FIELD_SLAVES_NBR, FIELD_LASTMODIFIED, FIELD_SIZE
-    };
-    private static final TermQuery QUERY_DIRECTORY = new TermQuery(new Term("type", "d"));
-    private static final TermQuery QUERY_FILE = new TermQuery(new Term("type", "f"));
-    private static final Term TERM_NAME = new Term("name", "");
-    private static final Term TERM_FULL_NAME = new Term("fullName", "");
-    private static final Term TERM_FULL_NAME_REVERSE = new Term("fullNameReverse", "");
-    private static final Term TERM_PARENT = new Term("parentPath", "");
-    private static final Term TERM_FULL = new Term("fullPath", "");
-    private static final Term TERM_OWNER = new Term("owner", "");
-    private static final Term TERM_GROUP = new Term("group", "");
-    private static final Term TERM_SLAVES = new Term("slaves", "");
-    private static final SimpleSearchFieldSelector SIMPLE_FIELD_SELECTOR = new SimpleSearchFieldSelector();
-    private static final AdvancedSearchFieldSelector ADVANCED_FIELD_SELECTOR = new AdvancedSearchFieldSelector();
+    private static final Set<String> CORE_FIELDS = Set.of(FIELD_NAME, FIELD_FULL_NAME, FIELD_FULL_NAME_REVERSE,
+            FIELD_PARENT_PATH, FIELD_FULL_PATH, FIELD_OWNER, FIELD_GROUP, FIELD_TYPE, FIELD_SLAVES, FIELD_SLAVES_NBR,
+            FIELD_LASTMODIFIED, FIELD_SIZE);
+    /** Stored fields loaded by {@link #findInode} (replaces SimpleSearchFieldSelector). */
+    private static final Set<String> SIMPLE_SEARCH_FIELDS = Set.of(FIELD_FULL_PATH);
+    /** Stored fields loaded by {@link #advancedFind} (replaces AdvancedSearchFieldSelector). */
+    private static final Set<String> ADVANCED_SEARCH_FIELDS = Set.of(FIELD_FULL_PATH, FIELD_TYPE);
 
-    static {
-        for (Field field : FIELDS) {
-            INDEX_DOCUMENT.add(field);
-        }
-        for (NumericField field : NUMERICFIELDS) {
-            INDEX_DOCUMENT.add(field);
-        }
-    }
+    private static final Query QUERY_DIRECTORY = new TermQuery(new Term(FIELD_TYPE, "d"));
+    private static final Query QUERY_FILE = new TermQuery(new Term(FIELD_TYPE, "f"));
 
-    private Directory _storage;
-    private IndexWriter _iWriter;
-    private final Sort SORT = new Sort();
+    private final Path _indexPath;
+    /** Guards opening/closing the index and taking backups. */
+    private final Object _lock = new Object();
 
-    private int _maxHitsNumber;
-    private int _maxDocsBuffer;
-    private int _maxRAMBufferSize;
+    private volatile Directory _storage;
+    private volatile IndexWriter _iWriter;
+    private volatile SearcherManager _searcherManager;
+    private volatile SnapshotDeletionPolicy _snapshotPolicy;
 
-    private boolean _nativeLocking;
+    private int _maxHitsNumber = 50;
+    private int _maxDocsBuffer = IndexWriterConfig.DISABLE_AUTO_FLUSH;
+    private int _maxRAMBufferSize = 16;
+    private boolean _nativeLocking = true;
 
     private LuceneMaintenanceThread _maintenanceThread;
     private LuceneBackupThread _backupThread;
 
     private IndexingVirtualFileSystemListener _listener;
-    private boolean _rebuilding;
+    private volatile boolean _rebuilding;
+    private volatile boolean _rebuildRequired;
+    private volatile Path _movedAsideIndex;
 
     private final List<IndexDataExtensionInterface> _dataExtensions = new ArrayList<>();
     private final List<QueryTermExtensionInterface> _queryExtensions = new ArrayList<>();
 
+    public LuceneEngine() {
+        this(Paths.get(INDEX_DIR));
+    }
+
+    /**
+     * @param indexPath directory holding the index (used by the tests).
+     */
+    LuceneEngine(Path indexPath) {
+        _indexPath = indexPath;
+    }
+
     /**
      * Creates all the needed resources for the Index to work.
      * <ul>
-     * <li>IndexSearcher / IndexWriter</li>
+     * <li>IndexWriter / SearcherManager</li>
      * <li>Reads <i>config/indexation.conf</i> to grab some tweaking
      * settings, if this file is not found, a default values are loaded.</li>
      * <li>Adds a Shutdown Hook to save the index while closing DrFTPD</li>
-     * <li>Creates the Maintenance thread.(takes cares of updating the search
-     * engine and optimizing)</li>
+     * <li>Creates the Maintenance and Backup threads.</li>
+     * <li>If the index on disk could not be read (written by an older Lucene, corrupt...), it has
+     * been moved aside by {@link #openStreams()} and a rebuild is started in the background.</li>
      * </ul>
      */
     public void init() throws IndexException {
@@ -148,9 +196,7 @@ public class LuceneEngine implements IndexEngineInterface {
                 .getSubTypesOf(IndexDataExtensionInterface.class);
         try {
             for (Class<? extends IndexDataExtensionInterface> indexExtension : indexExtensions) {
-                IndexDataExtensionInterface dataExtensionInterface = indexExtension.getConstructor().newInstance();
-                dataExtensionInterface.initializeFields(INDEX_DOCUMENT);
-                _dataExtensions.add(dataExtensionInterface);
+                _dataExtensions.add(indexExtension.getConstructor().newInstance());
             }
         } catch (Exception e) {
             logger.error("Failed to load plugins for org.drftpd.master.vfs.index.lucene extension point 'IndexData', possibly the " +
@@ -162,8 +208,7 @@ public class LuceneEngine implements IndexEngineInterface {
                 .getSubTypesOf(QueryTermExtensionInterface.class);
         try {
             for (Class<? extends QueryTermExtensionInterface> queryExtension : queryExtensions) {
-                QueryTermExtensionInterface queryTermExtensionInterface = queryExtension.getConstructor().newInstance();
-                _queryExtensions.add(queryTermExtensionInterface);
+                _queryExtensions.add(queryExtension.getConstructor().newInstance());
             }
         } catch (Exception e) {
             logger.error("Failed to load plugins for org.drftpd.master.vfs.index.lucene extension point 'QueryTerm', possibly the " +
@@ -184,36 +229,98 @@ public class LuceneEngine implements IndexEngineInterface {
 
         _listener = new IndexingVirtualFileSystemListener();
         _listener.init();
+
+        if (_rebuildRequired) {
+            startBackgroundRebuild();
+        }
     }
 
     private void createThreads() {
-        _maintenanceThread = new LuceneMaintenanceThread();
-        _backupThread = new LuceneBackupThread();
+        _maintenanceThread = new LuceneMaintenanceThread(this);
+        _backupThread = new LuceneBackupThread(this);
+    }
+
+    private void startBackgroundRebuild() {
+        Thread rebuild = new Thread(() -> {
+            logger.warn("Rebuilding the index from the virtual file system in the background, " +
+                    "SITE SEARCH/DUPE results are incomplete until it is done");
+            try {
+                rebuildIndex();
+                logger.warn("Index rebuild done, {} entries in the index", getStatus().get("inodes"));
+            } catch (Exception e) {
+                logger.error("Automatic index rebuild failed, run SITE REBUILDINDEX", e);
+            }
+        }, "IndexRebuildThread");
+        rebuild.setDaemon(true);
+        rebuild.start();
     }
 
     /**
      * Opens all the needed streams that the engine needs to work properly.
+     * <p>
+     * If the existing index can't be read by this Lucene version (an index written by Lucene 3.6,
+     * which DrFTPD used up to 4.0.11, or a corrupt one), the index directory is renamed to
+     * {@code <index dir>.incompatible-<date>} (nothing is deleted), a new empty index is created and
+     * {@link #isRebuildRequired()} becomes true.
      *
      * @throws IndexException
      */
-    private void openStreams() throws IndexException {
-        try {
-            if (_nativeLocking) {
-                _storage = FSDirectory.open(new File(INDEX_DIR), new NativeFSLockFactory(INDEX_DIR));
-            } else {
-                _storage = FSDirectory.open(new File(INDEX_DIR));
+    void openStreams() throws IndexException {
+        synchronized (_lock) {
+            try {
+                Files.createDirectories(_indexPath);
+                try {
+                    openWriter();
+                } catch (IndexFormatTooOldException | IndexFormatTooNewException | CorruptIndexException |
+                         EOFException e) {
+                    abortAll();
+                    Path aside = moveIndexAside();
+                    _movedAsideIndex = aside;
+                    _rebuildRequired = true;
+                    logger.warn("The index in {} can't be read by Lucene {} ({}). It was moved to {} and a new, " +
+                                    "empty index was created: it has to be rebuilt from the virtual file system " +
+                                    "(SITE REBUILDINDEX). The old directory can be deleted once the rebuild is done.",
+                            _indexPath, Version.LATEST, e.getMessage(), aside);
+                    Files.createDirectories(_indexPath);
+                    openWriter();
+                }
+            } catch (IOException e) {
+                abortAll();
+                throw new IndexException("Unable to initialize the index", e);
             }
-
-            IndexWriterConfig conf = new IndexWriterConfig(Version.LUCENE_36, ANALYZER);
-            conf.setMaxBufferedDocs(_maxDocsBuffer);
-            conf.setRAMBufferSizeMB(_maxRAMBufferSize);
-
-            _iWriter = new IndexWriter(_storage, conf);
-        } catch (IOException e) {
-            closeAll();
-
-            throw new IndexException("Unable to initialize the index", e);
         }
+    }
+
+    private void openWriter() throws IOException {
+        // FSDirectory.open() picks MMapDirectory; NativeFSLockFactory is what Lucene 3.6 used whatever
+        // native_locking said. native_locking=false now selects a lock file instead (see indexation.conf).
+        _storage = _nativeLocking
+                ? FSDirectory.open(_indexPath, NativeFSLockFactory.INSTANCE)
+                : FSDirectory.open(_indexPath, SimpleFSLockFactory.INSTANCE);
+
+        IndexWriterConfig conf = new IndexWriterConfig(ANALYZER);
+        conf.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
+        conf.setRAMBufferSizeMB(_maxRAMBufferSize);
+        conf.setMaxBufferedDocs(_maxDocsBuffer);
+        // keeps the files of a commit alive while a backup copies them
+        _snapshotPolicy = new SnapshotDeletionPolicy(new KeepOnlyLastCommitDeletionPolicy());
+        conf.setIndexDeletionPolicy(_snapshotPolicy);
+
+        _iWriter = new IndexWriter(_storage, conf);
+        // opening a reader also opens every segment of an existing index
+        _searcherManager = new SearcherManager(_iWriter, null);
+        // make sure there is a commit point, needed by backups (no-op on an existing, unchanged index)
+        _iWriter.commit();
+    }
+
+    private Path moveIndexAside() throws IOException {
+        String suffix = new SimpleDateFormat("yyyyMMdd-HHmmss").format(new Date());
+        Path target = _indexPath.resolveSibling(_indexPath.getFileName() + INCOMPATIBLE_SUFFIX + suffix);
+        for (int i = 1; Files.exists(target); i++) {
+            target = _indexPath.resolveSibling(_indexPath.getFileName() + INCOMPATIBLE_SUFFIX + suffix + "-" + i);
+        }
+        Files.move(_indexPath, target);
+        return target;
     }
 
     /**
@@ -240,154 +347,243 @@ public class LuceneEngine implements IndexEngineInterface {
         _backupThread.setMaximumNumberBackup(maxNumber);
     }
 
+    void setMaxHitsNumber(int maxHits) {
+        _maxHitsNumber = maxHits;
+    }
+
+    void addDataExtension(IndexDataExtensionInterface extension) {
+        _dataExtensions.add(extension);
+    }
+
+    void addQueryExtension(QueryTermExtensionInterface extension) {
+        _queryExtensions.add(extension);
+    }
+
     /**
-     * Closes all streams ignoring exceptions.
+     * Commits and closes all streams, ignoring exceptions.
      */
-    private void closeAll() {
+    void closeAll() {
+        synchronized (_lock) {
+            try {
+                if (_searcherManager != null)
+                    _searcherManager.close();
+                if (_iWriter != null)
+                    _iWriter.close();
+                if (_storage != null)
+                    _storage.close();
+            } catch (Exception e) {
+                logger.error(e, e);
+            }
+
+            _searcherManager = null;
+            _iWriter = null;
+            _storage = null;
+        }
+    }
+
+    /**
+     * Closes all streams without committing anything, ignoring exceptions.
+     */
+    private void abortAll() {
+        try {
+            if (_searcherManager != null)
+                _searcherManager.close();
+        } catch (Exception e) {
+            logger.debug("Error closing the searcher manager", e);
+        }
         try {
             if (_iWriter != null)
-                _iWriter.close();
+                _iWriter.rollback();
+        } catch (Exception e) {
+            logger.debug("Error rolling back the index writer", e);
+        }
+        try {
             if (_storage != null)
                 _storage.close();
         } catch (Exception e) {
-            logger.error(e, e);
+            logger.debug("Error closing the index directory", e);
         }
-
+        _searcherManager = null;
         _iWriter = null;
         _storage = null;
+    }
+
+    private static String nullToEmpty(String s) {
+        return s == null ? "" : s;
+    }
+
+    /**
+     * @param inodePath path of the inode, without trailing separator
+     * @return the value of the parentPath field (kept as in previous versions: "//" for the
+     * children of the root directory)
+     */
+    static String parentPathOf(String inodePath) {
+        if (inodePath.equals(VirtualFileSystem.separator)) {
+            return "";
+        }
+        return VirtualFileSystem.stripLast(inodePath) + VirtualFileSystem.separator;
+    }
+
+    private static void addSortableStringField(Document doc, String name, String value) {
+        doc.add(new StringField(name, value, Field.Store.YES));
+        doc.add(new SortedDocValuesField(name, new BytesRef(value)));
+    }
+
+    /**
+     * Adds the fields maintained by the engine itself.
+     */
+    private static void addCoreFields(Document doc, String name, String parentPath, String fullPath, String owner,
+                                      String group, String type, String slaves, int nbrOfSlaves, long lastModified,
+                                      long size) {
+        name = nullToEmpty(name);
+        LuceneUtils.addTextField(doc, FIELD_NAME, name);
+        doc.add(new StringField(FIELD_FULL_NAME, name, Field.Store.YES));
+        doc.add(new StringField(FIELD_FULL_NAME_REVERSE, new StringBuilder(name).reverse().toString(), Field.Store.YES));
+        addSortableStringField(doc, FIELD_PARENT_PATH, parentPath);
+        addSortableStringField(doc, FIELD_FULL_PATH, fullPath);
+        addSortableStringField(doc, FIELD_OWNER, nullToEmpty(owner));
+        addSortableStringField(doc, FIELD_GROUP, nullToEmpty(group));
+        addSortableStringField(doc, FIELD_TYPE, type);
+        LuceneUtils.addTextField(doc, FIELD_SLAVES, slaves);
+        LuceneUtils.addIntField(doc, FIELD_SLAVES_NBR, nbrOfSlaves);
+        doc.add(new NumericDocValuesField(FIELD_SLAVES_NBR, nbrOfSlaves));
+        LuceneUtils.addLongField(doc, FIELD_LASTMODIFIED, lastModified);
+        doc.add(new NumericDocValuesField(FIELD_LASTMODIFIED, lastModified));
+        LuceneUtils.addLongField(doc, FIELD_SIZE, size);
+        doc.add(new NumericDocValuesField(FIELD_SIZE, size));
     }
 
     /**
      * Shortcut to create Lucene Document from the Inode's data. The fields that
      * are stored in the index are:
      * <ul>
-     * <li>name - The name of the inode</li>
+     * <li>name - The name of the inode (analyzed)</li>
      * <li>fullName - The full name of the inode</li>
      * <li>fullNameReverse - The full name of the inode in reverse order</li>
      * <li>parentPath - The full path of the parent inode</li>
-     * <li>fullPath - The full path of the inode</li>
+     * <li>fullPath - The full path of the inode (with a trailing / for directories)</li>
      * <li>owner - The user who owns the file</li>
      * <li>group - The group of the user who owns the file</li>
-     * <li>type - File or Directory</li>
+     * <li>type - File (f) or Directory (d)</li>
      * <li>slaves - If the inode is a file, then the slaves are stored</li>
+     * <li>nbrOfSlaves - Number of slaves holding the file</li>
      * <li>lastModified - Timestamp of when the inode was last modified</li>
      * <li>size - The size of the inode</li>
      * </ul>
+     * plus the fields of the {@link IndexDataExtensionInterface}s.
+     * A new document is built for every call (the Lucene 3.6 code reused one shared, synchronized
+     * document, which buys nothing with current Lucene versions).
      *
      * @param inode
      * @throws FileNotFoundException
      */
-    private Document makeDocumentFromInode(ImmutableInodeHandle inode) throws FileNotFoundException {
-        InodeType inodeType = inode.isDirectory() ? InodeType.DIRECTORY : InodeType.FILE;
+    Document makeDocumentFromInode(ImmutableInodeHandle inode) throws FileNotFoundException {
+        Document doc = new Document();
+        boolean isDirectory = inode.isDirectory();
 
-        FIELD_NAME.setValue(inode.getName());
-        FIELD_FULL_NAME.setValue(inode.getName());
-        FIELD_FULL_NAME_REVERSE.setValue(new StringBuilder(inode.getName()).reverse().toString());
-        if (inode.getPath().equals(VirtualFileSystem.separator)) {
-            FIELD_PARENT_PATH.setValue("");
-        } else {
-            FIELD_PARENT_PATH.setValue(inode.getParent().getPath() + VirtualFileSystem.separator);
-        }
-        if (inode.isDirectory())
-            FIELD_FULL_PATH.setValue(inode.getPath() + VirtualFileSystem.separator);
-        else
-            FIELD_FULL_PATH.setValue(inode.getPath());
-        FIELD_OWNER.setValue(inode.getUsername());
-        FIELD_GROUP.setValue(inode.getGroup());
-        FIELD_TYPE.setValue(inodeType.toString().toLowerCase().substring(0, 1));
-
-        if (inodeType == InodeType.FILE) {
+        String slaves = "";
+        int nbrOfSlaves = 0;
+        if (!isDirectory) {
             StringBuilder sb = new StringBuilder();
-            for (String slaveName : inode.getSlaveNames()) {
+            Set<String> slaveNames = inode.getSlaveNames();
+            for (String slaveName : slaveNames) {
                 sb.append(slaveName).append(",");
             }
-            FIELD_SLAVES_NBR.setIntValue(inode.getSlaveNames().size());
-            FIELD_SLAVES.setValue(sb.toString());
-        } else {
-            FIELD_SLAVES_NBR.setIntValue(0);
-            FIELD_SLAVES.setValue("");
+            slaves = sb.toString();
+            nbrOfSlaves = slaveNames.size();
         }
 
-        FIELD_LASTMODIFIED.setLongValue(inode.lastModified());
-        FIELD_SIZE.setLongValue(inode.getSize());
+        addCoreFields(doc, inode.getName(), parentPathOf(inode.getPath()), fullPathOf(inode), inode.getUsername(),
+                inode.getGroup(), isDirectory ? "d" : "f", slaves, nbrOfSlaves, inode.lastModified(), inode.getSize());
 
         // Add data from any extensions
         for (IndexDataExtensionInterface dataExtension : _dataExtensions) {
-            dataExtension.addData(INDEX_DOCUMENT, inode);
+            dataExtension.addData(doc, inode);
         }
 
-        return INDEX_DOCUMENT;
+        return doc;
     }
 
-    private Term makeFullPathTermFromInode(ImmutableInodeHandle inode) {
+    /**
+     * Rebuilds the document of an inode whose parent directory was renamed from the stored values
+     * of its previous document (a stored document can't be indexed again as it is).
+     * Extension fields follow the convention of {@link IndexDataExtensionInterface}.
+     */
+    static Document rebuildDocument(Document stored, String newFullPath) {
+        Document doc = new Document();
+        String type = stored.get(FIELD_TYPE);
+        String inodePath = "d".equals(type) ? VirtualFileSystem.fixPath(newFullPath) : newFullPath;
+
+        addCoreFields(doc, stored.get(FIELD_FULL_NAME), parentPathOf(inodePath), newFullPath, stored.get(FIELD_OWNER),
+                stored.get(FIELD_GROUP), type, nullToEmpty(stored.get(FIELD_SLAVES)),
+                numericValue(stored, FIELD_SLAVES_NBR).intValue(), numericValue(stored, FIELD_LASTMODIFIED).longValue(),
+                numericValue(stored, FIELD_SIZE).longValue());
+
+        for (IndexableField field : stored.getFields()) {
+            if (CORE_FIELDS.contains(field.name())) {
+                continue;
+            }
+            Number number = field.numericValue();
+            if (number instanceof Integer) {
+                LuceneUtils.addIntField(doc, field.name(), number.intValue());
+            } else if (number instanceof Long) {
+                LuceneUtils.addLongField(doc, field.name(), number.longValue());
+            } else if (number instanceof Float) {
+                doc.add(new StoredField(field.name(), number.floatValue()));
+            } else if (number instanceof Double) {
+                doc.add(new StoredField(field.name(), number.doubleValue()));
+            } else if (field.stringValue() != null) {
+                LuceneUtils.addTextField(doc, field.name(), field.stringValue());
+            } else if (field.binaryValue() != null) {
+                doc.add(new StoredField(field.name(), BytesRef.deepCopyOf(field.binaryValue())));
+            }
+        }
+        return doc;
+    }
+
+    private static Number numericValue(Document doc, String field) {
+        IndexableField f = doc.getField(field);
+        return f == null || f.numericValue() == null ? Integer.valueOf(0) : f.numericValue();
+    }
+
+    private static String fullPathOf(ImmutableInodeHandle inode) {
         if (inode.isDirectory()) {
-            return TERM_FULL.createTerm(inode.getPath() + VirtualFileSystem.separator);
+            return inode.getPath() + VirtualFileSystem.separator;
         }
-
-        return TERM_FULL.createTerm(inode.getPath());
+        return inode.getPath();
     }
 
-    private Term makeFullPathTermFromString(String path) {
-        return TERM_FULL.createTerm(path);
+    private static Term makeFullPathTermFromInode(ImmutableInodeHandle inode) {
+        return new Term(FIELD_FULL_PATH, fullPathOf(inode));
     }
 
-    private Term makeParentPathTermFromInode(InodeHandle inode) {
-        if (inode.isDirectory()) {
-            return TERM_PARENT.createTerm(inode.getPath() + VirtualFileSystem.separator);
+    private IndexWriter writer() throws IOException {
+        IndexWriter writer = _iWriter;
+        if (writer == null) {
+            throw new IOException("The index is not open");
         }
-
-        return TERM_PARENT.createTerm(inode.getPath());
+        return writer;
     }
 
-    private WildcardQuery makeFullNameWildcardQueryFromString(String name) {
-        return new WildcardQuery(TERM_FULL_NAME.createTerm(name));
+    private SearcherManager searcherManager() throws IOException {
+        SearcherManager searcherManager = _searcherManager;
+        if (searcherManager == null) {
+            throw new IOException("The index is not open");
+        }
+        return searcherManager;
     }
 
-    private RegexQuery makeFullPathRegexQueryFromString(String regex) {
-        return new RegexQuery(TERM_FULL.createTerm(regex));
-    }
-
-    private PrefixQuery makeFullNameReversePrefixQueryFromString(String name) {
-        name = new StringBuilder(name).reverse().toString();
-        return new PrefixQuery(TERM_FULL_NAME_REVERSE.createTerm(name));
-    }
-
-    private TermQuery makeOwnerTermQueryFromString(String owner) {
-        return new TermQuery(TERM_OWNER.createTerm(owner));
-    }
-
-    private TermQuery makeGroupTermQueryFromString(String group) {
-        return new TermQuery(TERM_GROUP.createTerm(group));
-    }
-
-    private void setSortField(boolean order) {
-        SORT.setSort(new SortField("fullPath", SortField.STRING, order));
-    }
-
-    private void setSortField(String field, int type, boolean order) {
-        SORT.setSort(new SortField(field, type, order),
-                new SortField("fullPath", SortField.STRING, order));
-    }
-
-    private void setSortFieldRandom() {
-        SORT.setSort(new SortField(
-                "",
-                new FieldComparatorSource() {
-                    @Override
-                    public FieldComparator<Integer> newComparator(String fieldname, int numHits, int sortPos, boolean reversed) throws IOException {
-                        return new RandomOrderFieldComparator();
-                    }
-                }
-        ));
+    private static IndexSearcher acquireFreshSearcher(SearcherManager searcherManager) throws IOException {
+        // see every change made so far, including the ones not committed yet
+        searcherManager.maybeRefreshBlocking();
+        return searcherManager.acquire();
     }
 
     /* {@inheritDoc} */
     public void addInode(ImmutableInodeHandle inode) throws IndexException {
         try {
-            synchronized (INDEX_DOCUMENT) {
-                Document doc = makeDocumentFromInode(inode);
-                _iWriter.addDocument(doc);
-            }
+            // updateDocument rather than addDocument: never index the same path twice
+            writer().updateDocument(makeFullPathTermFromInode(inode), makeDocumentFromInode(inode));
         } catch (FileNotFoundException e) {
             logger.error("Unable to add {} to the index", inode.getPath(), e);
         } catch (RuntimeException | IOException e) {
@@ -398,7 +594,7 @@ public class LuceneEngine implements IndexEngineInterface {
     /* {@inheritDoc} */
     public void deleteInode(ImmutableInodeHandle inode) throws IndexException {
         try {
-            _iWriter.deleteDocuments(makeFullPathTermFromInode(inode));
+            writer().deleteDocuments(makeFullPathTermFromInode(inode));
         } catch (RuntimeException | IOException e) {
             throw new IndexException("Unable to delete " + inode.getPath() + " from the index", e);
         }
@@ -407,9 +603,7 @@ public class LuceneEngine implements IndexEngineInterface {
     /* {@inheritDoc} */
     public void updateInode(ImmutableInodeHandle inode) throws IndexException {
         try {
-            synchronized (INDEX_DOCUMENT) {
-                _iWriter.updateDocument(makeFullPathTermFromInode(inode), makeDocumentFromInode(inode));
-            }
+            writer().updateDocument(makeFullPathTermFromInode(inode), makeDocumentFromInode(inode));
         } catch (FileNotFoundException e) {
             logger.error("The inode was here but now it isn't!", e);
         } catch (RuntimeException | IOException e) {
@@ -419,80 +613,31 @@ public class LuceneEngine implements IndexEngineInterface {
 
     /* {@inheritDoc} */
     public void renameInode(ImmutableInodeHandle fromInode, ImmutableInodeHandle toInode) throws IndexException {
-        IndexSearcher iSearcher = null;
-        IndexReader iReader = null;
         try {
+            IndexWriter writer = writer();
             Term fromInodeTerm = makeFullPathTermFromInode(fromInode);
-            synchronized (INDEX_DOCUMENT) {
-                _iWriter.updateDocument(fromInodeTerm, makeDocumentFromInode(toInode));
-            }
+            writer.updateDocument(fromInodeTerm, makeDocumentFromInode(toInode));
             if (toInode.isDirectory()) {
-                PrefixQuery prefixQuery = new PrefixQuery(fromInodeTerm);
-
-                iReader = IndexReader.open(_iWriter, true);
-                iSearcher = new IndexSearcher(iReader);
-
-                final BitSet bits = new BitSet(iReader.maxDoc());
-                iSearcher.search(prefixQuery, new Collector() {
-                    private int docBase;
-
-                    // ignore scorer
-                    public void setScorer(Scorer scorer) {
+                SearcherManager searcherManager = searcherManager();
+                IndexSearcher iSearcher = acquireFreshSearcher(searcherManager);
+                try {
+                    List<Integer> docIds = iSearcher.search(new PrefixQuery(fromInodeTerm), new DocIdCollectorManager());
+                    StoredFields storedFields = iSearcher.storedFields();
+                    for (int docId : docIds) {
+                        Document stored = storedFields.document(docId);
+                        String oldPath = stored.get(FIELD_FULL_PATH);
+                        String newPath = toInode.getPath() + oldPath.substring(fromInode.getPath().length());
+                        writer.updateDocument(new Term(FIELD_FULL_PATH, oldPath), rebuildDocument(stored, newPath));
                     }
-
-                    // accept docs out of order (for a BitSet it doesn't matter)
-                    public boolean acceptsDocsOutOfOrder() {
-                        return true;
-                    }
-
-                    public void collect(int doc) {
-                        bits.set(doc + docBase);
-                    }
-
-                    public void setNextReader(IndexReader reader, int docBase) {
-                        this.docBase = docBase;
-                    }
-                });
-
-                for (int i = bits.nextSetBit(0); i >= 0; i = bits.nextSetBit(i + 1)) {
-                    Document doc = iSearcher.doc(i, SIMPLE_FIELD_SELECTOR);
-
-                    String oldPath = doc.getFieldable(FIELD_FULL_PATH.name()).stringValue();
-                    String newPath = toInode.getPath() + oldPath.substring(fromInode.getPath().length());
-                    doc.removeField(FIELD_FULL_PATH.name());
-                    doc.removeField(FIELD_PARENT_PATH.name());
-
-                    synchronized (INDEX_DOCUMENT) {
-                        FIELD_FULL_PATH.setValue(newPath);
-                        if (newPath.equals(VirtualFileSystem.separator)) {
-                            FIELD_PARENT_PATH.setValue("");
-                        } else {
-                            FIELD_PARENT_PATH.setValue(VirtualFileSystem.stripLast(newPath) + VirtualFileSystem.separator);
-                        }
-                        doc.add(FIELD_FULL_PATH);
-                        doc.add(FIELD_PARENT_PATH);
-                        _iWriter.updateDocument(makeFullPathTermFromString(oldPath), doc);
-                    }
+                } finally {
+                    searcherManager.release(iSearcher);
                 }
             }
+        } catch (FileNotFoundException e) {
+            logger.error("Unable to rename {} to {} in the index", fromInode.getPath(), toInode.getPath(), e);
         } catch (RuntimeException | IOException e) {
             throw new IndexException("Unable to rename " + fromInode.getPath() + " to " +
                     toInode.getPath() + " in the index", e);
-        } finally {
-            if (iSearcher != null) {
-                try {
-                    iSearcher.close();
-                } catch (IOException e) {
-                    logger.error("IOException closing IndexSearcher", e);
-                }
-            }
-            if (iReader != null) {
-                try {
-                    iReader.close();
-                } catch (IOException e) {
-                    logger.error("IOException closing IndexReader obtained from the IndexWriter", e);
-                }
-            }
         }
     }
 
@@ -502,7 +647,7 @@ public class LuceneEngine implements IndexEngineInterface {
      */
     public void commit() throws IndexException {
         try {
-            _iWriter.commit();
+            writer().commit();
         } catch (RuntimeException | IOException e) {
             throw new IndexException("Unable to commit the index", e);
         }
@@ -510,29 +655,31 @@ public class LuceneEngine implements IndexEngineInterface {
 
     /* {@inheritDoc} */
     public void rebuildIndex() throws IndexException, FileNotFoundException {
-        if (_rebuilding) {
-            throw new IndexException("A previous rebuildindex command is already in progress.");
+        synchronized (this) {
+            if (_rebuilding) {
+                throw new IndexException("A previous rebuildindex command is already in progress.");
+            }
+            _rebuilding = true;
         }
-        _rebuilding = true;
-
-        closeAll();
-
-        PhysicalFile f = new PhysicalFile(INDEX_DIR);
-        f.deleteRecursive();
-
-        openStreams();
 
         try {
+            // drop every document; the writer and the searchers stay open
+            writer().deleteAll();
+
             DirectoryHandle root = GlobalContext.getGlobalContext().getRoot();
             root.requestRefresh(true); // Start by adding root inode
             recurseAndBuild(root); // Recursively traverse the VFS and add all inodes
             commit(); // commit the writer so that the searcher can see the new stuff.
+            _rebuildRequired = false;
         } catch (IndexException e) {
             logger.error("Exception whilst rebuilding lucene index", e);
             throw e;
         } catch (FileNotFoundException e) {
             logger.error("Root directory not found whilst rebuilding lucene index", e);
             throw e;
+        } catch (RuntimeException | IOException e) {
+            logger.error("Exception whilst rebuilding lucene index", e);
+            throw new IndexException("Unable to rebuild the index", e);
         } finally {
             _rebuilding = false;
         }
@@ -576,162 +723,164 @@ public class LuceneEngine implements IndexEngineInterface {
     }
 
     /**
+     * @return true if the index found on disk at startup could not be read and was replaced by an
+     * empty one that has not been rebuilt yet.
+     */
+    public boolean isRebuildRequired() {
+        return _rebuildRequired;
+    }
+
+    /**
+     * @return where the unreadable index was moved, or null.
+     */
+    Path getMovedAsideIndex() {
+        return _movedAsideIndex;
+    }
+
+    /**
+     * Builds the query for {@link #advancedFind}.
+     *
+     * @param startPath path of the directory where the search begins
+     * @throws IllegalArgumentException if the parameters are invalid (wildcards, regex)
+     */
+    Query buildAdvancedQuery(String startPath, AdvancedSearchParams params) throws IllegalArgumentException {
+        BooleanQuery.Builder query = new BooleanQuery.Builder();
+
+        if (!startPath.equals(VirtualFileSystem.separator)) {
+            query.add(new PrefixQuery(new Term(FIELD_PARENT_PATH, startPath + VirtualFileSystem.separator)), Occur.MUST);
+        }
+
+        if (params.getInodeType() == InodeType.DIRECTORY) {
+            query.add(QUERY_DIRECTORY, Occur.MUST);
+        } else if (params.getInodeType() == InodeType.FILE) {
+            query.add(QUERY_FILE, Occur.MUST);
+        }
+
+        if (params.getOwner() != null) {
+            query.add(new TermQuery(new Term(FIELD_OWNER, params.getOwner())), Occur.MUST);
+        }
+        if (params.getGroup() != null) {
+            query.add(new TermQuery(new Term(FIELD_GROUP, params.getGroup())), Occur.MUST);
+        }
+
+        if (!params.getSlaves().isEmpty()) {
+            query.add(LuceneUtils.analyze(FIELD_SLAVES, String.join(" ", params.getSlaves())), Occur.MUST);
+        }
+
+        if (params.getMinAge() != null || params.getMaxAge() != null) {
+            query.add(LuceneUtils.longRangeQuery(FIELD_LASTMODIFIED, params.getMinAge(), params.getMaxAge()), Occur.MUST);
+        }
+
+        if (params.getMinSize() != null || params.getMaxSize() != null) {
+            query.add(LuceneUtils.longRangeQuery(FIELD_SIZE, params.getMinSize(), params.getMaxSize()), Occur.MUST);
+        }
+
+        if (params.getMinSlaves() != null || params.getMaxSlaves() != null) {
+            query.add(LuceneUtils.intRangeQuery(FIELD_SLAVES_NBR, params.getMinSlaves(), params.getMaxSlaves()), Occur.MUST);
+        }
+
+        if (params.getName() != null) {
+            if (!LuceneUtils.validWildcards(params.getName())) {
+                throw new IllegalArgumentException("Wildcards in the first three chars not allowed.");
+            }
+            query.add(LuceneUtils.analyze(FIELD_NAME, params.getName()), Occur.MUST);
+        }
+        if (params.getExact() != null) {
+            if (!LuceneUtils.validWildcards(params.getExact())) {
+                throw new IllegalArgumentException("Wildcards in the first three chars not allowed.");
+            }
+            query.add(new WildcardQuery(new Term(FIELD_FULL_NAME,
+                    LuceneUtils.escapeWildcardEscapeChar(params.getExact()))), Occur.MUST);
+        }
+        if (params.getRegex() != null) {
+            try {
+                query.add(new JavaRegexQuery(FIELD_FULL_PATH, params.getRegex()), Occur.MUST);
+            } catch (PatternSyntaxException e) {
+                throw new IllegalArgumentException("Invalid regular expression: " + e.getDescription()
+                        + (e.getIndex() >= 0 ? " near index " + e.getIndex() : ""), e);
+            }
+        }
+        if (params.getEndsWith() != null) {
+            query.add(new PrefixQuery(new Term(FIELD_FULL_NAME_REVERSE,
+                    new StringBuilder(params.getEndsWith()).reverse().toString())), Occur.MUST);
+        }
+
+        // Add any query terms from extensions
+        for (QueryTermExtensionInterface queryExtension : _queryExtensions) {
+            queryExtension.addQueryTerms(query, params);
+        }
+
+        return query.build();
+    }
+
+    /**
+     * Sort for {@link #advancedFind}: random when the order is null, otherwise on the given field
+     * (case insensitive) then on fullPath, reversed when the order is true.
+     */
+    static Sort buildSort(AdvancedSearchParams params) {
+        Boolean reverse = params.getSortOrder();
+        if (reverse == null) {
+            return new Sort(new SortField("random", new RandomOrderComparatorSource()));
+        }
+        SortField fullPath = new SortField(FIELD_FULL_PATH, SortField.Type.STRING, reverse);
+        String field = params.getSortField();
+        if (field == null) {
+            return new Sort(fullPath);
+        }
+        return switch (field.toLowerCase(Locale.ROOT)) {
+            case "lastmodified" -> new Sort(new SortField(FIELD_LASTMODIFIED, SortField.Type.LONG, reverse), fullPath);
+            case "size" -> new Sort(new SortField(FIELD_SIZE, SortField.Type.LONG, reverse), fullPath);
+            case "nbrofslaves" -> new Sort(new SortField(FIELD_SLAVES_NBR, SortField.Type.INT, reverse), fullPath);
+            case "parentpath" -> new Sort(new SortField(FIELD_PARENT_PATH, SortField.Type.STRING, reverse), fullPath);
+            case "owner" -> new Sort(new SortField(FIELD_OWNER, SortField.Type.STRING, reverse), fullPath);
+            case "group" -> new Sort(new SortField(FIELD_GROUP, SortField.Type.STRING, reverse), fullPath);
+            case "type" -> new Sort(new SortField(FIELD_TYPE, SortField.Type.STRING, reverse), fullPath);
+            default -> new Sort(fullPath);
+        };
+    }
+
+    /**
      * @param startNode The dir where the search will begin.
      * @param params    Search options.
      */
     public Map<String, String> advancedFind(DirectoryHandle startNode, AdvancedSearchParams params, String caller)
             throws IndexException, IllegalArgumentException {
-        IndexSearcher iSearcher = null;
-        IndexReader iReader = null;
+        return advancedFind(startNode.getPath(), params, caller);
+    }
+
+    Map<String, String> advancedFind(String startPath, AdvancedSearchParams params, String caller)
+            throws IndexException, IllegalArgumentException {
+        Query query = buildAdvancedQuery(startPath, params);
+        Sort sort = buildSort(params);
+        int limit = params.getLimit() != null ? params.getLimit() : _maxHitsNumber;
+
+        logger.debug("{} query: {}", caller, query);
+
+        Map<String, String> inodes = new LinkedHashMap<>();
         try {
-            Map<String, String> inodes = new LinkedHashMap<>();
-
-            BooleanQuery query = new BooleanQuery();
-
-            if (!startNode.getPath().equals(VirtualFileSystem.separator)) {
-                PrefixQuery parentQuery = new PrefixQuery(makeParentPathTermFromInode(startNode));
-                query.add(parentQuery, Occur.MUST);
-            }
-
-            if (params.getInodeType() == InodeType.ANY) {
-                /*
-                 * The following isnt needed, we simply ignore search for this
-                 * field.
-                 *
-                 * query.add(QUERY_DIRECTORY, Occur.SHOULD);
-                 * query.add(QUERY_FILE, Occur.SHOULD);
-                 */
-            } else if (params.getInodeType() == InodeType.DIRECTORY) {
-                query.add(QUERY_DIRECTORY, Occur.MUST);
-            } else if (params.getInodeType() == InodeType.FILE) {
-                query.add(QUERY_FILE, Occur.MUST);
-            }
-
-            if (params.getOwner() != null) {
-                query.add(makeOwnerTermQueryFromString(params.getOwner()), Occur.MUST);
-            }
-            if (params.getGroup() != null) {
-                query.add(makeGroupTermQueryFromString(params.getGroup()), Occur.MUST);
-            }
-
-            if (!params.getSlaves().isEmpty()) {
-                StringBuilder sb = new StringBuilder();
-                for (String slaveName : params.getSlaves()) {
-                    sb.append(slaveName).append(" ");
-                }
-                Query slaveQuery = LuceneUtils.analyze("slaves", TERM_SLAVES, sb.toString().trim());
-                query.add(slaveQuery, Occur.MUST);
-            }
-
-            if (params.getMinAge() != null || params.getMaxAge() != null) {
-                Query ageQuery = NumericRangeQuery.newLongRange("lastModified",
-                        params.getMinAge(), params.getMaxAge(), true, true);
-                query.add(ageQuery, Occur.MUST);
-            }
-
-            if (params.getMinSize() != null || params.getMaxSize() != null) {
-                Query sizeQuery = NumericRangeQuery.newLongRange("size",
-                        params.getMinSize(), params.getMaxSize(), true, true);
-                query.add(sizeQuery, Occur.MUST);
-            }
-
-            if (params.getMinSlaves() != null || params.getMaxSlaves() != null) {
-                Query nbrOfSlavesQuery = NumericRangeQuery.newIntRange("nbrOfSlaves",
-                        params.getMinSlaves(), params.getMaxSlaves(), true, true);
-                query.add(nbrOfSlavesQuery, Occur.MUST);
-            }
-
-            if (params.getName() != null) {
-                if (!LuceneUtils.validWildcards(params.getName())) {
-                    throw new IllegalArgumentException("Wildcards in the first three chars not allowed.");
-                }
-                Query nameQuery = LuceneUtils.analyze("name", TERM_NAME, params.getName());
-                query.add(nameQuery, Occur.MUST);
-            }
-            if (params.getExact() != null) {
-                if (!LuceneUtils.validWildcards(params.getExact())) {
-                    throw new IllegalArgumentException("Wildcards in the first three chars not allowed.");
-                }
-                query.add(makeFullNameWildcardQueryFromString(params.getExact()), Occur.MUST);
-            }
-            if (params.getRegex() != null) {
-                query.add(makeFullPathRegexQueryFromString(params.getRegex()), Occur.MUST);
-            }
-            if (params.getEndsWith() != null) {
-                query.add(makeFullNameReversePrefixQueryFromString(params.getEndsWith()), Occur.MUST);
-            }
-
-            if (params.getSortField() != null && params.getSortOrder() != null) {
-                if (params.getSortField().equalsIgnoreCase("lastModified") ||
-                        params.getSortField().equalsIgnoreCase("size")) {
-                    setSortField(params.getSortField(), SortField.LONG, params.getSortOrder());
-                } else if (params.getSortField().equalsIgnoreCase("nbrOfSlaves")) {
-                    setSortField(params.getSortField(), SortField.INT, params.getSortOrder());
-                } else if (params.getSortField().equalsIgnoreCase("parentPath") ||
-                        params.getSortField().equalsIgnoreCase("owner") ||
-                        params.getSortField().equalsIgnoreCase("group") ||
-                        params.getSortField().equalsIgnoreCase("type")) {
-                    setSortField(params.getSortField(), SortField.STRING, params.getSortOrder());
-                } else {
-                    setSortField(params.getSortOrder());
-                }
-            } else if (params.getSortOrder() == null) {
-                setSortFieldRandom();
-            } else {
-                setSortField(params.getSortOrder());
-            }
-
-            int limit = _maxHitsNumber;
-
-            if (params.getLimit() != null) {
-                limit = params.getLimit();
-            }
-
-            // Add any query terms from extensions
-            for (QueryTermExtensionInterface queryExtension : _queryExtensions) {
-                queryExtension.addQueryTerms(query, params);
-            }
-
-            logger.debug("{} query: {}", caller, query);
-
-            iReader = IndexReader.open(_iWriter, true);
-            iSearcher = new IndexSearcher(iReader);
-            if (limit == 0) {
-                TotalHitCountCollector totalHitCountCollector = new TotalHitCountCollector();
-                iSearcher.search(query, totalHitCountCollector);
-                limit = totalHitCountCollector.getTotalHits();
+            SearcherManager searcherManager = searcherManager();
+            IndexSearcher iSearcher = acquireFreshSearcher(searcherManager);
+            try {
                 if (limit == 0) {
-                    return inodes;
+                    limit = iSearcher.count(query);
+                    if (limit == 0) {
+                        return inodes;
+                    }
+                    logger.debug("Found {} inode match(es) in the index, using this as limit.", limit);
                 }
-                logger.debug("Found {} inode match(es) in the index, using this as limit.", limit);
+                TopDocs topDocs = iSearcher.search(query, limit, sort, false);
+                StoredFields storedFields = iSearcher.storedFields();
+                for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
+                    Document doc = storedFields.document(scoreDoc.doc, ADVANCED_SEARCH_FIELDS);
+                    inodes.put(doc.get(FIELD_FULL_PATH), doc.get(FIELD_TYPE));
+                }
+            } finally {
+                searcherManager.release(iSearcher);
             }
-            TopFieldCollector topFieldCollector = TopFieldCollector.create(SORT, limit, true, false, false, false);
-            iSearcher.search(query, topFieldCollector);
-
-            for (ScoreDoc scoreDoc : topFieldCollector.topDocs().scoreDocs) {
-                Document doc = iSearcher.doc(scoreDoc.doc, ADVANCED_FIELD_SELECTOR);
-                inodes.put(doc.getFieldable("fullPath").stringValue(), doc.getFieldable("type").stringValue());
-            }
-
             return inodes;
         } catch (RuntimeException | IOException e) {
             logger.error(EXCEPTION_OCCURED_WHILE_SEARCHING, e);
             throw new IndexException("Unable to search the index", e);
-        } finally {
-            if (iSearcher != null) {
-                try {
-                    iSearcher.close();
-                } catch (IOException e) {
-                    logger.error("IOException closing IndexSearcher", e);
-                }
-            }
-            if (iReader != null) {
-                try {
-                    iReader.close();
-                } catch (IOException e) {
-                    logger.error("IOException closing IndexReader obtained from the IndexWriter", e);
-                }
-            }
         }
     }
 
@@ -741,64 +890,72 @@ public class LuceneEngine implements IndexEngineInterface {
      * @param inodeType If you are searching for a File, Dir or both.
      */
     public Set<String> findInode(DirectoryHandle startNode, String text, InodeType inodeType) throws IndexException {
-        IndexSearcher iSearcher = null;
-        IndexReader iReader = null;
+        return findInode(startNode.getPath(), text, inodeType);
+    }
+
+    Set<String> findInode(String startPath, String text, InodeType inodeType) throws IndexException {
+        BooleanQuery.Builder builder = new BooleanQuery.Builder();
+        if (!startPath.equals(VirtualFileSystem.separator)) {
+            builder.add(new PrefixQuery(new Term(FIELD_PARENT_PATH, startPath + VirtualFileSystem.separator)), Occur.MUST);
+        }
+        builder.add(LuceneUtils.analyze(FIELD_NAME, text), Occur.MUST);
+        if (inodeType == InodeType.DIRECTORY) {
+            builder.add(QUERY_DIRECTORY, Occur.MUST);
+        } else if (inodeType == InodeType.FILE) {
+            builder.add(QUERY_FILE, Occur.MUST);
+        }
+        Query query = builder.build();
+        logger.debug("Query: {}", query);
+
+        Set<String> inodes = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
         try {
-            Set<String> inodes = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
-
-            BooleanQuery query = new BooleanQuery();
-
-            if (!startNode.getPath().equals(VirtualFileSystem.separator)) {
-                PrefixQuery parentQuery = new PrefixQuery(makeParentPathTermFromInode(startNode));
-                query.add(parentQuery, Occur.MUST);
+            SearcherManager searcherManager = searcherManager();
+            IndexSearcher iSearcher = acquireFreshSearcher(searcherManager);
+            try {
+                int limit = _maxHitsNumber > 0 ? _maxHitsNumber : iSearcher.count(query);
+                if (limit == 0) {
+                    return inodes;
+                }
+                TopDocs topDocs = iSearcher.search(query, limit);
+                StoredFields storedFields = iSearcher.storedFields();
+                for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
+                    inodes.add(storedFields.document(scoreDoc.doc, SIMPLE_SEARCH_FIELDS).get(FIELD_FULL_PATH));
+                }
+            } finally {
+                searcherManager.release(iSearcher);
             }
-
-            Query nameQuery = LuceneUtils.analyze("name", TERM_NAME, text);
-            query.add(nameQuery, Occur.MUST);
-
-            if (inodeType == InodeType.ANY) {
-                /*
-                 * The following isnt needed, we simply ignore search for this
-                 * field.
-                 *
-                 * query.add(dirQuery, Occur.SHOULD); query.add(fileQuery,
-                 * Occur.SHOULD);
-                 */
-            } else if (inodeType == InodeType.DIRECTORY) {
-                query.add(QUERY_DIRECTORY, Occur.MUST);
-            } else if (inodeType == InodeType.FILE) {
-                query.add(QUERY_FILE, Occur.MUST);
-            }
-
-            iReader = IndexReader.open(_iWriter, true);
-            iSearcher = new IndexSearcher(iReader);
-            TopScoreDocCollector topScoreDocsCollector = TopScoreDocCollector.create(_maxHitsNumber, false);
-            iSearcher.search(query, topScoreDocsCollector);
-            logger.debug("Query: {}", query);
-
-            for (ScoreDoc scoreDoc : topScoreDocsCollector.topDocs().scoreDocs) {
-                Document doc = iSearcher.doc(scoreDoc.doc, SIMPLE_FIELD_SELECTOR);
-                inodes.add(doc.getFieldable("fullPath").stringValue());
-            }
-
             return inodes;
         } catch (RuntimeException | IOException e) {
             logger.error(EXCEPTION_OCCURED_WHILE_SEARCHING, e);
             throw new IndexException("Unable to search the index", e);
-        } finally {
-            if (iSearcher != null) {
-                try {
-                    iSearcher.close();
-                } catch (IOException e) {
-                    logger.error("IOException closing IndexSearcher", e);
+        }
+    }
+
+    /**
+     * Copies the files of the latest commit to the given directory. A commit is made first and
+     * the commit point is protected by a {@link SnapshotDeletionPolicy} while it is copied, so the
+     * backup is a consistent index even though the writer keeps on indexing meanwhile.
+     *
+     * @param target the backup directory, created if needed
+     */
+    void backupTo(Path target) throws IOException {
+        synchronized (_lock) {
+            IndexWriter writer = writer();
+            writer.commit();
+            IndexCommit snapshot = _snapshotPolicy.snapshot();
+            try {
+                Files.createDirectories(target);
+                Collection<String> files = snapshot.getFileNames();
+                try (Directory backup = FSDirectory.open(target)) {
+                    for (String file : files) {
+                        backup.copyFrom(_storage, file, file, IOContext.DEFAULT);
+                    }
+                    backup.sync(files);
+                    backup.syncMetaData();
                 }
-            }
-            if (iReader != null) {
-                try {
-                    iReader.close();
-                } catch (IOException e) {
-                    logger.error("IOException closing IndexReader obtained from the IndexWriter", e);
-                }
+            } finally {
+                _snapshotPolicy.release(snapshot);
+                writer.deleteUnusedFiles();
             }
         }
     }
@@ -807,64 +964,70 @@ public class LuceneEngine implements IndexEngineInterface {
      * This method returns a Map containing information about the index engine.<br>
      * Right now this Map contains the info bellow:
      * <ul>
-     * <li>Number of inodes (key => "inodes")</li>
      * <li>Storage backend (key => "backend")</li>
-     * <li>Maximum search hits (key => "max hits")</li>
-     * <li>The date of the last optimization (key => "last optimization")</li>
-     * <li>The date of the last backup (key => "last backup")</li>
-     * <li>The date of the last uptade of the search engine (key => "last search engine update")</li>
-     * <li>Amount of cached documents (key => "cached inodes")</li>
+     * <li>Number of inodes (key => "inodes")</li>
+     * <li>Number of deleted inodes not merged away yet (key => "deleted inodes")</li>
+     * <li>Amount of buffered documents (key => "cached inodes")</li>
      * <li>Amount of used memory (key => "ram usage")</li>
-     * <li>The size in disk of the index (key => "disk usage")</li>
+     * <li>Maximum search hits (key => "max hits")</li>
+     * <li>The date of the last periodic commit (key => "last optimization")</li>
+     * <li>The date of the last backup (key => "last backup")</li>
+     * <li>The size in disk of the index (key => "size")</li>
+     * <li>Whether the index must be or is being rebuilt (key => "rebuild", only when relevant)</li>
      * </ul>
      */
     public Map<String, String> getStatus() {
         Map<String, String> status = new LinkedHashMap<>();
 
         DateFormat df = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.LONG);
-        String lastOp = df.format(new Date(_maintenanceThread.getLastOptimizationTime()));
-        String lastBackup = df.format(new Date(_backupThread.getLastBackup()));
-        status.put("backend", "Apache Lucene (http://lucene.apache.org)");
+        status.put("backend", "Apache Lucene " + Version.LATEST + " (https://lucene.apache.org)");
 
-        try {
-            status.put("inodes", String.valueOf(_iWriter.numDocs()));
-        } catch (IOException e) {
-            logger.error("IOException getting IndexWriter", e);
-        }
-
-        IndexReader iReader = null;
-        try {
-            iReader = IndexReader.open(_iWriter, true);
-            status.put("deleted inodes", String.valueOf(iReader.numDeletedDocs()));
-        } catch (IOException e) {
-            logger.error(EXCEPTION_OCCURED_WHILE_SEARCHING, e);
-        } finally {
-            if (iReader != null) {
+        IndexWriter writer = _iWriter;
+        SearcherManager searcherManager = _searcherManager;
+        if (writer != null && searcherManager != null) {
+            try {
+                IndexSearcher iSearcher = acquireFreshSearcher(searcherManager);
                 try {
-                    iReader.close();
-                } catch (IOException e) {
-                    logger.error("IOException closing IndexReader obtained from the IndexWriter", e);
+                    status.put("inodes", String.valueOf(iSearcher.getIndexReader().numDocs()));
+                    status.put("deleted inodes", String.valueOf(iSearcher.getIndexReader().numDeletedDocs()));
+                } finally {
+                    searcherManager.release(iSearcher);
                 }
+                status.put("cached inodes", String.valueOf(writer.numRamDocs()));
+                status.put("ram usage", Bytes.formatBytes(writer.ramBytesUsed()));
+            } catch (RuntimeException | IOException e) {
+                logger.error("Error reading the index status", e);
+            }
+        }
+        status.put("max hits", String.valueOf(_maxHitsNumber));
+        if (_maintenanceThread != null) {
+            status.put("last optimization", df.format(new Date(_maintenanceThread.getLastOptimizationTime())));
+        }
+        if (_backupThread != null) {
+            status.put("last backup", df.format(new Date(_backupThread.getLastBackup())));
+        }
+
+        Directory storage = _storage;
+        if (storage != null) {
+            long size = 0L;
+            try {
+                for (String file : storage.listAll()) {
+                    try {
+                        size += storage.fileLength(file);
+                    } catch (IOException e) {
+                        // file deleted meanwhile
+                    }
+                }
+                status.put("size", Bytes.formatBytes(size));
+            } catch (IOException e) {
+                logger.error("IOException getting size of index dir", e);
             }
         }
 
-        status.put("cached inodes", String.valueOf(_iWriter.numRamDocs()));
-        status.put("max hits", String.valueOf(_maxHitsNumber));
-        status.put("last optimization", lastOp);
-        status.put("last backup", lastBackup);
-        status.put("ram usage", Bytes.formatBytes(_iWriter.ramSizeInBytes()));
-
-        long size = 0L;
-        String[] paths;
-        try {
-            paths = _storage.listAll();
-            for (String path : paths) {
-                size += new PhysicalFile(INDEX_DIR + "/" + path).length();
-            }
-
-            status.put("size", Bytes.formatBytes(size));
-        } catch (IOException e) {
-            logger.error("IOException getting size of index dir", e);
+        if (_rebuilding) {
+            status.put("rebuild", "in progress");
+        } else if (_rebuildRequired) {
+            status.put("rebuild", "required, run SITE REBUILDINDEX (unreadable index moved to " + _movedAsideIndex + ")");
         }
 
         return status;
@@ -879,39 +1042,133 @@ public class LuceneEngine implements IndexEngineInterface {
     }
 
     /**
+     * Collects the (global) ids of all matching documents.
+     */
+    private static final class DocIdCollectorManager
+            implements CollectorManager<DocIdCollectorManager.DocIdCollector, List<Integer>> {
+
+        static final class DocIdCollector extends SimpleCollector {
+            private final List<Integer> _docIds = new ArrayList<>();
+            private int _docBase;
+
+            @Override
+            protected void doSetNextReader(LeafReaderContext context) {
+                _docBase = context.docBase;
+            }
+
+            @Override
+            public void collect(int doc) {
+                _docIds.add(_docBase + doc);
+            }
+
+            @Override
+            public ScoreMode scoreMode() {
+                return ScoreMode.COMPLETE_NO_SCORES;
+            }
+        }
+
+        @Override
+        public DocIdCollector newCollector() {
+            return new DocIdCollector();
+        }
+
+        @Override
+        public List<Integer> reduce(Collection<DocIdCollector> collectors) {
+            List<Integer> docIds = new ArrayList<>();
+            for (DocIdCollector collector : collectors) {
+                docIds.addAll(collector._docIds);
+            }
+            return docIds;
+        }
+    }
+
+    /**
+     * Sorts the hits in a random order: every document gets a pseudo random key derived from a
+     * seed drawn for each query.
+     */
+    static final class RandomOrderComparatorSource extends FieldComparatorSource {
+        private static final SecureRandom RANDOM = new SecureRandom();
+
+        @Override
+        public FieldComparator<?> newComparator(String fieldname, int numHits, Pruning pruning, boolean reversed) {
+            return new RandomOrderFieldComparator(numHits, RANDOM.nextLong());
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            return o instanceof RandomOrderComparatorSource;
+        }
+
+        @Override
+        public int hashCode() {
+            return RandomOrderComparatorSource.class.hashCode();
+        }
+    }
+
+    /**
      * Custom FieldComparator to get a random result from index
      */
-    public static class RandomOrderFieldComparator extends FieldComparator<Integer> {
+    static final class RandomOrderFieldComparator extends FieldComparator<Long> {
+        private final long[] _values;
+        private final long _seed;
+        private long _bottom;
 
-        private final SecureRandom random = new SecureRandom();
+        RandomOrderFieldComparator(int numHits, long seed) {
+            _values = new long[numHits];
+            _seed = seed;
+        }
+
+        private long key(int globalDoc) {
+            // SplitMix64 finalizer
+            long z = _seed + globalDoc * 0x9E3779B97F4A7C15L;
+            z = (z ^ (z >>> 30)) * 0xBF58476D1CE4E5B9L;
+            z = (z ^ (z >>> 27)) * 0x94D049BB133111EBL;
+            return z ^ (z >>> 31);
+        }
 
         @Override
         public int compare(int slot1, int slot2) {
-            return random.nextInt();
+            return Long.compare(_values[slot1], _values[slot2]);
         }
 
         @Override
-        public int compareBottom(int doc) throws IOException {
-            return random.nextInt();
+        public void setTopValue(Long value) {
         }
 
         @Override
-        public void copy(int slot, int doc) throws IOException {
+        public Long value(int slot) {
+            return _values[slot];
         }
 
         @Override
-        public void setBottom(int bottom) {
-        }
+        public LeafFieldComparator getLeafComparator(LeafReaderContext context) {
+            final int docBase = context.docBase;
+            return new LeafFieldComparator() {
+                @Override
+                public void setBottom(int slot) {
+                    _bottom = _values[slot];
+                }
 
-        @Override
-        public void setNextReader(IndexReader reader, int docBase) throws IOException {
-        }
+                @Override
+                public int compareBottom(int doc) {
+                    return Long.compare(_bottom, key(docBase + doc));
+                }
 
-        @Override
-        public Integer value(int slot) {
-            return random.nextInt();
-        }
+                @Override
+                public int compareTop(int doc) {
+                    return 0;
+                }
 
+                @Override
+                public void copy(int slot, int doc) {
+                    _values[slot] = key(docBase + doc);
+                }
+
+                @Override
+                public void setScorer(Scorable scorer) {
+                }
+            };
+        }
     }
 
     /**

@@ -19,12 +19,11 @@ package org.drftpd.master.indexation;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.lucene.store.FSDirectory;
 import org.drftpd.common.io.PhysicalFile;
-import org.drftpd.master.GlobalContext;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -50,9 +49,9 @@ public class LuceneBackupThread extends Thread {
 
     private final LuceneEngine _engine;
 
-    protected LuceneBackupThread() {
+    protected LuceneBackupThread(LuceneEngine engine) {
         setName("LuceneBackupThread");
-        _engine = (LuceneEngine) GlobalContext.getGlobalContext().getIndexEngine();
+        _engine = engine;
     }
 
     public void run() {
@@ -75,32 +74,20 @@ public class LuceneBackupThread extends Thread {
                 }
             }
 
-            if (_doBackups) {
-                // locking the writer object so that noone can use it.
-                // this might be useful.
-                synchronized (_engine.getWriter()) {
-                    setRunning(true);
+            if (_doBackups && !_engine.isRebuilding()) {
+                setRunning(true);
 
-                    String dateTxt = sdf.format(new Date(System.currentTimeMillis()));
-                    File f = new File(BACKUP_DIRNAME + "/" + dateTxt);
+                String dateTxt = sdf.format(new Date(System.currentTimeMillis()));
 
-                    try {
-                        if (!f.mkdirs()) {
-                            throw new IOException("Impossible to create backup directory, not enough permissions.");
-                        }
+                try {
+                    // the engine commits and snapshots the commit point while copying its files,
+                    // indexing goes on meanwhile and the backup is a consistent index.
+                    _engine.backupTo(Paths.get(BACKUP_DIRNAME, dateTxt));
 
-                        // creating the destination directory.
-                        FSDirectory bkpDirectory = FSDirectory.open(f);
-
-                        for (String file : _engine.getStorage().listAll()) {
-                            _engine.getStorage().copy(bkpDirectory, file, file);
-                        }
-
-                        logger.debug("A backup of the index was created successfully.");
-                        updateLastBackupTime();
-                    } catch (IOException e) {
-                        logger.error(e, e);
-                    }
+                    logger.debug("A backup of the index was created successfully.");
+                    updateLastBackupTime();
+                } catch (IOException | RuntimeException e) {
+                    logger.error("Unable to backup the index", e);
                 }
             }
 

@@ -21,25 +21,24 @@ import org.apache.lucene.document.Document;
 import org.drftpd.master.vfs.event.ImmutableInodeHandle;
 
 /**
- * @author djb61
- * @version $Id$
+ * Extension point to store additional (plugin) data about an inode in the index.
+ * <p>
+ * Implementations are discovered by reflection and instantiated once.
+ * {@link #addData(Document, ImmutableInodeHandle)} may be called concurrently from several threads,
+ * so it must not keep per-call state in fields.
  */
 public interface IndexDataExtensionInterface {
 
     /**
-     * This method is called once when the extension is loaded. All field
-     * instances the extension intends to use for storing data should be
-     * added to the document at this time.
-     *
-     * @param doc The document to add fields to.
-     */
-    void initializeFields(Document doc);
-
-    /**
-     * This method is called whenever an inode is being added to the index.
-     * The fields added to the document in the initializeFields call will be
-     * present in this document and should have their values set appropriately.
-     * Any fields not relevant to this particular inode should be cleared.
+     * This method is called whenever an inode is being added to, or updated in, the index.
+     * A new document is passed for every call: add one field for every value the extension
+     * stores, using a "no value" placeholder (empty string, -1) when the inode has no data, so that
+     * all documents have the same fields.
+     * <p>
+     * Fields must be added with {@link LuceneUtils#addTextField}, {@link LuceneUtils#addIntField} or
+     * {@link LuceneUtils#addLongField}: when a directory is renamed the documents of its children are
+     * rebuilt from their stored values, a stored string is then re-indexed as a text field and a
+     * stored int/long as an int/long point field.
      *
      * @param doc   The document to populate fields in.
      * @param inode The inode currently being indexed.
