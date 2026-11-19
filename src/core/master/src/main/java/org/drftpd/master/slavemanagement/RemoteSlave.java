@@ -101,9 +101,9 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
     private final transient LinkedBlockingQueue<FileHandle> _crcQueue;
     private transient RemergeThread _remergeThread;
     private transient CrcThread _crcThread;
-    private transient String _tlsProtocol;
-    private transient String _tlsCipherSuite;
-    private transient String _remoteAddress;
+    private transient volatile String _tlsProtocol;
+    private transient volatile String _tlsCipherSuite;
+    private transient volatile String _remoteAddress;
 
     public RemoteSlave(String name) {
         _name = name;
@@ -1019,6 +1019,10 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
             }
             _socket = null;
         }
+        // Connection details are only meaningful while connected, do not keep stale values
+        _tlsProtocol = null;
+        _tlsCipherSuite = null;
+        _remoteAddress = null;
         if (_indexWithCommands != null)
             _indexWithCommands.clear();
         if (_transfers != null)

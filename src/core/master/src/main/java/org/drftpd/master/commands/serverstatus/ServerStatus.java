@@ -232,13 +232,18 @@ public class ServerStatus extends CommandInterface {
                 for (RemoteSlave rs : slaves) {
                     Map<String, Object> slaveEnv = new HashMap<>();
                     slaveEnv.put("slave.name", rs.getName());
-                    slaveEnv.put("slave.online", rs.isOnline() ? "Online" : "Offline");
-                    if (showAddress) {
-                        slaveEnv.put("slave.address", rs.getRemoteAddress());
+                    boolean online = rs.isOnline();
+                    slaveEnv.put("slave.online", online ? "Online" : "Offline");
+                    if (online) {
+                        // Address and TLS details are only valid while the slave is connected
+                        if (showAddress) {
+                            slaveEnv.put("slave.address", rs.getRemoteAddress());
+                        }
+                        slaveEnv.put("slave.tls.protocol", rs.getTlsProtocol());
+                        slaveEnv.put("slave.tls.cipher", rs.getTlsCipherSuite());
                     }
-                    slaveEnv.put("slave.tls.protocol", rs.getTlsProtocol());
-                    slaveEnv.put("slave.tls.cipher", rs.getTlsCipherSuite());
-                    response.addComment(session.jprintf(_bundle, slaveEnv, "status.slaveinfo"));
+                    response.addComment(session.jprintf(_bundle, slaveEnv,
+                            online ? "status.slaveinfo" : "status.slaveinfo.offline"));
                 }
             }
 

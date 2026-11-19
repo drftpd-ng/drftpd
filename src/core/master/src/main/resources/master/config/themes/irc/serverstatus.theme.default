@@ -13,3 +13,4 @@ status.cminfo=${color}15${bold}CM${coloroff}: Queue size: ${bold}${cm.queue}${bo
 status.cpuinfo=${color}15${bold}CPU${bold}${coloroff}: ${bold}${cpu.cores}${bold} core(s) (${bold}${cpu.arch}${bold}), load average: ${bold}${cpu.load}${bold}.
 status.netinfo=${color}15${bold}NETWORK${bold}${coloroff}: FTP port ${bold}${net.port}${bold}. Slaves: ${bold}${net.slaves.online}${bold} online / ${bold}${net.slaves.total}${bold} total.
 status.slaveinfo=${color}15${bold}${slave.name}${bold}${coloroff}: ${bold}${slave.online}${bold} TLS: ${bold}${slave.tls.protocol}${bold} / ${bold}${slave.tls.cipher}${bold}
+status.slaveinfo.offline=${color}15${bold}${slave.name}${bold}${coloroff}: ${bold}${slave.online}${bold}
