@@ -528,7 +528,7 @@ public class BasicHandler extends AbstractHandler {
         public Thread newThread(Runnable r) {
             Thread t = Executors.defaultThreadFactory().newThread(r);
             t.setPriority(Thread.MIN_PRIORITY);
-            t.setName(getIdleThreadName(t.getId()));
+            t.setName(getIdleThreadName(t.threadId()));
             return t;
         }
     }
