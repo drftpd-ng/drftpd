@@ -21,6 +21,7 @@ import org.drftpd.common.dynamicdata.Key;
 import org.drftpd.common.util.Bytes;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.commands.*;
+import org.drftpd.master.network.BaseFtpConnection;
 import org.drftpd.master.network.Session;
 import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.master.util.Time;
@@ -207,8 +208,8 @@ public class ServerStatus extends CommandInterface {
 
             if (arg.equals("network") || isAll) {
                 Properties props = GlobalContext.getConfig().getMainProperties();
-                env.put("net.bindip", props.getProperty("master.bindhost", "0.0.0.0"));
-                env.put("net.port", props.getProperty("master.bindport", "?"));
+                env.put("net.bindip", props.getProperty("master.ip", "0.0.0.0"));
+                env.put("net.port", props.getProperty("master.port", "?"));
 
                 List<RemoteSlave> slaves = GlobalContext.getGlobalContext().getSlaveManager().getSlaves();
                 int online = 0;
@@ -222,15 +223,19 @@ public class ServerStatus extends CommandInterface {
             }
 
             if (arg.equals("slaves")) {
+                // Slave IP addresses are only exposed to FTP sessions, never to IRC (output goes to channels)
+                boolean showAddress = session instanceof BaseFtpConnection;
                 List<RemoteSlave> slaves = GlobalContext.getGlobalContext().getSlaveManager().getSlaves();
                 for (RemoteSlave rs : slaves) {
-                    env.clear();
-                    env.put("slave.name", rs.getName());
-                    env.put("slave.online", rs.isOnline() ? "Online" : "Offline");
-                    env.put("slave.address", rs.getRemoteAddress());
-                    env.put("slave.tls.protocol", rs.getTlsProtocol());
-                    env.put("slave.tls.cipher", rs.getTlsCipherSuite());
-                    response.addComment(session.jprintf(_bundle, env, "status.slaveinfo"));
+                    Map<String, Object> slaveEnv = new HashMap<>();
+                    slaveEnv.put("slave.name", rs.getName());
+                    slaveEnv.put("slave.online", rs.isOnline() ? "Online" : "Offline");
+                    if (showAddress) {
+                        slaveEnv.put("slave.address", rs.getRemoteAddress());
+                    }
+                    slaveEnv.put("slave.tls.protocol", rs.getTlsProtocol());
+                    slaveEnv.put("slave.tls.cipher", rs.getTlsCipherSuite());
+                    response.addComment(session.jprintf(_bundle, slaveEnv, "status.slaveinfo"));
                 }
             }
 
@@ -242,4 +247,4 @@ public class ServerStatus extends CommandInterface {
 
         return response;
     }
-}
+} 

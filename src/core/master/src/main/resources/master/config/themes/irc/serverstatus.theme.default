@@ -10,3 +10,6 @@ status.slave.uptime=${color}15${bold}UPTIME${bold}${coloroff}: ${bold}${slave}${
 status.threads=${color}15${bold}THREADS${coloroff}: ${bold}${current.threads}${bold} running (peak: ${bold}${max.threads}${bold}) / Created threads since the startup: ${bold}${total.threads}${bold}.
 status.vminfo=${color}15${bold}JVM${coloroff}: ${bold}${vm.name}${bold} vers. ${bold}${vm.version}${bold} by ${bold}${vm.vendor}.
 status.cminfo=${color}15${bold}CM${coloroff}: Queue size: ${bold}${cm.queue}${bold}. Thread state: ${bold}${cm.state}${bold}.
+status.cpuinfo=${color}15${bold}CPU${coloroff}: ${bold}${cpu.cores}${bold} core(s) (${bold}${cpu.arch}${bold}), load average: ${bold}${cpu.load}${bold}.
+status.netinfo=${color}15${bold}NETWORK${coloroff}: FTP listening on ${bold}${net.bindip}:${net.port}${bold}. Slaves: ${bold}${net.slaves.online}${bold} online / ${bold}${net.slaves.total}${bold} total.
+status.slaveinfo=${color}15${bold}${slave.name}${coloroff}: ${bold}${slave.online}${bold} TLS: ${bold}${slave.tls.protocol}${bold} / ${bold}${slave.tls.cipher}${bold}
