@@ -15,6 +15,8 @@ public class AutoFreeSpaceSettings {
     public static String MODE_DISABLED = "Disabled";
     public static String MODE_DATE = "Date";
     public static String MODE_SPACE = "Space";
+
+    static final String PATH_KEY_PREFIX = "path:";
     private static AutoFreeSpaceSettings ref;
     private Map<String, Section> _sections;
     private List<String> _excludeFiles;
@@ -89,32 +91,27 @@ public class AutoFreeSpaceSettings {
         Map<String, Section> sections = new HashMap<>();
         int id = 1;
 
-        // Handle sections - supports both X.section=<name> and X.path=<pattern>
+        // Handle entries: each id has either X.section=<section> or X.path=<path>
         while (true) {
-            String sectionName = PropertyHelper.getProperty(p, id + ".section", null);
-            String pathPattern = PropertyHelper.getProperty(p, id + ".path", null);
-
-            // Stop if neither section nor path is configured for this id
-            if (sectionName == null && pathPattern == null) {
+            String name = PropertyHelper.getProperty(p, id + ".section", null);
+            String path = PropertyHelper.getProperty(p, id + ".path", null);
+            if (name == null && path == null) {
                 break;
             }
-
-            long wipeAfter = Long.parseLong(p.getProperty(id + ".wipeAfter", "0")) * 60000L;
-
-            if (pathPattern != null) {
-                // Path-based configuration: use path pattern directly
-                String key = "path:" + id;
-                sections.put(key, new Section(id, null, pathPattern, wipeAfter));
-                logger.debug("Loaded path pattern [{}], wipeAfter: {}", pathPattern, wipeAfter);
-            } else if (sectionName != null) {
-                // Section-based configuration: validate section exists
-                if (!GlobalContext.getGlobalContext().getSectionManager().getSection(sectionName).getName()
-                        .equalsIgnoreCase(sectionName)) {
-                    logger.error("Section [{}] does not exist, not creating configuration items", sectionName);
-                } else {
-                    sections.put(sectionName, new Section(id, sectionName, null, wipeAfter));
-                    logger.debug("Loaded section {}, wipeAfter: {}", sectionName, wipeAfter);
+            Long wipeAfter = parseWipeAfter(p, id, _mode);
+            if (wipeAfter == null) {
+                logger.error("Entry [{}] has no valid {}.wipeAfter, which is required in date mode, not creating configuration items", id, id);
+            } else if (path != null) {
+                if (name != null) {
+                    logger.warn("Entry [{}] has both {}.section and {}.path, using the path", id, id, id);
                 }
+                sections.put(PATH_KEY_PREFIX + path, new Section(id, null, path, wipeAfter));
+                logger.debug("Loaded path {}, wipeAfter: {}", path, wipeAfter);
+            } else if (!GlobalContext.getGlobalContext().getSectionManager().getSection(name).getName().equalsIgnoreCase(name)) {
+                logger.error("Section [{}] Does not exist, not creating configuration items", name);
+            } else {
+                sections.put(name, new Section(id, name, null, wipeAfter));
+                logger.debug("Loaded section {}, wipeAfter: {}", name, wipeAfter);
             }
             id++;
         }
@@ -122,7 +119,7 @@ public class AutoFreeSpaceSettings {
 
         ArrayList<String> excludeFiles = new ArrayList<>();
         // Handle excludeFiles
-        for (int i = 1;; i++) {
+        for (int i = 1; ; i++) {
             String sec = p.getProperty("excluded.file." + i);
             if (sec == null)
                 break;
@@ -161,8 +158,26 @@ public class AutoFreeSpaceSettings {
         return _cycleTime;
     }
 
-    public int getMaxIterations() {
-        return _maxIterations;
+    public int getMaxIterations() { return _maxIterations; }
+
+    /**
+     * Reads {@code <id>.wipeAfter} (in minutes) and returns it in milliseconds.
+     * The value is required in date mode, where a missing value must never mean "delete everything":
+     * a missing or invalid value returns {@code null} so the entry is skipped.
+     * In the other modes wipeAfter is not used, so a missing or invalid value returns 0.
+     */
+    static Long parseWipeAfter(Properties p, int id, String mode) {
+        String value = p.getProperty(id + ".wipeAfter");
+        long minutes;
+        try {
+            minutes = Long.parseLong(value == null ? "" : value.trim());
+        } catch (NumberFormatException e) {
+            return MODE_DATE.equals(mode) ? null : 0L;
+        }
+        if (minutes < 0) {
+            return MODE_DATE.equals(mode) ? null : 0L;
+        }
+        return minutes * 60000L;
     }
 
     static class Section {
@@ -171,11 +186,20 @@ public class AutoFreeSpaceSettings {
         private final String path;
         private final long wipeAfter;
 
+        /**
+         * @param name section name, or {@code null} for a path entry
+         * @param path VFS path for a path entry, or {@code null} for a section entry.
+         *             A {@code *} component matches every subdirectory at that level, e.g. {@code /MP3/*}.
+         */
         public Section(int id, String name, String path, long wipeAfter) {
             this.id = id;
             this.name = name;
             this.path = path;
             this.wipeAfter = wipeAfter;
+        }
+
+        public String getPath() {
+            return this.path;
         }
 
         public int getId() {
@@ -186,20 +210,9 @@ public class AutoFreeSpaceSettings {
             return this.name;
         }
 
-        /**
-         * Returns the path pattern for this section.
-         * If null, use the section's base directory.
-         * Supports glob patterns like {@code /MP3/*
-         /
+        public long getWipeAfter() {
+            return this.wipeAfter;
+        }
     }
+}
 
-    with wildcards*/
-
-    public String getPath() {
-        return this.path;
-    }
-
-    public long getWipeAfter() {
-        return this.wipeAfter;
-    }
-}}
