@@ -378,6 +378,7 @@ class RollingCalendar extends GregorianCalendar {
             case DatedSection.TOP_OF_WEEK -> {
                 this.set(Calendar.DAY_OF_WEEK, getFirstDayOfWeek());
                 this.set(Calendar.HOUR_OF_DAY, 0);
+                this.set(Calendar.MINUTE, 0);
                 this.set(Calendar.SECOND, 0);
                 this.set(Calendar.MILLISECOND, 0);
                 this.add(Calendar.WEEK_OF_YEAR, 1);
@@ -385,6 +386,7 @@ class RollingCalendar extends GregorianCalendar {
             case DatedSection.TOP_OF_MONTH -> {
                 this.set(Calendar.DATE, 1);
                 this.set(Calendar.HOUR_OF_DAY, 0);
+                this.set(Calendar.MINUTE, 0);
                 this.set(Calendar.SECOND, 0);
                 this.set(Calendar.MILLISECOND, 0);
                 this.add(Calendar.MONTH, 1);
@@ -392,9 +394,10 @@ class RollingCalendar extends GregorianCalendar {
             case DatedSection.TOP_OF_YEAR -> {
                 this.set(Calendar.DATE, 1);
                 this.set(Calendar.HOUR_OF_DAY, 0);
+                this.set(Calendar.MINUTE, 0);
                 this.set(Calendar.SECOND, 0);
                 this.set(Calendar.MILLISECOND, 0);
-                this.set(Calendar.MONTH, 1);
+                this.set(Calendar.MONTH, Calendar.JANUARY);
                 this.add(Calendar.YEAR, 1);
             }
             default -> throw new IllegalStateException("Unknown periodicity type.");

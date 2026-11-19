@@ -93,6 +93,35 @@ public class DatedSectionTest {
         }
     }
 
+    private static Date at(int year, int month, int day, int hour, int minute) {
+        Calendar cal = Calendar.getInstance();
+        cal.clear();
+        cal.set(year, month, day, hour, minute, 0);
+        return cal.getTime();
+    }
+
+    private static Date nextRoll(int type, Date from, int firstDayOfWeek) {
+        RollingCalendar rc = new RollingCalendar();
+        rc.setFirstDayOfWeek(firstDayOfWeek);
+        rc.setType(type);
+        return rc.getNextCheckDate(from);
+    }
+
+    @Test
+    public void testNextRollIsAtMidnight() {
+        // Previously the minutes of "now" were kept for weekly, monthly and yearly sections
+        Date sunday1237 = at(2024, Calendar.FEBRUARY, 18, 12, 37);
+        assertEquals(at(2024, Calendar.FEBRUARY, 19, 0, 0), nextRoll(DatedSection.TOP_OF_WEEK, sunday1237, Calendar.MONDAY));
+        assertEquals(at(2024, Calendar.MARCH, 1, 0, 0), nextRoll(DatedSection.TOP_OF_MONTH, sunday1237, Calendar.MONDAY));
+    }
+
+    @Test
+    public void testYearlyRollIsOnJanuaryFirst() {
+        // Previously MONTH was set to 1, which is February
+        assertEquals(at(2025, Calendar.JANUARY, 1, 0, 0),
+                nextRoll(DatedSection.TOP_OF_YEAR, at(2024, Calendar.FEBRUARY, 18, 12, 37), Calendar.MONDAY));
+    }
+
     @Test
     public void testNonWeekPatternsAreNotAffected() {
         SimpleDateFormat european = DatedSection.createDateFormat("yyyy-MM-dd", Locale.US, true);
