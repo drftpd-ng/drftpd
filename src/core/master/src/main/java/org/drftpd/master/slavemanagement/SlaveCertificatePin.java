@@ -55,6 +55,16 @@ public final class SlaveCertificatePin {
     private SlaveCertificatePin() {
     }
 
+    /** Outcome of comparing the certificate a slave presented with its pinned fingerprint. */
+    public enum Result {
+        /** Nothing is pinned, or the certificate matches the pinned fingerprint. */
+        ACCEPTED,
+        /** A fingerprint is pinned but the slave presented no (readable) client certificate. */
+        NO_CERTIFICATE,
+        /** A fingerprint is pinned and the slave presented another certificate. */
+        MISMATCH
+    }
+
     /**
      * @param slaveName  name of the slave, for logging
      * @param configured the slave's pinned fingerprint, or null/empty when none is pinned
@@ -62,18 +72,45 @@ public final class SlaveCertificatePin {
      * @return whether the slave may connect
      */
     static boolean check(String slaveName, String configured, Socket socket) {
-        X509Certificate cert = null;
+        return decide(slaveName, configured, peerCertificate(socket));
+    }
+
+    /**
+     * @return the client certificate presented on this connection, or null if it is not a TLS connection
+     * or the peer presented none
+     */
+    static X509Certificate peerCertificate(Socket socket) {
         if (socket instanceof SSLSocket sslSocket) {
             try {
                 Certificate[] certs = sslSocket.getSession().getPeerCertificates();
                 if (certs.length > 0 && certs[0] instanceof X509Certificate x509) {
-                    cert = x509;
+                    return x509;
                 }
             } catch (SSLPeerUnverifiedException e) {
                 // No client certificate: client authentication is disabled or the slave sent none
             }
         }
-        return decide(slaveName, configured, cert);
+        return null;
+    }
+
+    /**
+     * Compares the presented certificate with the pinned fingerprint, without logging.
+     *
+     * @param cert the certificate the slave presented, or null if it presented none
+     */
+    static Result evaluate(String configured, X509Certificate cert) {
+        boolean pinned = configured != null && !configured.isBlank();
+        if (!pinned) {
+            return Result.ACCEPTED;
+        }
+        if (cert == null) {
+            return Result.NO_CERTIFICATE;
+        }
+        try {
+            return matches(configured, fingerprint(cert)) ? Result.ACCEPTED : Result.MISMATCH;
+        } catch (CertificateEncodingException e) {
+            return Result.NO_CERTIFICATE;
+        }
     }
 
     /**
@@ -81,36 +118,46 @@ public final class SlaveCertificatePin {
      * @return whether the slave may connect
      */
     static boolean decide(String slaveName, String configured, X509Certificate cert) {
-        boolean pinned = configured != null && !configured.isBlank();
-        if (cert == null) {
-            if (pinned) {
-                logger.error("Slave {} has a pinned certificate fingerprint but presented no client certificate. "
-                        + "Check slavemanager.ssl.client_authentication in master.conf", slaveName);
-                return false;
+        Result result = evaluate(configured, cert);
+        String actual = null;
+        if (cert != null) {
+            try {
+                actual = fingerprint(cert);
+            } catch (CertificateEncodingException e) {
+                logger.error("Unable to read the client certificate of slave {}", slaveName, e);
             }
-            return true;
         }
+        switch (result) {
+            case NO_CERTIFICATE -> logger.error("Slave {} has a pinned certificate fingerprint but presented no "
+                    + "readable client certificate. Check slavemanager.ssl.client_authentication in master.conf",
+                    slaveName);
+            case MISMATCH -> logger.error("Slave {} certificate fingerprint mismatch, refusing connection. "
+                    + "Expected {}, got {}", slaveName, configured, actual);
+            case ACCEPTED -> {
+                if (configured == null || configured.isBlank()) {
+                    if (actual != null) {
+                        logger.info("Slave {} connected with certificate fingerprint {}. To only accept this "
+                                + "certificate, run: SITE SLAVE {} SET {} {}", slaveName, actual, slaveName,
+                                PROPERTY, actual);
+                    }
+                } else {
+                    logger.debug("Slave {} certificate fingerprint verified", slaveName);
+                }
+            }
+        }
+        return result == Result.ACCEPTED;
+    }
 
-        String actual;
-        try {
-            actual = fingerprint(cert);
-        } catch (CertificateEncodingException e) {
-            logger.error("Unable to read the client certificate of slave {}", slaveName, e);
-            return !pinned;
-        }
-
-        if (!pinned) {
-            logger.info("Slave {} connected with certificate fingerprint {}. To only accept this certificate, run: "
-                    + "SITE SLAVE {} SET {} {}", slaveName, actual, slaveName, PROPERTY, actual);
-            return true;
-        }
-        if (!matches(configured, actual)) {
-            logger.error("Slave {} certificate fingerprint mismatch, refusing connection. Expected {}, got {}",
-                    slaveName, configured, actual);
-            return false;
-        }
-        logger.debug("Slave {} certificate fingerprint verified", slaveName);
-        return true;
+    /**
+     * Validates a fingerprint typed by an admin and returns it in the canonical {@code SHA256:<uppercase hex>}
+     * form. Accepts the same formats as {@link #matches}: optional {@code SHA256:}/{@code SHA-256:} prefix,
+     * any case, colons or spaces between bytes.
+     *
+     * @return the canonical fingerprint, or null if the input is not 32 bytes of hex
+     */
+    public static String canonical(String input) {
+        String hex = normalize(input);
+        return hex.matches("[0-9A-F]{64}") ? PREFIX + hex : null;
     }
 
     /** Returns the fingerprint of the certificate as {@code SHA256:<uppercase hex>}. */

@@ -86,4 +86,43 @@ public class SlaveCertificatePinTest {
         assertTrue(SlaveCertificatePin.check("s1", null, plain));
         assertFalse(SlaveCertificatePin.check("s1", KEYTOOL_FINGERPRINT, plain));
     }
+
+    @Test
+    public void canonicalAcceptsCommonFormats() throws Exception {
+        String expected = SlaveCertificatePin.fingerprint(cert);
+        assertEquals(expected, SlaveCertificatePin.canonical(expected));
+        assertEquals(expected, SlaveCertificatePin.canonical(KEYTOOL_FINGERPRINT));
+        assertEquals(expected, SlaveCertificatePin.canonical(KEYTOOL_FINGERPRINT.toLowerCase()));
+        assertEquals(expected, SlaveCertificatePin.canonical("sha-256:" + KEYTOOL_FINGERPRINT));
+        assertEquals(expected, SlaveCertificatePin.canonical(KEYTOOL_FINGERPRINT.replace(":", "")));
+    }
+
+    @Test
+    public void canonicalRejectsInvalidFingerprints() {
+        assertNull(SlaveCertificatePin.canonical(null));
+        assertNull(SlaveCertificatePin.canonical(""));
+        assertNull(SlaveCertificatePin.canonical("SHA256:"));
+        assertNull(SlaveCertificatePin.canonical("SHA256:" + "AB".repeat(31)));
+        assertNull(SlaveCertificatePin.canonical("SHA256:" + "AB".repeat(33)));
+        assertNull(SlaveCertificatePin.canonical("SHA256:" + "G0".repeat(32)));
+        assertNull(SlaveCertificatePin.canonical("MD5:" + "AB".repeat(32)));
+        // Unicode digits are not hex
+        assertNull(SlaveCertificatePin.canonical("١".repeat(64)));
+    }
+
+    @Test
+    public void evaluateReportsTheOutcome() {
+        String other = "SHA256:" + "00".repeat(32);
+        assertEquals(SlaveCertificatePin.Result.ACCEPTED, SlaveCertificatePin.evaluate(null, cert));
+        assertEquals(SlaveCertificatePin.Result.ACCEPTED, SlaveCertificatePin.evaluate(" ", null));
+        assertEquals(SlaveCertificatePin.Result.ACCEPTED, SlaveCertificatePin.evaluate(KEYTOOL_FINGERPRINT, cert));
+        assertEquals(SlaveCertificatePin.Result.MISMATCH, SlaveCertificatePin.evaluate(other, cert));
+        assertEquals(SlaveCertificatePin.Result.NO_CERTIFICATE, SlaveCertificatePin.evaluate(other, null));
+    }
+
+    @Test
+    public void plainSocketHasNoPeerCertificate() {
+        assertNull(SlaveCertificatePin.peerCertificate(new Socket()));
+        assertNull(SlaveCertificatePin.peerCertificate(null));
+    }
 }

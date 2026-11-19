@@ -1077,10 +1077,36 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
     }
 
     public boolean checkConnect(Socket socket) throws PatternSyntaxException {
-        if (!getMasks().check(socket)) {
-            return false;
-        }
+        return getMasks().check(socket);
+    }
+
+    /**
+     * @return whether the TLS client certificate presented on this connection matches the slave's pinned
+     * fingerprint (always true when no fingerprint is pinned)
+     */
+    public boolean checkCertificate(Socket socket) {
         return SlaveCertificatePin.check(getName(), getProperty(SlaveCertificatePin.PROPERTY), socket);
+    }
+
+    /**
+     * Checks the certificate of the current connection against the pinned fingerprint, e.g. right after
+     * the fingerprint was changed while the slave is online, and disconnects the slave if it does not match.
+     *
+     * @return the result of the check, or null if the slave is offline
+     */
+    public SlaveCertificatePin.Result verifyConnectedCertificate() {
+        Socket socket = _socket;
+        if (socket == null || !socket.isConnected()) {
+            return null;
+        }
+        SlaveCertificatePin.Result result = SlaveCertificatePin.evaluate(
+                getProperty(SlaveCertificatePin.PROPERTY), SlaveCertificatePin.peerCertificate(socket));
+        if (result != SlaveCertificatePin.Result.ACCEPTED) {
+            logger.warn("Disconnecting slave {}: its current certificate does not match the newly pinned fingerprint ({})",
+                    getName(), result);
+            setOffline("Certificate fingerprint does not match the pinned fingerprint");
+        }
+        return result;
     }
 
     public String getProperty(String key) {
