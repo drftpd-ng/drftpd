@@ -30,6 +30,7 @@ import org.apache.logging.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.common.extensibility.PluginInterface;
+import org.drftpd.common.network.InetAddressUtils;
 import org.drftpd.common.util.ConfigLoader;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.event.ReloadEvent;
@@ -40,6 +41,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.LineNumberReader;
+import java.net.Inet6Address;
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
@@ -56,6 +59,12 @@ public class IpSecurityManager implements PluginInterface {
     private ArrayList<Integer> _numip;
     private ArrayList<Integer> _hostm;
     private ArrayList<String> _perms;
+
+    // ipsecurity6 rules: ident, minimum fixed leading groups, number of IPs, perms
+    private ArrayList<Integer> _ident6;
+    private ArrayList<Integer> _groups6;
+    private ArrayList<Integer> _numip6;
+    private ArrayList<String> _perms6;
 
     /*
      * Get the ipSecurity Plugin
@@ -96,6 +105,10 @@ public class IpSecurityManager implements PluginInterface {
         _numip = new ArrayList<>();
         _hostm = new ArrayList<>();
         _perms = new ArrayList<>();
+        _ident6 = new ArrayList<>();
+        _groups6 = new ArrayList<>();
+        _numip6 = new ArrayList<>();
+        _perms6 = new ArrayList<>();
         LineNumberReader inRead = null;
 
         try {
@@ -126,6 +139,24 @@ public class IpSecurityManager implements PluginInterface {
                         _perms.add(perms);
                     } catch (NumberFormatException e) {
                         logger.debug("Error while parsing ipsecurity line {}", inRead.getLineNumber());
+                    }
+                } else if (cmd.equals("ipsecurity6")) {
+                    try {
+                        int ident = Integer.parseInt(st.nextToken().trim());
+                        int groups = Integer.parseInt(st.nextToken().trim());
+                        int numip = Integer.parseInt(st.nextToken().trim());
+                        String perms = st.nextToken("").trim();
+                        if (groups < 1 || groups > 8) {
+                            logger.warn("ipsecurity6 on line {}: groups must be 1 to 8, got {}", inRead.getLineNumber(), groups);
+                            continue;
+                        }
+
+                        _ident6.add(ident);
+                        _groups6.add(groups);
+                        _numip6.add(numip);
+                        _perms6.add(perms);
+                    } catch (NumberFormatException e) {
+                        logger.debug("Error while parsing ipsecurity6 line {}", inRead.getLineNumber());
                     }
                 }
             }
@@ -253,10 +284,59 @@ public class IpSecurityManager implements PluginInterface {
         return perms.check(user);
     }
 
+    /**
+     * How many leading 16-bit groups an IPv6 host mask fixes: 8 for a full address
+     * ("2001:db8::1"), n for a prefix of n explicit groups followed by "*" ("2001:db8:1:2:*").
+     * Returns -1 for anything else (e.g. other wildcards, or "::" before the "*", which makes the
+     * number of groups ambiguous).
+     */
+    static int getIPv6FixedGroups(String mask) {
+        if (mask.indexOf('*') == -1 && mask.indexOf('?') == -1 && mask.indexOf('[') == -1) {
+            try {
+                InetAddress address = InetAddressUtils.parseLiteral(mask);
+                return address instanceof Inet6Address ? 8 : -1;
+            } catch (IllegalArgumentException e) {
+                return -1;
+            }
+        }
+        if (!mask.endsWith(":*") || mask.contains("::")) {
+            return -1;
+        }
+        String[] groups = mask.substring(0, mask.length() - 2).split(":", -1);
+        if (groups.length > 7) {
+            return -1;
+        }
+        for (String group : groups) {
+            if (!group.matches("[0-9A-Fa-f]{1,4}")) {
+                return -1;
+            }
+        }
+        return groups.length;
+    }
+
+    private boolean checkIPv6(String ident, String mask, int numip, User user) {
+        int fixedGroups = getIPv6FixedGroups(mask);
+        if (fixedGroups == -1) {
+            logger.debug("Invalid IPv6 host mask: {}", mask);
+            return false;
+        }
+        for (int i = 0; i < _ident6.size(); i++) {
+            if (checkPermission(user, _perms6.get(i)) && fixedGroups >= _groups6.get(i)
+                    && checkNumIPS(numip, _numip6.get(i)) && checkIdent(ident, _ident6.get(i))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /*
      * Main method to check both Octets/Hostname and number of IPs
      */
     public boolean checkIP(String ident, String octets, int numip, User user) {
+        if (octets.contains(":")) {
+            // IPv6 masks are checked against the ipsecurity6 rules only
+            return checkIPv6(ident, octets, numip, user);
+        }
         for (int i = 0; i < _ident.size(); i++) {
             if (checkPermission(user, _perms.get(i))) {
                 if ((checkOctets(octets, _octets.get(i), _hostm.get(i))) &&
@@ -295,6 +375,22 @@ public class IpSecurityManager implements PluginInterface {
                     } catch (NumberFormatException e) {
                         // cannot parse integer....ignore
                     }
+                }
+            }
+        }
+
+        for (int i = 0; i < _ident6.size(); i++) {
+            if (checkPermission(user, _perms6.get(i))) {
+                returnstring.append(_ident6.get(i) == 1 ? "\nident@" : "\n*@");
+                int groups = _groups6.get(i);
+                if (groups >= 8) {
+                    returnstring.append("XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX (a full IPv6 address)");
+                } else {
+                    returnstring.append("XXXX:".repeat(groups)).append("* (at least ").append(groups)
+                            .append(" groups of an IPv6 address)");
+                }
+                if (_numip6.get(i) != 0) {
+                    numip = _numip6.get(i);
                 }
             }
         }

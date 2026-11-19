@@ -48,6 +48,33 @@ public class HostMaskTest {
         assertFalse(h.matchesHost(InetAddress.getByName("9.10.11.5")));
     }
 
+    /** An IPv6 address with a fixed host name, so matching doesn't do a reverse DNS lookup. */
+    private static InetAddress v6(String literal) throws Exception {
+        return InetAddress.getByAddress("host.invalid", InetAddress.getByName(literal).getAddress());
+    }
+
+    @Test
+    public void testMatchesIPv6ShortForm() throws Exception {
+        assertTrue(new HostMask("*@::1").matchesHost(v6("::1")));
+        assertTrue(new HostMask("*@2001:db8::1").matchesHost(v6("2001:db8:0:0:0:0:0:1")));
+        assertTrue(new HostMask("*@2001:db8:1:2:*").matchesHost(v6("2001:db8:1:2::5")));
+        assertFalse(new HostMask("*@2001:db8:1:2:*").matchesHost(v6("2001:db8:1:3::5")));
+        assertFalse(new HostMask("*@2001:db8::1").matchesHost(v6("2001:db8::2")));
+    }
+
+    @Test
+    public void testMatchesIPv6LongFormStillWorks() throws Exception {
+        // Masks written in Java's full form, as shown in #19, keep working
+        assertTrue(new HostMask("*@0:0:0:0:0:0:0:1").matchesHost(v6("::1")));
+        // A prefix with a zero group only matches the full form, e.g. 2001:db8:0:1::5
+        assertTrue(new HostMask("*@2001:db8:0:1:*").matchesHost(v6("2001:db8:0:1::5")));
+    }
+
+    @Test
+    public void testIPv4MappedAndIPv4Unchanged() throws Exception {
+        assertTrue(new HostMask("*@1.2.3.4").matchesHost(InetAddress.getByAddress("host.invalid", new byte[]{1, 2, 3, 4})));
+    }
+
     @Test
     public void testMatchesIdent() throws PatternSyntaxException {
         HostMask h = new HostMask("*@1.1.1.1");

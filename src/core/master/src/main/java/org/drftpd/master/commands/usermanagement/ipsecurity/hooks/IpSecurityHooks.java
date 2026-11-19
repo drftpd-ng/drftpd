@@ -80,7 +80,7 @@ public class IpSecurityHooks {
                 String maskHostMask = newMask.getHostMask();
 
                 boolean _allowed = IpSecurityManager.getIpSecurity().checkIP(newMask.getIdentMask(), maskHostMask, _numip, user);
-                if ((!_allowed) && (!maskHostMask.equals("127.0.0.1"))) {
+                if ((!_allowed) && (!maskHostMask.equals("127.0.0.1")) && (!maskHostMask.equals("::1"))) {
                     request.setAllowed(false);
                     CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
                     response.addComment(IpSecurityManager.getIpSecurity().outputConfs(user));
