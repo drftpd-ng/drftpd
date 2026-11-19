@@ -196,9 +196,28 @@ public class EncryptedBeanUser extends BeanUser {
     private Pbkdf2PasswordEncoder getGlftpdPasswordEncoder() {
         final int GLFTPD_SHA_SALT_LEN = 4;
         final int GLFTPD_ITERATIONS = 100;
-        final int GLFTPD_SHA1_HASH_WIDTH = 160;
 
-        return new Pbkdf2PasswordEncoder("", GLFTPD_SHA_SALT_LEN, GLFTPD_ITERATIONS, GLFTPD_SHA1_HASH_WIDTH);
+        // PBKDF2WithHmacSHA1 makes the encoder use a 160 bit (20 byte) hash width, hex encoded.
+        return new Pbkdf2PasswordEncoder("", GLFTPD_SHA_SALT_LEN, GLFTPD_ITERATIONS,
+                Pbkdf2PasswordEncoder.SecretKeyFactoryAlgorithm.PBKDF2WithHmacSHA1);
+    }
+
+    /*
+     * Get the argon2 password encoder.
+     *
+     * These are the parameters of the Spring Security 5.x no-arg Argon2PasswordEncoder
+     * (argon2id, salt 16 bytes, hash 32 bytes, parallelism 1, memory 4096 KiB, 3 iterations),
+     * kept so newly generated hashes do not change. Existing hashes carry their own parameters.
+     */
+    private static Argon2PasswordEncoder getArgon2PasswordEncoder() {
+        final int ARGON2_SALT_LENGTH = 16;
+        final int ARGON2_HASH_LENGTH = 32;
+        final int ARGON2_PARALLELISM = 1;
+        final int ARGON2_MEMORY_KIB = 1 << 12;
+        final int ARGON2_ITERATIONS = 3;
+
+        return new Argon2PasswordEncoder(ARGON2_SALT_LENGTH, ARGON2_HASH_LENGTH, ARGON2_PARALLELISM,
+                ARGON2_MEMORY_KIB, ARGON2_ITERATIONS);
     }
 
     /*
@@ -279,8 +298,7 @@ public class EncryptedBeanUser extends BeanUser {
                 if (glftpdPasswordMatches(password, storedPassword)) result = true;
             }
             case EncryptedBeanUserManager.PASSCRYPT_ARGON2 -> {
-                Argon2PasswordEncoder encoder = new Argon2PasswordEncoder();
-                if (encoder.matches(password, storedPassword)) result = true;
+                if (getArgon2PasswordEncoder().matches(password, storedPassword)) result = true;
             }
             default -> {
                 if (password.equals(storedPassword)) result = true;
@@ -290,8 +308,16 @@ public class EncryptedBeanUser extends BeanUser {
         // TODO: if argon2 is the default, check Argon2PasswordEncoder.upgradeEncoding and rehash if necessary
         if (result && (getEncryption() != _um.getPasscrypt())) {
             logger.debug("Converting Password To Current Encryption");
+            int previousEncryption = getEncryption();
             setEncryption(EncryptedBeanUserManager.PASSCRYPT_DEFAULT);
-            this.setPassword(password);
+            try {
+                this.setPassword(password);
+            } catch (IllegalArgumentException e) {
+                // e.g. bcrypt refuses passwords longer than 72 bytes; keep the existing hash
+                logger.warn("Unable to convert password of user {} to current encryption: {}", getName(), e.getMessage());
+                setEncryption(previousEncryption);
+                return result;
+            }
             super.commit();
         }
 
@@ -336,8 +362,7 @@ public class EncryptedBeanUser extends BeanUser {
                     pass = glftpdPasswordEncode(password);
                 }
                 case EncryptedBeanUserManager.PASSCRYPT_ARGON2 -> {
-                    Argon2PasswordEncoder encoder = new Argon2PasswordEncoder();
-                    pass = encoder.encode(password);
+                    pass = getArgon2PasswordEncoder().encode(password);
                 }
                 default -> {
                     logger.error("Failed to set password, unknown password hash format");
