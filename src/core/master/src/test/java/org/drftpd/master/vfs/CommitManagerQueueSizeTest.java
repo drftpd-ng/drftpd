@@ -7,7 +7,9 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -55,7 +57,7 @@ public class CommitManagerQueueSizeTest {
     }
 
     @Test
-    public void concurrentRemovesNeverMakeTheSizeNegative() throws Exception {
+    public void concurrentRemovesAreCountedExactlyOnce() throws Exception {
         CommitManager cm = CommitManager.getCommitManager();
         int before = cm.getQueueSize();
         List<Item> items = new ArrayList<>();
@@ -68,20 +70,27 @@ public class CommitManagerQueueSizeTest {
         // Several threads race to remove the same items, like the commit thread and remove() can
         ExecutorService pool = Executors.newFixedThreadPool(4);
         CountDownLatch start = new CountDownLatch(1);
+        AtomicInteger removed = new AtomicInteger();
+        List<Future<?>> futures = new ArrayList<>();
         for (int t = 0; t < 4; t++) {
-            pool.submit(() -> {
+            futures.add(pool.submit(() -> {
                 start.await();
                 for (Item item : items) {
-                    cm.remove(item);
-                    assertTrue(cm.getQueueSize() >= 0);
+                    if (cm.remove(item)) {
+                        removed.incrementAndGet();
+                    }
                 }
                 return null;
-            });
+            }));
         }
         start.countDown();
+        for (Future<?> future : futures) {
+            future.get(30, TimeUnit.SECONDS); // rethrows anything a worker thread threw
+        }
         pool.shutdown();
-        assertTrue(pool.awaitTermination(30, TimeUnit.SECONDS));
 
+        // Every item is reported removed by exactly one thread, and the size ends where it began
+        assertEquals(items.size(), removed.get());
         assertEquals(before, cm.getQueueSize());
     }
 }
