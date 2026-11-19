@@ -64,6 +64,37 @@ public class Misc extends CommandInterface {
         return new CommandResponse(226, request.getCommand().toUpperCase() + " command successful");
     }
 
+    /**
+     * {@code OPTS <SP> <command-name> [<SP> <command-options>] <CRLF>} (RFC 2389)<br>
+     * Only {@code OPTS UTF8 ON} (RFC 2640 practice) is recognised.<br>
+     * The control connection is byte transparent (ISO-8859-1 in, ISO-8859-1 out, no transcoding), so
+     * UTF-8 encoded pathnames sent by a client are passed through and returned unchanged.
+     * Because of that UTF8 is intentionally not advertised in FEAT and it can not be switched off.
+     */
+    public CommandResponse doOPTS(CommandRequest request) {
+        return optsResponse(request.hasArgument() ? request.getArgument() : null);
+    }
+
+    /**
+     * Builds the reply for an OPTS command with the given argument string (may be null).
+     */
+    static CommandResponse optsResponse(String argument) {
+        if (argument == null || argument.trim().isEmpty()) {
+            return new CommandResponse(501, "Syntax error in parameters or arguments");
+        }
+        String[] parts = argument.trim().split("\s+");
+        if (!parts[0].equalsIgnoreCase("UTF8")) {
+            return new CommandResponse(501, "OPTS is not implemented for " + parts[0].toUpperCase());
+        }
+        if (parts.length == 2 && parts[1].equalsIgnoreCase("ON")) {
+            return new CommandResponse(200, "UTF8 set to on");
+        }
+        if (parts.length == 2 && parts[1].equalsIgnoreCase("OFF")) {
+            return new CommandResponse(504, "UTF8 can not be turned off, pathnames are passed through unchanged");
+        }
+        return new CommandResponse(501, "Syntax error in parameters or arguments");
+    }
+
     // LIST;NLST;RETR;STOR
     public CommandResponse doFEAT(CommandRequest request) {
         BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
