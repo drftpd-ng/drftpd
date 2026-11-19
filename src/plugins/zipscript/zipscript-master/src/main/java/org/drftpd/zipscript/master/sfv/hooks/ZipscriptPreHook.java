@@ -152,9 +152,13 @@ public class ZipscriptPreHook {
                         "Requested action not taken. You must upload sfv first."));
             }
         } catch (IOException e1) {
-            // sfv not readable, do nothing
+            // sfv not readable, do nothing (sfv-first and sfv.restrict.files are not enforced for this upload)
+            logger.warn("Unable to read SFV in {}, SFV checks skipped for upload of {}",
+                    checkFile.getParent().getPath(), checkFile.getName(), e1);
         } catch (NoAvailableSlaveException | SlaveUnavailableException e1) {
-            //sfv not online, do nothing
+            // sfv not online, do nothing
+            logger.debug("Slave with SFV for {} is offline, SFV checks skipped for upload of {}",
+                    checkFile.getParent().getPath(), checkFile.getName());
         }
         return request;
     }
