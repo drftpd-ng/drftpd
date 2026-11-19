@@ -1,3 +1,18 @@
+==== Unreleased
+* IPv6, phase 1 (#19):
+  - New FTP commands EPRT and EPSV (RFC 2428). Add the EPRT and EPSV entries from
+    config/commands/ftp/core.conf.dist to your config/commands/ftp/core.conf, otherwise they
+    stay "not implemented".
+  - Over IPv6, file transfers need active mode (EPRT): the slaves connect to the client. EPSV only
+    works for directory listings, because its reply can't point the client at a slave.
+  - PASV now answers with an error instead of a broken reply when it would have to report an
+    IPv6 address.
+  - IP masks match IPv6 addresses in the short form (*@2001:db8::1, *@::1) as well as the long
+    form used so far (*@0:0:0:0:0:0:0:1).
+  - New "ipsecurity6" lines in ipsecurity.conf for adding IPv6 masks with site commands; copy the
+    default line from ipsecurity.conf.dist, otherwise IPv6 masks are refused.
+  - Upgrade the master and all slaves together: older slaves can't connect out to IPv6 clients.
+
 ==== 4.0.8
 * Now compiles and runs on JDK17
 

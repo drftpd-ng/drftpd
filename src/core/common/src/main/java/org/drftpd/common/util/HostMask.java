@@ -17,6 +17,8 @@
  */
 package org.drftpd.common.util;
 
+import org.drftpd.common.network.InetAddressUtils;
+
 import java.net.InetAddress;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -80,10 +82,23 @@ public class HostMask {
         return !_identMask.equals("*");
     }
 
+    /**
+     * Matches the address against the host part of the mask. IPv6 addresses are matched in their
+     * short form ("2001:db8::1", "::1") and, for masks written before that, in the full form Java
+     * uses ("2001:db8:0:0:0:0:0:1"), both without a zone/scope id.
+     */
     public boolean matchesHost(InetAddress a) throws PatternSyntaxException {
         Pattern p = GlobPattern.compile(getHostMask());
 
-        return (p.matcher(a.getHostAddress()).matches() || p.matcher(a.getHostName()).matches());
+        if (p.matcher(InetAddressUtils.toShortString(a)).matches()) {
+            return true;
+        }
+        String hostAddress = a.getHostAddress();
+        int scope = hostAddress.indexOf('%');
+        if (scope != -1) {
+            hostAddress = hostAddress.substring(0, scope);
+        }
+        return p.matcher(hostAddress).matches() || p.matcher(a.getHostName()).matches();
     }
 
     public boolean matchesIdent(String ident) throws PatternSyntaxException {

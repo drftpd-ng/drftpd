@@ -25,6 +25,7 @@ import org.drftpd.common.io.PermissionDeniedException;
 import org.drftpd.common.io.PhysicalFile;
 import org.drftpd.common.network.AsyncCommandArgument;
 import org.drftpd.common.network.AsyncResponse;
+import org.drftpd.common.network.InetAddressUtils;
 import org.drftpd.common.network.PassiveConnection;
 import org.drftpd.common.slave.ConnectInfo;
 import org.drftpd.common.slave.LightRemoteInode;
@@ -118,7 +119,13 @@ public class BasicHandler extends AbstractHandler {
 
     // CONNECT
     public AsyncResponse handleConnect(AsyncCommandArgument ac) {
-        String[] data = ac.getArgsArray()[0].split(":");
+        // "ip:port"; split at the last colon, IPv6 addresses contain colons themselves
+        String[] data;
+        try {
+            data = InetAddressUtils.splitHostPort(ac.getArgsArray()[0]);
+        } catch (IllegalArgumentException e) {
+            return new AsyncResponseException(ac.getIndex(), e);
+        }
         boolean encrypted = ac.getArgsArray()[1].equals("true");
         boolean useSSLClientHandshake = ac.getArgsArray()[2].equals("true");
         InetAddress address;
