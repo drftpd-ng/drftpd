@@ -34,9 +34,6 @@ import java.util.regex.Pattern;
 public class IMDBParser {
     private static final Logger logger = LogManager.getLogger(IMDBParser.class);
 
-    private static final String _baseUrl = "https://imdb.com";
-    private static final String _searchUrl = "https://imdb.com/find?s=all&q=";
-
     private String _title;
     private Integer _year;
     private String _language;
@@ -78,7 +75,7 @@ public class IMDBParser {
     public void doSEARCH(String searchString) {
         _searchString = searchString;
         try {
-            String urlString = _searchUrl + searchString;
+            String urlString = IMDBConfig.getInstance().getSearchUrl() + searchString;
 
             String data = HttpUtils.retrieveHttpAsString(urlString);
 
@@ -93,7 +90,7 @@ public class IMDBParser {
                 if (start > 0) {
                     int end = data.indexOf("/", start + "/title/tt".length());
                     _url = data.substring(start, end);
-                    _url = _baseUrl + _url;
+                    _url = toTitleUrl(IMDBConfig.getInstance().getBaseUrl(), _url);
                 }
             }
         } catch (Exception e) {
@@ -108,8 +105,23 @@ public class IMDBParser {
         _foundMovie = getInfo();
     }
 
+    /**
+     * Rebuilds a title URL on top of the configured base URL, keeping only the
+     * title id (e.g. tt1234567). Returns the input unchanged if no title id is found.
+     */
+    static String toTitleUrl(String baseUrl, String url) {
+        if (url == null) {
+            return null;
+        }
+        Matcher m = Pattern.compile("(?:^|/)title/(tt\\d+)").matcher(url);
+        if (!m.find()) {
+            return url;
+        }
+        return baseUrl.replaceAll("/+$", "") + "/title/" + m.group(1);
+    }
+
     public void doNFO(String url) {
-        _url = url;
+        _url = toTitleUrl(IMDBConfig.getInstance().getBaseUrl(), url);
         _foundMovie = getInfo();
     }
 
