@@ -32,6 +32,13 @@ sfv.restrict.files=true
 # Default: [true]
 cwd.dizinfo.enabled=true
 
+# When an sfv is uploaded after some of its files, check those files against it
+# (using the checksum from their upload) and delete the ones that don't match,
+# the same as for files uploaded after the sfv.
+# Note: uploading a wrong sfv will delete the already uploaded files it doesn't match.
+# Default: [true]
+sfv.check.existing=true
+
 # Disallow files before sfv.
 # Default: [true]
 sfvfirst.required=true
