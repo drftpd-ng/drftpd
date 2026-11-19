@@ -77,4 +77,43 @@ public class SessionTest {
         java.util.Map<String, Object> env = session.getReplacerEnvironment(new HashMap<>(), user);
         assertEquals("0B", env.get("averagespeed"));
     }
+
+    @Test
+    public void testAverageSpeedWithMoreNegativeTime() {
+        // Before clamping, -3000 ms gave a divisor of -2 and a negative average speed
+        StubUser user = new StubUser("testuser");
+        user.setDownloadedTime(-1000);
+        user.setUploadedTime(-2000);
+        user.setDownloadedBytes(1000);
+        user.setUploadedBytes(1000);
+
+        assertEquals(0L, Session.getAverageSpeed(user));
+        assertEquals("0B", new StubSession().getReplacerEnvironment(new HashMap<>(), user).get("averagespeed"));
+    }
+
+    @Test
+    public void testAverageSpeedWithNegativeBytes() {
+        // Values like the userfile in #345: negative upload bytes, positive time
+        StubUser user = new StubUser("testuser");
+        user.setDownloadedTime(5000);
+        user.setUploadedTime(0);
+        user.setDownloadedBytes(8847);
+        user.setUploadedBytes(-125538012);
+
+        assertEquals(0L, Session.getAverageSpeed(user));
+    }
+
+    @Test
+    public void testAverageSpeedIsUnchangedForNormalValues() {
+        StubUser user = new StubUser("testuser");
+        user.setDownloadedTime(3000);
+        user.setUploadedTime(1000);
+        user.setDownloadedBytes(6000);
+        user.setUploadedBytes(4000);
+
+        // Same formula as before the fix: bytes / ((millis / 1000) + 1) = 10000 / 5
+        assertEquals(2000L, Session.getAverageSpeed(user));
+        assertEquals(Bytes.formatBytes(2000L),
+                new StubSession().getReplacerEnvironment(new HashMap<>(), user).get("averagespeed"));
+    }
 }
