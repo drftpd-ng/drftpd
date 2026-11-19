@@ -82,7 +82,7 @@ public class Misc extends CommandInterface {
         if (argument == null || argument.trim().isEmpty()) {
             return new CommandResponse(501, "Syntax error in parameters or arguments");
         }
-        String[] parts = argument.trim().split("\s+");
+        String[] parts = argument.trim().split("[ \\t]+");
         if (!parts[0].equalsIgnoreCase("UTF8")) {
             return new CommandResponse(501, "OPTS is not implemented for " + parts[0].toUpperCase());
         }

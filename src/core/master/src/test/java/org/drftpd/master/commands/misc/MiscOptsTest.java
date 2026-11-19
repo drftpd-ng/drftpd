@@ -33,6 +33,7 @@ public class MiscOptsTest {
     public void utf8On() {
         check(200, "UTF8 ON");
         check(200, "utf8 on");
+        check(200, "UTF8\tON");
         check(200, "  UTF8   On ");
     }
 
