@@ -202,7 +202,8 @@ public class Slave extends SslConfigurationLoader {
             _portRange = new PortRange(_bufferSize);
         }
 
-        // TLS settings from slave.conf, parsed the same way as master.conf (#433)
+        // TLS settings for data transfers (#433), parsed the same way as master.conf.
+        // The control connection to the master is configured by master.ssl.* instead.
         _sslProtocols = SSLConfigParser.parseSSLProtocols(p);
         _cipherSuites = SSLConfigParser.parseCipherSuites(p);
 
@@ -238,12 +239,6 @@ public class Slave extends SslConfigurationLoader {
         _socket.setSoTimeout(socketTimeout);
         _socket.connect(masterIsa);
         _socket.setUseClientMode(true);
-        if (_sslProtocols != null) {
-            _socket.setEnabledProtocols(_sslProtocols);
-        }
-        if (_cipherSuites != null) {
-            _socket.setEnabledCipherSuites(_cipherSuites);
-        }
 
         logger.debug("[{}] Enabled ciphers for this new connection are as follows: '{}'", _socket.getRemoteSocketAddress(), Arrays.toString(_socket.getEnabledCipherSuites()));
         logger.debug("[{}] Enabled protocols for this new connection are as follows: '{}'", _socket.getRemoteSocketAddress(), Arrays.toString(_socket.getEnabledProtocols()));
