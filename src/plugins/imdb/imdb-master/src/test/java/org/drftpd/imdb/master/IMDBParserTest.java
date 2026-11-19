@@ -40,4 +40,18 @@ class IMDBParserTest {
         assertNull(IMDBParser.toTitleUrl("https://imdb.com", null));
         assertEquals("N|A", IMDBParser.toTitleUrl("https://imdb.com", "N|A"));
     }
+
+    @Test
+    void titleUrlHasSingleSlashWithTrailingSlashesInBase() {
+        assertEquals("https://imdb.com/title/tt0133093",
+                IMDBParser.toTitleUrl("https://imdb.com/", "/title/tt0133093"));
+        assertEquals("https://imdb.com/title/tt0133093",
+                IMDBParser.toTitleUrl("https://imdb.com///", "https://imdb.com/title/tt0133093"));
+    }
+
+    @Test
+    void titleUrlHasSingleSlashWithoutTrailingSlashInBase() {
+        assertEquals("https://imdb.com/title/tt0133093",
+                IMDBParser.toTitleUrl("https://imdb.com", "title/tt0133093"));
+    }
 }

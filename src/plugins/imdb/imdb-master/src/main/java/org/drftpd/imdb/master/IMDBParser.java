@@ -90,7 +90,7 @@ public class IMDBParser {
                 if (start > 0) {
                     int end = data.indexOf("/", start + "/title/tt".length());
                     _url = data.substring(start, end);
-                    _url = IMDBConfig.getInstance().getBaseUrl() + _url;
+                    _url = toTitleUrl(IMDBConfig.getInstance().getBaseUrl(), _url);
                 }
             }
         } catch (Exception e) {
@@ -113,11 +113,11 @@ public class IMDBParser {
         if (url == null) {
             return null;
         }
-        Matcher m = Pattern.compile("/title/(tt\\d+)").matcher(url);
+        Matcher m = Pattern.compile("(?:^|/)title/(tt\\d+)").matcher(url);
         if (!m.find()) {
             return url;
         }
-        return baseUrl + "/title/" + m.group(1);
+        return baseUrl.replaceAll("/+$", "") + "/title/" + m.group(1);
     }
 
     public void doNFO(String url) {
