@@ -31,7 +31,6 @@ import org.drftpd.master.usermanager.UserFileException;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.FileHandle;
 
-import java.util.Calendar;
 
 /**
  * @author fr0w
@@ -105,29 +104,8 @@ public class StatsPostHook {
         long uploadTime = response.getObject(Dir.LASTMODIFIED, System.currentTimeMillis());
 
         try {
-            DirectoryHandle dir = request.getCurrentDirectory();
-            User user = GlobalContext.getGlobalContext().getUserManager().getUserByName(userName);
-
-            // updating credits
-            float ratio = StatsManager.getStatsManager().getCreditCheckRatio(dir, user);
-            long creditsCheck = StatsManager.creditsForBytes(ratio, fileSize);
-            user.updateCredits(-creditsCheck);
-
-
-            // updating stats
-            if (!GlobalContext.getConfig().checkPathPermission("nostatsup", user, dir)) {
-                // Only remove the upload from the periods it was counted in, and never below zero
-                Calendar now = Calendar.getInstance();
-                if (GlobalContext.getConfig().getMainProperties().getProperty("european.cal", "false")
-                        .equalsIgnoreCase("true")) {
-                    now.setFirstDayOfWeek(Calendar.MONDAY);
-                }
-                for (int period : StatsManager.getPeriodsCountingUpload(uploadTime, now)) {
-                    user.removeUploadForPeriod(period, fileSize, xferTime);
-                }
-            }
-
-            user.commit();
+            StatsManager.getStatsManager().revokeUpload(request.getCurrentDirectory(), userName, fileSize, xferTime,
+                    uploadTime);
         } catch (UserFileException e) {
             response.addComment("Error updating credits & stats: " + e.getMessage());
         } catch (NoSuchUserException e) {

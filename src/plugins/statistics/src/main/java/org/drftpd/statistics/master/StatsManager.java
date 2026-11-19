@@ -25,11 +25,14 @@ import org.drftpd.common.dynamicdata.Key;
 import org.drftpd.common.extensibility.PluginInterface;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.commands.usermanagement.UserManagement;
+import org.drftpd.master.event.UploadRevokedEvent;
 import org.drftpd.master.event.UserEvent;
 import org.drftpd.master.permissions.stats.CreditLimitPathPermission;
 import org.drftpd.master.permissions.stats.RatioPathPermission;
 import org.drftpd.master.stats.ExtendedTimedStats;
+import org.drftpd.master.usermanager.NoSuchUserException;
 import org.drftpd.master.usermanager.User;
+import org.drftpd.master.usermanager.UserFileException;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.statistics.master.metadata.StatsUserData;
 
@@ -131,6 +134,59 @@ public class StatsManager implements PluginInterface {
             u.getKeyedMap().setObject(UserManagement.LASTSEEN, new Date(event.getTime()));
             u.getKeyedMap().incrementInt(StatsUserData.LOGINS);
         }
+    }
+
+    /**
+     * The site removed an upload on the uploader's behalf (e.g. zipscript deleted a file that
+     * doesn't match an .sfv uploaded after it): take back the credits and upload stats, the same
+     * as when the file is deleted with DELE.
+     */
+    @EventSubscriber
+    public void onUploadRevokedEvent(UploadRevokedEvent event) {
+        try {
+            revokeUpload(event.getDirectory(), event.getUsername(), event.getSize(), event.getXferTime(),
+                    event.getUploadTime());
+        } catch (NoSuchUserException e) {
+            logger.debug("User {} does not exist, cannot remove credits for {}", event.getUsername(),
+                    event.getFileName());
+        } catch (UserFileException e) {
+            logger.warn("Error updating credits & stats of {} for {}", event.getUsername(), event.getFileName(), e);
+        }
+    }
+
+    /**
+     * Takes back the credits and upload stats a user got for uploading a file that is now removed.
+     *
+     * @param dir      the directory the file was in
+     * @param userName the user who uploaded the file
+     * @param fileSize size of the file
+     * @param xferTime transfer time of the upload
+     * @param uploadTime when the file was uploaded (its last modified time), to only take the upload
+     *                   back from the stats periods it was counted in
+     */
+    public void revokeUpload(DirectoryHandle dir, String userName, long fileSize, long xferTime, long uploadTime)
+            throws NoSuchUserException, UserFileException {
+        User user = GlobalContext.getGlobalContext().getUserManager().getUserByName(userName);
+
+        // updating credits
+        float ratio = getCreditCheckRatio(dir, user);
+        long creditsCheck = creditsForBytes(ratio, fileSize);
+        user.updateCredits(-creditsCheck);
+
+        // updating stats
+        if (!GlobalContext.getConfig().checkPathPermission("nostatsup", user, dir)) {
+            // Only remove the upload from the periods it was counted in, and never below zero
+            Calendar now = Calendar.getInstance();
+            if (GlobalContext.getConfig().getMainProperties().getProperty("european.cal", "false")
+                    .equalsIgnoreCase("true")) {
+                now.setFirstDayOfWeek(Calendar.MONDAY);
+            }
+            for (int period : getPeriodsCountingUpload(uploadTime, now)) {
+                user.removeUploadForPeriod(period, fileSize, xferTime);
+            }
+        }
+
+        user.commit();
     }
 
     public float getCreditLossRatio(DirectoryHandle dir, User user) {
