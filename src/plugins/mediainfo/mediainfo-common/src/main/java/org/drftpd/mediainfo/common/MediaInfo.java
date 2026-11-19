@@ -37,20 +37,6 @@ public class MediaInfo implements Serializable {
     public static final Key<MediaInfo> MEDIAINFO = new Key<>(MediaInfo.class, "mediainfo");
     private static final Logger logger = LogManager.getLogger(MediaInfo.class);
     private static final String MEDIAINFO_COMMAND = "mediainfo";
-
-    // Factory for creating IsoFile instances (for testing)
-    public interface IsoFileFactory {
-        IsoFile create(String path) throws IOException;
-    }
-
-    // Default implementation uses the real constructor
-    private static IsoFileFactory _isoFileFactory = IsoFile::new;
-
-    // Setter for testing
-    protected static void setIsoFileFactory(IsoFileFactory factory) {
-        _isoFileFactory = factory;
-    }
-
     private String _fileName = "";
     private long _checksum;
     private boolean _sampleOk = true;
@@ -68,7 +54,28 @@ public class MediaInfo implements Serializable {
     /**
      * Constructor for MediaInfo
      */
-    public MediaInfo() {
+    public MediaInfo() { }
+
+    @FunctionalInterface
+    interface IsoFileOpener {
+        IsoFile open(String filePath) throws IOException;
+    }
+
+    /**
+     * Marks the sample as bad when the size isoparser computes from the MP4 boxes differs from the file size.
+     * If isoparser cannot parse the file the result is unknown, not bad: isoparser throws on some valid
+     * files (e.g. boxes over 2 GB fail in CastUtils.l2i), so the failure is logged and sampleOk is left as is.
+     */
+    static void checkMp4Size(MediaInfo mediaInfo, String filePath, IsoFileOpener opener) {
+        try (IsoFile isoFile = opener.open(filePath)) {
+            if (isoFile.getSize() != mediaInfo.getActFileSize()) {
+                logger.warn("MP4: IsoFile size {} != actual file size {} for file {}", isoFile.getSize(), mediaInfo.getActFileSize(), filePath);
+                mediaInfo.setSampleOk(false);
+                mediaInfo.setCalFileSize(isoFile.getSize());
+            }
+        } catch (RuntimeException | IOException e) {
+            logger.warn("MP4: Unable to parse {} to check its size, skipping the check: {}", filePath, e.toString());
+        }
     }
 
     public static boolean hasWorkingMediaInfo() {
@@ -78,11 +85,10 @@ public class MediaInfo implements Serializable {
             Process proc = builder.start();
             int status = proc.waitFor();
             if (status != 0) {
-                throw new RuntimeException(
-                        "Exist code of " + MEDIAINFO_COMMAND + " --version yielded exit code " + status);
+                throw new RuntimeException("Exist code of " + MEDIAINFO_COMMAND + " --version yielded exit code " + status);
             }
             mediainfo_works = true;
-        } catch (Exception e) {
+        } catch(Exception e) {
             logger.fatal("Something went wrong trying to see if " + MEDIAINFO_COMMAND + " binary exists and works", e);
         }
         return mediainfo_works;
@@ -94,8 +100,7 @@ public class MediaInfo implements Serializable {
         String filePath = file.getAbsolutePath();
         mediaInfo.setActFileSize(file.length());
 
-        Pattern pSection = Pattern.compile("^(General|Video|Audio|Text|Chapters|Conformance errors)( #\\d+)?$",
-                Pattern.CASE_INSENSITIVE);
+        Pattern pSection = Pattern.compile("^(General|Video|Audio|Text|Chapters|Conformance errors)( #\\d+)?$", Pattern.CASE_INSENSITIVE);
         Pattern pValue = Pattern.compile("^(.*?)\\s+: (.*)$", Pattern.CASE_INSENSITIVE);
         Pattern pExpectedSize = Pattern.compile("expected size at least (\\d+)");
 
@@ -181,21 +186,7 @@ public class MediaInfo implements Serializable {
 
         // Calculate valid filesize for mp4, mkv and avi
         switch (realFormat) {
-            case "MP4" -> {
-                try {
-                    try (IsoFile isoFile = _isoFileFactory.create(filePath)) {
-                        if (isoFile.getSize() != mediaInfo.getActFileSize()) {
-                            logger.warn("MP4: IsoFile size {} != actual file size {} for file {}", isoFile.getSize(),
-                                    mediaInfo.getActFileSize(), filePath);
-                            mediaInfo.setSampleOk(false);
-                            mediaInfo.setCalFileSize(isoFile.getSize());
-                        }
-                    }
-                } catch (RuntimeException | IOException e) {
-                    logger.warn("MP4: Failed to parse IsoFile structure for file {}: {}", filePath, e.getMessage());
-                    mediaInfo.setSampleOk(false);
-                }
-            }
+            case "MP4" -> checkMp4Size(mediaInfo, filePath, IsoFile::new);
             case "MKV" -> {
                 HashMap<String, String> generalInfo = mediaInfo.getGeneralInfo();
                 boolean incomplete = false;
@@ -210,8 +201,7 @@ public class MediaInfo implements Serializable {
                                 mediaInfo.setCalFileSize(Long.parseLong(m.group(1)));
                                 logger.warn("MKV: Set calculated file size to {} for file {}", m.group(1), filePath);
                             } catch (NumberFormatException ignore) {
-                                logger.error("MKV: Failed to parse expected size from compliance string: {}",
-                                        compliance);
+                                logger.error("MKV: Failed to parse expected size from compliance string: {}", compliance);
                             }
                         }
                     }
@@ -245,8 +235,7 @@ public class MediaInfo implements Serializable {
                     String[] audioStream = (mediaInfo.getAudioInfos().get(0).get("Stream size")).split("\\s");
                     long videoStreamSize = 0L;
                     long audioStreamSize = 0L;
-                    long fileSizeFromMediainfo = Bytes
-                            .parseBytes(mediaInfo.getGeneralInfo().get("File size").replaceAll("\\s", ""));
+                    long fileSizeFromMediainfo = Bytes.parseBytes(mediaInfo.getGeneralInfo().get("File size").replaceAll("\\s", ""));
                     if (videoStream.length >= 2) {
                         videoStreamSize = Bytes.parseBytes(videoStream[0] + videoStream[1]);
                     }
@@ -254,8 +243,7 @@ public class MediaInfo implements Serializable {
                         audioStreamSize = Bytes.parseBytes(audioStream[0] + audioStream[1]);
                     }
                     if (videoStreamSize + audioStreamSize > fileSizeFromMediainfo) {
-                        logger.warn("AVI: Video+Audio stream size {} > file size {} for file {}",
-                                (videoStreamSize + audioStreamSize), fileSizeFromMediainfo, filePath);
+                        logger.warn("AVI: Video+Audio stream size {} > file size {} for file {}", (videoStreamSize + audioStreamSize), fileSizeFromMediainfo, filePath);
                         mediaInfo.setSampleOk(false);
                         mediaInfo.setCalFileSize(videoStreamSize + audioStreamSize);
                     }
