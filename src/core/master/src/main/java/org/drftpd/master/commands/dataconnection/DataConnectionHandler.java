@@ -37,6 +37,7 @@ import org.drftpd.master.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.exceptions.SlaveUnavailableException;
 import org.drftpd.master.network.BaseFtpConnection;
 import org.drftpd.master.network.Checksum;
+import org.drftpd.common.network.InetAddressUtils;
 import org.drftpd.master.network.FtpReply;
 import org.drftpd.master.network.TransferState;
 import org.drftpd.master.slavemanagement.RemoteSlave;
@@ -54,6 +55,7 @@ import javax.net.ssl.SSLSocket;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -76,6 +78,8 @@ public class DataConnectionHandler extends CommandInterface {
     public static final Key<TransferStatus> XFER_STATUS = new Key<>(DataConnectionHandler.class, "transferStatus");
     public static final Key<Long> MIN_XFER_SPEED = new Key<>(DataConnectionHandler.class, "minTransferSpeed");
     public static final Key<Long> MAX_XFER_SPEED = new Key<>(DataConnectionHandler.class, "maxTransferSpeed");
+    /** Set once the client sent "EPSV ALL": from then on only EPSV may be used (RFC 2428). */
+    public static final Key<Boolean> EPSV_ALL = new Key<>(DataConnectionHandler.class, "epsvAll");
     private static final Logger logger = LogManager.getLogger(DataConnectionHandler.class);
     private ResourceBundle _bundle;
 
@@ -163,6 +167,9 @@ public class DataConnectionHandler extends CommandInterface {
     public CommandResponse doPASVandCPSV(CommandRequest request) {
 
         BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
+        if (isEpsvAll(conn)) {
+            return epsvAllResponse(request.getCommand());
+        }
         TransferState ts = conn.getTransferState();
         ts.setPasv(true);
         if (!ts.isPreTransfer()) {
@@ -283,6 +290,17 @@ public class DataConnectionHandler extends CommandInterface {
                     "Address is unresolvable, check pasv_addr setting on " + transferSlave.getName());
         }
 
+        if (!(address.getAddress() instanceof Inet4Address)) {
+            // A 227 reply can only hold an IPv4 address (RFC 959)
+            String where = ts.isLocalPreTransfer() ? "the master" : transferSlave.getName();
+            logger.debug("PASV can't report IPv6 address {} of {}", address.getAddress(), where);
+            reset(conn);
+            CommandResponse response = new CommandResponse(500, "PASV can only report IPv4 addresses, but "
+                    + where + " is at " + InetAddressUtils.toShortString(address.getAddress()));
+            response.addComment("Use active mode (EPRT) for transfers over IPv6, or EPSV for directory listings.");
+            return response;
+        }
+
         logger.debug("PASV getting addrStr to reply");
         String addrStr = address.getAddress().getHostAddress().replace('.', ',') +
                 ',' + (address.getPort() >> 8) + ',' + (address.getPort() & 0xFF);
@@ -355,19 +373,8 @@ public class DataConnectionHandler extends CommandInterface {
         }
 
         BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
-        InetAddress clientHostAddress = conn.getControlSocket().getInetAddress();
-
-        if (clientAddr.isSiteLocalAddress() && !clientHostAddress.isSiteLocalAddress()) {
-            CommandResponse response = new CommandResponse(501);
-            response.addComment("==YOU'RE BEHIND A NAT ROUTER==");
-            response.addComment("Configure the firewall settings of your FTP client");
-            response.addComment("  to use your real IP: " + conn.getControlSocket().getInetAddress().getHostAddress());
-            response.addComment("And set up port forwarding in your router.");
-            response.addComment("Or you can just use a PRET capable client, see");
-            response.addComment("  https://github.com/drftpd-ng/drftpd/wiki for PRET capable clients");
-
-            reset(conn);
-            return response;
+        if (isEpsvAll(conn)) {
+            return epsvAllResponse(request.getCommand());
         }
 
         int clientPort;
@@ -382,7 +389,31 @@ public class DataConnectionHandler extends CommandInterface {
             return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
         }
 
-        conn.getTransferState().setPortAddress(new InetSocketAddress(clientAddr, clientPort));
+        return setActiveAddress(conn, new InetSocketAddress(clientAddr, clientPort));
+    }
+
+    /**
+     * Checks and stores the address the client gave with PORT or EPRT, where a slave (or the master)
+     * will connect to for the data connection.
+     */
+    private CommandResponse setActiveAddress(BaseFtpConnection conn, InetSocketAddress portAddress) {
+        InetAddress clientAddr = portAddress.getAddress();
+        InetAddress clientHostAddress = conn.getControlSocket().getInetAddress();
+
+        if (InetAddressUtils.isPrivateAddress(clientAddr) && !InetAddressUtils.isPrivateAddress(clientHostAddress)) {
+            CommandResponse response = new CommandResponse(501);
+            response.addComment("==YOU'RE BEHIND A NAT ROUTER==");
+            response.addComment("Configure the firewall settings of your FTP client");
+            response.addComment("  to use your real IP: " + InetAddressUtils.toShortString(clientHostAddress));
+            response.addComment("And set up port forwarding in your router.");
+            response.addComment("Or you can just use a PRET capable client, see");
+            response.addComment("  https://github.com/drftpd-ng/drftpd/wiki for PRET capable clients");
+
+            reset(conn);
+            return response;
+        }
+
+        conn.getTransferState().setPortAddress(portAddress);
 
         CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 
@@ -392,13 +423,109 @@ public class DataConnectionHandler extends CommandInterface {
 
         // Notify the user that this is not his IP.
         // Good for NAT users that aren't aware that their IP has changed.
-        if (!clientAddr.equals(conn.getControlSocket().getInetAddress())) {
+        if (!clientAddr.equals(clientHostAddress)) {
             response.addComment("FXP allowed. If you're not FXPing then set your IP to " +
-                    conn.getControlSocket().getInetAddress().getHostAddress()
+                    InetAddressUtils.toShortString(clientHostAddress)
                     + " (usually in firewall settings)");
         }
 
         return response;
+    }
+
+    /**
+     * <code>EPRT &lt;SP&gt; &lt;d&gt;&lt;net-prt&gt;&lt;d&gt;&lt;net-addr&gt;&lt;d&gt;&lt;tcp-port&gt;&lt;d&gt; &lt;CRLF&gt;</code><br>
+     * <p>
+     * RFC 2428 extended PORT, for IPv4 (protocol 1) and IPv6 (protocol 2), e.g.
+     * {@code EPRT |2|2001:db8::1|5282|}. The slave doing the transfer connects to this address, so,
+     * unlike EPSV, it works for transfers on slaves.
+     */
+    public CommandResponse doEPRT(CommandRequest request) {
+        if (!request.hasArgument()) {
+            return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+        }
+        BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
+        if (isEpsvAll(conn)) {
+            return epsvAllResponse(request.getCommand());
+        }
+
+        InetSocketAddress portAddress;
+        try {
+            portAddress = InetAddressUtils.parseEprt(request.getArgument().trim());
+        } catch (InetAddressUtils.UnsupportedNetworkProtocolException e) {
+            return new CommandResponse(522, "Network protocol not supported, use (1,2)");
+        } catch (IllegalArgumentException e) {
+            logger.debug("Invalid EPRT argument '{}': {}", request.getArgument(), e.getMessage());
+            return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+        }
+        return setActiveAddress(conn, portAddress);
+    }
+
+    /**
+     * <code>EPSV [&lt;SP&gt; &lt;net-prt&gt; | &lt;SP&gt; ALL] &lt;CRLF&gt;</code><br>
+     * <p>
+     * RFC 2428 extended PASV. Its reply only contains a port: the client connects to the address
+     * of the control connection, i.e. the master. So EPSV works for directory listings, which the
+     * master sends itself, but not for file transfers, which go directly to a slave whose address
+     * EPSV can't give. For those the client has to use active mode (EPRT/PORT), or PASV over IPv4.
+     * Like PASV, EPSV needs a PRET first so we know which of the two it is.
+     */
+    public CommandResponse doEPSV(CommandRequest request) {
+        BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
+        int controlFamily = InetAddressUtils.getAddressFamily(conn.getControlSocket().getLocalAddress());
+
+        if (request.hasArgument()) {
+            String arg = request.getArgument().trim();
+            if (arg.equalsIgnoreCase("ALL")) {
+                conn.setObject(EPSV_ALL, true);
+                return new CommandResponse(200, "EPSV ALL command successful");
+            }
+            int protocol;
+            try {
+                protocol = Integer.parseInt(arg);
+            } catch (NumberFormatException e) {
+                return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+            }
+            if (protocol != controlFamily) {
+                // The data connection uses the control connection's address, so only its protocol works
+                return new CommandResponse(522, "Network protocol not supported, use (" + controlFamily + ")");
+            }
+        }
+
+        TransferState ts = conn.getTransferState();
+        if (!ts.isPreTransfer()) {
+            // Don't reset: the client may still send PRET and retry
+            return new CommandResponse(500, "You need to use a client supporting PRET (PRE Transfer) to use EPSV");
+        }
+
+        if (!ts.isLocalPreTransfer()) {
+            // The transfer will go to a slave, whose address an EPSV reply can't contain (RFC 2428).
+            // Leave the PRET in place so the client can fall back to PASV, EPRT or PORT.
+            CommandResponse response = new CommandResponse(500,
+                    "EPSV can't be used for file transfers on this site, they go directly to a slave");
+            response.addComment("Use active mode (EPRT or PORT), or PASV over IPv4.");
+            return response;
+        }
+
+        PassiveConnection pc;
+        try {
+            pc = new PassiveConnection(ts.getSendFilesEncrypted() ? conn.getGlobalContext().getSSLContext() : null,
+                    conn.getGlobalContext().getPortRange(), false, Master.getBindIP());
+        } catch (IOException e) {
+            reset(conn);
+            return new CommandResponse(500, e.getMessage());
+        }
+        ts.setPasv(true);
+        ts.setLocalPassiveConnection(pc);
+        logger.debug("EPSV listening on port {} for a local transfer", pc.getLocalPort());
+        return new CommandResponse(229, InetAddressUtils.formatEpsvReply(pc.getLocalPort()));
+    }
+
+    private static boolean isEpsvAll(BaseFtpConnection conn) {
+        return conn.getObjectBoolean(EPSV_ALL);
+    }
+
+    private static CommandResponse epsvAllResponse(String command) {
+        return new CommandResponse(500, command + " not allowed after EPSV ALL");
     }
 
     public CommandResponse doPRET(CommandRequest request) {
@@ -659,6 +786,12 @@ public class DataConnectionHandler extends CommandInterface {
         if ("doPRET".equals(method)) {
             return new String[]{"PRET"};
         }
+        if ("doEPRT".equals(method)) {
+            return new String[]{"EPRT"};
+        }
+        if ("doEPSV".equals(method)) {
+            return new String[]{"EPSV"};
+        }
         return null;
     }
 
@@ -862,8 +995,8 @@ public class DataConnectionHandler extends CommandInterface {
             if (ts.isPort()) {
                 String index;
                 try {
-                    index = SlaveManager.getBasicIssuer().issueConnectToSlave(ts.getTransferSlave(), ts.getPortAddress()
-                            .getAddress().getHostAddress(), ts.getPortAddress()
+                    index = SlaveManager.getBasicIssuer().issueConnectToSlave(ts.getTransferSlave(),
+                            InetAddressUtils.toShortString(ts.getPortAddress().getAddress()), ts.getPortAddress()
                             .getPort(), ts.getSendFilesEncrypted(), ts.getSSLHandshakeClientMode());
                     ConnectInfo ci = ts.getTransferSlave().fetchTransferResponseFromIndex(index);
                     ts.setTransfer(ts.getTransferSlave().getTransfer(ci.getTransferIndex()));
