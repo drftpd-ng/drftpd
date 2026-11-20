@@ -119,6 +119,20 @@ disk.commit.delay=10000
 # default.pre.user=drftpd
 # default.pre.group=drftpd
 
+# Home directory where users land after login.
+# Empty or commented = users land in the root directory (/).
+# Placeholders: ${user} = user name, ${group} = primary group name.
+# A per-user override can be set with 'SITE CHANGE <user> homedir <path|none>'.
+# The home directory does NOT grant any permission, perms.conf still applies,
+#  see the home directory example in perms.conf.
+# If the directory does not exist (or is hidden from the user) the user lands in /.
+#homedir=/home/${user}
+
+# Create a missing home directory at login, owned by the user and its primary group.
+# Its parent directory (e.g. /home) must already exist.
+# Default: [false]
+#homedir.create=false
+
 # This next section defines how the slave manager allows ssl/tls connections.
 slavemanager.ssl.supported_protocols.1=TLSv1.3
 slavemanager.ssl.cipher_suites.1=TLS_AES_128_GCM_SHA256

@@ -32,7 +32,10 @@ import org.drftpd.master.network.FtpReply;
 import org.drftpd.master.usermanager.NoSuchUserException;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.usermanager.UserFileException;
+import org.drftpd.master.vfs.DirectoryHandle;
+import org.drftpd.master.vfs.ObjectNotValidException;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -140,6 +143,12 @@ public class LoginHandler extends CommandInterface {
             request.getSession().setObject(BaseFtpConnection.FAILEDUSERNAME, "");
             request.getSession().setObject(BaseFtpConnection.FAILEDLOGIN, false);
 
+            // Land the user in its home directory if one is configured
+            DirectoryHandle homeDir = getHomeDirectory(conn.getUserNull());
+            if (homeDir != null) {
+                response.setCurrentDirectory(homeDir);
+            }
+
             // Handle killing of ghosts
             if (request.getSession().getObject(BaseFtpConnection.KILLGHOSTS, false)) {
                 for (BaseFtpConnection conn2 : GlobalContext.getConnectionManager().getConnections()) {
@@ -162,6 +171,67 @@ public class LoginHandler extends CommandInterface {
 
         request.getSession().setObject(BaseFtpConnection.FAILEDREASON, "PASS Failed");
         return new CommandResponse(530, conn.jprintf(_bundle, "pass.fail", request.getUser() == null ? request.getSession().getObject(BaseFtpConnection.FAILEDUSERNAME, "") : request.getUser()));
+    }
+
+    /**
+     * Resolves the home directory of the given user, the per-user override set with
+     * {@code SITE CHANGE <user> homedir} takes precedence over 'homedir' in master.conf.
+     * The directory is looked up as the user (privpath applies) and is only created when
+     * 'homedir.create' is enabled and its parent already exists.
+     *
+     * @return the home directory, or null to keep the default (root) directory
+     */
+    private DirectoryHandle getHomeDirectory(User user) {
+        if (user == null) {
+            return null;
+        }
+        String template = user.getKeyedMap().getObject(UserManagement.HOMEDIR, "");
+        if (template.isBlank()) {
+            template = GlobalContext.getConfig().getMainProperties().getProperty(HomeDirectory.CONF_HOMEDIR, "");
+        }
+        if (template.isBlank()) {
+            return null;
+        }
+        String group = user.getGroup() == null ? null : user.getGroup().getName();
+        String path = HomeDirectory.resolve(template, user.getName(), group);
+        if (path == null) {
+            logger.warn("Ignoring invalid home directory '{}' for user '{}'", template, user.getName());
+            return null;
+        }
+        DirectoryHandle root = new DirectoryHandle("/");
+        try {
+            return root.getDirectory(path, user);
+        } catch (ObjectNotValidException e) {
+            logger.warn("Home directory '{}' of user '{}' is not a directory", path, user.getName());
+            return null;
+        } catch (FileNotFoundException e) {
+            // Does not exist (or is hidden from the user), create it below if allowed
+        }
+        if (!GlobalContext.getConfig().getMainProperties().getProperty(HomeDirectory.CONF_CREATE, "false").equalsIgnoreCase("true")) {
+            logger.debug("Home directory '{}' of user '{}' does not exist, staying at root", path, user.getName());
+            return null;
+        }
+        int idx = path.lastIndexOf('/');
+        String parentPath = idx == 0 ? "/" : path.substring(0, idx);
+        String name = path.substring(idx + 1);
+        if (new DirectoryHandle(path).exists()) {
+            // Something exists there that the user is not allowed to see, do not touch it
+            logger.debug("Home directory '{}' of user '{}' is hidden from the user, staying at root", path, user.getName());
+            return null;
+        }
+        try {
+            DirectoryHandle parent = root.getDirectory(parentPath, user);
+            DirectoryHandle homeDir = parent.createDirectoryUnchecked(name, user.getName(),
+                    group == null ? user.getName() : group);
+            logger.info("Created home directory '{}' for user '{}'", homeDir.getPath(), user.getName());
+            // Look it up again as the user so privpath still applies to the new directory
+            return root.getDirectory(homeDir.getPath(), user);
+        } catch (FileNotFoundException | ObjectNotValidException e) {
+            logger.warn("Cannot use home directory '{}' for user '{}', parent '{}' is missing or hidden", path, user.getName(), parentPath);
+        } catch (Exception e) {
+            logger.warn("Failed to create home directory '{}' for user '{}'", path, user.getName(), e);
+        }
+        return null;
     }
 
     /**
