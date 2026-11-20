@@ -7,12 +7,19 @@
 distance.unit=K
 
 # How the speedtest.net servers to test against are selected.
+#  geo:   the master downloads the full server list and picks the closest ones by distance
+#         to the slave location, which is looked up on ipinfo.io from the slave PASV address.
 #  slave: each slave asks speedtest.net itself for the servers closest to it (speedtest.net
 #         selects them based on the IP of the caller). The slave needs outbound HTTPS access to
 #         www.speedtest.net. If a slave cannot provide a list, selection automatically falls
 #         back to 'geo' for that slave.
-#  geo:   the master downloads the full server list and picks the closest ones by distance
-#         to the slave location, which is looked up on ipinfo.io from the slave PASV address.
-# Default: [slave]
-server.selection=slave
-
+# This is opt-in: with 'geo' (default) nothing changes. 'slave' enables it for all slaves.
+# It can also be enabled (or disabled) for a single slave, overriding this setting, with the
+# slave property speedtest.selection:
+#   SITE SLAVE <slavename> SET speedtest.selection slave
+#   SITE SLAVE <slavename> SET speedtest.selection geo
+#   SITE SLAVE <slavename> SET speedtest.selection      (empty: follow server.selection)
+# Only the automatic choice of the nearest servers is affected. A server ID given to
+# SITE SPEEDTEST is always looked up in the full server list, in every mode.
+# Default: [geo]
+server.selection=geo

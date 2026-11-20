@@ -70,7 +70,7 @@ public class SpeedTest extends CommandInterface {
         if (_unit != 'M' && _unit != 'N') {
             _unit = 'K';
         }
-        _slaveSelection = !"geo".equalsIgnoreCase(props.getProperty("server.selection", "slave").trim());
+        _slaveSelection = SpeedTestSelection.isSlaveMode(props.getProperty("server.selection", "geo"));
         switch (_unit) {
             case 'K' -> _unitSuffix = "km";
             case 'M' -> _unitSuffix = "mi";
@@ -179,7 +179,8 @@ public class SpeedTest extends CommandInterface {
 
             // Preferred: let the slave ask speedtest.net for the servers closest to it
             List<SpeedTestServer> slaveServers = null;
-            if (_slaveSelection) {
+            if (SpeedTestSelection.decide(_slaveSelection, rslave.getProperty(SpeedTestSelection.SLAVE_KEY), testServerID)
+                    == SpeedTestSelection.Source.SLAVE_NEAREST) {
                 slaveServers = SpeedTestUtils.getServersFromSlave(rslave, SLAVE_SERVER_LIMIT);
                 if (slaveServers == null) {
                     logger.warn("Falling back to geolocation based server selection for slave {}", rslave.getName());
@@ -201,15 +202,14 @@ public class SpeedTest extends CommandInterface {
                 closestServers = new ArrayDeque<>(slaveServers);
                 slaveLocations.put(rslave.getName(), slaveLocation);
             } else {
-                if (_slaveSelection) {
-                    // Fallback needs the geo server list
-                    if (_servers == null) {
-                        refreshServers();
-                    }
-                    if (_servers.isEmpty()) {
-                        request.getSession().printOutput(500, request.getSession().jprintf(_bundle, "speedtest.servers.empty", env, request.getUser()));
-                        continue;
-                    }
+                // Full (geo) server list, downloaded lazily when not loaded yet. Needed for geo selection,
+                // for fallback and for explicit server IDs, whatever the selection mode.
+                if (_servers == null) {
+                    refreshServers();
+                }
+                if (_servers == null || _servers.isEmpty()) {
+                    request.getSession().printOutput(500, request.getSession().jprintf(_bundle, "speedtest.servers.empty", env, request.getUser()));
+                    continue;
                 }
                 if (updateLocation || (slaveLocation.getLatitude() == 0 && slaveLocation.getLongitude() == 0)) {
                     // Location not set yet, let's find it
