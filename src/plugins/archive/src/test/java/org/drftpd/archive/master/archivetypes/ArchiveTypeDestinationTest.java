@@ -56,4 +56,19 @@ public class ArchiveTypeDestinationTest {
     void customRlsRegexHandlesDatedNames() {
         assertEquals("Some.Show", ArchiveType.resolveRlsDestination("${rls}", "Some.Show.2023-11-11.720p-GRP", "(.*?)\\.\\d{4}-\\d\\d-\\d\\d.*"));
     }
+
+    @Test
+    void dollarInReleaseNameIsKept() {
+        assertEquals("Some$1.Show/S01", resolve("${rls}/S${season}", "Some$1.Show.S01E02.720p-GRP"));
+    }
+
+    @Test
+    void backslashInReleaseNameIsKept() {
+        assertEquals("Some\\Show/S01", resolve("${rls}/S${season}", "Some\\Show.S01E02.720p-GRP"));
+    }
+
+    @Test
+    void dollarAndBackslashInRegexVariableAreKept() {
+        assertEquals("a$b\\c", resolve("${regex:(.*)-GRP}", "a$b\\c-GRP"));
+    }
 }

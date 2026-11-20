@@ -308,6 +308,11 @@ public abstract class ArchiveType {
             return;
         }
 
+        // Never archive the root, the section base or the current dated directory as a release
+        if (isSectionStructureDir(lrf)) {
+            return;
+        }
+
         try {
             // Checks regex to see if dir should be archived or not
             if (lrf.getName().matches(getArchiveRegex())) {
@@ -382,10 +387,7 @@ public abstract class ArchiveType {
                         }
                     }
                 } else {
-                    // we do this check so we can't move a dated dir
-                    if (getSection().getCurrentDirectory().equals(lrf) && (_moveRelease)) {
-                        continue;
-                    }
+                    // section structure dirs (e.g. the current dated dir) are skipped in getOldestNonArchivedDir2
                     getOldestNonArchivedDir2(oldDirs, lrf);
                 }
 
@@ -515,24 +517,10 @@ public abstract class ArchiveType {
         _numOfSlaves = Integer.parseInt(properties.getProperty(_confNum + ".numofslaves", "0").trim());
         _repeat = Integer.parseInt(properties.getProperty(_confNum + ".repeat", "1").trim());
         _scansubdirs = properties.getProperty(_confNum + ".scansubdirs", "0").trim().equals("1");
-        _scansubdirsRegex = properties.getProperty(_confNum + ".scansubdirsregex", DEFAULT_SCANSUBDIRS_REGEX).trim();
-        try {
-            Pattern.compile(_scansubdirsRegex);
-        } catch (PatternSyntaxException e) {
-            logger.error("scansubdirsregex Entry for {} is invalid, using default", _confNum);
-            _scansubdirsRegex = DEFAULT_SCANSUBDIRS_REGEX;
-        }
-
-        _rlsRegex = properties.getProperty(_confNum + ".rlsregex", DEFAULT_RLS_REGEX).trim();
-        try {
-            if (Pattern.compile(_rlsRegex).matcher("").groupCount() < 1) {
-                logger.error("rlsregex Entry for {} has no capturing group for ${rls}, using default", _confNum);
-                _rlsRegex = DEFAULT_RLS_REGEX;
-            }
-        } catch (PatternSyntaxException e) {
-            logger.error("rlsregex Entry for {} is invalid, using default", _confNum);
-            _rlsRegex = DEFAULT_RLS_REGEX;
-        }
+        _scansubdirsRegex = resolveRegex(properties.getProperty(_confNum + ".scansubdirsregex"),
+                DEFAULT_SCANSUBDIRS_REGEX, false, _confNum + ".scansubdirsregex");
+        _rlsRegex = resolveRegex(properties.getProperty(_confNum + ".rlsregex"),
+                DEFAULT_RLS_REGEX, true, _confNum + ".rlsregex");
 
         // Guard that repeat is not negative
         if (_repeat < 1) {
@@ -831,6 +819,54 @@ public abstract class ArchiveType {
     }
 
     /**
+     * Returns the regex to use for a config entry: the default when the value is missing, blank, invalid
+     * or (if requireGroup) has no capturing group. The reason is logged.
+     */
+    static String resolveRegex(String value, String defaultRegex, boolean requireGroup, String key) {
+        if (value == null || value.isBlank()) {
+            return defaultRegex;
+        }
+        String regex = value.trim();
+        try {
+            if (requireGroup && Pattern.compile(regex).matcher("").groupCount() < 1) {
+                logger.error("{} '{}' has no capturing group, using default '{}'", key, regex, defaultRegex);
+                return defaultRegex;
+            }
+            Pattern.compile(regex);
+        } catch (PatternSyntaxException e) {
+            logger.error("{} '{}' is invalid ({}), using default '{}'", key, regex, e.getMessage(), defaultRegex);
+            return defaultRegex;
+        }
+        return regex;
+    }
+
+    /**
+     * True for directories that structure a section and must never be archived as a release:
+     * the root, the section base directory and the current directory of a dated section
+     * (plus any directories between the base and it, for multi-level date formats).
+     */
+    static boolean isSectionStructureDir(String path, String basePath, String currentPath) {
+        if (path.equals("/") || path.equals(basePath) || path.equals(currentPath)) {
+            return true;
+        }
+        return path.startsWith(basePath.endsWith("/") ? basePath : basePath + "/")
+                && currentPath.startsWith(path + "/");
+    }
+
+    private boolean isSectionStructureDir(DirectoryHandle dir) {
+        return isSectionStructureDir(dir.getPath(), getSection().getBaseDirectory().getPath(),
+                getSection().getCurrentDirectory().getPath());
+    }
+
+    /**
+     * Same check for a user supplied directory (SITE ARCHIVE).
+     */
+    public static boolean isSectionStructureDir(DirectoryHandle dir, SectionInterface section) {
+        return dir.isRoot() || isSectionStructureDir(dir.getPath(), section.getBaseDirectory().getPath(),
+                section.getCurrentDirectory().getPath());
+    }
+
+    /**
      * Resolves the ${rls}, ${season}, ${episode} and ${regex:...} variables of a
      * "rls:" destination template against a release name.
      *
@@ -843,7 +879,7 @@ public abstract class ArchiveType {
             Pattern pattern = Pattern.compile(rlsRegex);
             Matcher matcher = pattern.matcher(name);
             if (matcher.matches()) {
-                retstr = retstr.replaceAll("\\$\\{rls\\}", matcher.group(1));
+                retstr = retstr.replace("${rls}", matcher.group(1));
             }
         }
         if (retstr.contains("${rls}")) {
@@ -854,9 +890,9 @@ public abstract class ArchiveType {
             Matcher matcher = pattern.matcher(name);
             if (matcher.matches()) {
                 if (matcher.group(2).length() < 2) {
-                    retstr = retstr.replaceAll("\\$\\{season\\}", 0 + matcher.group(2));
+                    retstr = retstr.replace("${season}", 0 + matcher.group(2));
                 } else {
-                    retstr = retstr.replaceAll("\\$\\{season\\}", matcher.group(2));
+                    retstr = retstr.replace("${season}", matcher.group(2));
                 }
             }
         }
@@ -868,9 +904,9 @@ public abstract class ArchiveType {
             Matcher matcher = pattern.matcher(name);
             if (matcher.matches()) {
                 if (matcher.group(2).length() < 2) {
-                    retstr = retstr.replaceAll("\\$\\{episode\\}", 0 + matcher.group(2));
+                    retstr = retstr.replace("${episode}", 0 + matcher.group(2));
                 } else {
-                    retstr = retstr.replaceAll("\\$\\{episode\\}", matcher.group(2));
+                    retstr = retstr.replace("${episode}", matcher.group(2));
                 }
             }
         }
