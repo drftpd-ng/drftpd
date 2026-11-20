@@ -55,8 +55,10 @@ import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.NoSuchFileException;
 import java.security.GeneralSecurityException;
 import java.util.*;
@@ -565,7 +567,10 @@ public class Slave extends SslConfigurationLoader {
 
     /**
      * Rename a location on the (slave) local file system from A to B
-     * NOTE: master allows destination to exist and expects us to merge
+     * If the destination already exists (leftovers the master does not track) the two are merged:
+     * directories are merged recursively, a colliding file is replaced by the source file, and a
+     * file/directory conflict is logged and left in place without throwing, so the slave stays connected.
+     * Genuine I/O failures (failed move, failed mkdirs) are still thrown.
      * @param from The source location we need to rename from
      * @param toDirPath The destination parent path to rename/move too
      * @param toName The destination name under parent to rename/move too
@@ -600,17 +605,75 @@ public class Slave extends SslConfigurationLoader {
                 }
             }
 
-            // Master allows destination to exist, just how should we handle collisions (ignoring for now)
-            if (tofile.exists()) {
-                logger.error("rename(), tofile ["+tofile.getPath()+"] exists (from: ["+fromfile.getPath()+"]. " +
-                        "This used to cause an I/O exception, however master assumes we can merge, " +
-                        "so silently not doing anything (for now) - ISSUE");
-                continue;
+            int unresolved = mergeInto(fromfile, tofile);
+            if (unresolved > 0) {
+                logger.error("rename(), [{}] -> [{}] left {} entries at the source because of file/directory " +
+                        "conflicts, nothing was deleted", fromfile.getPath(), tofile.getPath(), unresolved);
             }
+        }
+    }
 
-            if (!fromfile.renameTo(tofile)) {
-                throw new PermissionDeniedException("renameTo(" + fromfile + ", " + tofile + ") failed");
+    /**
+     * Moves from to to. If to does not exist this is a plain move. If it does, the two are merged:
+     * <ul>
+     * <li>directory into directory: every child is merged recursively, afterwards the source directory is
+     * removed if it is empty;</li>
+     * <li>file (or symbolic link) onto file or link: the destination is replaced by the source (the source is what the master tracks,
+     * the destination is an untracked leftover) and a warning is logged;</li>
+     * <li>file vs directory: nothing is deleted or moved, an error is logged and the entry is counted.</li>
+     * </ul>
+     * Conflicts never throw, so the caller can carry on with the remaining entries.
+     *
+     * @param from the existing source file or directory
+     * @param to the destination, which may or may not exist
+     * @return the number of entries that could not be moved because of a file/directory conflict
+     * @throws IOException if a move, a directory listing or a directory removal fails
+     */
+    static int mergeInto(File from, File to) throws IOException {
+        // Symbolic links are never followed: a link is moved or replaced as an entry of its own, so merging
+        // can't reach into (and move files out of) whatever the link points to
+        if (!Files.exists(to.toPath(), LinkOption.NOFOLLOW_LINKS)) {
+            move(from, to, false);
+            return 0;
+        }
+        boolean fromDir = Files.isDirectory(from.toPath(), LinkOption.NOFOLLOW_LINKS);
+        boolean toDir = Files.isDirectory(to.toPath(), LinkOption.NOFOLLOW_LINKS);
+        if (fromDir && toDir) {
+            File[] children = from.listFiles();
+            if (children == null) {
+                throw new PermissionDeniedException("Unable to list directory " + from);
             }
+            int unresolved = 0;
+            for (File child : children) {
+                unresolved += mergeInto(child, new File(to, child.getName()));
+            }
+            String[] left = from.list();
+            if (left != null && left.length == 0) {
+                Files.deleteIfExists(from.toPath());
+            }
+            return unresolved;
+        }
+        if (!fromDir && !toDir) {
+            logger.warn("rename(), replacing existing file [{}] ({} bytes) with [{}] ({} bytes)",
+                    to.getPath(), to.length(), from.getPath(), from.length());
+            move(from, to, true);
+            return 0;
+        }
+        logger.error("rename(), type mismatch, [{}] ({}) and [{}] ({}), leaving both in place",
+                from.getPath(), fromDir ? "directory" : "file",
+                to.getPath(), toDir ? "directory" : "file");
+        return 1;
+    }
+
+    private static void move(File from, File to, boolean replace) throws IOException {
+        try {
+            if (replace) {
+                Files.move(from.toPath(), to.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            } else {
+                Files.move(from.toPath(), to.toPath());
+            }
+        } catch (IOException e) {
+            throw new PermissionDeniedException("renameTo(" + from + ", " + to + ") failed: " + e);
         }
     }
 
