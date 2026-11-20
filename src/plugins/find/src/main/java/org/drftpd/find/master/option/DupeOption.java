@@ -31,7 +31,7 @@ import java.util.Map;
 public class DupeOption implements OptionInterface {
 
     private final Map<String, String> _options = Map.of(
-            "dupe", "[oldest|newest] # Only dirs whose name exists more than once, actions run on all copies but the kept one (default keeps oldest)"
+            "dupe", "[oldest|newest] # Only dirs whose name exists more than once, actions run on all copies but the kept one (default keeps the oldest = first created)"
     );
 
     @Override

@@ -10,6 +10,7 @@ public class FindSettings {
 
     private DupeUtils.KeepPolicy _dupe;
     private final String _dupeExclude;
+    private final String _dupeMinAge;
 
     private int _limit;
     private int _maxLimit;
@@ -25,6 +26,7 @@ public class FindSettings {
 
         _dupe = null;
         _dupeExclude = request.getProperties().getProperty("dupe.exclude");
+        _dupeMinAge = request.getProperties().getProperty("dupe.min.age");
 
         // We by default initialize to root!
         _dirHandle = GlobalContext.getGlobalContext().getRoot();
@@ -51,6 +53,13 @@ public class FindSettings {
 
     public String getDupeExclude() {
         return _dupeExclude;
+    }
+
+    /**
+     * @return the configured dupe.min.age in minutes, null when not configured
+     */
+    public String getDupeMinAge() {
+        return _dupeMinAge;
     }
 
     public int getLimit() {

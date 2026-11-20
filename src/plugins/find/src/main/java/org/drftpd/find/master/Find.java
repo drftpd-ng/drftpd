@@ -31,6 +31,8 @@ import org.drftpd.master.indexation.AdvancedSearchParams;
 import org.drftpd.master.indexation.IndexEngineInterface;
 import org.drftpd.master.indexation.IndexException;
 import org.drftpd.master.network.Session;
+import org.drftpd.master.sections.SectionInterface;
+import org.drftpd.master.sections.conf.DatedSection;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.FileHandle;
@@ -38,7 +40,6 @@ import org.drftpd.master.vfs.InodeHandle;
 import org.reflections.Reflections;
 
 import java.io.FileNotFoundException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -301,8 +302,9 @@ public class Find extends CommandInterface {
     }
 
     /**
-     * Handles the -dupe option: groups the found directories by name, keeps one copy of every
+     * Handles the -dupe option: groups the found release directories by name, keeps one copy of every
      * dupe according to the keep policy and only runs the actions on the other copies.
+     * Recently modified copies are skipped, see {@link DupeUtils#run}.
      * Without any action this is a dry run that only lists the dupes.
      * The limit applies to the number of dupe groups.
      */
@@ -315,6 +317,13 @@ public class Find extends CommandInterface {
         } catch (PatternSyntaxException e) {
             logger.error("Invalid dupe.exclude pattern in find.conf", e);
             return new CommandResponse(500, "Invalid dupe.exclude pattern: " + e.getMessage());
+        }
+        long minAge;
+        try {
+            minAge = DupeUtils.parseMinAge(settings.getDupeMinAge());
+        } catch (IllegalArgumentException e) {
+            logger.error("Invalid dupe.min.age in find.conf: {}", e.getMessage());
+            return new CommandResponse(500, "Invalid find.conf: " + e.getMessage());
         }
         boolean observePrivPath = request.getProperties().getProperty("observe.privpath", "true").equalsIgnoreCase("true");
 
@@ -336,13 +345,18 @@ public class Find extends CommandInterface {
                 if (observePrivPath ? dir.isHidden(user) : dir.isHidden(null)) {
                     continue;
                 }
-                dirs.add(new DupeUtils.Copy(dir.getPath(), dir.lastModified()));
+                long lastModified = dir.lastModified();
+                long creationTime = dir.creationTime();
+                // Inodes without a creation time fall back to their last modification
+                dirs.add(new DupeUtils.Copy(dir.getPath(), creationTime > 0 ? creationTime : lastModified, lastModified));
             } catch (FileNotFoundException e) {
                 logger.warn("Index contained an unexistent inode: {}", item.getKey());
             }
         }
 
-        List<DupeUtils.DupeGroup> groups = DupeUtils.findDupes(dirs, settings.getDupe(), exclude);
+        // Only releases are compared: not section dirs, dated dirs or sub dirs of releases
+        List<DupeUtils.Copy> releases = DupeUtils.removeNested(DupeUtils.filterReleaseDirs(dirs, this::lookupSection));
+        List<DupeUtils.DupeGroup> groups = DupeUtils.findDupes(releases, settings.getDupe(), exclude);
 
         CommandResponse response = new CommandResponse(200, actions.isEmpty()
                 ? "Find complete! Dry run, nothing was changed." : "Find complete!");
@@ -351,45 +365,57 @@ public class Find extends CommandInterface {
             return response;
         }
 
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
-        LinkedList<String> responses = new LinkedList<>();
-        int results = 0;
-        for (DupeUtils.DupeGroup group : groups) {
-            if (results == settings.getLimit()) {
-                break;
+        DupeUtils.DupeFileSystem fs = path -> {
+            try {
+                return OptionalLong.of(new DirectoryHandle(path).lastModified());
+            } catch (FileNotFoundException e) {
+                return OptionalLong.empty();
             }
-            if (!settings.getQuiet()) {
-                responses.add("Dupe " + group.kept().name() + " (" + group.copies().size() + " copies):");
-                for (DupeUtils.Copy copy : group.copies()) {
-                    responses.add((copy == group.kept() ? "  KEEP " : "  DUPE ") + copy.path()
-                            + " (" + dateFormat.format(new Date(copy.lastModified())) + ")");
-                }
-            }
-            for (DupeUtils.Copy copy : group.toRemove()) {
-                for (ActionInterface action : actions) {
-                    try {
-                        DirectoryHandle dir = new DirectoryHandle(copy.path());
-                        logger.debug("Action {} executing on dupe {}", action.getClass(), dir.getPath());
-                        String text = action.exec(request, dir);
-                        if (!settings.getQuiet() || action.failed()) {
-                            responses.add("    " + text);
-                        }
-                    } catch (RuntimeException e) {
-                        logger.warn("Action {} failed on dupe {}", action.getClass(), copy.path(), e);
-                        responses.add("    " + action.name() + " failed on " + copy.path() + ": " + e.getMessage());
+        };
+        DupeUtils.DupeActor actor = actions.isEmpty() ? null : copy -> {
+            List<String> lines = new ArrayList<>();
+            for (ActionInterface action : actions) {
+                try {
+                    DirectoryHandle dir = new DirectoryHandle(copy.path());
+                    logger.debug("Action {} executing on dupe {}", action.getClass(), dir.getPath());
+                    String text = action.exec(request, dir);
+                    if (!settings.getQuiet() || action.failed()) {
+                        lines.add("    " + text);
                     }
+                } catch (RuntimeException e) {
+                    logger.warn("Action {} failed on dupe {}", action.getClass(), copy.path(), e);
+                    lines.add("    " + action.name() + " failed on " + copy.path() + ": " + e.getMessage());
                 }
             }
-            results++;
-        }
+            return lines;
+        };
+        DupeUtils.RunResult result = DupeUtils.run(groups, settings.getLimit(), settings.getQuiet(),
+                System.currentTimeMillis(), minAge, fs, actor);
 
         env.put("limit", settings.getLimit());
-        env.put("results", results);
+        env.put("results", result.groups());
         response.addComment(session.jprintf(_bundle, "find.dupe.header", env, user.getName()));
-        for (String line : responses) {
+        for (String line : result.lines()) {
             response.addComment(line);
         }
         return response;
+    }
+
+    /**
+     * @return the section layout of the directory for the -dupe release depth check, null when unknown
+     */
+    private DupeUtils.SectionInfo lookupSection(String path) {
+        try {
+            SectionInterface section = GlobalContext.getGlobalContext().getSectionManager().lookup(new DirectoryHandle(path));
+            if (section == null || section.getBaseDirectory() == null) {
+                return null;
+            }
+            return new DupeUtils.SectionInfo(section.getBaseDirectory().getPath(),
+                    section instanceof DatedSection dated ? dated.getDateFormat() : null);
+        } catch (RuntimeException e) {
+            logger.debug("No section found for {}", path, e);
+            return null;
+        }
     }
 
     /**
