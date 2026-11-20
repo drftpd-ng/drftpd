@@ -50,6 +50,7 @@ public class WipeAction implements ActionInterface {
         try {
             User user = request.getSession().getUserNull(request.getUser());
             inode.checkWipePermission(user);
+            inode.checkWipeSubtreePermission(user);
             inode.delete(user);
         } catch (FileNotFoundException e) {
             logger.error("The file was there and now it's gone, how?", e);

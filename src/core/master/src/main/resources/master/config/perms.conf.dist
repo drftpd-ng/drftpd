@@ -47,10 +47,15 @@ delete         *   =siteop
 renameown      *   *
 rename         *   =siteop
 
-# Where SITE WIPE (and SITE FIND -action wipe) may be used. Who may use the
+# Where SITE WIPE (and SITE FIND -wipe) may be used. Who may use the
 #  command at all is set in the commands config ("site wipe" perms).
 # The first matching line wins. If no wipe line matches a path, wiping is
 #  allowed (the delete/deleteown permissions above still apply).
+# A recursive wipe of a directory is refused as a whole if any file or directory
+#  below it is denied by a wipe line (hidden paths included).
+# These rules only apply to SITE WIPE and SITE FIND -wipe. They do not apply to
+#  system deletes that bypass the permission checks (deleteUnchecked), such as
+#  AutoFreeSpace, REQDELETE and similar plugins.
 # Note: '*' also matches '/' and directories are matched with a trailing '/',
 #  so put the more specific lines first.
 # Example: allow wiping releases inside /archive/<section>/, but not

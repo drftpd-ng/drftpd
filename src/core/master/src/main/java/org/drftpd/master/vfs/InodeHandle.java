@@ -28,10 +28,12 @@ import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.master.slavemanagement.SlaveManager;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.vfs.perms.VFSPermissions;
+import org.drftpd.master.vfs.perms.WipeTreeCheck;
 import org.drftpd.slave.exceptions.FileExistsException;
 import org.drftpd.slave.exceptions.ObjectNotFoundException;
 
 import java.io.FileNotFoundException;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -166,6 +168,35 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable<In
     public void checkWipePermission(User user) throws PermissionDeniedException {
         if (!getVFSPermissions().checkPathPermission("wipe", user, this, true)) {
             throw new PermissionDeniedException("You are not allowed to wipe " + getPath());
+        }
+    }
+
+    /**
+     * Checks the 'wipe' path permission (perms.conf) for everything below this directory, because
+     * a recursive wipe also removes all of it. Does nothing for non-directories, and costs nothing
+     * when perms.conf has no wipe/wipeex line at all.
+     * The walk is unchecked on purpose: a protected dir hidden by privpath must still block the wipe.
+     *
+     * @throws PermissionDeniedException if any descendant is denied, the message names the first one found.
+     */
+    public void checkWipeSubtreePermission(User user) throws PermissionDeniedException, FileNotFoundException {
+        if (!isDirectory() || !getVFSPermissions().hasPathPermissions("wipe")) {
+            return;
+        }
+        InodeHandle denied = WipeTreeCheck.findFirstDenied(this, inode -> {
+            if (!inode.isDirectory()) {
+                return Collections.emptySet();
+            }
+            try {
+                return ((DirectoryHandle) inode).getInodeHandlesUnchecked();
+            } catch (FileNotFoundException e) {
+                // vanished while walking, nothing left to protect there
+                return Collections.emptySet();
+            }
+        }, inode -> !getVFSPermissions().checkPathPermission("wipe", user, inode, true));
+        if (denied != null) {
+            throw new PermissionDeniedException("You are not allowed to wipe " + denied.getPath()
+                    + " (inside " + getPath() + ")");
         }
     }
 

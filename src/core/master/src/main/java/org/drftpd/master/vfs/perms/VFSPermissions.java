@@ -184,6 +184,26 @@ public class VFSPermissions {
         return defaults;
     }
 
+    /**
+     * @return true if at least one line of the given type (e.g. "wipe") was loaded from perms.conf,
+     * for any of its directives (glob and regex).
+     */
+    public boolean hasPathPermissions(String type) {
+        if (!verifyType(type)) {
+            throw new IllegalArgumentException("Invalid VFS perm type.");
+        }
+        HashMap<String, LinkedList<PathPermission>> map = _pathPerms.get(type);
+        if (map == null) {
+            return false;
+        }
+        for (LinkedList<PathPermission> perms : map.values()) {
+            if (!perms.isEmpty()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public String getPrivPathRegex() {
         return getPrivPathRegex(null);
     }
