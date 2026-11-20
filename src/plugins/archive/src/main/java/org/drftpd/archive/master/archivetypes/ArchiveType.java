@@ -525,7 +525,10 @@ public abstract class ArchiveType {
 
         _rlsRegex = properties.getProperty(_confNum + ".rlsregex", DEFAULT_RLS_REGEX).trim();
         try {
-            Pattern.compile(_rlsRegex);
+            if (Pattern.compile(_rlsRegex).matcher("").groupCount() < 1) {
+                logger.error("rlsregex Entry for {} has no capturing group for ${rls}, using default", _confNum);
+                _rlsRegex = DEFAULT_RLS_REGEX;
+            }
         } catch (PatternSyntaxException e) {
             logger.error("rlsregex Entry for {} is invalid, using default", _confNum);
             _rlsRegex = DEFAULT_RLS_REGEX;
