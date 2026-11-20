@@ -47,6 +47,7 @@ import org.drftpd.common.util.ConfigLoader;
 import org.drftpd.slave.protocol.AbstractHandler;
 import org.drftpd.slave.protocol.SlaveProtocolCentral;
 import org.drftpd.speedtestnet.common.AsyncResponseSpeedTestInfo;
+import org.drftpd.speedtestnet.common.AsyncResponseSpeedTestServers;
 import org.drftpd.speedtestnet.common.SpeedTestInfo;
 
 import java.io.IOException;
@@ -130,6 +131,47 @@ public class SpeedTestHandler extends AbstractHandler {
 
     public AsyncResponse handleSpeedTest(AsyncCommandArgument ac) {
         return new AsyncResponseSpeedTestInfo(ac.getIndex(), doSpeedTest(ac.getArgs()));
+    }
+
+    /**
+     * Fetch the speedtest.net servers closest to this slave. speedtest.net selects them based on
+     * the IP of the caller, which is why this is done here and not on the master.
+     * The raw JSON is returned (null on any failure), the master does the parsing.
+     */
+    public AsyncResponse handleSpeedTestServers(AsyncCommandArgument ac) {
+        int limit = 5;
+        try {
+            limit = Math.max(1, Math.min(50, Integer.parseInt(ac.getArgs().trim())));
+        } catch (NumberFormatException e) {
+            logger.debug("Invalid server limit [{}], using {}", ac.getArgs(), limit);
+        }
+        String json = null;
+        String url = "https://www.speedtest.net/api/js/servers?engine=js&limit=" + limit;
+        RequestConfig requestConfig = RequestConfig.custom()
+                .setResponseTimeout(10000, TimeUnit.MILLISECONDS)
+                .setConnectTimeout(5000, TimeUnit.MILLISECONDS)
+                .setConnectionRequestTimeout(5000, TimeUnit.MILLISECONDS)
+                .build();
+        HttpGet httpGet = new HttpGet(url);
+        httpGet.setConfig(requestConfig);
+        httpGet.setHeader("User-Agent", "DrFTPD");
+        httpGet.setHeader("Accept", "application/json");
+        try (CloseableHttpClient httpClient = HttpClients.createDefault();
+             CloseableHttpResponse response = httpClient.execute(httpGet)) {
+            if (response.getCode() != HttpStatus.SC_OK) {
+                logger.warn("Error {} fetching speedtest.net servers from {}", response.getCode(), url);
+            } else {
+                String data = EntityUtils.toString(response.getEntity());
+                if (data.length() > 1_000_000) {
+                    logger.warn("Unexpectedly large speedtest.net server list ({} chars), ignoring", data.length());
+                } else {
+                    json = data;
+                }
+            }
+        } catch (Exception e) {
+            logger.warn("Failed fetching speedtest.net servers from {} :: {}", url, e.getMessage());
+        }
+        return new AsyncResponseSpeedTestServers(ac.getIndex(), json);
     }
 
     private SpeedTestInfo doSpeedTest(String urls) {

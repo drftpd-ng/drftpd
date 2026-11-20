@@ -42,11 +42,13 @@ public class SpeedTest extends CommandInterface {
 
     private static final Logger logger = LogManager.getLogger(SpeedTestUtils.class);
     private static final DecimalFormat _numberFormat = new DecimalFormat("#.00");
+    private static final int SLAVE_SERVER_LIMIT = 5;
 
     private ResourceBundle _bundle;
     private HashSet<SpeedTestServer> _servers;
     private char _unit;
     private String _unitSuffix;
+    private boolean _slaveSelection;
 
     public void initialize(String method, String pluginName, StandardCommandManager cManager) {
         super.initialize(method, pluginName, cManager);
@@ -68,6 +70,7 @@ public class SpeedTest extends CommandInterface {
         if (_unit != 'M' && _unit != 'N') {
             _unit = 'K';
         }
+        _slaveSelection = !"geo".equalsIgnoreCase(props.getProperty("server.selection", "slave").trim());
         switch (_unit) {
             case 'K' -> _unitSuffix = "km";
             case 'M' -> _unitSuffix = "mi";
@@ -94,7 +97,7 @@ public class SpeedTest extends CommandInterface {
         StringTokenizer st = new StringTokenizer(request.getArgument());
 
         // First run?, load server list
-        if (_servers == null) {
+        if (_servers == null && !_slaveSelection) {
             refreshServers();
             request.getSession().printOutput(200, request.getSession().jprintf(_bundle, "speedtest.servers.refresh", env, request.getUser()));
         }
@@ -133,10 +136,12 @@ public class SpeedTest extends CommandInterface {
             }
         }
 
-        if (_servers == null) {
-            return new CommandResponse(500, request.getSession().jprintf(_bundle, "speedtest.servers.null", env, request.getUser()));
-        } else if (_servers.isEmpty()) {
-            return new CommandResponse(500, request.getSession().jprintf(_bundle, "speedtest.servers.empty", env, request.getUser()));
+        if (!_slaveSelection) {
+            if (_servers == null) {
+                return new CommandResponse(500, request.getSession().jprintf(_bundle, "speedtest.servers.null", env, request.getUser()));
+            } else if (_servers.isEmpty()) {
+                return new CommandResponse(500, request.getSession().jprintf(_bundle, "speedtest.servers.empty", env, request.getUser()));
+            }
         }
 
         ArrayList<RemoteSlave> rslaves = new ArrayList<>();
@@ -172,6 +177,15 @@ public class SpeedTest extends CommandInterface {
             }
             HashMap<String, SpeedTestServer> testServers = new HashMap<>();
 
+            // Preferred: let the slave ask speedtest.net for the servers closest to it
+            List<SpeedTestServer> slaveServers = null;
+            if (_slaveSelection) {
+                slaveServers = SpeedTestUtils.getServersFromSlave(rslave, SLAVE_SERVER_LIMIT);
+                if (slaveServers == null) {
+                    logger.warn("Falling back to geolocation based server selection for slave {}", rslave.getName());
+                }
+            }
+
             SlaveLocation slaveLocation = new SlaveLocation();
             String lat = rslave.getProperty("lat");
             String lon = rslave.getProperty("lon");
@@ -181,26 +195,44 @@ public class SpeedTest extends CommandInterface {
             if (NumberUtils.isParsable(lon)) {
                 slaveLocation.setLongitude(Double.parseDouble(lon));
             }
-            if (updateLocation || (slaveLocation.getLatitude() == 0 && slaveLocation.getLongitude() == 0)) {
-                // Location not set yet, let's find it
-                slaveLocation = SpeedTestUtils.getSlaveLocation(rslave);
-            }
-            if (slaveLocation.getLatitude() == 0 && slaveLocation.getLongitude() == 0) {
-                logger.warn("Slave location not found [{}]", slaveLocation);
-                request.getSession().printOutput(500, request.getSession().jprintf(_bundle, "speedtest.slave.geoip.error", env, request.getUser()));
-                continue;
-            }
-            logger.debug("Found location for slave {} -> [{}]", rslave.getName(), slaveLocation);
-            // Persist the lat/lon
-            rslave.setProperty("lat", String.valueOf(slaveLocation.getLatitude()));
-            rslave.setProperty("lon", String.valueOf(slaveLocation.getLongitude()));
+            Deque<SpeedTestServer> closestServers;
+            if (slaveServers != null) {
+                // Already ordered by speedtest.net, no geolocation of the slave needed
+                closestServers = new ArrayDeque<>(slaveServers);
+                slaveLocations.put(rslave.getName(), slaveLocation);
+            } else {
+                if (_slaveSelection) {
+                    // Fallback needs the geo server list
+                    if (_servers == null) {
+                        refreshServers();
+                    }
+                    if (_servers.isEmpty()) {
+                        request.getSession().printOutput(500, request.getSession().jprintf(_bundle, "speedtest.servers.empty", env, request.getUser()));
+                        continue;
+                    }
+                }
+                if (updateLocation || (slaveLocation.getLatitude() == 0 && slaveLocation.getLongitude() == 0)) {
+                    // Location not set yet, let's find it
+                    slaveLocation = SpeedTestUtils.getSlaveLocation(rslave);
+                }
+                if (slaveLocation.getLatitude() == 0 && slaveLocation.getLongitude() == 0) {
+                    logger.warn("Slave location not found [{}]", slaveLocation);
+                    request.getSession().printOutput(500, request.getSession().jprintf(_bundle, "speedtest.slave.geoip.error", env, request.getUser()));
+                    continue;
+                }
+                logger.debug("Found location for slave {} -> [{}]", rslave.getName(), slaveLocation);
+                // Persist the lat/lon
+                rslave.setProperty("lat", String.valueOf(slaveLocation.getLatitude()));
+                rslave.setProperty("lon", String.valueOf(slaveLocation.getLongitude()));
 
-            slaveLocations.put(rslave.getName(), slaveLocation);
+                slaveLocations.put(rslave.getName(), slaveLocation);
 
-            // Sort servers based on slave location
-            DistanceFromMeComparator myComparator = new DistanceFromMeComparator(slaveLocation.getLatitude(), slaveLocation.getLongitude());
-            TreeSet<SpeedTestServer> closestServers = new TreeSet<>(myComparator);
-            closestServers.addAll(_servers);
+                // Sort servers based on slave location
+                DistanceFromMeComparator myComparator = new DistanceFromMeComparator(slaveLocation.getLatitude(), slaveLocation.getLongitude());
+                TreeSet<SpeedTestServer> sortedServers = new TreeSet<>(myComparator);
+                sortedServers.addAll(_servers);
+                closestServers = new ArrayDeque<>(sortedServers);
+            }
 
             if (listservers || testServerID == 0) {
                 int i = 0;
@@ -208,7 +240,7 @@ public class SpeedTest extends CommandInterface {
                     SpeedTestServer server = closestServers.pollFirst();
                     if (listservers) {
                         SpeedTestUtils.addServerEnvVariables(server, env);
-                        double distance = SpeedTestUtils.getDistance(server.getLatitude(), server.getLongitude(), slaveLocation.getLatitude(), slaveLocation.getLongitude(), _unit);
+                        double distance = getDistanceTo(server, slaveLocation);
                         env.put("distance", distance < 1.0 ? "<1.00" : _numberFormat.format(distance));
                         env.put("unit", _unitSuffix);
                         request.getSession().printOutput(200, request.getSession().jprintf(_bundle, "speedtest.slave.server.list", env, request.getUser()));
@@ -255,7 +287,7 @@ public class SpeedTest extends CommandInterface {
                     env.put("slave.name", result.getSlaveName());
                     env.put("slave.lat", loc.getLatitude());
                     env.put("slave.lon", loc.getLongitude());
-                    double distance = SpeedTestUtils.getDistance(server.getLatitude(), server.getLongitude(), loc.getLatitude(), loc.getLongitude(), _unit);
+                    double distance = getDistanceTo(server, loc);
                     env.put("distance", distance < 1.0 ? "<1.00" : _numberFormat.format(distance));
                     env.put("unit", _unitSuffix);
                     env.put("speed.up", _numberFormat.format(result.getUp()));
@@ -270,6 +302,21 @@ public class SpeedTest extends CommandInterface {
         executor.shutdown();
 
         return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
+    }
+
+    /**
+     * Distance from the slave to the server in the configured unit. Servers obtained from the
+     * slave carry the distance reported by speedtest.net (km), others are computed from coordinates.
+     */
+    private double getDistanceTo(SpeedTestServer server, SlaveLocation loc) {
+        if (server.getDistance() >= 0) {
+            return switch (_unit) {
+                case 'M' -> server.getDistance() / 1.609344;
+                case 'N' -> server.getDistance() / 1.852;
+                default -> server.getDistance();
+            };
+        }
+        return SpeedTestUtils.getDistance(server.getLatitude(), server.getLongitude(), loc.getLatitude(), loc.getLongitude(), _unit);
     }
 
     @EventSubscriber

@@ -6,3 +6,13 @@
 # Default: [K]
 distance.unit=K
 
+# How the speedtest.net servers to test against are selected.
+#  slave: each slave asks speedtest.net itself for the servers closest to it (speedtest.net
+#         selects them based on the IP of the caller). The slave needs outbound HTTPS access to
+#         www.speedtest.net. If a slave cannot provide a list, selection automatically falls
+#         back to 'geo' for that slave.
+#  geo:   the master downloads the full server list and picks the closest ones by distance
+#         to the slave location, which is looked up on ipinfo.io from the slave PASV address.
+# Default: [slave]
+server.selection=slave
+
