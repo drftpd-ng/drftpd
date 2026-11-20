@@ -28,9 +28,11 @@ import org.drftpd.master.network.Session;
 import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.FileHandle;
+import org.drftpd.zipscript.common.zip.DizInfo;
 import org.drftpd.zipscript.master.zip.vfs.ZipscriptVFSDataZip;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 
 /**
  * @author djb61
@@ -46,10 +48,12 @@ public class RescanPostProcessZips extends ZipTools implements RescanPostProcess
     public void postProcessDir(CommandRequest workingDirReq, boolean quiet) {
         Session session = workingDirReq.getSession();
         DirectoryHandle dir = workingDirReq.getCurrentDirectory();
+        boolean hasZips = false;
         try {
             for (FileHandle file : dir.getSortedFiles(
                     session.getUserNull(workingDirReq.getUser()))) {
                 if (file.getSize() > 0 && file.getName().endsWith(".zip")) {
+                    hasZips = true;
                     try {
                         RemoteSlave rslave = file.getASlaveForFunction();
                         String index = ZipscriptVFSDataZip.getZipIssuer().issueZipCRCToSlave(rslave, file.getPath());
@@ -79,6 +83,50 @@ public class RescanPostProcessZips extends ZipTools implements RescanPostProcess
             }
         } catch (FileNotFoundException e) {
             session.printOutput(200, dir.getName() + " - Directory deleted  whilst checking integrity of zips");
+            return;
+        }
+        if (hasZips) {
+            refreshDizInfo(session, dir, quiet);
+        }
+    }
+
+    /**
+     * Drops the cached DIZ info of the directory and retrieves it again so that a corrected or late .diz is picked up.
+     * If nothing valid can be retrieved (e.g. no slave answers), the previous DIZ info is put back.
+     */
+    private void refreshDizInfo(Session session, DirectoryHandle dir, boolean quiet) {
+        DizInfo previous;
+        try {
+            previous = dir.removePluginMetaData(DizInfo.DIZINFO);
+        } catch (FileNotFoundException e) {
+            return;
+        }
+        try {
+            DizInfo dizInfo = new ZipscriptVFSDataZip(dir).getDizInfo();
+            if (!quiet) {
+                session.printOutput(200, dir.getName() + " - DIZ info refreshed, expecting " + dizInfo.getTotal() + " files");
+            }
+        } catch (FileNotFoundException e) {
+            logger.debug("No usable DIZ info found in {} while rescanning", dir, e);
+            restoreDizInfo(dir, previous);
+            if (!quiet) {
+                session.printOutput(200, dir.getName() + " - No usable DIZ info found" + (previous != null ? ", keeping the previous one" : ""));
+            }
+        } catch (IOException | NoAvailableSlaveException e) {
+            logger.warn("Unable to refresh DIZ info for {} while rescanning", dir, e);
+            restoreDizInfo(dir, previous);
+            session.printOutput(200, dir.getName() + " - Unable to refresh DIZ info");
+        }
+    }
+
+    private void restoreDizInfo(DirectoryHandle dir, DizInfo previous) {
+        if (previous == null) {
+            return;
+        }
+        try {
+            dir.addPluginMetaData(DizInfo.DIZINFO, previous);
+        } catch (FileNotFoundException e) {
+            // directory deleted meanwhile, nothing to restore
         }
     }
 
