@@ -294,7 +294,8 @@ public class EncryptedBeanUser extends BeanUser {
             String newPassword = null;
             try {
                 newPassword = hashWith(newEncryption, password);
-            } catch (UnsupportedOperationException e) {
+            } catch (UnsupportedOperationException | IllegalArgumentException e) {
+                // unknown scheme, or a password the scheme can't store (bcrypt in newer Spring Security refuses > 72 bytes)
                 logger.debug("Converting Password Failed", e);
             }
             if (newPassword != null) {
