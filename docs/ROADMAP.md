@@ -110,14 +110,14 @@ These features are opt-in and additive, so they can come in minor releases (5.1,
 | IPv6, phase 1 (EPRT/EPSV, IPv6 masks) | #19 | Draft PR #523, RFC 0001 (#524). Could also be in 5.0 if ready |
 | IPv6, phases 2 and 3 | #19 | Outlined in RFC 0001 |
 | FXP between sites, with SSCN | — | WIP PR #512 |
-| FTP client certificate authentication | #136 | RFC 0003 |
-| IMDB lookup without an .nfo | #56 | RFC 0002 |
-| srrDB support | #137 | RFC 0004 |
-| Sorted link views (genre, year, group) | #67 | RFC 0005 |
-| Dupe cleanup with `site find -dupe` | #264 | Draft PR |
-| User home directories | #156 | Draft PR |
-| Speedtest server chosen by the slave | #179 | Draft PR |
-| Nuke by sample audio language | #291 | Draft PR |
+| FTP client certificate authentication | #136 | RFC 0003 (#544) |
+| IMDB lookup without an .nfo | #56 | RFC 0002 (#544) |
+| srrDB support | #137 | RFC 0004 (#544) |
+| Sorted link views (genre, year, group) | #67 | RFC 0005 (#544) |
+| Dupe cleanup with `site find -dupe` | #264 | Draft PR #540 |
+| User home directories | #156 | Draft PR #543 |
+| Speedtest server chosen by the slave | #179 | Draft PR #541 |
+| Nuke by sample audio language | #291 | Draft PR #542 |
 | Speedkicker after N% / IP blocking | #173 | Waiting for a decision |
 | Clearer "permission denied" details | #59 | Waiting for a decision |
 
