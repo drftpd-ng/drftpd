@@ -28,18 +28,32 @@ import org.drftpd.common.util.ConfigLoader;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.commands.CommandRequest;
 import org.drftpd.master.commands.CommandResponse;
+import org.drftpd.master.commands.approve.metadata.Approve;
 import org.drftpd.master.commands.dataconnection.DataConnectionHandler;
+import org.drftpd.master.commands.nuke.NukeEvent;
+import org.drftpd.master.commands.nuke.NukeException;
+import org.drftpd.master.commands.nuke.NukeUtils;
+import org.drftpd.master.commands.nuke.metadata.NukeData;
 import org.drftpd.master.event.ReloadEvent;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.exceptions.SlaveUnavailableException;
 import org.drftpd.master.sections.SectionInterface;
+import org.drftpd.master.usermanager.NoSuchUserException;
+import org.drftpd.master.usermanager.User;
+import org.drftpd.master.usermanager.UserFileException;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.mediainfo.common.MediaInfo;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 /**
  * @author scitz0
@@ -49,6 +63,12 @@ public class MediaInfoPostHook {
 
     private final ArrayList<String> _exclSections = new ArrayList<>();
     private final ArrayList<String> _extensions = new ArrayList<>();
+    // section name (lowercase) -> allowed audio languages, missing means the check is disabled
+    private final Map<String, Set<String>> _allowedLangs = new HashMap<>();
+    private final Map<String, Integer> _langNukex = new HashMap<>();
+    private final Map<String, Boolean> _langNukeUnknown = new HashMap<>();
+    private final ArrayList<Pattern> _langExempt = new ArrayList<>();
+    private String _langNuker = "drftpd";
 
     public MediaInfoPostHook() {
         loadConf();
@@ -60,6 +80,10 @@ public class MediaInfoPostHook {
         Properties cfg = ConfigLoader.loadPluginConfig("mediainfo.conf");
         _exclSections.clear();
         _extensions.clear();
+        _allowedLangs.clear();
+        _langNukex.clear();
+        _langNukeUnknown.clear();
+        _langExempt.clear();
         for (String section : cfg.getProperty("sections.exclude", "").split(" ")) {
             section = section.toLowerCase().trim();
             if (!section.isEmpty()) {
@@ -71,6 +95,37 @@ public class MediaInfoPostHook {
             if (!extension.isEmpty()) {
                 _extensions.add(extension);
             }
+        }
+        _langNuker = cfg.getProperty("audio.lang.nuker", "drftpd").trim();
+        for (String regex : cfg.getProperty("audio.lang.exempt.dirnames.regex", "").split(";")) {
+            if (!regex.trim().isEmpty()) {
+                try {
+                    _langExempt.add(Pattern.compile(regex.trim()));
+                } catch (PatternSyntaxException e) {
+                    logger.warn("Invalid audio.lang.exempt.dirnames.regex entry '{}': {}", regex, e.getMessage());
+                }
+            }
+        }
+        final String suffix = ".audio.lang.allowed";
+        for (String key : cfg.stringPropertyNames()) {
+            if (!key.endsWith(suffix)) {
+                continue;
+            }
+            String section = key.substring(0, key.length() - suffix.length()).toLowerCase();
+            Set<String> allowed = AudioLanguageRule.parseAllowed(cfg.getProperty(key));
+            if (section.isEmpty() || allowed.isEmpty()) {
+                continue;
+            }
+            _allowedLangs.put(section, allowed);
+            int nukex = 3;
+            try {
+                nukex = Integer.parseInt(cfg.getProperty(key.substring(0, key.length() - "allowed".length()) + "nuke.multiplier", "3").trim());
+            } catch (NumberFormatException e) {
+                logger.warn("Invalid {}.audio.lang.nuke.multiplier, defaulting to 3", section);
+            }
+            _langNukex.put(section, nukex);
+            _langNukeUnknown.put(section,
+                    cfg.getProperty(key.substring(0, key.length() - "allowed".length()) + "unknown", "allow").trim().equalsIgnoreCase("nuke"));
         }
     }
 
@@ -109,6 +164,57 @@ public class MediaInfoPostHook {
         }
 
         GlobalContext.getEventService().publishAsync(new MediaInfoEvent(mediaInfo, workingDir));
+
+        checkAudioLanguage(mediaInfo, workingDir, sec);
+    }
+
+    /**
+     * Nukes the release if none of the sample's audio streams has an allowed language.
+     * Disabled unless {@code <section>.audio.lang.allowed} is set for the section.
+     */
+    private void checkAudioLanguage(MediaInfo mediaInfo, DirectoryHandle dir, SectionInterface sec) {
+        String secName = sec.getName().toLowerCase();
+        Set<String> allowed = _allowedLangs.get(secName);
+        if (allowed == null || !mediaInfo.getSampleOk()) {
+            // Not configured, or sample unreadable/incomplete so the audio info can't be trusted
+            return;
+        }
+        List<String> languages = new ArrayList<>();
+        for (HashMap<String, String> audio : mediaInfo.getAudioInfos()) {
+            languages.add(audio.get("Language"));
+        }
+        if (!AudioLanguageRule.shouldNuke(languages, allowed, _langNukeUnknown.get(secName))) {
+            return;
+        }
+
+        // The sample normally lives in a Sample subdir, the release is its parent
+        DirectoryHandle release = dir;
+        if (release.getName().equalsIgnoreCase("sample") && !release.isRoot()) {
+            release = release.getParent();
+        }
+        for (Pattern exempt : _langExempt) {
+            if (exempt.matcher(release.getName()).matches()) {
+                return;
+            }
+        }
+        if (release.isRoot() || release.getName().startsWith("[NUKED]-") || Approve.isApproved(release)) {
+            return;
+        }
+
+        User nuker;
+        try {
+            nuker = GlobalContext.getGlobalContext().getUserManager().getUserByNameUnchecked(_langNuker);
+        } catch (NoSuchUserException | UserFileException e) {
+            logger.error("Error loading audio language nuker '{}': {}", _langNuker, e.getMessage());
+            return;
+        }
+        String reason = "Audio language not allowed (found: " + languages + ", allowed: " + allowed + ")";
+        try {
+            NukeData nd = NukeUtils.nuke(release, _langNukex.get(secName), reason, nuker);
+            GlobalContext.getEventService().publishAsync(new NukeEvent(nuker, "NUKE", nd));
+        } catch (NukeException e) {
+            logger.error("Error nuking {} for audio language: {}", release.getPath(), e.getMessage());
+        }
     }
 
     @EventSubscriber

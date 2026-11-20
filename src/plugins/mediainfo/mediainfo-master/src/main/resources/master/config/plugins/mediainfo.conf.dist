@@ -20,3 +20,23 @@ mediabar.enabled=false
 # extensions=avi mkv mp4
 extensions=
 
+
+# Audio language nuke, disabled by default. Nukes a release when NONE of the audio
+# streams of its sample has an allowed language. Only active for sections that have
+# <section>.audio.lang.allowed set (section name is case-insensitive).
+# Languages are compared case-insensitively against the "Language" field mediainfo
+# reports for the stream, which is the language name (e.g. German, English) on most
+# builds, but ISO codes (de, en) also work if that is what your mediainfo prints.
+# Separate with comma or semicolon.
+#TV-DE.audio.lang.allowed=German,English
+# Nuke multiplier, default [3]
+#TV-DE.audio.lang.nuke.multiplier=3
+# What to do when no audio stream has a language tag (or the sample has no audio): allow or nuke
+# Default: [allow]
+#TV-DE.audio.lang.unknown=allow
+
+# FTP account used to do the nuke, HAS TO exist. Default: [drftpd]
+#audio.lang.nuker=drftpd
+# Release dirnames matching any of these regexes (separate with semicolon) are never nuked.
+# Approved releases (site approve) are skipped as well.
+#audio.lang.exempt.dirnames.regex=
