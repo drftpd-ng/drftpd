@@ -19,10 +19,10 @@ package org.drftpd.zipscript.master.sfv.indexation;
 
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.NumericRangeQuery;
 import org.apache.lucene.search.Query;
 import org.drftpd.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.master.indexation.AdvancedSearchParams;
+import org.drftpd.master.indexation.LuceneUtils;
 import org.drftpd.master.indexation.QueryTermExtensionInterface;
 
 /**
@@ -32,22 +32,19 @@ import org.drftpd.master.indexation.QueryTermExtensionInterface;
 public class ZipscriptQueryExtension implements QueryTermExtensionInterface {
 
     @Override
-    public void addQueryTerms(BooleanQuery query, AdvancedSearchParams params) {
+    public void addQueryTerms(BooleanQuery.Builder query, AdvancedSearchParams params) {
         try {
             ZipscriptQueryParams queryParams = params.getExtensionData(ZipscriptQueryParams.ZIPSCRIPTQUERYPARAMS);
             if (queryParams.getMinPresent() != null || queryParams.getMaxPresent() != null) {
-                Query presentQuery = NumericRangeQuery.newIntRange("present",
-                        queryParams.getMinPresent(), queryParams.getMaxPresent(), true, true);
+                Query presentQuery = LuceneUtils.intRangeQuery("present", queryParams.getMinPresent(), queryParams.getMaxPresent());
                 query.add(presentQuery, Occur.MUST);
             }
             if (queryParams.getMinMissing() != null || queryParams.getMaxMissing() != null) {
-                Query missingQuery = NumericRangeQuery.newIntRange("missing",
-                        queryParams.getMinMissing(), queryParams.getMaxMissing(), true, true);
+                Query missingQuery = LuceneUtils.intRangeQuery("missing", queryParams.getMinMissing(), queryParams.getMaxMissing());
                 query.add(missingQuery, Occur.MUST);
             }
             if (queryParams.getMinPercent() != null || queryParams.getMaxPercent() != null) {
-                Query percentQuery = NumericRangeQuery.newIntRange("percent",
-                        queryParams.getMinPercent(), queryParams.getMaxPercent(), true, true);
+                Query percentQuery = LuceneUtils.intRangeQuery("percent", queryParams.getMinPercent(), queryParams.getMaxPercent());
                 query.add(percentQuery, Occur.MUST);
             }
         } catch (KeyNotFoundException e) {

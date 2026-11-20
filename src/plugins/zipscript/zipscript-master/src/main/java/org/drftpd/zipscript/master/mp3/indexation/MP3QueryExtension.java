@@ -17,10 +17,8 @@
  */
 package org.drftpd.zipscript.master.mp3.indexation;
 
-import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.NumericRangeQuery;
 import org.apache.lucene.search.Query;
 import org.drftpd.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.master.indexation.AdvancedSearchParams;
@@ -33,34 +31,28 @@ import org.drftpd.master.indexation.QueryTermExtensionInterface;
  */
 public class MP3QueryExtension implements QueryTermExtensionInterface {
 
-    private static final Term TERM_GENRE = new Term("mp3genre", "");
-    private static final Term TERM_TITLE = new Term("mp3title", "");
-    private static final Term TERM_ARTIST = new Term("mp3artist", "");
-    private static final Term TERM_ALBUM = new Term("mp3album", "");
-
     @Override
-    public void addQueryTerms(BooleanQuery query, AdvancedSearchParams params) {
+    public void addQueryTerms(BooleanQuery.Builder query, AdvancedSearchParams params) {
         try {
             MP3QueryParams queryParams = params.getExtensionData(MP3QueryParams.MP3QUERYPARAMS);
             if (queryParams.getGenre() != null) {
-                Query genreQuery = LuceneUtils.analyze("mp3genre", TERM_GENRE, queryParams.getGenre());
+                Query genreQuery = LuceneUtils.analyze("mp3genre", queryParams.getGenre());
                 query.add(genreQuery, Occur.MUST);
             }
             if (queryParams.getTitle() != null) {
-                Query titleQuery = LuceneUtils.analyze("mp3title", TERM_TITLE, queryParams.getTitle());
+                Query titleQuery = LuceneUtils.analyze("mp3title", queryParams.getTitle());
                 query.add(titleQuery, Occur.MUST);
             }
             if (queryParams.getArtist() != null) {
-                Query artistQuery = LuceneUtils.analyze("mp3artist", TERM_ARTIST, queryParams.getArtist());
+                Query artistQuery = LuceneUtils.analyze("mp3artist", queryParams.getArtist());
                 query.add(artistQuery, Occur.MUST);
             }
             if (queryParams.getAlbum() != null) {
-                Query albumQuery = LuceneUtils.analyze("mp3album", TERM_ALBUM, queryParams.getAlbum());
+                Query albumQuery = LuceneUtils.analyze("mp3album", queryParams.getAlbum());
                 query.add(albumQuery, Occur.MUST);
             }
             if (queryParams.getMinYear() != null || queryParams.getMaxYear() != null) {
-                Query yearQuery = NumericRangeQuery.newIntRange("mp3year",
-                        queryParams.getMinYear(), queryParams.getMaxYear(), true, true);
+                Query yearQuery = LuceneUtils.intRangeQuery("mp3year", queryParams.getMinYear(), queryParams.getMaxYear());
                 query.add(yearQuery, Occur.MUST);
             }
         } catch (KeyNotFoundException e) {

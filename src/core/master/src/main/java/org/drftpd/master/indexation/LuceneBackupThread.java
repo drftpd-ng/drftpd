@@ -19,12 +19,11 @@ package org.drftpd.master.indexation;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.lucene.store.FSDirectory;
 import org.drftpd.common.io.PhysicalFile;
-import org.drftpd.master.GlobalContext;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -50,57 +49,31 @@ public class LuceneBackupThread extends Thread {
 
     private final LuceneEngine _engine;
 
-    protected LuceneBackupThread() {
+    protected LuceneBackupThread(LuceneEngine engine) {
         setName("LuceneBackupThread");
-        _engine = (LuceneEngine) GlobalContext.getGlobalContext().getIndexEngine();
+        _engine = engine;
     }
 
     public void run() {
-        String[] backups;
-        int x;
-
         while (!_stop) {
-
-            // store a limited amount of backups.
-            // the code bellow remove older backups.
-            backups = BACKUP_HOME.list();
-
-            if (backups != null) {
-                Arrays.sort(backups, String.CASE_INSENSITIVE_ORDER);
-                for (x = 0; x < backups.length; x++) {
-                    if (BACKUP_HOME.list().length < _maxNumberBackup) {
-                        break;
-                    }
-                    new PhysicalFile(BACKUP_DIRNAME + "/" + backups[x]).deleteRecursive();
-                }
-            }
-
             if (_doBackups) {
-                // locking the writer object so that noone can use it.
-                // this might be useful.
-                synchronized (_engine.getWriter()) {
-                    setRunning(true);
+                setRunning(true);
 
-                    String dateTxt = sdf.format(new Date(System.currentTimeMillis()));
-                    File f = new File(BACKUP_DIRNAME + "/" + dateTxt);
+                String dateTxt = sdf.format(new Date(System.currentTimeMillis()));
 
-                    try {
-                        if (!f.mkdirs()) {
-                            throw new IOException("Impossible to create backup directory, not enough permissions.");
-                        }
-
-                        // creating the destination directory.
-                        FSDirectory bkpDirectory = FSDirectory.open(f);
-
-                        for (String file : _engine.getStorage().listAll()) {
-                            _engine.getStorage().copy(bkpDirectory, file, file);
-                        }
-
+                try {
+                    // the engine commits and snapshots the commit point while copying its files,
+                    // indexing goes on meanwhile and the backup is a consistent index.
+                    // No backup is made while the index is empty or partial (rebuild required or running).
+                    if (_engine.backupTo(Paths.get(BACKUP_DIRNAME, dateTxt))) {
                         logger.debug("A backup of the index was created successfully.");
                         updateLastBackupTime();
-                    } catch (IOException e) {
-                        logger.error(e, e);
+                        removeOldBackups();
+                    } else {
+                        logger.debug("Index backup skipped, the index is being rebuilt.");
                     }
+                } catch (IOException | RuntimeException e) {
+                    logger.error("Unable to backup the index", e);
                 }
             }
 
@@ -111,6 +84,21 @@ public class LuceneBackupThread extends Thread {
                 }
             } catch (InterruptedException e) {
             }
+        }
+    }
+
+    /**
+     * Keeps the {@link #_maxNumberBackup} most recent backups, only called after a new backup
+     * succeeded so that old backups are never rotated out by a skipped or failed one.
+     */
+    private void removeOldBackups() {
+        String[] backups = BACKUP_HOME.list();
+        if (backups == null) {
+            return;
+        }
+        Arrays.sort(backups, String.CASE_INSENSITIVE_ORDER);
+        for (int x = 0; x < backups.length - _maxNumberBackup; x++) {
+            new PhysicalFile(BACKUP_DIRNAME + "/" + backups[x]).deleteRecursive();
         }
     }
 

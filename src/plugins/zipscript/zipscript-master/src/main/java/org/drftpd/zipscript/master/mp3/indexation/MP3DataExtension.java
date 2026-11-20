@@ -19,10 +19,9 @@ package org.drftpd.zipscript.master.mp3.indexation;
 
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
-import org.apache.lucene.document.NumericField;
 import org.drftpd.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.master.indexation.IndexDataExtensionInterface;
+import org.drftpd.master.indexation.LuceneUtils;
 import org.drftpd.master.vfs.event.ImmutableInodeHandle;
 import org.drftpd.zipscript.common.mp3.ID3Tag;
 import org.drftpd.zipscript.common.mp3.MP3Info;
@@ -32,21 +31,6 @@ import org.drftpd.zipscript.common.mp3.MP3Info;
  * @version $Id$
  */
 public class MP3DataExtension implements IndexDataExtensionInterface {
-
-    private static final Field FIELD_GENRE = new Field("mp3genre", "", Field.Store.YES, Field.Index.ANALYZED);
-    private static final Field FIELD_TITLE = new Field("mp3title", "", Field.Store.YES, Field.Index.ANALYZED);
-    private static final Field FIELD_ARTIST = new Field("mp3artist", "", Field.Store.YES, Field.Index.ANALYZED);
-    private static final Field FIELD_ALBUM = new Field("mp3album", "", Field.Store.YES, Field.Index.ANALYZED);
-    private static final NumericField FIELD_YEAR = new NumericField("mp3year", Field.Store.YES, Boolean.TRUE);
-
-    @Override
-    public void initializeFields(Document doc) {
-        doc.add(FIELD_GENRE);
-        doc.add(FIELD_TITLE);
-        doc.add(FIELD_ARTIST);
-        doc.add(FIELD_ALBUM);
-        doc.add(FIELD_YEAR);
-    }
 
     @Override
     public void addData(Document doc, ImmutableInodeHandle inode) {
@@ -58,17 +42,17 @@ public class MP3DataExtension implements IndexDataExtensionInterface {
             // Fields will be cleared below
         }
         if (id3Tag == null) {
-            FIELD_GENRE.setValue("");
-            FIELD_TITLE.setValue("");
-            FIELD_ARTIST.setValue("");
-            FIELD_ALBUM.setValue("");
-            FIELD_YEAR.setIntValue(-1);
+            LuceneUtils.addTextField(doc, "mp3genre", "");
+            LuceneUtils.addTextField(doc, "mp3title", "");
+            LuceneUtils.addTextField(doc, "mp3artist", "");
+            LuceneUtils.addTextField(doc, "mp3album", "");
+            LuceneUtils.addIntField(doc, "mp3year", -1);
         } else {
-            FIELD_GENRE.setValue(id3Tag.getGenre());
-            FIELD_TITLE.setValue(id3Tag.getTitle());
-            FIELD_ARTIST.setValue(id3Tag.getArtist());
-            FIELD_ALBUM.setValue(id3Tag.getAlbum());
-            FIELD_YEAR.setIntValue(NumberUtils.isDigits(id3Tag.getYear()) ?
+            LuceneUtils.addTextField(doc, "mp3genre", id3Tag.getGenre());
+            LuceneUtils.addTextField(doc, "mp3title", id3Tag.getTitle());
+            LuceneUtils.addTextField(doc, "mp3artist", id3Tag.getArtist());
+            LuceneUtils.addTextField(doc, "mp3album", id3Tag.getAlbum());
+            LuceneUtils.addIntField(doc, "mp3year", NumberUtils.isDigits(id3Tag.getYear()) ?
                     Integer.parseInt(id3Tag.getYear()) : -1);
         }
     }

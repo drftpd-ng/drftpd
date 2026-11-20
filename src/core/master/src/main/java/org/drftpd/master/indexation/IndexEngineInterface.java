@@ -48,6 +48,14 @@ public interface IndexEngineInterface {
     void init() throws IndexException;
 
     /**
+     * Called once, after {@link #init()}, when every master plugin has been loaded.
+     * Work that indexes the virtual file system at startup (an automatic rebuild for instance)
+     * belongs here rather than in {@link #init()}, so that it runs with the whole master set up.
+     */
+    default void pluginsLoaded() {
+    }
+
+    /**
      * Adds an inode to the index.<br>
      * The kind of information stored in the index is up to the implementation.
      *

@@ -12,8 +12,10 @@ updates:
     schedule:
       interval: "weekly"
     ignore:
-      - dependency-name: "amazon-corretto"
-      # todo: pin Java 17
+      # Stay on the Java LTS used by the build (25): ignore major version bumps of the base image,
+      # but still get updates within Java 25
+      - dependency-name: "amazoncorretto"
+        update-types: ["version-update:semver-major"]
 
   # Enable version updates for GitHub Actions
   - package-ecosystem: "github-actions"
