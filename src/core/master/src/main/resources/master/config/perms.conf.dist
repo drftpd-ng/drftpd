@@ -49,6 +49,18 @@ rename         *   =siteop
 
 privpath       /hidden_path/   =siteop
 
+# Home directories (see 'homedir' in master.conf).
+# A home directory only sets where a user lands after login, it does NOT grant
+#  any permission: restrict it here like any other path.
+# The first matching line wins, so these lines must come BEFORE the wildcard
+#  rules above (e.g. 'upload * *' and 'makedir * *').
+# Example giving user1 a private home directory in /home/user1:
+#privpath       /home/user1/     -user1 =siteop
+#upload         /home/user1/*    -user1
+#makedir        /home/user1/*    -user1
+#upload         /home/*          =siteop
+#makedir        /home/*          =siteop
+
 # Hide the user that's is inside the given dir.
 hideinwho      /hidden_path/*   *
 
