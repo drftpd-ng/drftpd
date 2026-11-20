@@ -125,6 +125,8 @@ disk.commit.delay=10000
 # A per-user override can be set with 'SITE CHANGE <user> homedir <path|none>'.
 # The home directory does NOT grant any permission, perms.conf still applies,
 #  see the home directory example in perms.conf.
+# It is NOT a chroot: it only sets the starting directory, users can still
+#  'cd /' and go anywhere else perms.conf allows them to.
 # If the directory does not exist (or is hidden from the user) the user lands in /.
 #homedir=/home/${user}
 
