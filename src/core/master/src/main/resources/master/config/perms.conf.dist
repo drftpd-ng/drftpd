@@ -99,6 +99,7 @@ hideinstats      =deleted =exempt
 #creditcheck      <path>   <ratio>   <=group/-user>
 
 # Control credit ratio on downloads (0 = no credits).
+# Users with ratio 0 (leech) are never charged for downloads, whatever the creditloss lines say.
 #creditloss      <path>   <ratio>   <=group/-user>
 
 # Limit UL/DL over time.
