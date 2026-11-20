@@ -34,6 +34,7 @@ import org.drftpd.statistics.master.metadata.StatsUserData;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /**
  * StatsManager is a class that centralizes the update of users stats.
@@ -81,9 +82,37 @@ public class StatsManager implements PluginInterface {
     }
 
     public float getCreditLossRatio(DirectoryHandle dir, User user) {
-        float defaultRatio = (user.getKeyedMap().getObjectFloat(UserManagement.RATIO) == 0) ? 0 : 1;
+        float userRatio = user.getKeyedMap().getObjectFloat(UserManagement.RATIO);
+        return creditLossRatio(userRatio, GlobalContext.getConfig().getKeyedMap().getObject(CREDITLOSS, null), dir, user);
+    }
 
-        return getRatioPathPerm(CREDITLOSS, dir, user, defaultRatio);
+    /**
+     * The creditloss ratio for a user: 0 for leech (ratio 0) users, otherwise the first matching
+     * creditloss line of perms.conf, or 1 when none matches.
+     *
+     * @param perms the configured creditloss lines, may be null
+     */
+    static float creditLossRatio(float userRatio, List<RatioPathPermission> perms, DirectoryHandle dir, User user) {
+        if (isLeech(userRatio)) {
+            // Leech (ratio 0) users have unlimited credits: a creditloss line in perms.conf must not
+            // make them pay for downloads, or every download is denied with "Not enough credits"
+            return 0;
+        }
+        if (perms != null) {
+            for (RatioPathPermission perm : perms) {
+                if (perm.checkPath(dir) && perm.check(user)) {
+                    return perm.getRatio();
+                }
+            }
+        }
+        return 1;
+    }
+
+    /**
+     * Whether a user ratio means "leech": unlimited downloads, never charged credits.
+     */
+    static boolean isLeech(float userRatio) {
+        return userRatio == 0;
     }
 
     public float getCreditCheckRatio(DirectoryHandle dir, User user) {
