@@ -17,6 +17,9 @@
  */
 package org.drftpd.common.util;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 
@@ -28,6 +31,9 @@ import java.text.DecimalFormatSymbols;
  * @version $Id$
  */
 public class Bytes {
+    private static final Logger logger = LogManager.getLogger(Bytes.class);
+    private static boolean maxUnitWarned = false;
+
     public static final long GIBI = 1073741824L;
     public static final long GIGA = 1000000000L;
     public static final long KIBI = 1024L;
@@ -53,15 +59,30 @@ public class Bytes {
         FORMAT.setDecimalSeparatorAlwaysShown(true);
     }
 
+    /**
+     * Formats a byte count using the system properties {@code bytes.binary}
+     * (true = KiB/MiB/... instead of KB/MB/...) and {@code bytes.maxunit}
+     * (K, M, G, T, P or E: largest unit that will be used, unset = no cap).
+     */
     public static String formatBytes(long bytes) {
         return formatBytes(bytes, System.getProperty("bytes.binary", "false")
-                .equals("true"));
+                .equals("true"), getConfiguredMaxUnit());
     }
 
     public static String formatBytes(long bytes, boolean binary) {
-        long absbytes = Math.abs(bytes);
+        return formatBytes(bytes, binary, null);
+    }
 
-        for (Multiple multiple : MULTIPLES) {
+    /**
+     * @param maxUnit the largest unit suffix to use (K, M, G, T, P or E, case
+     *                insensitive). Null or an invalid value means no cap.
+     */
+    public static String formatBytes(long bytes, boolean binary, String maxUnit) {
+        long absbytes = Math.abs(bytes);
+        int first = indexOfMaxUnit(maxUnit);
+
+        for (int i = first; i < MULTIPLES.length; i++) {
+            Multiple multiple = MULTIPLES[i];
             long multipleVal = binary ? multiple.getBinaryMultiple() : multiple
                     .getMultiple();
 
@@ -72,6 +93,34 @@ public class Bytes {
         }
 
         return bytes + "B";
+    }
+
+    private static String getConfiguredMaxUnit() {
+        String value = System.getProperty("bytes.maxunit");
+        if (value != null && !isValidUnit(value) && !maxUnitWarned) {
+            maxUnitWarned = true;
+            logger.warn("Ignoring invalid bytes.maxunit value '{}', expected one of K, M, G, T, P, E", value);
+        }
+        return value;
+    }
+
+    private static boolean isValidUnit(String unit) {
+        return unit != null && unit.trim().length() == 1
+                && "KMGTPE".indexOf(Character.toUpperCase(unit.trim().charAt(0))) >= 0;
+    }
+
+    /** Index in MULTIPLES of the largest allowed unit, 0 (no cap) if invalid. */
+    private static int indexOfMaxUnit(String maxUnit) {
+        if (!isValidUnit(maxUnit)) {
+            return 0;
+        }
+        char suffix = Character.toUpperCase(maxUnit.trim().charAt(0));
+        for (int i = 0; i < MULTIPLES.length; i++) {
+            if (MULTIPLES[i].getSuffix() == suffix) {
+                return i;
+            }
+        }
+        return 0;
     }
 
     /**
