@@ -162,6 +162,8 @@ public class AutoFreeSpaceSettings {
             Long wipeAfter = parseWipeAfter(p, id, mode);
             if (wipeAfter == null) {
                 logger.error("Entry [{}] has no valid {}.wipeAfter, which is required in date mode, not creating configuration items", id, id);
+            } else if (path != null && !isUsablePath(path)) {
+                logger.error("Entry [{}] has {}.path=[{}], which is the root directory or contains '.' or '..', not creating configuration items", id, id, path);
             } else if (path != null) {
                 if (name != null) {
                     logger.warn("Entry [{}] has both {}.section and {}.path, using the path", id, id, id);
@@ -176,6 +178,23 @@ public class AutoFreeSpaceSettings {
             }
         }
         return sections;
+    }
+
+    /**
+     * A path entry must name at least one directory below the root, and may not use {@code .} or {@code ..}:
+     * with the root itself, every top level directory (whole sections, PRE, group dirs) would become a release.
+     */
+    static boolean isUsablePath(String path) {
+        boolean hasPart = false;
+        for (String part : path.trim().split("/")) {
+            if (part.equals(".") || part.equals("..")) {
+                return false;
+            }
+            if (!part.isEmpty()) {
+                hasPart = true;
+            }
+        }
+        return hasPart;
     }
 
     /** Returns how many entries are written in the config, valid or not. */

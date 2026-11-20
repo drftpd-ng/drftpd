@@ -48,6 +48,7 @@ wipe.all.sections=false
 # Which releases to consider, one entry per number (1, 2, 3...).
 # Each entry uses either X.section=<section name> or X.path=<VFS path>.
 # A path can use * to match every subdirectory at that level, e.g. /MP3/* for dated MP3 directories.
+# The root directory (/) can't be used, and neither can '.' or '..' in a path: such an entry is skipped.
 # X.wipeAfter: do not delete releases younger than X minutes.
 # wipeAfter is required in date mode: an entry without a valid wipeAfter is skipped.
 #1.section=SECTION1

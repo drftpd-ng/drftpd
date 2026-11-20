@@ -110,6 +110,27 @@ public class AutoFreeSpacePathTest {
     }
 
     @Test
+    public void rootPathIsRefused() {
+        for (String root : List.of("/", "//", "/.", "", " ", "/MP3/..", "/MP3/../TV", "/./MP3")) {
+            Properties p = props("1.path", root);
+            assertTrue(AutoFreeSpaceSettings.parseEntries(p, AutoFreeSpaceSettings.MODE_SPACE, s -> true).isEmpty(),
+                    "path [" + root + "] must be refused");
+            // a refused entry still counts as written, so it never widens to all sections either
+            assertFalse(allSections(true, p));
+        }
+        assertTrue(AutoFreeSpaceSettings.isUsablePath("/MP3"));
+        assertTrue(AutoFreeSpaceSettings.isUsablePath("MP3/*"));
+        assertTrue(AutoFreeSpaceSettings.isUsablePath("/*"));
+    }
+
+    @Test
+    public void rootIsNeverABaseDirectory() {
+        // e.g. a section whose base directory is "/", or a path that resolves to the root
+        assertEquals(List.of("/MP3"), AutoFreeSpace.withoutRoot(List.of("/", "/MP3"), "/"::equals));
+        assertEquals(List.of(), AutoFreeSpace.withoutRoot(expand("/"), "/"::equals));
+    }
+
+    @Test
     public void knownSectionNameIsLoaded() {
         Properties p = props("1.section", "MP3", "2.path", "/TV/*");
         assertEquals(Set.of("MP3", AutoFreeSpaceSettings.PATH_KEY_PREFIX + "/TV/*"),

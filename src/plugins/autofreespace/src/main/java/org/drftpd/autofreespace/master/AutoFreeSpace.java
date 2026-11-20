@@ -40,6 +40,7 @@ import java.io.FileNotFoundException;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 /**
  * @author Teflon
@@ -138,6 +139,22 @@ public class AutoFreeSpace implements PluginInterface {
             current = next;
         }
         return current;
+    }
+
+    /**
+     * Drops the root directory from the candidate base directories: its children are the top level directories
+     * (whole sections, PRE, group dirs), never releases. This covers a section whose base directory is the root.
+     */
+    static <T> List<T> withoutRoot(List<T> dirs, Predicate<T> isRoot) {
+        List<T> result = new ArrayList<>(dirs.size());
+        for (T dir : dirs) {
+            if (isRoot.test(dir)) {
+                logger.warn("AUTODELETE: Skipping the root directory, it can't be used as a base directory");
+            } else {
+                result.add(dir);
+            }
+        }
+        return result;
     }
 
     private static class MrCleanIt extends TimerTask {
@@ -384,7 +401,7 @@ public class AutoFreeSpace implements PluginInterface {
 
             // Loop over all configured entries (sections and paths)
             for (AutoFreeSpaceSettings.Section section : entries) {
-                for (DirectoryHandle baseDir : getBaseDirectories(section)) {
+                for (DirectoryHandle baseDir : withoutRoot(getBaseDirectories(section), DirectoryHandle::isRoot)) {
                     oldest = pickOlder(oldest, baseDir, section, slave);
                 }
             }
