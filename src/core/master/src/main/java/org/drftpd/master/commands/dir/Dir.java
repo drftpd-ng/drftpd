@@ -672,6 +672,7 @@ public class Dir extends CommandInterface {
 
         try {
             wipeFile = request.getCurrentDirectory().getInodeHandle(arg, user);
+            wipeFile.checkWipePermission(user);
 
             if (wipeFile.isDirectory() && !recursive) {
                 if (!((DirectoryHandle) wipeFile).isEmpty(user)) {
@@ -679,9 +680,15 @@ public class Dir extends CommandInterface {
                 }
             }
 
+            // a recursive wipe also removes everything below, refuse it if any of it is protected
+            wipeFile.checkWipeSubtreePermission(user);
+
             if (wipeFile.isLink()) {
                 InodeHandle linkFile = wipeFile;
                 wipeFile = ((LinkHandle) wipeFile).getTargetInodeUnchecked();
+                // the link target is what really gets wiped, check it too
+                wipeFile.checkWipePermission(user);
+                wipeFile.checkWipeSubtreePermission(user);
                 linkFile.delete(request.getSession().getUserNull(request.getUser()));
             }
 
