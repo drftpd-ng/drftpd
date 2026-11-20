@@ -29,6 +29,7 @@ import org.drftpd.master.usermanager.javabeans.BeanUser;
 import org.drftpd.master.usermanager.javabeans.BeanUserManager;
 
 import java.lang.ref.SoftReference;
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 public class EncryptedBeanUserManager extends BeanUserManager {
@@ -47,6 +48,8 @@ public class EncryptedBeanUserManager extends BeanUserManager {
     public static final int PASSCRYPT_ARGON2 = 9;
 
     public static final int PASSCRYPT_DEFAULT = PASSCRYPT_NONE;
+
+    public static final int BCRYPT_MAX_PASSWORD_BYTES = 72;
 
     protected int _passcrypt = PASSCRYPT_DEFAULT;
 
@@ -103,6 +106,17 @@ public class EncryptedBeanUserManager extends BeanUserManager {
      */
     protected int getPasscrypt() {
         return _passcrypt;
+    }
+
+    /**
+     * bcrypt only uses the first 72 bytes of a password. The library refuses longer passwords
+     * (older versions silently truncated them), so refuse them before anything is saved.
+     */
+    @Override
+    public void checkNewPassword(String password) {
+        if (getPasscrypt() == PASSCRYPT_BCRYPT && password.getBytes(StandardCharsets.UTF_8).length > BCRYPT_MAX_PASSWORD_BYTES) {
+            throw new IllegalArgumentException("Password is too long: at most " + BCRYPT_MAX_PASSWORD_BYTES + " bytes are allowed");
+        }
     }
 
     /**

@@ -133,6 +133,23 @@ public class EncryptedBeanUserHashCompatTest {
     }
 
     @Test
+    public void testCheckNewPasswordRefusesWhatBcryptCannotStore() {
+        DummyEncryptedBeanUserManager bcrypt = new DummyEncryptedBeanUserManager(EncryptedBeanUserManager.PASSCRYPT_BCRYPT);
+        bcrypt.checkNewPassword("a".repeat(72));
+        assertThrows(IllegalArgumentException.class, () -> bcrypt.checkNewPassword("a".repeat(73)));
+        // the limit is in UTF-8 bytes: 24 euro signs are 72 bytes, 25 are 75
+        bcrypt.checkNewPassword("\u20ac".repeat(24));
+        assertThrows(IllegalArgumentException.class, () -> bcrypt.checkNewPassword("\u20ac".repeat(25)));
+
+        // every password the check accepts can be hashed
+        new EncryptedBeanUser(bcrypt, "max").setPassword("\u20ac".repeat(24));
+
+        // other hashes have no length limit
+        new DummyEncryptedBeanUserManager(EncryptedBeanUserManager.PASSCRYPT_ARGON2).checkNewPassword("a".repeat(200));
+        new DummyEncryptedBeanUserManager(EncryptedBeanUserManager.PASSCRYPT_GLFTPD).checkNewPassword("a".repeat(200));
+    }
+
+    @Test
     public void testGlftpdFixtures() {
         assertStoredHash(EncryptedBeanUserManager.PASSCRYPT_GLFTPD, GLFTPD_FIXTURE, PASSWORD);
         assertStoredHash(EncryptedBeanUserManager.PASSCRYPT_GLFTPD, GLFTPD_FIXTURE_UTF8, PASSWORD_UTF8);
