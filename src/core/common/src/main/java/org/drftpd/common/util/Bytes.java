@@ -32,7 +32,7 @@ import java.text.DecimalFormatSymbols;
  */
 public class Bytes {
     private static final Logger logger = LogManager.getLogger(Bytes.class);
-    private static boolean maxUnitWarned = false;
+    private static volatile boolean maxUnitWarned = false;
 
     public static final long GIBI = 1073741824L;
     public static final long GIGA = 1000000000L;
