@@ -104,6 +104,10 @@ public abstract class ArchiveType {
     // Used for scanning subdirs of archived dir, instead of just the parent dir
     private boolean _scansubdirs;
 
+    // Used for: directory names inside a scanned subdir that are skipped over (scansubdirs=1)
+    private static final String DEFAULT_SCANSUBDIRS_REGEX = "(?i)^(season.*|(\\d+|\\d+\\W\\d+|\\d+\\W\\d+\\W\\d+)$)";
+    private String _scansubdirsRegex;
+
     /**
      * Sets _slaveList, _numOfSlaves, _section, _parent, and _archiveAfter Each
      * implementing ArchiveType still needs to check/validate these figures to
@@ -364,7 +368,7 @@ public abstract class ArchiveType {
                         // any numbers behind each other (1002)
                         // any numbers followed by a non-word character followed by a number (2008-12)
                         // Any numbers followed by a non-word character followed by a number followed by a non-word character followed by a number (2008-12-10)
-                        if (lrf2.getName().matches("(?i)^(season.*|(\\d+|\\d+\\W\\d+|\\d+\\W\\d+\\W\\d+)$)")) // this matches season.\d+ and datum formats number, number-number, number-number-number
+                        if (lrf2.getName().matches(_scansubdirsRegex)) // this matches season.\d+ and datum formats number, number-number, number-number-number
                         {
                             for (DirectoryHandle lrf3 : lrf2.getDirectoriesUnchecked()) {
                                 getOldestNonArchivedDir2(oldDirs, lrf3);
@@ -507,6 +511,13 @@ public abstract class ArchiveType {
         _numOfSlaves = Integer.parseInt(properties.getProperty(_confNum + ".numofslaves", "0").trim());
         _repeat = Integer.parseInt(properties.getProperty(_confNum + ".repeat", "1").trim());
         _scansubdirs = properties.getProperty(_confNum + ".scansubdirs", "0").trim().equals("1");
+        _scansubdirsRegex = properties.getProperty(_confNum + ".scansubdirsregex", DEFAULT_SCANSUBDIRS_REGEX).trim();
+        try {
+            Pattern.compile(_scansubdirsRegex);
+        } catch (PatternSyntaxException e) {
+            logger.error("scansubdirsregex Entry for {} is invalid, using default", _confNum);
+            _scansubdirsRegex = DEFAULT_SCANSUBDIRS_REGEX;
+        }
 
         // Guard that repeat is not negative
         if (_repeat < 1) {
