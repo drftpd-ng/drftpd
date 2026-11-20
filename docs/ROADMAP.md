@@ -48,6 +48,7 @@ Where two PRs fix the same issue (for example #495 and #518), only one is merged
 - **#529**: replaces Spring Boot, nifty and bcprov-jdk15on with maintained libraries.
   - Behaviour change to note in the release notes: a **new** bcrypt password longer than 72 bytes is refused instead of being cut to 72 bytes.
 - The Dependabot PRs for GitHub Actions.
+- **#521**: the Dependabot rule that keeps the Docker image on Java 17. It is the 4.0.12 counterpart of the rule in #530; only one of the two should land in each release.
 
 ### Cleanup
 
