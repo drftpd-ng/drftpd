@@ -24,9 +24,13 @@ extensions=
 # Audio language nuke, disabled by default. Nukes a release when NONE of the audio
 # streams of its sample has an allowed language. Only active for sections that have
 # <section>.audio.lang.allowed set (section name is case-insensitive).
-# Languages are compared case-insensitively against the "Language" field mediainfo
-# reports for the stream, which is the language name (e.g. German, English) on most
-# builds, but ISO codes (de, en) also work if that is what your mediainfo prints.
+# mediainfo prints the "Language" of a stream as an English name (English, German,
+# French, ...), optionally qualified like "English (US)", or as a code (en, de) on some
+# builds. Allowed values can be English names or ISO 639-1 / 639-2 codes, they are all
+# mapped to the same language: en, eng and English are equivalent, and so are de, ger,
+# deu and German. Qualified forms like "English (US)" or "en-US" match by their primary
+# part only, so "us" does NOT match "English (US)". A value that is not a known language
+# logs a warning at load and only matches mediainfo's text exactly (case-insensitive).
 # Separate with comma or semicolon.
 #TV-DE.audio.lang.allowed=German,English
 # Nuke multiplier, default [3]
