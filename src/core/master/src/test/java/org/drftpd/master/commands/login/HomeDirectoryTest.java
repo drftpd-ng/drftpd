@@ -98,6 +98,25 @@ public class HomeDirectoryTest {
         assertFalse(HomeDirectory.isValidTemplate(""));
     }
 
+    @Test
+    public void testParseChangeArgument() {
+        assertEquals("/home/${user}", HomeDirectory.parseChangeArgument("/home/${user}"));
+        assertEquals("/My Home/${user}", HomeDirectory.parseChangeArgument("/My Home/${user}"));
+        assertEquals("/a b/c d", HomeDirectory.parseChangeArgument(" /a b/c d "));
+        assertEquals("", HomeDirectory.parseChangeArgument("none"));
+        assertEquals("", HomeDirectory.parseChangeArgument("NONE"));
+        assertNull(HomeDirectory.parseChangeArgument(null));
+        assertNull(HomeDirectory.parseChangeArgument(""));
+        assertNull(HomeDirectory.parseChangeArgument("   "));
+        assertNull(HomeDirectory.parseChangeArgument("home dir"));
+        assertNull(HomeDirectory.parseChangeArgument("/home/../root dir"));
+    }
+
+    @Test
+    public void testSpacesInResolvedPath() {
+        assertEquals("/My Home/bob", HomeDirectory.resolve("/My Home/${user}", "bob", "users"));
+    }
+
     /**
      * In-memory {@link HomeDirectory.Access}: 'visible' are the directories the user
      * can see, 'hidden' exist but are hidden from the user, 'files' are not directories.

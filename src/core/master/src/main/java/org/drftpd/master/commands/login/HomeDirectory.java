@@ -179,6 +179,25 @@ public final class HomeDirectory {
     }
 
     /**
+     * Parses the value of {@code SITE CHANGE <user> homedir <path|none>}. The value is
+     * the rest of the command line, so paths may contain spaces.
+     *
+     * @param argument everything after 'homedir'
+     * @return the template to store, an empty string to remove the per-user override
+     * ('none'), or null if the value is missing or not a valid template
+     */
+    public static String parseChangeArgument(String argument) {
+        if (argument == null || argument.isBlank()) {
+            return null;
+        }
+        String value = argument.trim();
+        if (value.equalsIgnoreCase("none")) {
+            return "";
+        }
+        return isValidTemplate(value) ? value : null;
+    }
+
+    /**
      * A substituted value must be a single path segment: no separators, no
      * relative segments, no placeholder syntax and no control characters.
      */

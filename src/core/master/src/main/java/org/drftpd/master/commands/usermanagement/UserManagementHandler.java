@@ -707,13 +707,12 @@ public class UserManagementHandler extends CommandInterface {
                     response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
                 }
                 case "homedir" -> {
-                    if (commandArguments.length != 1) {
+                    if (commandArguments.length < 1) {
                         throw new ImproperUsageException();
                     }
-                    String homeDir = commandArguments[0];
-                    if (homeDir.equalsIgnoreCase("none")) {
-                        homeDir = "";
-                    } else if (!HomeDirectory.isValidTemplate(homeDir)) {
+                    // Like tagline, the rest of the line is the value so paths may contain spaces
+                    String homeDir = HomeDirectory.parseChangeArgument(fullCommandArgument);
+                    if (homeDir == null) {
                         return new CommandResponse(501, "Invalid home directory, it must be an absolute path without '.' or '..' segments");
                     }
                     logger.info("'{}' changed homedir for '{}' from '{}' to '{}'", session.getUserNull(request.getUser()).getName(), userToChange.getName(), userToChange.getKeyedMap().getObject(UserManagement.HOMEDIR, ""), homeDir);
