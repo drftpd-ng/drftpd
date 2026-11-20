@@ -33,6 +33,8 @@ public class SpeedTestServer {
     private int id;
     private String host;
     private int latency;
+    // Distance in km from the requesting slave, as reported by speedtest.net (-1 if unknown)
+    private double distance = -1;
 
     public SpeedTestServer() {
     }
@@ -115,6 +117,14 @@ public class SpeedTestServer {
 
     public void setHost(String host) {
         this.host = host;
+    }
+
+    public double getDistance() {
+        return distance;
+    }
+
+    public void setDistance(double distance) {
+        this.distance = distance;
     }
 
     public int getLatency() {

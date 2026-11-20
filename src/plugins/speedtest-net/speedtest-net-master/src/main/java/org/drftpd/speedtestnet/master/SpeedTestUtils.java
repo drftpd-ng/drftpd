@@ -17,14 +17,19 @@
  */
 package org.drftpd.speedtestnet.master;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.drftpd.common.exceptions.RemoteIOException;
+import org.drftpd.master.GlobalContext;
 import org.drftpd.master.exceptions.SlaveUnavailableException;
 import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.master.util.HttpUtils;
+import org.drftpd.speedtestnet.common.AsyncResponseSpeedTestServers;
+import org.drftpd.speedtestnet.master.protocol.SpeedTestIssuer;
 
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
@@ -37,8 +42,10 @@ import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -114,6 +121,101 @@ public class SpeedTestUtils {
             }
         }
         return serverList;
+    }
+
+    /**
+     * Ask the slave itself for the speedtest.net servers closest to it. The speedtest.net API
+     * picks servers based on the IP of the caller, so the request must be made by the slave.
+     *
+     * @return servers ordered by proximity, or null if the slave could not provide any
+     */
+    public static List<SpeedTestServer> getServersFromSlave(RemoteSlave rslave, int limit) {
+        try {
+            SpeedTestIssuer issuer = (SpeedTestIssuer) GlobalContext.getGlobalContext().getSlaveManager()
+                    .getProtocolCentral().getIssuerForClass(SpeedTestIssuer.class);
+            String index = issuer.issueSpeedTestServersToSlave(rslave, limit);
+            AsyncResponseSpeedTestServers response = (AsyncResponseSpeedTestServers) rslave.fetchResponse(index, 30000);
+            List<SpeedTestServer> servers = parseServersJson(response.getJson());
+            if (servers.isEmpty()) {
+                logger.warn("Slave {} returned no usable speedtest.net servers", rslave.getName());
+                return null;
+            }
+            return servers;
+        } catch (SlaveUnavailableException | RemoteIOException e) {
+            logger.warn("Failed getting speedtest.net servers from slave {} :: {}", rslave.getName(), e.getMessage());
+        } catch (Exception e) {
+            logger.warn("Unexpected error getting speedtest.net servers from slave {}", rslave.getName(), e);
+        }
+        return null;
+    }
+
+    /**
+     * Parse the JSON array returned by speedtest.net's servers API.
+     * Entries without a url are skipped, malformed input yields an empty list.
+     */
+    static List<SpeedTestServer> parseServersJson(String json) {
+        List<SpeedTestServer> servers = new ArrayList<>();
+        if (json == null || json.isBlank()) {
+            return servers;
+        }
+        try {
+            JsonElement root = JsonParser.parseString(json);
+            if (!root.isJsonArray()) {
+                return servers;
+            }
+            JsonArray array = root.getAsJsonArray();
+            for (JsonElement element : array) {
+                if (!element.isJsonObject()) {
+                    continue;
+                }
+                JsonObject o = element.getAsJsonObject();
+                String url = jsonString(o, "url");
+                if (url == null || url.isEmpty()) {
+                    continue;
+                }
+                SpeedTestServer server = new SpeedTestServer();
+                server.setUrl(url);
+                server.setHost(jsonString(o, "host"));
+                server.setName(jsonString(o, "name"));
+                server.setCountry(jsonString(o, "country"));
+                server.setCc(jsonString(o, "cc"));
+                server.setSponsor(jsonString(o, "sponsor"));
+                try {
+                    String id = jsonString(o, "id");
+                    if (id != null) {
+                        server.setId(Integer.parseInt(id));
+                    }
+                    String lat = jsonString(o, "lat");
+                    if (lat != null) {
+                        server.setLatitude(Double.parseDouble(lat));
+                    }
+                    String lon = jsonString(o, "lon");
+                    if (lon != null) {
+                        server.setLongitude(Double.parseDouble(lon));
+                    }
+                    String distance = jsonString(o, "distance");
+                    if (distance != null) {
+                        server.setDistance(Double.parseDouble(distance));
+                    }
+                } catch (NumberFormatException e) {
+                    logger.debug("Skipping speedtest.net server entry with bad number: {}", e.getMessage());
+                    continue;
+                }
+                servers.add(server);
+            }
+        } catch (RuntimeException e) {
+            logger.warn("Unable to parse speedtest.net server list: {}", e.getMessage());
+            servers.clear();
+        }
+        return servers;
+    }
+
+    private static String jsonString(JsonObject o, String key) {
+        JsonElement e = o.get(key);
+        if (e == null || !e.isJsonPrimitive()) {
+            return null;
+        }
+        return e.getAsString();
     }
 
     public static SlaveLocation getSlaveLocation(RemoteSlave rslave) {
