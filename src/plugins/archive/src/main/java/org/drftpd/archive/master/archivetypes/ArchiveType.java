@@ -804,6 +804,77 @@ public abstract class ArchiveType {
         return false;
     }
 
+    /**
+     * Resolves the ${rls}, ${season}, ${episode} and ${regex:...} variables of a
+     * "rls:" destination template against a release name.
+     *
+     * @return the resolved destination, or "UNKNOWN" if a variable could not be resolved
+     */
+    static String resolveRlsDestination(String template, String name) {
+        String retstr = template;
+        if (retstr.contains("${rls}")) {
+            Pattern pattern = Pattern.compile("(?i)(.*)(\\.|-|_)S\\d.*");
+            Matcher matcher = pattern.matcher(name);
+            if (matcher.matches()) {
+                retstr = retstr.replaceAll("\\$\\{rls\\}", matcher.group(1));
+            }
+        }
+        if (retstr.contains("${rls}")) {
+            return "UNKNOWN";
+        }
+        if (retstr.contains("${season}")) {
+            Pattern pattern = Pattern.compile("(?i)(.*\\.|\\-|_)s(\\d|\\d\\d)((\\.|\\-|_)(e|d)|(e|d)).*");
+            Matcher matcher = pattern.matcher(name);
+            if (matcher.matches()) {
+                if (matcher.group(2).length() < 2) {
+                    retstr = retstr.replaceAll("\\$\\{season\\}", 0 + matcher.group(2));
+                } else {
+                    retstr = retstr.replaceAll("\\$\\{season\\}", matcher.group(2));
+                }
+            }
+        }
+        if (retstr.contains("${season}")) {
+            return "UNKNOWN";
+        }
+        if (retstr.contains("${episode}")) {
+            Pattern pattern = Pattern.compile("(?i)(.*\\.|\\-|_)s\\d.*e(\\d|\\d\\d)(\\.|\\-|_).*");
+            Matcher matcher = pattern.matcher(name);
+            if (matcher.matches()) {
+                if (matcher.group(2).length() < 2) {
+                    retstr = retstr.replaceAll("\\$\\{episode\\}", 0 + matcher.group(2));
+                } else {
+                    retstr = retstr.replaceAll("\\$\\{episode\\}", matcher.group(2));
+                }
+            }
+        }
+        if (retstr.contains("${episode}")) {
+            return "UNKNOWN";
+        }
+
+        while (retstr.contains("${regex:")) {
+            String regexstr = retstr.substring(retstr.indexOf("${regex:") + 8, retstr.indexOf("}"));
+            if (regexstr.length() < 1) {
+                break;
+            }
+            String fullstr = "${regex:" + regexstr + "}";
+            try {
+                Pattern pattern = Pattern.compile(regexstr);
+                Matcher matcher = pattern.matcher(name);
+                if (matcher.matches()) {
+                    retstr = retstr.replace(fullstr, matcher.group(1));
+                }
+            } catch (PatternSyntaxException e) {
+                logger.error("Regex Syntax Error in '{}' for '{}'", regexstr, fullstr, e);
+            }
+
+            if (retstr.contains(fullstr)) {
+                return "UNKNOWN";
+            }
+
+        }
+        return retstr;
+    }
+
     /*
      * This is used to get the actual dir that the archived dir needs to be moved too
      * This is overridable to other types can be made within different archive types
@@ -827,68 +898,7 @@ public abstract class ArchiveType {
         } else if (type.toLowerCase().startsWith("rls:")) {
             String splittype = type.substring(4);
             if (splittype.length() > 1) {
-                String retstr = splittype;
-                if (retstr.contains("${rls}")) {
-                    Pattern pattern = Pattern.compile("(?i)(.*)(\\.|-|_)S\\d.*");
-                    Matcher matcher = pattern.matcher(inode.getName());
-                    if (matcher.matches()) {
-                        retstr = retstr.replaceAll("\\$\\{rls\\}", matcher.group(1));
-                    }
-                }
-                if (retstr.contains("${rls}")) {
-                    return "UNKNOWN";
-                }
-                if (retstr.contains("${season}")) {
-                    Pattern pattern = Pattern.compile("(?i)(.*\\.|\\-|_)s(\\d|\\d\\d)((\\.|\\-|_)(e|d)|(e|d)).*");
-                    Matcher matcher = pattern.matcher(inode.getName());
-                    if (matcher.matches()) {
-                        if (matcher.group(2).length() < 2) {
-                            retstr = retstr.replaceAll("\\$\\{season\\}", 0 + matcher.group(2));
-                        } else {
-                            retstr = retstr.replaceAll("\\$\\{season\\}", matcher.group(2));
-                        }
-                    }
-                }
-                if (retstr.contains("${season}")) {
-                    return "UNKNOWN";
-                }
-                if (retstr.contains("${episode}")) {
-                    Pattern pattern = Pattern.compile("(?i)(.*\\.|\\-|_)s\\d.*e(\\d|\\d\\d)(\\.|\\-|_).*");
-                    Matcher matcher = pattern.matcher(inode.getName());
-                    if (matcher.matches()) {
-                        if (matcher.group(2).length() < 2) {
-                            retstr = retstr.replaceAll("\\$\\{season\\}", 0 + matcher.group(2));
-                        } else {
-                            retstr = retstr.replaceAll("\\$\\{season\\}", matcher.group(2));
-                        }
-                    }
-                }
-                if (retstr.contains("${episode}")) {
-                    return "UNKNOWN";
-                }
-
-                while (retstr.contains("${regex:")) {
-                    String regexstr = retstr.substring(retstr.indexOf("${regex:") + 8, retstr.indexOf("}"));
-                    if (regexstr.length() < 1) {
-                        break;
-                    }
-                    String fullstr = "${regex:" + regexstr + "}";
-                    try {
-                        Pattern pattern = Pattern.compile(regexstr);
-                        Matcher matcher = pattern.matcher(inode.getName());
-                        if (matcher.matches()) {
-                            retstr = retstr.replace(fullstr, matcher.group(1));
-                        }
-                    } catch (PatternSyntaxException e) {
-                        logger.error("Regex Syntax Error in '{}' for '{}'", regexstr, fullstr, e);
-                    }
-
-                    if (retstr.contains(fullstr)) {
-                        return "UNKNOWN";
-                    }
-
-                }
-                return retstr;
+                return resolveRlsDestination(splittype, inode.getName());
             }
             return "UNKNOWN";
         } else if (type.toLowerCase().startsWith("regex:")) {
