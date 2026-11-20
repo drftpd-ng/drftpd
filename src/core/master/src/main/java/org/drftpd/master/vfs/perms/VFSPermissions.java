@@ -102,7 +102,7 @@ public class VFSPermissions {
         type = type.toLowerCase();
         return type.equals("upload") || type.equals("makedir") || type.equals("delete")
                 || type.equals("deleteown") || type.startsWith("rename") || type.equals("renameown")
-                || type.equals("privpath") || type.equals("download");
+                || type.equals("privpath") || type.equals("download") || type.equals("wipe");
 
     }
 

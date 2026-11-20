@@ -156,6 +156,19 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable<In
         deleteUnchecked();
     }
 
+    /**
+     * Checks the 'wipe' path permission (perms.conf) for this inode.
+     * When no 'wipe' line matches the path, wiping is allowed so that sites without
+     * any 'wipe' line keep the old behaviour (only the delete permissions apply).
+     *
+     * @throws PermissionDeniedException if a matching 'wipe' line excludes the user.
+     */
+    public void checkWipePermission(User user) throws PermissionDeniedException {
+        if (!getVFSPermissions().checkPathPermission("wipe", user, this, true)) {
+            throw new PermissionDeniedException("You are not allowed to wipe " + getPath());
+        }
+    }
+
     public void deleteUnchecked() throws FileNotFoundException {
         getInode().delete();
     }
