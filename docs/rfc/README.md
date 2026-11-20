@@ -18,7 +18,7 @@ Sections used so far: Summary (Status, Addresses, Scope), Motivation, Background
 
 | RFC | Title | Issue | Status |
 | --- | --- | --- | --- |
-| [0001](0001-ipv6-phase1.md) | IPv6 support, phase 1 (proposed in PR #524, not yet merged) | [#19](https://github.com/drftpd-ng/drftpd/issues/19) | Draft |
+| [0001](https://github.com/drftpd-ng/drftpd/pull/524) | IPv6 support, phase 1 (in PR #524; the file `0001-ipv6-phase1.md` lands with it) | [#19](https://github.com/drftpd-ng/drftpd/issues/19) | Draft |
 | [0002](0002-imdb-lookup-without-nfo.md) | IMDB lookup from the release name, without an NFO | [#56](https://github.com/drftpd-ng/drftpd/issues/56) | Draft |
 | [0003](0003-ftp-client-certificate-auth.md) | FTP client certificate authentication | [#136](https://github.com/drftpd-ng/drftpd/issues/136) | Draft |
 | [0004](0004-srrdb-plugin.md) | srrDB plugin (building SRR files for releases) | [#137](https://github.com/drftpd-ng/drftpd/issues/137) | Draft |
