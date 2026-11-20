@@ -26,6 +26,7 @@ import org.drftpd.find.master.action.ActionInterface;
 import org.drftpd.find.master.option.OptionInterface;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.commands.*;
+import org.drftpd.master.commands.nuke.NukeUtils;
 import org.drftpd.master.indexation.AdvancedSearchParams;
 import org.drftpd.master.indexation.IndexEngineInterface;
 import org.drftpd.master.indexation.IndexException;
@@ -37,7 +38,10 @@ import org.drftpd.master.vfs.InodeHandle;
 import org.reflections.Reflections;
 
 import java.io.FileNotFoundException;
+import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 
 /**
@@ -207,7 +211,15 @@ public class Find extends CommandInterface {
             }
         }
 
-        if (actions.isEmpty()) {
+        if (settings.getDupe() != null) {
+            // Dupes are directories, an action that skips directories would silently do nothing
+            for (ActionInterface action : actions) {
+                if (!action.execInDirs()) {
+                    return new CommandResponse(500, "Action -" + action.name().toLowerCase()
+                            + " does not work on directories and can not be combined with -dupe, use -wipe instead");
+                }
+            }
+        } else if (actions.isEmpty()) {
             throw new ImproperUsageException();
         }
 
@@ -228,6 +240,10 @@ public class Find extends CommandInterface {
         }
 
         Map<String, Object> env = new HashMap<>();
+
+        if (settings.getDupe() != null) {
+            return doDupe(request, user, settings, actions, inodes, env);
+        }
 
         CommandResponse response = new CommandResponse(200, "Find complete!");
 
@@ -281,6 +297,98 @@ public class Find extends CommandInterface {
             }
         }
 
+        return response;
+    }
+
+    /**
+     * Handles the -dupe option: groups the found directories by name, keeps one copy of every
+     * dupe according to the keep policy and only runs the actions on the other copies.
+     * Without any action this is a dry run that only lists the dupes.
+     * The limit applies to the number of dupe groups.
+     */
+    private CommandResponse doDupe(CommandRequest request, User user, FindSettings settings,
+                                   List<ActionInterface> actions, Map<String, String> inodes, Map<String, Object> env) {
+        Session session = request.getSession();
+        Pattern exclude;
+        try {
+            exclude = DupeUtils.compileExclude(settings.getDupeExclude());
+        } catch (PatternSyntaxException e) {
+            logger.error("Invalid dupe.exclude pattern in find.conf", e);
+            return new CommandResponse(500, "Invalid dupe.exclude pattern: " + e.getMessage());
+        }
+        boolean observePrivPath = request.getProperties().getProperty("observe.privpath", "true").equalsIgnoreCase("true");
+
+        List<DupeUtils.Copy> dirs = new ArrayList<>();
+        for (Map.Entry<String, String> item : inodes.entrySet()) {
+            if (!item.getValue().equals("d")) {
+                continue;
+            }
+            String path = item.getKey();
+            if (path.length() > 1 && path.endsWith("/")) {
+                path = path.substring(0, path.length() - 1);
+            }
+            // Nuked releases are ignored, they are not dupes of the release that replaced them
+            if (!NukeUtils.getPathWithoutNukePrefix(path).equals(path)) {
+                continue;
+            }
+            try {
+                DirectoryHandle dir = new DirectoryHandle(path);
+                if (observePrivPath ? dir.isHidden(user) : dir.isHidden(null)) {
+                    continue;
+                }
+                dirs.add(new DupeUtils.Copy(dir.getPath(), dir.lastModified()));
+            } catch (FileNotFoundException e) {
+                logger.warn("Index contained an unexistent inode: {}", item.getKey());
+            }
+        }
+
+        List<DupeUtils.DupeGroup> groups = DupeUtils.findDupes(dirs, settings.getDupe(), exclude);
+
+        CommandResponse response = new CommandResponse(200, actions.isEmpty()
+                ? "Find complete! Dry run, nothing was changed." : "Find complete!");
+        if (groups.isEmpty()) {
+            response.addComment(session.jprintf(_bundle, "find.empty", env, user.getName()));
+            return response;
+        }
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
+        LinkedList<String> responses = new LinkedList<>();
+        int results = 0;
+        for (DupeUtils.DupeGroup group : groups) {
+            if (results == settings.getLimit()) {
+                break;
+            }
+            if (!settings.getQuiet()) {
+                responses.add("Dupe " + group.kept().name() + " (" + group.copies().size() + " copies):");
+                for (DupeUtils.Copy copy : group.copies()) {
+                    responses.add((copy == group.kept() ? "  KEEP " : "  DUPE ") + copy.path()
+                            + " (" + dateFormat.format(new Date(copy.lastModified())) + ")");
+                }
+            }
+            for (DupeUtils.Copy copy : group.toRemove()) {
+                for (ActionInterface action : actions) {
+                    try {
+                        DirectoryHandle dir = new DirectoryHandle(copy.path());
+                        logger.debug("Action {} executing on dupe {}", action.getClass(), dir.getPath());
+                        String text = action.exec(request, dir);
+                        if (!settings.getQuiet() || action.failed()) {
+                            responses.add("    " + text);
+                        }
+                    } catch (RuntimeException e) {
+                        logger.warn("Action {} failed on dupe {}", action.getClass(), copy.path(), e);
+                        responses.add("    " + action.name() + " failed on " + copy.path() + ": " + e.getMessage());
+                    }
+                }
+            }
+            results++;
+        }
+
+        env.put("limit", settings.getLimit());
+        env.put("results", results);
+        response.addComment(session.jprintf(_bundle, "find.dupe.header", env, user.getName()));
+        for (String line : responses) {
+            response.addComment(line);
+        }
         return response;
     }
 
