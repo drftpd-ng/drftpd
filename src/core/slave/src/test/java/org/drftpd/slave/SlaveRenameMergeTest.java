@@ -140,4 +140,27 @@ class SlaveRenameMergeTest {
         assertEquals("x", read("s2/clash"));
         assertEquals("a", read("d2/a.txt"));
     }
+
+    @Test
+    void symlinkedDirectoryIsNotFollowed() throws IOException {
+        write("outside/keep.txt", "k");
+        dir("src");
+        Files.createSymbolicLink(tmp.resolve("src/link"), tmp.resolve("outside"));
+        write("dst/link/other.txt", "o");
+        // the source link meets a real directory: a conflict, and nothing behind the link is touched
+        assertEquals(1, Slave.mergeInto(tmp.resolve("src").toFile(), tmp.resolve("dst").toFile()));
+        assertEquals("k", read("outside/keep.txt"));
+        assertTrue(Files.isSymbolicLink(tmp.resolve("src/link")));
+        assertEquals("o", read("dst/link/other.txt"));
+    }
+
+    @Test
+    void danglingLinkAtDestinationIsReplaced() throws IOException {
+        write("src/a.txt", "new");
+        dir("dst");
+        Files.createSymbolicLink(tmp.resolve("dst/a.txt"), tmp.resolve("does-not-exist"));
+        assertEquals(0, Slave.mergeInto(tmp.resolve("src").toFile(), tmp.resolve("dst").toFile()));
+        assertFalse(Files.isSymbolicLink(tmp.resolve("dst/a.txt")));
+        assertEquals("new", read("dst/a.txt"));
+    }
 }

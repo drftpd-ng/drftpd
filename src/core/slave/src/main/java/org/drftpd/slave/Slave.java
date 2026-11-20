@@ -55,6 +55,7 @@ import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
@@ -617,7 +618,7 @@ public class Slave extends SslConfigurationLoader {
      * <ul>
      * <li>directory into directory: every child is merged recursively, afterwards the source directory is
      * removed if it is empty;</li>
-     * <li>file onto file: the destination is replaced by the source (the source is what the master tracks,
+     * <li>file (or symbolic link) onto file or link: the destination is replaced by the source (the source is what the master tracks,
      * the destination is an untracked leftover) and a warning is logged;</li>
      * <li>file vs directory: nothing is deleted or moved, an error is logged and the entry is counted.</li>
      * </ul>
@@ -629,11 +630,15 @@ public class Slave extends SslConfigurationLoader {
      * @throws IOException if a move, a directory listing or a directory removal fails
      */
     static int mergeInto(File from, File to) throws IOException {
-        if (!to.exists()) {
+        // Symbolic links are never followed: a link is moved or replaced as an entry of its own, so merging
+        // can't reach into (and move files out of) whatever the link points to
+        if (!Files.exists(to.toPath(), LinkOption.NOFOLLOW_LINKS)) {
             move(from, to, false);
             return 0;
         }
-        if (from.isDirectory() && to.isDirectory()) {
+        boolean fromDir = Files.isDirectory(from.toPath(), LinkOption.NOFOLLOW_LINKS);
+        boolean toDir = Files.isDirectory(to.toPath(), LinkOption.NOFOLLOW_LINKS);
+        if (fromDir && toDir) {
             File[] children = from.listFiles();
             if (children == null) {
                 throw new PermissionDeniedException("Unable to list directory " + from);
@@ -648,15 +653,15 @@ public class Slave extends SslConfigurationLoader {
             }
             return unresolved;
         }
-        if (from.isFile() && to.isFile()) {
+        if (!fromDir && !toDir) {
             logger.warn("rename(), replacing existing file [{}] ({} bytes) with [{}] ({} bytes)",
                     to.getPath(), to.length(), from.getPath(), from.length());
             move(from, to, true);
             return 0;
         }
         logger.error("rename(), type mismatch, [{}] ({}) and [{}] ({}), leaving both in place",
-                from.getPath(), from.isDirectory() ? "directory" : "file",
-                to.getPath(), to.isDirectory() ? "directory" : "file");
+                from.getPath(), fromDir ? "directory" : "file",
+                to.getPath(), toDir ? "directory" : "file");
         return 1;
     }
 
