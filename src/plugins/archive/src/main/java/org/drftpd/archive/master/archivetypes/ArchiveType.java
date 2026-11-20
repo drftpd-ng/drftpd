@@ -108,6 +108,10 @@ public abstract class ArchiveType {
     private static final String DEFAULT_SCANSUBDIRS_REGEX = "(?i)^(season.*|(\\d+|\\d+\\W\\d+|\\d+\\W\\d+\\W\\d+)$)";
     private String _scansubdirsRegex;
 
+    // Used for: extracting the ${rls} part of a release name in rls: destination types (group 1 is used)
+    static final String DEFAULT_RLS_REGEX = "(?i)(.*)(\\.|-|_)S\\d.*";
+    private String _rlsRegex;
+
     /**
      * Sets _slaveList, _numOfSlaves, _section, _parent, and _archiveAfter Each
      * implementing ArchiveType still needs to check/validate these figures to
@@ -519,6 +523,14 @@ public abstract class ArchiveType {
             _scansubdirsRegex = DEFAULT_SCANSUBDIRS_REGEX;
         }
 
+        _rlsRegex = properties.getProperty(_confNum + ".rlsregex", DEFAULT_RLS_REGEX).trim();
+        try {
+            Pattern.compile(_rlsRegex);
+        } catch (PatternSyntaxException e) {
+            logger.error("rlsregex Entry for {} is invalid, using default", _confNum);
+            _rlsRegex = DEFAULT_RLS_REGEX;
+        }
+
         // Guard that repeat is not negative
         if (_repeat < 1) {
             logger.warn("repeat cannot be negative. Got {}, setting to 1", _repeat);
@@ -819,12 +831,13 @@ public abstract class ArchiveType {
      * Resolves the ${rls}, ${season}, ${episode} and ${regex:...} variables of a
      * "rls:" destination template against a release name.
      *
+     * @param rlsRegex regex whose first group is the ${rls} part of the release name
      * @return the resolved destination, or "UNKNOWN" if a variable could not be resolved
      */
-    static String resolveRlsDestination(String template, String name) {
+    static String resolveRlsDestination(String template, String name, String rlsRegex) {
         String retstr = template;
         if (retstr.contains("${rls}")) {
-            Pattern pattern = Pattern.compile("(?i)(.*)(\\.|-|_)S\\d.*");
+            Pattern pattern = Pattern.compile(rlsRegex);
             Matcher matcher = pattern.matcher(name);
             if (matcher.matches()) {
                 retstr = retstr.replaceAll("\\$\\{rls\\}", matcher.group(1));
@@ -909,7 +922,7 @@ public abstract class ArchiveType {
         } else if (type.toLowerCase().startsWith("rls:")) {
             String splittype = type.substring(4);
             if (splittype.length() > 1) {
-                return resolveRlsDestination(splittype, inode.getName());
+                return resolveRlsDestination(splittype, inode.getName(), _rlsRegex);
             }
             return "UNKNOWN";
         } else if (type.toLowerCase().startsWith("regex:")) {
