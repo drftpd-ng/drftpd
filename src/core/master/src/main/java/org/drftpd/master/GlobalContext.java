@@ -425,6 +425,8 @@ public class GlobalContext {
         loadSectionManager(getConfig().getMainProperties());
         loadIndexingEngine(getConfig().getMainProperties());
         loadPlugins();
+        // e.g. the automatic index rebuild: it starts once every plugin is loaded
+        getIndexEngine().pluginsLoaded();
 
         // Subscribe to events
         AnnotationProcessor.process(this);

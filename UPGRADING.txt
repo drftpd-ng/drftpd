@@ -35,10 +35,19 @@ The search index (userdata/index) written by previous versions can't be read any
 to be done by hand:
 - On the first start the master logs a warning, renames userdata/index to
   userdata/index.incompatible-<date> (nothing is deleted) and creates a new index.
-- It then rebuilds the index from the virtual file system in the background, like SITE REBUILDINDEX
-  does. Until it is done, SITE SEARCH/FIND and the dupe checks only see part of the site.
-  SITE INDEXSTATUS FULL shows "rebuild: in progress" meanwhile. On large sites this takes a while
-  and causes disk I/O on the master.
+- Once the plugins are loaded, it rebuilds the index from the virtual file system in the
+  background, like SITE REBUILDINDEX does. Until it is done, SITE SEARCH/FIND, the dupe checks
+  (dupecheck plugin) and the IMDB/TvMaze listings built from the index only see part of the site.
+  SITE INDEXSTATUS FULL shows "rebuild: in progress" with the progress meanwhile.
+- How long it takes: the rebuild walks the whole VFS (userdata/vfs) and indexes every file and
+  directory, reading the inode of each one from its JSON file on disk. The time is roughly
+  proportional to the number of inodes, and depends mostly on the disk of the master (and on its
+  file cache: a second rebuild is faster than the first one). There is no fixed figure; to get an
+  estimate for your site, look at the master log: every 30 seconds it logs a line such as
+  "Index rebuild in progress: 120000 inodes indexed in 0h01m00s (2000 inodes/s)". Divide the
+  number of files and directories of your site ("find userdata/vfs | wc -l" gives an upper bound)
+  by the rate shown after the first minute or two. The end is logged as "Index rebuild done: ...".
+  The master serves clients meanwhile, but the rebuild causes disk I/O on the master.
 - If the master is stopped before the rebuild is done, the index is flagged as incomplete and the
   rebuild starts again on the next start. The same goes for an interrupted SITE REBUILDINDEX.
 - No index backup is made while a rebuild is required or running.

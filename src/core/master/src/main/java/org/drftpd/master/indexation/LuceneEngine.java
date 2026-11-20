@@ -100,6 +100,9 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.LongSupplier;
 import java.util.regex.PatternSyntaxException;
 
 /**
@@ -170,6 +173,8 @@ public class LuceneEngine implements IndexEngineInterface {
     private IndexingVirtualFileSystemListener _listener;
     private volatile boolean _rebuilding;
     private volatile boolean _rebuildRequired;
+    private volatile RebuildProgress _rebuildProgress;
+    private final AtomicBoolean _pendingRebuildStarted = new AtomicBoolean();
     private volatile Path _movedAsideIndex;
 
     private final List<IndexDataExtensionInterface> _dataExtensions = new ArrayList<>();
@@ -195,7 +200,8 @@ public class LuceneEngine implements IndexEngineInterface {
      * <li>Adds a Shutdown Hook to save the index while closing DrFTPD</li>
      * <li>Creates the Maintenance and Backup threads.</li>
      * <li>If the index on disk could not be read (written by an older Lucene, corrupt...), it has
-     * been moved aside by {@link #openStreams()} and a rebuild is started in the background.</li>
+     * been moved aside by {@link #openStreams()} and a rebuild is started in the background
+     * once the plugins are loaded ({@link #pluginsLoaded()}).</li>
      * </ul>
      */
     public void init() throws IndexException {
@@ -241,7 +247,7 @@ public class LuceneEngine implements IndexEngineInterface {
         _listener.init();
 
         if (_rebuildRequired) {
-            startBackgroundRebuild();
+            logger.warn("The index must be rebuilt, the rebuild starts once the plugins are loaded");
         }
     }
 
@@ -250,19 +256,39 @@ public class LuceneEngine implements IndexEngineInterface {
         _backupThread = new LuceneBackupThread(this);
     }
 
-    private void startBackgroundRebuild() {
+    /**
+     * Starts the automatic rebuild, if the index must be rebuilt (see {@link #isRebuildRequired()}).
+     * It is not started by {@link #init()}: the index is initialised before the master plugins
+     * are loaded, and the rebuild indexes the whole VFS with the master fully set up.
+     * Until it starts, the index behaves as during a rebuild: searches return what has been
+     * indexed so far and no backup is made.
+     */
+    @Override
+    public void pluginsLoaded() {
+        startPendingRebuild(this::walkVirtualFileSystem);
+    }
+
+    /**
+     * Starts the pending rebuild with the given walker in a background thread, at most once.
+     *
+     * @return the rebuild thread, or null if no rebuild was required or one was already started
+     */
+    Thread startPendingRebuild(InodeWalker walker) {
+        if (!_rebuildRequired || !_pendingRebuildStarted.compareAndSet(false, true)) {
+            return null;
+        }
         Thread rebuild = new Thread(() -> {
             logger.warn("Rebuilding the index from the virtual file system in the background, " +
                     "SITE SEARCH/DUPE results are incomplete until it is done");
             try {
-                rebuildIndex();
-                logger.warn("Index rebuild done, {} entries in the index", getStatus().get("inodes"));
+                rebuildIndex(walker);
             } catch (Exception e) {
                 logger.error("Automatic index rebuild failed, run SITE REBUILDINDEX", e);
             }
         }, "IndexRebuildThread");
         rebuild.setDaemon(true);
         rebuild.start();
+        return rebuild;
     }
 
     /**
@@ -744,11 +770,21 @@ public class LuceneEngine implements IndexEngineInterface {
 
     /* {@inheritDoc} */
     public void rebuildIndex() throws IndexException, FileNotFoundException {
-        rebuildIndex(() -> {
-            DirectoryHandle root = GlobalContext.getGlobalContext().getRoot();
-            root.requestRefresh(true); // Start by adding root inode
-            recurseAndBuild(root); // Recursively traverse the VFS and add all inodes
-        });
+        rebuildIndex(this::walkVirtualFileSystem);
+    }
+
+    private void walkVirtualFileSystem() throws IndexException, FileNotFoundException {
+        DirectoryHandle root = GlobalContext.getGlobalContext().getRoot();
+        root.requestRefresh(true); // Start by adding root inode
+        inodeWalked();
+        recurseAndBuild(root); // Recursively traverse the VFS and add all inodes
+    }
+
+    private void inodeWalked() {
+        RebuildProgress progress = _rebuildProgress;
+        if (progress != null) {
+            progress.inodeWalked();
+        }
     }
 
     /**
@@ -776,6 +812,8 @@ public class LuceneEngine implements IndexEngineInterface {
             }
         }
 
+        RebuildProgress progress = new RebuildProgress(System::nanoTime);
+        _rebuildProgress = progress;
         boolean success = false;
         try {
             walker.walk();
@@ -785,6 +823,8 @@ public class LuceneEngine implements IndexEngineInterface {
                 writer.commit(); // commit the writer so that the searcher can see the new stuff.
                 _rebuildRequired = false;
                 success = true;
+                logger.info("Index rebuild done: {}, {} entries in the index", progress.describe(),
+                        writer.getDocStats().numDocs);
             }
         } catch (IndexException e) {
             logger.error("Exception whilst rebuilding lucene index", e);
@@ -809,6 +849,7 @@ public class LuceneEngine implements IndexEngineInterface {
                 }
             }
             _rebuilding = false;
+            _rebuildProgress = null;
         }
     }
 
@@ -824,6 +865,7 @@ public class LuceneEngine implements IndexEngineInterface {
                 if (inode.isDirectory()) {
                     try {
                         inode.requestRefresh(true);
+                        inodeWalked();
                         recurseAndBuild((DirectoryHandle) inode);
                     } catch (FileNotFoundException e) {
                         // Directory no longer present, silently skip
@@ -832,6 +874,7 @@ public class LuceneEngine implements IndexEngineInterface {
                 } else if (inode.isFile()) {
                     try {
                         inode.requestRefresh(true);
+                        inodeWalked();
                     } catch (FileNotFoundException e) {
                         // File no longer present, silently skip
                     }
@@ -1174,8 +1217,9 @@ public class LuceneEngine implements IndexEngineInterface {
             }
         }
 
+        RebuildProgress progress = _rebuildProgress;
         if (_rebuilding) {
-            status.put("rebuild", "in progress");
+            status.put("rebuild", "in progress" + (progress == null ? "" : ", " + progress.describe()));
         } else if (_rebuildRequired) {
             status.put("rebuild", "required, run SITE REBUILDINDEX" + (_movedAsideIndex == null
                     ? " (a previous rebuild did not complete)"
@@ -1191,6 +1235,56 @@ public class LuceneEngine implements IndexEngineInterface {
 
     protected IndexWriter getWriter() {
         return _iWriter;
+    }
+
+    /**
+     * Counts the inodes walked by a rebuild and logs the progress every {@link #LOG_INTERVAL_NANOS}.
+     * Only the rebuild thread calls {@link #inodeWalked()}.
+     */
+    static final class RebuildProgress {
+        static final long LOG_INTERVAL_NANOS = TimeUnit.SECONDS.toNanos(30);
+
+        private final LongSupplier _nanoClock;
+        private final long _start;
+        private long _lastLog;
+        private volatile long _inodes;
+
+        RebuildProgress(LongSupplier nanoClock) {
+            _nanoClock = nanoClock;
+            _start = nanoClock.getAsLong();
+            _lastLog = _start;
+        }
+
+        /**
+         * @return true if the progress was logged
+         */
+        boolean inodeWalked() {
+            _inodes++;
+            long now = _nanoClock.getAsLong();
+            if (now - _lastLog < LOG_INTERVAL_NANOS) {
+                return false;
+            }
+            _lastLog = now;
+            logger.info("Index rebuild in progress: {}", describe(now));
+            return true;
+        }
+
+        long getInodes() {
+            return _inodes;
+        }
+
+        String describe() {
+            return describe(_nanoClock.getAsLong());
+        }
+
+        private String describe(long now) {
+            long inodes = _inodes;
+            long elapsedMillis = Math.max(TimeUnit.NANOSECONDS.toMillis(now - _start), 0);
+            long seconds = elapsedMillis / 1000;
+            long rate = elapsedMillis == 0 ? inodes : inodes * 1000 / elapsedMillis;
+            return String.format(Locale.ROOT, "%d inodes indexed in %dh%02dm%02ds (%d inodes/s)",
+                    inodes, seconds / 3600, (seconds / 60) % 60, seconds % 60, rate);
+        }
     }
 
     /**

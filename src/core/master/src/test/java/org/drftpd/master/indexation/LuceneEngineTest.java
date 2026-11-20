@@ -41,6 +41,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -633,6 +634,66 @@ public class LuceneEngineTest {
         assertTrue(_engine.getStatus().get("rebuild").startsWith("required"));
         // the partial content was committed, flagged as incomplete
         assertEquals("1", _engine.getStatus().get("inodes"));
+    }
+
+    @Test
+    public void pendingRebuildWaitsForThePlugins() throws IndexException, IOException, InterruptedException {
+        assertNull(_engine.startPendingRebuild(() -> fail("no rebuild is required")));
+
+        assertThrows(IndexException.class, () -> _engine.rebuildIndex(() -> {
+            _engine.addInode(IndexTestInodes.dir("/PARTIAL", "drftpd", "drftpd", T0, 0));
+            throw new IndexException("walk failed");
+        }));
+        _engine.closeAll();
+        _engine = newEngine(indexDir());
+
+        // until the plugins are loaded the index behaves as during a rebuild:
+        // partial results, still indexing changes, no backup
+        assertTrue(_engine.isRebuildRequired());
+        assertFalse(_engine.isRebuilding());
+        _engine.addInode(IndexTestInodes.dir("/LIVE", "drftpd", "drftpd", T0, 0));
+        AdvancedSearchParams params = new AdvancedSearchParams();
+        params.setMinSize(0);
+        assertEquals(Set.of("/PARTIAL/", "/LIVE/"), paths("/", params));
+        assertFalse(_engine.backupTo(_tmp.resolve("bkp")));
+
+        Thread rebuild = _engine.startPendingRebuild(() -> {
+            _engine.addInode(IndexTestInodes.dir("/LIVE", "drftpd", "drftpd", T0, 0));
+            _engine.addInode(IndexTestInodes.dir("/REBUILT", "drftpd", "drftpd", T0, 0));
+        });
+        assertNotNull(rebuild);
+        // started once only
+        assertNull(_engine.startPendingRebuild(() -> fail("the rebuild was started twice")));
+        rebuild.join(30_000);
+        assertFalse(rebuild.isAlive());
+
+        assertFalse(_engine.isRebuildRequired());
+        assertFalse(_engine.isRebuilding());
+        assertFalse(_engine.isRebuildPendingOnDisk());
+        assertEquals(Set.of("/LIVE/", "/REBUILT/"), paths("/", params));
+    }
+
+    @Test
+    public void rebuildProgressIsLoggedPeriodically() {
+        long[] now = {TimeUnit.HOURS.toNanos(5)};
+        LuceneEngine.RebuildProgress progress = new LuceneEngine.RebuildProgress(() -> now[0]);
+        for (int i = 0; i < 999; i++) {
+            now[0] += TimeUnit.MILLISECONDS.toNanos(30);
+            assertFalse(progress.inodeWalked());
+        }
+        // 1000 inodes in 30 s
+        now[0] += TimeUnit.MILLISECONDS.toNanos(30);
+        assertTrue(progress.inodeWalked());
+        assertEquals(1000, progress.getInodes());
+        assertEquals("1000 inodes indexed in 0h00m30s (33 inodes/s)", progress.describe());
+        // not again before another 30 s
+        now[0] += TimeUnit.SECONDS.toNanos(29);
+        assertFalse(progress.inodeWalked());
+        now[0] += TimeUnit.SECONDS.toNanos(1);
+        assertTrue(progress.inodeWalked());
+
+        now[0] += TimeUnit.MINUTES.toNanos(61);
+        assertEquals("1002 inodes indexed in 1h02m00s (0 inodes/s)", progress.describe());
     }
 
     @Test
