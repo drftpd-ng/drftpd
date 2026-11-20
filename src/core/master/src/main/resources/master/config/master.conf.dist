@@ -128,8 +128,12 @@ disk.commit.delay=10000
 # If the directory does not exist (or is hidden from the user) the user lands in /.
 #homedir=/home/${user}
 
-# Create a missing home directory at login, owned by the user and its primary group.
-# Its parent directory (e.g. /home) must already exist.
+# Create a missing home directory at login, as if the user had run MKD:
+#  the user needs the 'makedir' permission for it in perms.conf, the MKD event
+#  is fired, and the directory is owned by the user and its primary group.
+# If the user lacks 'makedir' the directory is not created (logged at info level)
+#  and the user lands in /.
+# Its parent directory (e.g. /home) must already exist and be visible to the user.
 # Default: [false]
 #homedir.create=false
 

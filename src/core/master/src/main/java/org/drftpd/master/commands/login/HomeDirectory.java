@@ -17,14 +17,56 @@
  */
 package org.drftpd.master.commands.login;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.drftpd.common.io.PermissionDeniedException;
+import org.drftpd.master.vfs.ObjectNotValidException;
+import org.drftpd.slave.exceptions.FileExistsException;
+
+import java.io.FileNotFoundException;
+
 /**
  * Resolves the per-user home directory template ({@code homedir} in master.conf,
- * or the per-user override set with {@code SITE CHANGE <user> homedir <path>}).
+ * or the per-user override set with {@code SITE CHANGE <user> homedir <path>}),
+ * and decides at login whether the user lands in it, whether it is created or
+ * whether the user stays in the root directory.
  * <p>
- * This class is pure string handling so it can be unit tested without a VFS.
+ * The VFS is only reached through {@link Access} so this can be unit tested.
  * A home directory never grants any permission: perms.conf still applies.
  */
 public final class HomeDirectory {
+
+    private static final Logger logger = LogManager.getLogger(HomeDirectory.class);
+
+    /**
+     * The VFS operations needed by {@link #locate}, all performed as the user logging in.
+     *
+     * @param <D> the directory type
+     */
+    public interface Access<D> {
+        /**
+         * Looks up the directory as the user, so privpath applies.
+         *
+         * @throws FileNotFoundException  if it does not exist or is hidden from the user
+         * @throws ObjectNotValidException if it is not a directory
+         */
+        D lookup(String path) throws FileNotFoundException, ObjectNotValidException;
+
+        /** @return true if anything exists at the path, whether or not the user can see it */
+        boolean exists(String path);
+
+        /** @return true if the user has the 'makedir' permission for the path, as checked by MKD */
+        boolean canMakeDir(String path);
+
+        /**
+         * Creates the directory as the user would with MKD (permission check and events).
+         *
+         * @throws FileExistsException if it was created meanwhile (e.g. by a concurrent login)
+         * @throws FileNotFoundException if the parent does not exist or is hidden from the user
+         */
+        D create(String path) throws FileExistsException, FileNotFoundException,
+                ObjectNotValidException, PermissionDeniedException;
+    }
 
     /** master.conf key holding the home directory template, empty/absent = disabled. */
     public static final String CONF_HOMEDIR = "homedir";
@@ -37,6 +79,62 @@ public final class HomeDirectory {
     public static final String GROUP_PLACEHOLDER = "${group}";
 
     private HomeDirectory() {
+    }
+
+    /**
+     * Decides where the user lands after login.
+     * <ul>
+     * <li>the home directory exists and is visible to the user: land in it</li>
+     * <li>it is missing and {@code create} is false: stay in the root directory</li>
+     * <li>it is missing and the user has 'makedir' for it: create it, like MKD would</li>
+     * <li>it is missing and the user lacks 'makedir': stay in the root directory</li>
+     * <li>it was created meanwhile by a concurrent login: land in it</li>
+     * </ul>
+     *
+     * @param path   the resolved home directory, see {@link #resolve}
+     * @param create whether 'homedir.create' is enabled
+     * @param user   the user name, only used for logging
+     * @return the home directory, or null to stay in the root directory
+     */
+    public static <D> D locate(String path, boolean create, String user, Access<D> access) {
+        try {
+            return access.lookup(path);
+        } catch (ObjectNotValidException e) {
+            logger.warn("Home directory '{}' of user '{}' is not a directory", path, user);
+            return null;
+        } catch (FileNotFoundException e) {
+            // Does not exist (or is hidden from the user), create it below if allowed
+        }
+        if (!create) {
+            logger.debug("Home directory '{}' of user '{}' does not exist, staying at root", path, user);
+            return null;
+        }
+        if (access.exists(path)) {
+            // Something exists there that the user is not allowed to see, do not touch it
+            logger.debug("Home directory '{}' of user '{}' is hidden from the user, staying at root", path, user);
+            return null;
+        }
+        if (!access.canMakeDir(path)) {
+            logger.info("Not creating home directory '{}', user '{}' has no 'makedir' permission there, staying at root", path, user);
+            return null;
+        }
+        try {
+            D homeDir = access.create(path);
+            logger.info("Created home directory '{}' for user '{}'", path, user);
+            return homeDir;
+        } catch (FileExistsException e) {
+            // Created meanwhile, e.g. by a concurrent login of the same user
+            try {
+                return access.lookup(path);
+            } catch (FileNotFoundException | ObjectNotValidException e2) {
+                logger.warn("Home directory '{}' of user '{}' was created meanwhile but cannot be used", path, user);
+            }
+        } catch (FileNotFoundException | ObjectNotValidException e) {
+            logger.warn("Cannot create home directory '{}' for user '{}', its parent is missing or hidden", path, user);
+        } catch (PermissionDeniedException e) {
+            logger.info("Not creating home directory '{}' for user '{}': {}", path, user, e.getMessage());
+        }
+        return null;
     }
 
     /**

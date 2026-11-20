@@ -17,7 +17,14 @@
  */
 package org.drftpd.master.commands.login;
 
+import org.drftpd.common.io.PermissionDeniedException;
+import org.drftpd.master.vfs.ObjectNotValidException;
+import org.drftpd.slave.exceptions.FileExistsException;
 import org.junit.jupiter.api.Test;
+
+import java.io.FileNotFoundException;
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -89,5 +96,123 @@ public class HomeDirectoryTest {
         assertFalse(HomeDirectory.isValidTemplate("home/${user}"));
         assertFalse(HomeDirectory.isValidTemplate("/home/../root"));
         assertFalse(HomeDirectory.isValidTemplate(""));
+    }
+
+    /**
+     * In-memory {@link HomeDirectory.Access}: 'visible' are the directories the user
+     * can see, 'hidden' exist but are hidden from the user, 'files' are not directories.
+     */
+    private static class FakeAccess implements HomeDirectory.Access<String> {
+        final Set<String> visible = new HashSet<>();
+        final Set<String> hidden = new HashSet<>();
+        final Set<String> files = new HashSet<>();
+        boolean makeDir;
+        boolean concurrentCreate;
+        boolean denyOnCreate;
+        int created;
+
+        @Override
+        public String lookup(String path) throws FileNotFoundException, ObjectNotValidException {
+            if (files.contains(path)) {
+                throw new ObjectNotValidException(path + " is not a directory");
+            }
+            if (!visible.contains(path)) {
+                throw new FileNotFoundException(path);
+            }
+            return path;
+        }
+
+        @Override
+        public boolean exists(String path) {
+            return visible.contains(path) || hidden.contains(path) || files.contains(path);
+        }
+
+        @Override
+        public boolean canMakeDir(String path) {
+            return makeDir;
+        }
+
+        @Override
+        public String create(String path) throws FileExistsException, PermissionDeniedException {
+            if (denyOnCreate) {
+                throw new PermissionDeniedException("denied");
+            }
+            if (concurrentCreate) {
+                // Another login created it between our lookup and our create
+                visible.add(path);
+                throw new FileExistsException(path + " already exists");
+            }
+            created++;
+            visible.add(path);
+            return path;
+        }
+    }
+
+    @Test
+    public void testLocateExistingDirectory() {
+        FakeAccess access = new FakeAccess();
+        access.visible.add("/home/bob");
+        assertEquals("/home/bob", HomeDirectory.locate("/home/bob", false, "bob", access));
+        assertEquals("/home/bob", HomeDirectory.locate("/home/bob", true, "bob", access));
+        assertEquals(0, access.created);
+    }
+
+    @Test
+    public void testLocateMissingWithoutCreate() {
+        FakeAccess access = new FakeAccess();
+        access.makeDir = true;
+        assertNull(HomeDirectory.locate("/home/bob", false, "bob", access));
+        assertEquals(0, access.created);
+    }
+
+    @Test
+    public void testLocateMissingCreatesWithMakeDir() {
+        FakeAccess access = new FakeAccess();
+        access.makeDir = true;
+        assertEquals("/home/bob", HomeDirectory.locate("/home/bob", true, "bob", access));
+        assertEquals(1, access.created);
+    }
+
+    @Test
+    public void testLocateMissingWithoutMakeDir() {
+        FakeAccess access = new FakeAccess();
+        access.makeDir = false;
+        assertNull(HomeDirectory.locate("/home/bob", true, "bob", access));
+        assertEquals(0, access.created);
+    }
+
+    @Test
+    public void testLocatePermissionDeniedOnCreate() {
+        FakeAccess access = new FakeAccess();
+        access.makeDir = true;
+        access.denyOnCreate = true;
+        assertNull(HomeDirectory.locate("/home/bob", true, "bob", access));
+    }
+
+    @Test
+    public void testLocateConcurrentCreate() {
+        FakeAccess access = new FakeAccess();
+        access.makeDir = true;
+        access.concurrentCreate = true;
+        assertEquals("/home/bob", HomeDirectory.locate("/home/bob", true, "bob", access));
+        assertEquals(0, access.created);
+    }
+
+    @Test
+    public void testLocateHiddenIsNotTouched() {
+        FakeAccess access = new FakeAccess();
+        access.makeDir = true;
+        access.hidden.add("/home/bob");
+        assertNull(HomeDirectory.locate("/home/bob", true, "bob", access));
+        assertEquals(0, access.created);
+    }
+
+    @Test
+    public void testLocateNotADirectory() {
+        FakeAccess access = new FakeAccess();
+        access.makeDir = true;
+        access.files.add("/home/bob");
+        assertNull(HomeDirectory.locate("/home/bob", true, "bob", access));
+        assertEquals(0, access.created);
     }
 }
