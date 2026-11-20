@@ -102,6 +102,8 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.LongSupplier;
 import java.util.regex.PatternSyntaxException;
 
@@ -156,6 +158,11 @@ public class LuceneEngine implements IndexEngineInterface {
     private final Path _indexPath;
     /** Guards opening/closing the index and taking backups. */
     private final Object _lock = new Object();
+    /**
+     * Serialises a rename (several writer operations) against the other index updates: add, update
+     * and delete share the read lock, a rename takes the write lock.
+     */
+    private final ReadWriteLock _updateLock = new ReentrantReadWriteLock();
 
     private volatile Directory _storage;
     private volatile IndexWriter _iWriter;
@@ -674,6 +681,7 @@ public class LuceneEngine implements IndexEngineInterface {
 
     /* {@inheritDoc} */
     public void addInode(ImmutableInodeHandle inode) throws IndexException {
+        _updateLock.readLock().lock();
         try {
             // updateDocument rather than addDocument: never index the same path twice
             writer().updateDocument(makeFullPathTermFromInode(inode), makeDocumentFromInode(inode));
@@ -681,31 +689,44 @@ public class LuceneEngine implements IndexEngineInterface {
             logger.error("Unable to add {} to the index", inode.getPath(), e);
         } catch (RuntimeException | IOException e) {
             throw new IndexException("Unable to add " + inode.getPath() + " to the index", e);
+        } finally {
+            _updateLock.readLock().unlock();
         }
     }
 
     /* {@inheritDoc} */
     public void deleteInode(ImmutableInodeHandle inode) throws IndexException {
+        _updateLock.readLock().lock();
         try {
             writer().deleteDocuments(makeFullPathTermFromInode(inode));
         } catch (RuntimeException | IOException e) {
             throw new IndexException("Unable to delete " + inode.getPath() + " from the index", e);
+        } finally {
+            _updateLock.readLock().unlock();
         }
     }
 
     /* {@inheritDoc} */
     public void updateInode(ImmutableInodeHandle inode) throws IndexException {
+        _updateLock.readLock().lock();
         try {
             writer().updateDocument(makeFullPathTermFromInode(inode), makeDocumentFromInode(inode));
         } catch (FileNotFoundException e) {
             logger.error("The inode was here but now it isn't!", e);
         } catch (RuntimeException | IOException e) {
             throw new IndexException("Unable to update " + inode.getPath() + " in the index", e);
+        } finally {
+            _updateLock.readLock().unlock();
         }
     }
 
-    /* {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     * The rename of a directory replaces the documents of all its content, one by one: it holds
+     * the write lock of {@link #_updateLock} so that no other update is applied in the middle.
+     */
     public void renameInode(ImmutableInodeHandle fromInode, ImmutableInodeHandle toInode) throws IndexException {
+        _updateLock.writeLock().lock();
         try {
             IndexWriter writer = writer();
             Term fromInodeTerm = makeFullPathTermFromInode(fromInode);
@@ -732,6 +753,8 @@ public class LuceneEngine implements IndexEngineInterface {
         } catch (RuntimeException | IOException e) {
             throw new IndexException("Unable to rename " + fromInode.getPath() + " to " +
                     toInode.getPath() + " in the index", e);
+        } finally {
+            _updateLock.writeLock().unlock();
         }
     }
 
