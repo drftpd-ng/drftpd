@@ -192,7 +192,7 @@ public class BaseFtpConnection extends Session implements Runnable {
      * Returns thread id number
      */
     public long getThreadID() {
-        return _thread.getId();
+        return _thread.threadId();
     }
 
     /**
@@ -272,9 +272,9 @@ public class BaseFtpConnection extends Session implements Runnable {
             try {
                 // If hideips is on, hide ip but not user/group
                 if (GlobalContext.getConfig().getHideIps()) {
-                    _thread.setName("FtpConn thread " + _thread.getId() + " servicing " + _user + "/" + getUser().getGroup());
+                    _thread.setName("FtpConn thread " + _thread.threadId() + " servicing " + _user + "/" + getUser().getGroup());
                 } else {
-                    _thread.setName("FtpConn thread " + _thread.getId() + " from " + getClientAddress().getHostAddress() + " " + _user + "/" + getUser().getGroup());
+                    _thread.setName("FtpConn thread " + _thread.threadId() + " from " + getClientAddress().getHostAddress() + " " + _user + "/" + getUser().getGroup());
                 }
             } catch (NoSuchUserException e) {
                 logger.error("User does not exist, yet user is authenticated, this is a bug");
@@ -326,10 +326,10 @@ public class BaseFtpConnection extends Session implements Runnable {
         _lastActive = System.currentTimeMillis();
         if (GlobalContext.getConfig().getHideIps()) {
             logger.info("Handling new request from <iphidden>");
-            _thread.setName("FtpConn thread " + _thread.getId() + " from <iphidden>");
+            _thread.setName("FtpConn thread " + _thread.threadId() + " from <iphidden>");
         } else {
             logger.info("Handling new request from {}", getClientAddress().getHostAddress());
-            _thread.setName("FtpConn thread " + _thread.getId() + " from " + getClientAddress().getHostAddress());
+            _thread.setName("FtpConn thread " + _thread.threadId() + " from " + getClientAddress().getHostAddress());
         }
 
         _pool = new ThreadPoolExecutor(1, 1, 60L, TimeUnit.SECONDS, new LinkedBlockingQueue<>(), new CommandThreadFactory(_thread.getName()));
@@ -518,7 +518,7 @@ public class BaseFtpConnection extends Session implements Runnable {
             GlobalContext.getConnectionManager().dumpThreadPool();
 
             Thread t = Thread.currentThread();
-            t.setName(ConnectionThreadFactory.getIdleThreadName(t.getId()));
+            t.setName(ConnectionThreadFactory.getIdleThreadName(t.threadId()));
         }
     }
 
