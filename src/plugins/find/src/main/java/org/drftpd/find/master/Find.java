@@ -23,6 +23,7 @@ import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.drftpd.common.misc.CaseInsensitiveHashMap;
 import org.drftpd.common.util.Bytes;
 import org.drftpd.find.master.action.ActionInterface;
+import org.drftpd.find.master.action.WipeAction;
 import org.drftpd.find.master.option.OptionInterface;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.commands.*;
@@ -213,6 +214,16 @@ public class Find extends CommandInterface {
         }
 
         if (settings.getDupe() != null) {
+            // Dupes are directories, an option that only matches files would silently find nothing
+            if (settings.getFileOnlyOption() != null) {
+                return new CommandResponse(500, "Option " + settings.getFileOnlyOption().toLowerCase()
+                        + " only matches files and can not be combined with -dupe, dupes are directories");
+            }
+            // Wiping dupes removes whole releases, it has its own permission on top of the one for -wipe
+            if (actions.stream().anyMatch(action -> action instanceof WipeAction)
+                    && !checkCustomPermission(request, "dupewipe", "=siteop")) {
+                return new CommandResponse(500, "You do not have the proper permissions for -dupe -wipe");
+            }
             // Dupes are directories, an action that skips directories would silently do nothing
             for (ActionInterface action : actions) {
                 if (!action.execInDirs()) {
