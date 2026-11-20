@@ -17,9 +17,13 @@
  */
 package org.drftpd.mediainfo.master;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.MissingResourceException;
 import java.util.Set;
 
 /**
@@ -47,18 +51,94 @@ public final class AudioLanguageRule {
         return allowed;
     }
 
+    private static final Map<String, String> LOOKUP = buildLookup();
+
+    private static Map<String, String> buildLookup() {
+        Map<String, String> map = new HashMap<>();
+        String[][] bibliographic = {
+                {"ger", "de"}, {"fre", "fr"}, {"dut", "nl"}, {"chi", "zh"}, {"cze", "cs"},
+                {"gre", "el"}, {"per", "fa"}, {"rum", "ro"}, {"slo", "sk"}, {"alb", "sq"},
+                {"arm", "hy"}, {"baq", "eu"}, {"bur", "my"}, {"geo", "ka"}, {"ice", "is"},
+                {"mac", "mk"}, {"mao", "mi"}, {"may", "ms"}, {"tib", "bo"}, {"wel", "cy"}
+        };
+        for (String[] entry : bibliographic) {
+            map.put(entry[0], entry[1]);
+        }
+        for (String iso : Locale.getISOLanguages()) {
+            Locale locale = Locale.forLanguageTag(iso);
+            map.put(iso, iso);
+            try {
+                map.putIfAbsent(locale.getISO3Language().toLowerCase(Locale.ROOT), iso);
+            } catch (MissingResourceException ignored) {
+                // no ISO 639-2 code for this language
+            }
+            String name = locale.getDisplayLanguage(Locale.ENGLISH).toLowerCase(Locale.ROOT);
+            if (!name.isEmpty() && !name.equals(iso)) {
+                map.putIfAbsent(name, iso);
+            }
+        }
+        return map;
+    }
+
+    /**
+     * Maps an English language name, ISO 639-1 or ISO 639-2 (T or B) code to its ISO 639-1
+     * code. Qualified forms such as "English (US)" or "en-US" are reduced to their primary
+     * part first. Returns null if the value maps to no known language.
+     */
+    public static String canonical(String value) {
+        if (value == null) {
+            return null;
+        }
+        String lang = value.trim().toLowerCase(Locale.ROOT);
+        String code = LOOKUP.get(lang);
+        if (code == null) {
+            int end = lang.length();
+            for (int i = 0; i < lang.length(); i++) {
+                char c = lang.charAt(i);
+                if (c == '(' || c == '-' || c == '_') {
+                    end = i;
+                    break;
+                }
+            }
+            code = LOOKUP.get(lang.substring(0, end).trim());
+        }
+        return code;
+    }
+
+    /**
+     * Returns the configured allowed values that map to no known language; they can only
+     * match mediainfo's text exactly (case-insensitively).
+     */
+    public static List<String> unmappable(Set<String> allowed) {
+        List<String> result = new ArrayList<>();
+        if (allowed != null) {
+            for (String value : allowed) {
+                if (canonical(value) == null) {
+                    result.add(value);
+                }
+            }
+        }
+        return result;
+    }
+
     /**
      * True if the language reported by mediainfo (e.g. "German", "English (US)", "de")
-     * matches one of the allowed entries, case-insensitively. Allowed entries can be
-     * language names or ISO codes, whichever mediainfo reports.
+     * is one of the allowed languages. Both sides are normalised to ISO 639-1 so names and
+     * ISO 639-1/639-2 codes are interchangeable; qualified forms only count by their primary
+     * part, never by arbitrary tokens. Values mapping to no language fall back to an exact
+     * case-insensitive comparison.
      */
     public static boolean isAllowed(String language, Set<String> allowed) {
         String lang = language.trim().toLowerCase(Locale.ROOT);
         if (allowed.contains(lang)) {
             return true;
         }
-        for (String token : lang.split("[^a-z]+")) {
-            if (!token.isEmpty() && allowed.contains(token)) {
+        String code = canonical(lang);
+        if (code == null) {
+            return false;
+        }
+        for (String value : allowed) {
+            if (code.equals(canonical(value))) {
                 return true;
             }
         }

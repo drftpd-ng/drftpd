@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -94,5 +95,73 @@ public class AudioLanguageRuleTest {
     public void parseAllowedTrimsAndSkipsEmpty() {
         assertTrue(AudioLanguageRule.parseAllowed(" , ;").isEmpty());
         assertTrue(AudioLanguageRule.parseAllowed(null).isEmpty());
+    }
+
+    private static boolean allowed(String config, String mediainfo) {
+        return AudioLanguageRule.isAllowed(mediainfo, AudioLanguageRule.parseAllowed(config));
+    }
+
+    @Test
+    public void englishCodesAndNameAreEquivalent() {
+        for (String config : List.of("en", "eng", "English")) {
+            for (String seen : List.of("en", "eng", "English", "ENGLISH")) {
+                assertTrue(allowed(config, seen), config + " vs " + seen);
+            }
+            assertFalse(allowed(config, "German"));
+        }
+    }
+
+    @Test
+    public void germanCodesAndNameAreEquivalent() {
+        for (String config : List.of("de", "ger", "deu", "German")) {
+            for (String seen : List.of("de", "ger", "deu", "German")) {
+                assertTrue(allowed(config, seen), config + " vs " + seen);
+            }
+            assertFalse(allowed(config, "English"));
+        }
+    }
+
+    @Test
+    public void bibliographicCodes() {
+        assertTrue(allowed("fre", "French"));
+        assertTrue(allowed("dut", "nl"));
+        assertTrue(allowed("chi", "Chinese"));
+        assertTrue(allowed("wel", "cym"));
+    }
+
+    @Test
+    public void qualifiedFormsUsePrimaryPart() {
+        assertTrue(allowed("en", "English (US)"));
+        assertTrue(allowed("eng", "en-US"));
+        assertTrue(allowed("English", "en-GB"));
+    }
+
+    @Test
+    public void qualifierTokenDoesNotMatch() {
+        assertFalse(allowed("us", "English (US)"));
+        assertFalse(allowed("us", "en-US"));
+        assertFalse(allowed("gb", "English (GB)"));
+    }
+
+    @Test
+    public void unknownValuesFallBackToExactComparison() {
+        assertTrue(allowed("Klingonese", "klingonese"));
+        assertFalse(allowed("Klingonese", "Klingon"));
+        assertFalse(allowed("Klingonese", "English"));
+        assertFalse(allowed("de", "Klingonese"));
+    }
+
+    @Test
+    public void unmappableConfigValuesAreReported() {
+        Set<String> cfg = AudioLanguageRule.parseAllowed("en, German, us, Klingonese, ger");
+        assertEquals(List.of("us", "klingonese"), AudioLanguageRule.unmappable(cfg));
+        assertTrue(AudioLanguageRule.unmappable(AudioLanguageRule.parseAllowed("en,eng,de,deu,English")).isEmpty());
+        assertTrue(AudioLanguageRule.unmappable(null).isEmpty());
+    }
+
+    @Test
+    public void shouldNukeUsesLanguageMapping() {
+        assertFalse(AudioLanguageRule.shouldNuke(List.of("English"), AudioLanguageRule.parseAllowed("eng"), false));
+        assertTrue(AudioLanguageRule.shouldNuke(List.of("English (US)"), AudioLanguageRule.parseAllowed("us"), false));
     }
 }

@@ -116,6 +116,9 @@ public class MediaInfoPostHook {
             if (section.isEmpty() || allowed.isEmpty()) {
                 continue;
             }
+            for (String value : AudioLanguageRule.unmappable(allowed)) {
+                logger.warn("{}: allowed audio language '{}' is not a known language name or ISO 639 code, it will only match mediainfo output exactly", key, value);
+            }
             _allowedLangs.put(section, allowed);
             int nukex = 3;
             try {
