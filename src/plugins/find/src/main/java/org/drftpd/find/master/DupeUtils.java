@@ -133,15 +133,44 @@ public final class DupeUtils {
     }
 
     /**
-     * Read access to the file system needed while acting on dupes.
+     * A file or directory inside a directory, see {@link DupeFileSystem#children}.
+     *
+     * @param path         full path
+     * @param lastModified last modified time in milliseconds
+     * @param directory    true for a directory (links are not directories, they are not followed)
      */
-    @FunctionalInterface
+    public record Inode(String path, long lastModified, boolean directory) {
+    }
+
+    /**
+     * Read access to the file system needed to check the activity of dupes and while acting on them.
+     */
     public interface DupeFileSystem {
         /**
          * @return the current last modified time of the directory, empty when it does not exist (anymore)
          */
         OptionalLong lastModified(String path);
+
+        /**
+         * @return the files and directories directly inside the directory, empty when it does not exist (anymore)
+         */
+        Collection<Inode> children(String path);
     }
+
+    /**
+     * Maximum depth below a release walked by {@link #lastActivity}, deeper directories mean "active".
+     */
+    public static final int ACTIVITY_MAX_DEPTH = 4;
+
+    /**
+     * Maximum number of inodes below a release walked by {@link #lastActivity}, more mean "active".
+     */
+    public static final int ACTIVITY_MAX_INODES = 10_000;
+
+    /**
+     * Activity of a release whose walk hit a bound: unknown, treated as active (now) so it is never acted on.
+     */
+    public static final long ACTIVITY_UNKNOWN = Long.MAX_VALUE;
 
     /**
      * Runs the find actions on one dupe copy.
@@ -369,10 +398,16 @@ public final class DupeUtils {
     /**
      * Groups are handled one after the other, so before acting on a group its kept copy is checked again.
      *
-     * @param touched paths acted on earlier in this run
+     * The kept copy must not be inside a path acted on earlier, must still exist and must not have become
+     * active (see {@link #lastActivity}).
+     *
+     * @param touched      paths acted on earlier in this run
+     * @param now          current time in milliseconds
+     * @param minAgeMillis a kept copy modified less than this long ago is active, 0 disables it
      * @return why the group must be skipped, null when the kept copy is safe
      */
-    public static String checkKeptCopy(Copy kept, Collection<String> touched, DupeFileSystem fs) {
+    public static String checkKeptCopy(Copy kept, Collection<String> touched, DupeFileSystem fs,
+                                       long now, long minAgeMillis) {
         String keptPath = normalize(kept.path());
         for (String path : touched) {
             String p = normalize(path);
@@ -380,10 +415,77 @@ public final class DupeUtils {
                 return "kept copy " + keptPath + " is inside " + p + " which was acted on in this run";
             }
         }
-        if (fs.lastModified(keptPath).isEmpty()) {
+        OptionalLong activity = lastActivity(fs, keptPath);
+        if (activity.isEmpty()) {
             return "kept copy " + keptPath + " no longer exists";
         }
+        // An upload into the kept copy started after the scan, it may be incomplete or replaced
+        if (isActive(activity.getAsLong(), now, minAgeMillis)) {
+            return "kept copy " + keptPath + " was modified recently";
+        }
         return null;
+    }
+
+    /**
+     * The newest last modified time of the directory and everything below it.
+     * <p>
+     * A directory's last modified time only changes when a direct child is added, so an upload into a sub
+     * directory of a release (CD2, Sample, ...) would not show on the release itself. Release directories
+     * are small, but the walk is bounded defensively: when it goes deeper than {@link #ACTIVITY_MAX_DEPTH}
+     * or sees more than {@link #ACTIVITY_MAX_INODES} inodes it stops and returns {@link #ACTIVITY_UNKNOWN},
+     * which is always active, so such a release is never acted on.
+     *
+     * @return the newest last modified time, empty when the directory does not exist (anymore)
+     */
+    public static OptionalLong lastActivity(DupeFileSystem fs, String path) {
+        return lastActivity(fs, path, ACTIVITY_MAX_DEPTH, ACTIVITY_MAX_INODES);
+    }
+
+    static OptionalLong lastActivity(DupeFileSystem fs, String path, int maxDepth, int maxInodes) {
+        path = normalize(path);
+        OptionalLong own = fs.lastModified(path);
+        if (own.isEmpty()) {
+            return own;
+        }
+        long newest = own.getAsLong();
+        int inodes = 0;
+        // Breadth first: directory path and its depth below the release (the release itself is 0)
+        Deque<Map.Entry<String, Integer>> todo = new ArrayDeque<>();
+        todo.add(Map.entry(path, 0));
+        while (!todo.isEmpty()) {
+            Map.Entry<String, Integer> dir = todo.poll();
+            for (Inode child : fs.children(dir.getKey())) {
+                if (++inodes > maxInodes) {
+                    return OptionalLong.of(ACTIVITY_UNKNOWN);
+                }
+                newest = Math.max(newest, child.lastModified());
+                if (child.directory()) {
+                    if (dir.getValue() + 1 > maxDepth) {
+                        return OptionalLong.of(ACTIVITY_UNKNOWN);
+                    }
+                    todo.add(Map.entry(normalize(child.path()), dir.getValue() + 1));
+                }
+            }
+        }
+        return OptionalLong.of(newest);
+    }
+
+    /**
+     * @return the group with the last modified time of every copy replaced by its {@link #lastActivity},
+     * a copy that no longer exists keeps its last modified time (it is skipped when acting on it)
+     */
+    public static DupeGroup withActivity(DupeGroup group, DupeFileSystem fs) {
+        List<Copy> copies = new ArrayList<>();
+        Copy kept = null;
+        for (Copy copy : group.copies()) {
+            long activity = Math.max(copy.lastModified(), lastActivity(fs, copy.path()).orElse(copy.lastModified()));
+            Copy updated = new Copy(copy.path(), copy.creationTime(), activity);
+            copies.add(updated);
+            if (copy.equals(group.kept())) {
+                kept = updated;
+            }
+        }
+        return new DupeGroup(group.name(), Collections.unmodifiableList(copies), kept);
     }
 
     /**
@@ -412,10 +514,12 @@ public final class DupeUtils {
     /**
      * Lists the dupe groups and runs the actions on the copies that are not kept.
      * <p>
-     * A copy is only acted on when its status is {@link Status#DUPE}, it still exists, it was not
-     * modified within minAgeMillis (checked again right before acting) and the kept copy of its group
-     * still exists and is not inside a path acted on earlier in this run; otherwise the copy, or the
-     * whole group when the kept copy is affected, is skipped and reported.
+     * The activity of the copies is the newest last modified time of their whole tree, see
+     * {@link #lastActivity}. A copy is only acted on when its status is {@link Status#DUPE}, it still
+     * exists, it was not modified within minAgeMillis (checked again right before acting) and the kept
+     * copy of its group still exists, was not modified within minAgeMillis (checked again too) and is not
+     * inside a path acted on earlier in this run; otherwise the copy, or the whole group when the kept
+     * copy is affected, is skipped and reported.
      *
      * @param limit        maximum number of groups
      * @param quiet        only report skipped copies and the lines returned by the actor
@@ -434,6 +538,8 @@ public final class DupeUtils {
             if (results == limit) {
                 break;
             }
+            // Only the groups within the limit are walked
+            group = withActivity(group, fs);
             if (!quiet) {
                 lines.add("Dupe " + group.kept().name() + " (" + group.copies().size() + " copies):");
                 for (Copy copy : group.copies()) {
@@ -446,12 +552,12 @@ public final class DupeUtils {
                     if (status(group, copy, now, minAgeMillis) != Status.DUPE) {
                         continue;
                     }
-                    String reason = checkKeptCopy(group.kept(), touched, fs);
+                    String reason = checkKeptCopy(group.kept(), touched, fs, now, minAgeMillis);
                     if (reason != null) {
                         lines.add("  SKIP group " + group.kept().name() + ": " + reason);
                         break;
                     }
-                    OptionalLong lastModified = fs.lastModified(copy.path());
+                    OptionalLong lastModified = lastActivity(fs, copy.path());
                     if (lastModified.isEmpty()) {
                         lines.add("    SKIP " + copy.path() + ": no longer exists");
                         continue;

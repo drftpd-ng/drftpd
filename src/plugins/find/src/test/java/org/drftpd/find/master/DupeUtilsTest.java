@@ -337,11 +337,104 @@ public class DupeUtilsTest {
         FakeFs fs = new FakeFs("/A/Release-GRP", "/A/Release-GRP-PROPER");
         Copy kept = copy("/A/Release-GRP", OLD);
 
-        assertNull(DupeUtils.checkKeptCopy(kept, List.of(), fs));
-        assertNull(DupeUtils.checkKeptCopy(kept, List.of("/A/Release-GRP-PROPER", "/B/Release-GRP"), fs));
-        assertNotNull(DupeUtils.checkKeptCopy(kept, List.of("/A/Release-GRP"), fs));
-        assertNotNull(DupeUtils.checkKeptCopy(kept, List.of("/A/"), fs));
-        assertNotNull(DupeUtils.checkKeptCopy(copy("/X/Gone-GRP", OLD), List.of(), fs));
+        assertNull(DupeUtils.checkKeptCopy(kept, List.of(), fs, NOW, MIN_AGE));
+        assertNull(DupeUtils.checkKeptCopy(kept, List.of("/A/Release-GRP-PROPER", "/B/Release-GRP"), fs, NOW, MIN_AGE));
+        assertNotNull(DupeUtils.checkKeptCopy(kept, List.of("/A/Release-GRP"), fs, NOW, MIN_AGE));
+        assertNotNull(DupeUtils.checkKeptCopy(kept, List.of("/A/"), fs, NOW, MIN_AGE));
+        assertNotNull(DupeUtils.checkKeptCopy(copy("/X/Gone-GRP", OLD), List.of(), fs, NOW, MIN_AGE));
+    }
+
+    @Test
+    public void keptCopyCheckSeesActivityDeepInsideTheKeptCopy() {
+        FakeFs fs = new FakeFs("/A/Release-GRP", "/A/Release-GRP/CD2");
+        Copy kept = copy("/A/Release-GRP", OLD);
+        assertNull(DupeUtils.checkKeptCopy(kept, List.of(), fs, NOW, MIN_AGE));
+
+        fs.file("/A/Release-GRP/CD2/release-grp.r00", NOW - MINUTE);
+
+        assertEquals("kept copy /A/Release-GRP was modified recently",
+                DupeUtils.checkKeptCopy(kept, List.of(), fs, NOW, MIN_AGE));
+        assertNull(DupeUtils.checkKeptCopy(kept, List.of(), fs, NOW, 0));
+    }
+
+    // --- activity of the whole release ---
+
+    @Test
+    public void activityIsTheNewestChangeInTheWholeRelease() {
+        FakeFs fs = new FakeFs("/A/Release-GRP", "/A/Release-GRP/CD1", "/A/Release-GRP/CD2", "/A/Release-GRP/CD2/Sample");
+        fs.file("/A/Release-GRP/release-grp.nfo", OLD);
+        fs.file("/A/Release-GRP/CD2/Sample/sample.mkv", NOW - MINUTE);
+
+        assertEquals(OptionalLong.of(NOW - MINUTE), DupeUtils.lastActivity(fs, "/A/Release-GRP"));
+        assertEquals(OptionalLong.of(NOW - MINUTE), DupeUtils.lastActivity(fs, "/A/Release-GRP/"));
+        assertEquals(OptionalLong.of(OLD), DupeUtils.lastActivity(fs, "/A/Release-GRP/CD1"));
+        assertEquals(OptionalLong.empty(), DupeUtils.lastActivity(fs, "/A/Gone-GRP"));
+    }
+
+    @Test
+    public void activityWalkIsBoundedAndHittingTheBoundIsActive() {
+        FakeFs fs = new FakeFs("/A/Release-GRP", "/A/Release-GRP/1", "/A/Release-GRP/1/2", "/A/Release-GRP/1/2/3");
+        fs.file("/A/Release-GRP/f1", OLD);
+        fs.file("/A/Release-GRP/f2", OLD);
+
+        // depth: dirs up to maxDepth below the release are walked, a deeper dir means unknown
+        assertEquals(OptionalLong.of(OLD), DupeUtils.lastActivity(fs, "/A/Release-GRP", 3, 100));
+        assertEquals(OptionalLong.of(DupeUtils.ACTIVITY_UNKNOWN), DupeUtils.lastActivity(fs, "/A/Release-GRP", 2, 100));
+        // inodes: 5 inodes below the release
+        assertEquals(OptionalLong.of(OLD), DupeUtils.lastActivity(fs, "/A/Release-GRP", 10, 5));
+        assertEquals(OptionalLong.of(DupeUtils.ACTIVITY_UNKNOWN), DupeUtils.lastActivity(fs, "/A/Release-GRP", 10, 4));
+
+        assertTrue(DupeUtils.isActive(DupeUtils.ACTIVITY_UNKNOWN, NOW, MIN_AGE));
+    }
+
+    @Test
+    public void uploadIntoASubDirOfADupeIsActive() {
+        Copy kept = copy("/A/Release-GRP", OLD - 2);
+        // The release dir itself looks idle, the upload goes into CD2
+        Copy dupe = copy("/B/Release-GRP", OLD - 1);
+        List<DupeGroup> groups = DupeUtils.findDupes(List.of(kept, dupe), KeepPolicy.OLDEST, EXCLUDE);
+        FakeFs fs = new FakeFs("/A/Release-GRP", "/B/Release-GRP", "/B/Release-GRP/CD2");
+        fs.file("/B/Release-GRP/CD2/release-grp.r05", NOW - MINUTE);
+
+        RunResult result = DupeUtils.run(groups, 10, false, NOW, MIN_AGE, fs, fs::wipe);
+
+        assertTrue(fs.wiped.isEmpty());
+        assertTrue(result.lines().stream().anyMatch(l -> l.startsWith("  SKIP (active) /B/Release-GRP (created ")));
+    }
+
+    @Test
+    public void uploadIntoASubDirOfADupeAfterTheScanIsActive() {
+        Copy kept = copy("/A/Release-GRP", OLD - 3);
+        Copy first = copy("/B/Release-GRP", OLD - 2);
+        Copy second = copy("/C/Release-GRP", OLD - 1);
+        List<DupeGroup> groups = DupeUtils.findDupes(List.of(kept, first, second), KeepPolicy.OLDEST, EXCLUDE);
+        FakeFs fs = new FakeFs("/A/Release-GRP", "/B/Release-GRP", "/C/Release-GRP", "/C/Release-GRP/Sample");
+        // The upload into /C starts while /B is being acted on, after the group was listed
+        RunResult result = DupeUtils.run(groups, 10, true, NOW, MIN_AGE, fs, copy -> {
+            fs.file("/C/Release-GRP/Sample/sample.mkv", NOW);
+            return fs.wipe(copy);
+        });
+
+        assertEquals(List.of("/B/Release-GRP"), fs.wiped);
+        assertTrue(result.lines().contains("    SKIP (active) /C/Release-GRP"));
+    }
+
+    @Test
+    public void groupIsSkippedWhenKeptCopyBecomesActive() {
+        Copy kept = copy("/A/Release-GRP", OLD - 3);
+        Copy first = copy("/B/Release-GRP", OLD - 2);
+        Copy second = copy("/C/Release-GRP", OLD - 1);
+        List<DupeGroup> groups = DupeUtils.findDupes(List.of(kept, first, second), KeepPolicy.OLDEST, EXCLUDE);
+        FakeFs fs = new FakeFs("/A/Release-GRP", "/A/Release-GRP/CD1", "/B/Release-GRP", "/C/Release-GRP");
+        // An upload into the kept copy starts while the first dupe is being acted on
+        RunResult result = DupeUtils.run(groups, 10, true, NOW, MIN_AGE, fs, copy -> {
+            fs.file("/A/Release-GRP/CD1/release-grp.r00", NOW);
+            return fs.wipe(copy);
+        });
+
+        assertEquals(List.of("/B/Release-GRP"), fs.wiped);
+        assertTrue(fs.exists("/C/Release-GRP"));
+        assertTrue(result.lines().contains("  SKIP group Release-GRP: kept copy /A/Release-GRP was modified recently"));
     }
 
     // --- run ---
@@ -369,9 +462,12 @@ public class DupeUtilsTest {
         List<DupeGroup> groups = DupeUtils.findDupes(List.of(kept, dupe, active, becameActive), KeepPolicy.OLDEST, EXCLUDE);
         FakeFs fs = new FakeFs("/A/Release-GRP", "/B/Release-GRP", "/C/Release-GRP", "/D/Release-GRP");
         fs.touch("/C/Release-GRP", NOW - MINUTE);
-        fs.touch("/D/Release-GRP", NOW - MINUTE);
 
-        RunResult result = DupeUtils.run(groups, 10, false, NOW, MIN_AGE, fs, fs::wipe);
+        // The upload into /D starts while /B is being acted on, after the group was listed
+        RunResult result = DupeUtils.run(groups, 10, false, NOW, MIN_AGE, fs, copy -> {
+            fs.touch("/D/Release-GRP", NOW - MINUTE);
+            return fs.wipe(copy);
+        });
 
         assertEquals(List.of("/B/Release-GRP"), fs.wiped);
         assertTrue(result.lines().stream().anyMatch(l -> l.startsWith("  SKIP (active) /C/Release-GRP (created ")));
@@ -426,9 +522,11 @@ public class DupeUtilsTest {
 
     /**
      * In memory directory tree, wiping a directory removes everything below it.
+     * Like the real file system, adding a file only changes the last modified time of its own directory.
      */
     private static class FakeFs implements DupeUtils.DupeFileSystem {
         private final Map<String, Long> _dirs = new HashMap<>();
+        private final Map<String, Long> _files = new HashMap<>();
         final List<String> wiped = new ArrayList<>();
 
         FakeFs(String... paths) {
@@ -441,6 +539,11 @@ public class DupeUtilsTest {
             _dirs.put(path, lastModified);
         }
 
+        void file(String path, long lastModified) {
+            _files.put(path, lastModified);
+            _dirs.put(path.substring(0, path.lastIndexOf('/')), lastModified);
+        }
+
         boolean exists(String path) {
             return _dirs.containsKey(path);
         }
@@ -451,9 +554,26 @@ public class DupeUtilsTest {
             return lastModified == null ? OptionalLong.empty() : OptionalLong.of(lastModified);
         }
 
+        @Override
+        public Collection<DupeUtils.Inode> children(String path) {
+            List<DupeUtils.Inode> children = new ArrayList<>();
+            _dirs.forEach((p, lastModified) -> {
+                if (p.startsWith(path + "/") && p.indexOf('/', path.length() + 1) < 0) {
+                    children.add(new DupeUtils.Inode(p, lastModified, true));
+                }
+            });
+            _files.forEach((p, lastModified) -> {
+                if (p.startsWith(path + "/") && p.indexOf('/', path.length() + 1) < 0) {
+                    children.add(new DupeUtils.Inode(p, lastModified, false));
+                }
+            });
+            return children;
+        }
+
         List<String> wipe(Copy copy) {
             wiped.add(copy.path());
             _dirs.keySet().removeIf(p -> p.equals(copy.path()) || p.startsWith(copy.path() + "/"));
+            _files.keySet().removeIf(p -> p.startsWith(copy.path() + "/"));
             return List.of("    Wiped " + copy.path());
         }
     }

@@ -379,11 +379,31 @@ public class Find extends CommandInterface {
             return response;
         }
 
-        DupeUtils.DupeFileSystem fs = path -> {
-            try {
-                return OptionalLong.of(new DirectoryHandle(path).lastModified());
-            } catch (FileNotFoundException e) {
-                return OptionalLong.empty();
+        DupeUtils.DupeFileSystem fs = new DupeUtils.DupeFileSystem() {
+            @Override
+            public OptionalLong lastModified(String path) {
+                try {
+                    return OptionalLong.of(new DirectoryHandle(path).lastModified());
+                } catch (FileNotFoundException e) {
+                    return OptionalLong.empty();
+                }
+            }
+
+            @Override
+            public Collection<DupeUtils.Inode> children(String path) {
+                List<DupeUtils.Inode> children = new ArrayList<>();
+                try {
+                    for (InodeHandle inode : new DirectoryHandle(path).getInodeHandlesUnchecked()) {
+                        try {
+                            children.add(new DupeUtils.Inode(inode.getPath(), inode.lastModified(), inode.isDirectory()));
+                        } catch (FileNotFoundException e) {
+                            // Removed while walking, nothing to check
+                        }
+                    }
+                } catch (FileNotFoundException e) {
+                    return List.of();
+                }
+                return children;
             }
         };
         DupeUtils.DupeActor actor = actions.isEmpty() ? null : copy -> {
