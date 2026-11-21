@@ -55,6 +55,8 @@ import java.io.*;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLSocket;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -99,6 +101,9 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
     private final transient LinkedBlockingQueue<FileHandle> _crcQueue;
     private transient RemergeThread _remergeThread;
     private transient CrcThread _crcThread;
+    private transient volatile String _tlsProtocol;
+    private transient volatile String _tlsCipherSuite;
+    private transient volatile String _remoteAddress;
 
     public RemoteSlave(String name) {
         _name = name;
@@ -586,6 +591,17 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
                                      ObjectOutputStream out) {
         _socket = socket;
         _sout = out;
+
+        // Extract TLS session info if this is an SSL socket
+        if (socket instanceof SSLSocket sslSocket) {
+            SSLSession session = sslSocket.getSession();
+            _tlsProtocol = session.getProtocol();
+            _tlsCipherSuite = session.getCipherSuite();
+        } else {
+            _tlsProtocol = "N/A";
+            _tlsCipherSuite = "N/A";
+        }
+        _remoteAddress = socket.getInetAddress().getHostAddress();
         _sin = in;
         if (_indexPool == null) {
             _indexPool = new LinkedBlockingDeque<>(256);
@@ -782,6 +798,33 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
         return ((_socket != null) && _socket.isConnected());
     }
 
+    /**
+     * Returns the TLS protocol used for the connection to this slave.
+     *
+     * @return The TLS protocol (e.g., "TLSv1.3") or "N/A" if not available
+     */
+    public String getTlsProtocol() {
+        return _tlsProtocol != null ? _tlsProtocol : "N/A";
+    }
+
+    /**
+     * Returns the TLS cipher suite used for the connection to this slave.
+     *
+     * @return The cipher suite or "N/A" if not available
+     */
+    public String getTlsCipherSuite() {
+        return _tlsCipherSuite != null ? _tlsCipherSuite : "N/A";
+    }
+
+    /**
+     * Returns the remote IP address of this slave.
+     *
+     * @return The remote IP address or "N/A" if not available
+     */
+    public String getRemoteAddress() {
+        return _remoteAddress != null ? _remoteAddress : "N/A";
+    }
+
     public long getCheckSumForPath(String path) throws IOException,
             SlaveUnavailableException {
         try {
@@ -976,6 +1019,10 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
             }
             _socket = null;
         }
+        // Connection details are only meaningful while connected, do not keep stale values
+        _tlsProtocol = null;
+        _tlsCipherSuite = null;
+        _remoteAddress = null;
         if (_indexWithCommands != null)
             _indexWithCommands.clear();
         if (_transfers != null)
