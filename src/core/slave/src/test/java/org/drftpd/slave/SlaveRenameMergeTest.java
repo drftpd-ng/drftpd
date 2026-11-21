@@ -96,49 +96,81 @@ class SlaveRenameMergeTest {
         assertFalse(from.exists());
     }
 
+    /** The single entry in dir whose name starts with prefix + ".drftpd-conflict-". */
+    private Path aside(String dir, String prefix) throws IOException {
+        try (var s = Files.list(tmp.resolve(dir))) {
+            var found = s.filter(p -> p.getFileName().toString().startsWith(prefix + ".drftpd-conflict-")).toList();
+            assertEquals(1, found.size());
+            return found.get(0);
+        }
+    }
+
     @Test
-    void fileVersusDirectoryIsLeftInPlace() throws IOException {
+    void directoryInTheWayOfAFileIsMovedAside() throws IOException {
         write("src/clash", "file");
         write("dst/clash/inner.txt", "inner");
         write("src/ok.txt", "ok");
         assertEquals(1, Slave.mergeInto(tmp.resolve("src").toFile(), tmp.resolve("dst").toFile()));
-        assertEquals("file", read("src/clash"));
-        assertEquals("inner", read("dst/clash/inner.txt"));
+        // the tracked source ends up at the destination, the leftover is kept next to it
+        assertEquals("file", read("dst/clash"));
+        assertEquals("inner", Files.readString(aside("dst", "clash").resolve("inner.txt")));
         assertEquals("ok", read("dst/ok.txt"));
+        // nothing is left at the source, so deleting the old path later can't remove the tracked copy
+        assertFalse(Files.exists(tmp.resolve("src")));
     }
 
     @Test
-    void directoryVersusFileIsLeftInPlace() throws IOException {
+    void fileInTheWayOfADirectoryIsMovedAside() throws IOException {
         write("src/clash/inner.txt", "inner");
         write("dst/clash", "file");
         assertEquals(1, Slave.mergeInto(tmp.resolve("src").toFile(), tmp.resolve("dst").toFile()));
-        assertEquals("inner", read("src/clash/inner.txt"));
-        assertEquals("file", read("dst/clash"));
+        assertEquals("inner", read("dst/clash/inner.txt"));
+        assertEquals("file", Files.readString(aside("dst", "clash")));
+        assertFalse(Files.exists(tmp.resolve("src")));
     }
 
     @Test
-    void topLevelTypeMismatchIsLeftAlone() throws IOException {
+    void topLevelTypeMismatchMovesDestinationAside() throws IOException {
         File from = write("a.txt", "file");
-        File to = dir("d");
-        assertEquals(1, Slave.mergeInto(from, to));
-        assertTrue(from.exists());
-        assertTrue(to.isDirectory());
+        write("d/x.txt", "x");
+        assertEquals(1, Slave.mergeInto(from, tmp.resolve("d").toFile()));
+        assertFalse(from.exists());
+        assertEquals("file", read("d"));
+        assertEquals("x", Files.readString(aside("", "d").resolve("x.txt")));
     }
 
     @Test
-    void sourceDirectoryRemovedWhenEmptiedAndKeptOnConflict() throws IOException {
+    void sourceDirectoryRemovedWhenEmptied() throws IOException {
         write("s1/a.txt", "a");
-        dir("d1");
+        write("s1/sub/b.txt", "b");
+        write("d1/sub/c.txt", "c");
         assertEquals(0, Slave.mergeInto(tmp.resolve("s1").toFile(), tmp.resolve("d1").toFile()));
         assertFalse(Files.exists(tmp.resolve("s1")));
+        assertEquals("a", read("d1/a.txt"));
+        assertEquals("b", read("d1/sub/b.txt"));
+        assertEquals("c", read("d1/sub/c.txt"));
+    }
 
-        write("s2/a.txt", "a");
-        write("s2/clash", "x");
-        write("d2/clash/y.txt", "y");
-        assertEquals(1, Slave.mergeInto(tmp.resolve("s2").toFile(), tmp.resolve("d2").toFile()));
-        assertTrue(Files.isDirectory(tmp.resolve("s2")));
-        assertEquals("x", read("s2/clash"));
-        assertEquals("a", read("d2/a.txt"));
+    @Test
+    void missingSourceIsSkippedSoAMergeCanBeRunAgain() throws IOException {
+        write("src/a.txt", "a");
+        dir("dst");
+        assertEquals(0, Slave.mergeInto(tmp.resolve("src").toFile(), tmp.resolve("dst").toFile()));
+        // a second run (the master requeues a rename that failed halfway) finds the source gone
+        assertEquals(0, Slave.mergeInto(tmp.resolve("src").toFile(), tmp.resolve("dst").toFile()));
+        assertEquals("a", read("dst/a.txt"));
+    }
+
+    @Test
+    void halfDoneMergeIsCompletedByASecondRun() throws IOException {
+        write("src/a.txt", "a");
+        write("src/b.txt", "b");
+        write("dst/a.txt", "a");   // a.txt was already moved by the first, interrupted run
+        Files.delete(tmp.resolve("src/a.txt"));
+        assertEquals(0, Slave.mergeInto(tmp.resolve("src").toFile(), tmp.resolve("dst").toFile()));
+        assertEquals("a", read("dst/a.txt"));
+        assertEquals("b", read("dst/b.txt"));
+        assertFalse(Files.exists(tmp.resolve("src")));
     }
 
     @Test
@@ -147,11 +179,12 @@ class SlaveRenameMergeTest {
         dir("src");
         Files.createSymbolicLink(tmp.resolve("src/link"), tmp.resolve("outside"));
         write("dst/link/other.txt", "o");
-        // the source link meets a real directory: a conflict, and nothing behind the link is touched
+        // the source link meets a real directory: the directory is moved aside and the link moved in,
+        // nothing behind the link is touched
         assertEquals(1, Slave.mergeInto(tmp.resolve("src").toFile(), tmp.resolve("dst").toFile()));
         assertEquals("k", read("outside/keep.txt"));
-        assertTrue(Files.isSymbolicLink(tmp.resolve("src/link")));
-        assertEquals("o", read("dst/link/other.txt"));
+        assertTrue(Files.isSymbolicLink(tmp.resolve("dst/link")));
+        assertEquals("o", Files.readString(aside("dst", "link").resolve("other.txt")));
     }
 
     @Test
