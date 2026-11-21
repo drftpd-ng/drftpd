@@ -32,6 +32,8 @@ max.iterations=5
 # date: Delete files based on wipeAfter per section
 # space: Delete files based on keepFree
 # Default: [disabled]
+# Note: a slave is never cleaned while it is remerging. With partial.remerge.mode=instant in master.conf
+# a slave can be online during a long remerge, so its disk can fill up before cleaning resumes.
 mode=disabled
 
 # AutoFreeSpace will try to keep each slave above this number (Only used if mode = space).

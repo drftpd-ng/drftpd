@@ -150,6 +150,12 @@ public class AutoFreeSpace implements PluginInterface {
                         logger.debug("Skipping [{}] as it is excluded", remoteSlave.getName());
                         continue;
                     }
+                    // With partial.remerge.mode=instant a slave is available while still remerging,
+                    // and its files are not all in the VFS yet: skip it until the remerge finishes.
+                    if (remoteSlave.isRemerging()) {
+                        logger.debug("Skipping [{}] as it is currently remerging", remoteSlave.getName());
+                        continue;
+                    }
 
                     try {
                         if (AutoFreeSpaceSettings.getSettings().getMode().equals(AutoFreeSpaceSettings.MODE_DATE)) {
