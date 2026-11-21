@@ -17,6 +17,9 @@
  */
 package org.drftpd.zipscript.master.flac.list;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import org.drftpd.common.util.ConfigLoader;
 import org.drftpd.master.commands.list.ListElementsContainer;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
@@ -34,6 +37,8 @@ import java.util.*;
  * @author norox
  */
 public class ZipscriptFlacStatusBar implements ZipscriptListStatusBarInterface {
+    private static final Logger logger = LogManager.getLogger(ZipscriptFlacStatusBar.class);
+
 
     public ArrayList<String> getStatusBarEntry(DirectoryHandle dir, ListElementsContainer container) throws NoEntryAvailableException {
         ResourceBundle bundle = container.getCommandManager().getResourceBundle();
@@ -58,7 +63,8 @@ public class ZipscriptFlacStatusBar implements ZipscriptListStatusBarInterface {
                 statusBarEntries.add(container.getSession().jprintf(bundle, "statusbar.vorbistag", env, container.getUser()));
                 return statusBarEntries;
             } catch (IOException | NoAvailableSlaveException e) {
-                // Error fetching flac info, ignore
+                // Error fetching flac info, ignore (debug only: this runs on every directory listing)
+                logger.debug("Unable to get flac info for status bar in {}: {}", dir.getPath(), e.getMessage());
             }
         }
         throw new NoEntryAvailableException();

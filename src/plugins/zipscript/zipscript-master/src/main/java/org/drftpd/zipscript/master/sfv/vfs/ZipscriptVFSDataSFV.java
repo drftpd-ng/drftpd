@@ -98,7 +98,7 @@ public class ZipscriptVFSDataSFV {
                     sfvInfo = fetchSFVInfoFromIndex(rslave, index);
                 } catch (NoAvailableSlaveException | RemoteIOException | SlaveUnavailableException e) {
                     // There is only 1 .sfv file if it fails throw exception
-                    throw new IOException(e.getMessage());
+                    throw new IOException(e.getMessage(), e);
                 }
 
                 // If we have valid sfvInfo stop the loop

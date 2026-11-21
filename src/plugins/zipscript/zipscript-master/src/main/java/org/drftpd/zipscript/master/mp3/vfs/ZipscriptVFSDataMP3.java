@@ -98,10 +98,13 @@ public class ZipscriptVFSDataMP3 {
                         mp3info = fetchMP3InfoFromIndex(rslave, index);
                     } catch (NoAvailableSlaveException e) {
                         // Not an issue, file was available but slave dropped, try next file
+                        logger.debug("No available slave to retrieve MP3INFO for {}, trying next file", file.getPath());
                     } catch (SlaveUnavailableException e) {
                         // okay, it went offline while trying, try next file
+                        logger.debug("Slave went offline while retrieving MP3INFO for {}, trying next file", file.getPath());
                     } catch (RemoteIOException e) {
                         // continue, the next mp3 might work
+                        logger.warn("Slave failed to retrieve MP3INFO for {}: {}", file.getPath(), e.getCause() != null ? e.getCause().getMessage() : e.getMessage());
                     }
                 }
 
@@ -125,7 +128,7 @@ public class ZipscriptVFSDataMP3 {
                     String index = getMP3Issuer().issueMP3FileToSlave(rslave, file.getPath());
                     mp3info = fetchMP3InfoFromIndex(rslave, index);
                 } catch (SlaveUnavailableException | RemoteIOException e) {
-                    throw new IOException(e.getMessage());
+                    throw new IOException(e.getMessage(), e);
                 }
             }
 
