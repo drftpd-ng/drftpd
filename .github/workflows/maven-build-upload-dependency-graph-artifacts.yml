@@ -43,4 +43,7 @@ jobs:
         path: runtime/slave/
 
     - name: Update dependency graph
+      # Pull requests from forks only get a read-only token, so submitting the graph fails there with
+      # HTTP 403. The graph only matters for master anyway.
+      if: github.event_name == 'push'
       uses: advanced-security/maven-dependency-submission-action@b275d12641ac2d2108b2cbb7598b154ad2f2cee8 # v5.0.0
