@@ -45,6 +45,7 @@ public class IMDBConfig {
     private String _exclude;
     private final ArrayList<String> _filters = new ArrayList<>();
     private boolean _bar_enabled, _bar_directory, _sRelease;
+    private String _baseUrl, _searchUrl;
 
     private final IMDBThread _imdbThread = new IMDBThread();
     private final ConcurrentLinkedQueue<DirectoryHandle> _parseQueue = new ConcurrentLinkedQueue<>();
@@ -70,6 +71,8 @@ public class IMDBConfig {
         addSectionsFromConf(cfg, "search.hd.section.", _sHDSections);
         _sRelease = cfg.getProperty("search.release", "false").equalsIgnoreCase("true");
         _exclude = cfg.getProperty("exclude", "");
+        _baseUrl = cfg.getProperty("url.base", "https://imdb.com").trim();
+        _searchUrl = cfg.getProperty("url.search", "https://imdb.com/find?s=all&q=").trim();
         _startDelay = Integer.parseInt(cfg.getProperty("delay.start", "5"));
         _endDelay = Integer.parseInt(cfg.getProperty("delay.end", "10"));
         if (_startDelay >= _endDelay) {
@@ -113,6 +116,14 @@ public class IMDBConfig {
 
     public boolean searchRelease() {
         return _sRelease;
+    }
+
+    public String getBaseUrl() {
+        return _baseUrl;
+    }
+
+    public String getSearchUrl() {
+        return _searchUrl;
     }
 
     public String getExclude() {
