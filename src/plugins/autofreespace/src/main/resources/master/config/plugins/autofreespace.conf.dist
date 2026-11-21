@@ -40,7 +40,21 @@ mode=disabled
 # Default: [100GB]
 keepFree=100GB
 
-# Do not delete releases younger than X minutes (wipeAfter only used if mode = date).
+# Space mode only: when no X.section/X.path entry is written below, delete from every section.
+# WARNING: this includes PRE, REQUESTS, group folders and any other section, not only release sections.
+# It is ignored as soon as one entry is written, even an invalid one (e.g. a mistyped section name).
+# When false and no entry is written, space mode deletes nothing.
+# Default: [false]
+wipe.all.sections=false
+
+# Which releases to consider, one entry per number (1, 2, 3...).
+# Each entry uses either X.section=<section name> or X.path=<VFS path>.
+# A path can use * to match every subdirectory at that level, e.g. /MP3/* for dated MP3 directories.
+# The root directory (/) can't be used, and neither can '.' or '..' in a path: such an entry is skipped.
+# X.wipeAfter: do not delete releases younger than X minutes.
+# wipeAfter is required in date mode: an entry without a valid wipeAfter is skipped.
 #1.section=SECTION1
 #1.wipeAfter=43200
+#2.path=/MP3/*
+#2.wipeAfter=43200
 
