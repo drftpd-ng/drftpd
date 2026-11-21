@@ -38,12 +38,26 @@ public class ServerConfig {
 
     private final X509TrustManager _trustManager;
 
+    private final String _saslUsername;
+
+    private final String _saslPassword;
+
+    private final boolean _saslRequired;
+
     public ServerConfig(String hostName, int port, String password, boolean ssl, X509TrustManager trustManager) {
+        this(hostName, port, password, ssl, trustManager, null, null, false);
+    }
+
+    public ServerConfig(String hostName, int port, String password, boolean ssl, X509TrustManager trustManager,
+                        String saslUsername, String saslPassword, boolean saslRequired) {
         _hostName = hostName;
         _port = port;
         _password = password;
         _ssl = ssl;
         _trustManager = trustManager;
+        _saslUsername = saslUsername;
+        _saslPassword = saslPassword;
+        _saslRequired = saslRequired;
     }
 
     public String getHostName() {
@@ -67,5 +81,28 @@ public class ServerConfig {
 
     public boolean isSsl() {
         return _ssl;
+    }
+
+    public String getSaslUsername() {
+        return _saslUsername;
+    }
+
+    public String getSaslPassword() {
+        return _saslPassword;
+    }
+
+    /**
+     * @return true when SASL must succeed, otherwise registration continues without it on failure
+     */
+    public boolean isSaslRequired() {
+        return _saslRequired;
+    }
+
+    /**
+     * @return true when both a SASL username and password are configured
+     */
+    public boolean isSaslEnabled() {
+        return _saslUsername != null && !_saslUsername.isEmpty()
+                && _saslPassword != null && !_saslPassword.isEmpty();
     }
 }

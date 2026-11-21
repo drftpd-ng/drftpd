@@ -43,6 +43,7 @@ import javax.net.ssl.SSLSocket;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.*;
@@ -264,6 +265,14 @@ public class SiteBot implements ReplyConstants, Runnable {
         if (_password != null && !_password.equals("")) {
             OutputThread.sendRawLine(this, bwriter, "PASS " + _password);
         }
+        // IRCv3 capability negotiation and SASL PLAIN, only when configured for this server.
+        // CAP LS goes after PASS and before NICK/USER so the server holds registration until CAP END.
+        SaslNegotiator sasl = null;
+        if (serverConfig.isSaslEnabled()) {
+            sasl = new SaslNegotiator(serverConfig.getSaslUsername(), serverConfig.getSaslPassword(),
+                    serverConfig.isSaslRequired(), SaslNegotiator.DEFAULT_TIMEOUT_MILLIS);
+            sendRawLines(bwriter, sasl.start(System.currentTimeMillis()));
+        }
         String nick = _config.getNick();
         OutputThread.sendRawLine(this, bwriter, "NICK " + nick);
         OutputThread.sendRawLine(this, bwriter, "USER " + _config.getUser() + " 8 * :" + _config.getName());
@@ -277,12 +286,36 @@ public class SiteBot implements ReplyConstants, Runnable {
         // Read stuff back from the server to see if we connected.
         String line;
         int tries = 1;
-        while ((line = breader.readLine()) != null) {
+        while ((line = readRegistrationLine(socket, breader, bwriter, sasl)) != null) {
 
             // Quickly process PING requests otherwise we might be kicked offline during our connecting phase
             if (line.startsWith("PING ")) {
                 this.onServerPing(line.substring(5));
                 continue;
+            }
+            if (sasl != null) {
+                boolean consumed = false;
+                if (!line.isEmpty()) {
+                    SaslNegotiator.Result result = sasl.handleLine(line, System.currentTimeMillis());
+                    if (result.isConsumed()) {
+                        logger.debug("[RAW INPUT]: {}", SaslNegotiator.maskForLog(line));
+                        consumed = true;
+                    }
+                    sendRawLines(bwriter, result.getLinesToSend());
+                }
+                if (sasl.isAborted()) {
+                    // sasl.required=true and SASL did not succeed: drop this server and try the next one
+                    logger.warn("SASL required but failed on {}:{} ({}), retrying or trying next server if one is available",
+                            _server, _port, sasl.getFailureReason());
+                    OutputThread.sendRawLine(this, bwriter, "QUIT :SASL authentication failed");
+                    socket.close();
+                    _inputThread = null;
+                    reconnect();
+                    return;
+                }
+                if (consumed || line.isEmpty()) {
+                    continue;
+                }
             }
             storedCommands.add(line);
 
@@ -375,6 +408,36 @@ public class SiteBot implements ReplyConstants, Runnable {
         }
 
         this.onConnect();
+    }
+
+    /**
+     * Reads one line during registration. While a SASL negotiation is pending the read is bounded
+     * by the negotiation timeout; when it expires the negotiator falls back (CAP END) or aborts
+     * and an empty line is returned so the caller can check the negotiator state.
+     */
+    private String readRegistrationLine(Socket socket, BufferedReader breader, BufferedWriter bwriter,
+                                        SaslNegotiator sasl) throws IOException {
+        if (sasl == null) {
+            return breader.readLine();
+        }
+        if (!sasl.isPending()) {
+            socket.setSoTimeout(0);
+            return breader.readLine();
+        }
+        long now = System.currentTimeMillis();
+        socket.setSoTimeout((int) Math.max(1L, Math.min(Integer.MAX_VALUE, sasl.millisUntilTimeout(now))));
+        try {
+            return breader.readLine();
+        } catch (SocketTimeoutException e) {
+            sendRawLines(bwriter, sasl.checkTimeout(System.currentTimeMillis()));
+            return "";
+        }
+    }
+
+    private void sendRawLines(BufferedWriter bwriter, List<String> lines) {
+        for (String l : lines) {
+            OutputThread.sendRawLine(this, bwriter, l);
+        }
     }
 
     /**
