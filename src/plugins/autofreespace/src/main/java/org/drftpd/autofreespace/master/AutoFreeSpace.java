@@ -237,8 +237,6 @@ public class AutoFreeSpace implements PluginInterface {
                     break;
                 }
 
-                long freespaceSaved = freespace;
-
                 try {
                     InodeHandle oldestRelease = getOldestRelease(remoteSlave);
                     if (oldestRelease == null) {
@@ -251,10 +249,17 @@ public class AutoFreeSpace implements PluginInterface {
                         logger.warn("AUTODELETE: (OnlyAnnounce) Would have deleted {}", oldestRelease.getName());
                         checkedReleases.add(oldestRelease.getName());
                     } else {
+                        // Measure before deleting: afterwards the files are gone from the VFS
+                        long sizeOnSlave = getSizeOnSlave(oldestRelease, remoteSlave);
                         logger.info("AUTODELETE: Removing {}", oldestRelease.getName());
                         oldestRelease.deleteUnchecked(); // Throws the FileNotFoundException
                         freespace = remoteSlave.getSlaveStatus().getDiskSpaceAvailable();
-                        logger.info("AUTODELETE: Removed {}, cleared {} on {}", oldestRelease.getName(), Bytes.formatBytes(remoteSlave.getSlaveStatus().getDiskSpaceAvailable() - freespace), remoteSlave.getName());
+                        logger.info("AUTODELETE: Removed {}, cleared {} on {}", oldestRelease.getName(), Bytes.formatBytes(sizeOnSlave), remoteSlave.getName());
+                        if (sizeOnSlave == 0) {
+                            logger.error("AUTODELETE: Removed {} but it held 0 bytes on slave {}, nothing was freed. Stopping iteration", oldestRelease.getName(), remoteSlave.getName());
+                            deletedCount++;
+                            break;
+                        }
                     }
                     deletedCount++;
                 } catch (FileNotFoundException e) {
@@ -262,12 +267,6 @@ public class AutoFreeSpace implements PluginInterface {
                     break;
                 }
 
-                if (freespaceSaved == freespace) {
-                    if (!AutoFreeSpaceSettings.getSettings().getOnlyAnnounce()) {
-                        logger.warn("AUTODELETE: We tried to clean slave {}, but free space has not changed. Stopping iteration", remoteSlave.getName());
-                        break;
-                    }
-                }
             }
             if (deletedCount > 0) {
                 if (deletedCount >= maxIterations) {
@@ -277,6 +276,33 @@ public class AutoFreeSpace implements PluginInterface {
             } else {
                 logger.warn("AUTODELETE: Found 0 oldest releases to clean for slave {}", remoteSlave.getName());
             }
+        }
+
+        /**
+         * Returns the total size of the files of inode that are stored on slave.
+         */
+        private long getSizeOnSlave(InodeHandle inode, RemoteSlave slave) {
+            long size = 0;
+            try {
+                if (inode.isFile()) {
+                    if (((FileHandle) inode).getAvailableSlaves().contains(slave)) {
+                        size = inode.getSize();
+                    }
+                } else if (inode.isDirectory()) {
+                    for (FileHandle file : ((DirectoryHandle) inode).getAllFilesRecursiveUnchecked()) {
+                        try {
+                            if (file.getAvailableSlaves().contains(slave)) {
+                                size += file.getSize();
+                            }
+                        } catch (NoAvailableSlaveException | FileNotFoundException e) {
+                            // File not on any online slave or already gone: it frees nothing here
+                        }
+                    }
+                }
+            } catch (NoAvailableSlaveException | FileNotFoundException e) {
+                // Inode already gone or not on any online slave
+            }
+            return size;
         }
 
         private boolean checkInvalidName(String name) {
