@@ -204,7 +204,10 @@ public class SaslNegotiator {
             case "421":
             case "451":
                 // 421 ERR_UNKNOWNCOMMAND / 451 ERR_NOTREGISTERED for CAP: no CAP support, registration not held.
-                if (params.size() >= 2 && params.get(1).equalsIgnoreCase("CAP")) {
+                // While waiting for the LS reply any 421/451 counts, as some servers answer a bare
+                // ":srv 451 * :You have not registered" without naming the command.
+                if (_state == State.CAP_LS
+                        || (params.size() >= 2 && params.get(1).equalsIgnoreCase("CAP"))) {
                     fail("server does not support capability negotiation (" + command + ")", false);
                     return new Result(true, Collections.emptyList());
                 }

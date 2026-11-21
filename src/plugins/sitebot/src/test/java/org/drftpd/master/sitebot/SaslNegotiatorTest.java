@@ -241,10 +241,47 @@ public class SaslNegotiatorTest {
     }
 
     @Test
-    public void unrelated421NotConsumed() {
+    public void unrelated421AfterLsNotConsumed() {
         SaslNegotiator n = start(false);
-        assertFalse(feed(n, ":irc.example.net 421 * FOO :Unknown command").isConsumed());
+        feed(n, ":irc.example.net CAP * LS :sasl");
+        assertEquals(SaslNegotiator.State.CAP_REQ, n.getState());
+        assertFalse(feed(n, ":irc.example.net 421 drftpd FOO :Unknown command").isConsumed());
         assertTrue(n.isPending());
+    }
+
+    @Test
+    public void bare451DuringLsMeansNoCapSupport() {
+        SaslNegotiator n = start(false);
+        assertTrue(feed(n, ":irc.example.net 451 * :You have not registered").isConsumed());
+        // registration is not held by a server without CAP: no CAP END
+        assertEquals(List.of("CAP LS 302"), sent);
+        assertEquals(SaslNegotiator.State.FAILED, n.getState());
+        assertFalse(n.isCapEndSent());
+        assertFalse(feed(n, ":irc.example.net 001 drftpd :Welcome").isConsumed());
+    }
+
+    @Test
+    public void any421DuringLsMeansNoCapSupport() {
+        SaslNegotiator n = start(false);
+        assertTrue(feed(n, ":irc.example.net 421 * FOO :Unknown command").isConsumed());
+        assertEquals(List.of("CAP LS 302"), sent);
+        assertEquals(SaslNegotiator.State.FAILED, n.getState());
+    }
+
+    @Test
+    public void bare451DuringLsRequiredAborts() {
+        SaslNegotiator n = start(true);
+        assertTrue(feed(n, ":irc.example.net 451 * :You have not registered").isConsumed());
+        assertTrue(n.isAborted());
+        assertEquals(List.of("CAP LS 302"), sent);
+    }
+
+    @Test
+    public void noCapSupport451Cap() {
+        SaslNegotiator n = start(false);
+        assertTrue(feed(n, ":irc.example.net 451 CAP :You have not registered").isConsumed());
+        assertEquals(SaslNegotiator.State.FAILED, n.getState());
+        assertEquals(List.of("CAP LS 302"), sent);
     }
 
     @Test

@@ -51,7 +51,7 @@ public class SiteBotSaslConnectTest {
 
     private static final String PASSWORD = "s3cret";
 
-    enum Mode { SASL_OK, SASL_FAIL, NO_CAP }
+    enum Mode { SASL_OK, SASL_FAIL, NO_CAP, BARE_451 }
 
     private ServerSocket _serverSocket;
     private Thread _serverThread;
@@ -133,6 +133,23 @@ public class SiteBotSaslConnectTest {
         assertFalse(lines.contains("CAP END"));
         assertTrue(lines.contains("WHOIS drftpd"));
         assertEquals("drftpd!drftpd@test.host", _bot.getHostMask());
+    }
+
+    @Test
+    @Timeout(20)
+    public void serverAnsweringBare451() {
+        // ":srv 451 * :You have not registered" without the command name must not abort the login
+        assertDoesNotThrow(() -> {
+            startServer(Mode.BARE_451);
+            connectBot(false);
+        });
+
+        List<String> lines = _connections.get(0);
+        assertEquals("CAP LS 302", lines.get(0));
+        assertFalse(lines.contains("CAP END"));
+        assertTrue(lines.contains("WHOIS drftpd"));
+        assertEquals("drftpd!drftpd@test.host", _bot.getHostMask());
+        assertEquals(1, _connections.size());
     }
 
     private void connectBot(boolean required) throws Exception {
@@ -218,6 +235,8 @@ public class SiteBotSaslConnectTest {
                 if (line.startsWith("CAP LS")) {
                     if (mode == Mode.NO_CAP) {
                         reply.add(":fake.ircd 421 * CAP :Unknown command");
+                    } else if (mode == Mode.BARE_451) {
+                        reply.add(":fake.ircd 451 * :You have not registered");
                     } else {
                         capHeld = true;
                         reply.add(":fake.ircd CAP * LS * :multi-prefix away-notify");
