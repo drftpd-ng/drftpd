@@ -51,6 +51,12 @@ public final class AudioLanguageRule {
         return allowed;
     }
 
+    /**
+     * Deprecated ISO 639-1 codes that older JDKs still report from Locale.getISOLanguages()
+     * and that may be used in configs. They are normalised to their current codes.
+     */
+    private static final Map<String, String> LEGACY_CODES = Map.of("iw", "he", "in", "id", "ji", "yi");
+
     private static final Map<String, String> LOOKUP = buildLookup();
 
     private static Map<String, String> buildLookup() {
@@ -66,16 +72,20 @@ public final class AudioLanguageRule {
         }
         for (String iso : Locale.getISOLanguages()) {
             Locale locale = Locale.forLanguageTag(iso);
-            map.put(iso, iso);
+            String code = LEGACY_CODES.getOrDefault(iso, iso);
+            map.put(iso, code);
             try {
-                map.putIfAbsent(locale.getISO3Language().toLowerCase(Locale.ROOT), iso);
+                map.putIfAbsent(locale.getISO3Language().toLowerCase(Locale.ROOT), code);
             } catch (MissingResourceException ignored) {
                 // no ISO 639-2 code for this language
             }
             String name = locale.getDisplayLanguage(Locale.ENGLISH).toLowerCase(Locale.ROOT);
-            if (!name.isEmpty() && !name.equals(iso)) {
-                map.putIfAbsent(name, iso);
+            if (!name.isEmpty() && !name.equals(code)) {
+                map.putIfAbsent(name, code);
             }
+        }
+        for (Map.Entry<String, String> legacy : LEGACY_CODES.entrySet()) {
+            map.put(legacy.getKey(), legacy.getValue());
         }
         return map;
     }

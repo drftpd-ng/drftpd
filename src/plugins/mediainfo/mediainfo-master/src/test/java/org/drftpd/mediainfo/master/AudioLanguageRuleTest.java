@@ -160,6 +160,39 @@ public class AudioLanguageRuleTest {
     }
 
     @Test
+    public void legacyHebrewCodeMatchesModernCodeAndName() {
+        for (String seen : List.of("he", "iw", "Hebrew", "HEBREW")) {
+            assertEquals("he", AudioLanguageRule.canonical(seen), seen);
+            for (String config : List.of("he", "iw", "Hebrew")) {
+                assertTrue(allowed(config, seen), config + " vs " + seen);
+            }
+        }
+        assertFalse(allowed("iw", "English"));
+    }
+
+    @Test
+    public void legacyIndonesianCodeMatchesModernCodeAndName() {
+        for (String seen : List.of("id", "in", "Indonesian", "INDONESIAN")) {
+            assertEquals("id", AudioLanguageRule.canonical(seen), seen);
+            for (String config : List.of("id", "in", "Indonesian")) {
+                assertTrue(allowed(config, seen), config + " vs " + seen);
+            }
+        }
+        assertFalse(allowed("in", "German"));
+    }
+
+    @Test
+    public void legacyYiddishCodeMatchesModernCodeAndName() {
+        for (String seen : List.of("yi", "ji", "Yiddish", "YIDDISH")) {
+            assertEquals("yi", AudioLanguageRule.canonical(seen), seen);
+            for (String config : List.of("yi", "ji", "Yiddish")) {
+                assertTrue(allowed(config, seen), config + " vs " + seen);
+            }
+        }
+        assertFalse(allowed("ji", "German"));
+    }
+
+    @Test
     public void shouldNukeUsesLanguageMapping() {
         assertFalse(AudioLanguageRule.shouldNuke(List.of("English"), AudioLanguageRule.parseAllowed("eng"), false));
         assertTrue(AudioLanguageRule.shouldNuke(List.of("English (US)"), AudioLanguageRule.parseAllowed("us"), false));
