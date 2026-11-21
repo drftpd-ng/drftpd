@@ -257,6 +257,30 @@ public class DupeUtilsTest {
     }
 
     @Test
+    public void everyWeekDirTheFormatProducesIsADatedDirInEveryLocale() {
+        // de_DE: 1-3 January 2016, 2021 and 2027 are week 53 of the previous year and yyyy-ww produces 2027-53
+        for (Locale locale : List.of(Locale.US, Locale.GERMANY, Locale.FRANCE)) {
+            SimpleDateFormat weekly = new SimpleDateFormat("yyyy-ww", locale);
+            weekly.setTimeZone(TimeZone.getTimeZone("UTC"));
+            long start = 1_448_928_000_000L; // 2015-12-01
+            for (long day = 0; day < 12 * 366 + 60; day++) { // up to early 2028
+                String dir = weekly.format(new Date(start + day * 24 * 60 * MINUTE));
+                assertTrue(DupeUtils.isDatedDir(dir, weekly), locale + " " + dir);
+            }
+        }
+        SimpleDateFormat german = new SimpleDateFormat("yyyy-ww", Locale.GERMANY);
+        for (String dir : List.of("2016-53", "2021-53", "2027-53")) {
+            assertTrue(DupeUtils.isDatedDir(dir, german), dir);
+        }
+        assertTrue(DupeUtils.isReleaseDir("/TV/2027-53/Show.S01E01-GRP", new SectionInfo("/TV", german)));
+        // Only names the format itself produces are accepted
+        assertFalse(DupeUtils.isDatedDir("2025-53", german));
+        assertFalse(DupeUtils.isDatedDir("2027-54", german));
+        assertFalse(DupeUtils.isDatedDir("2027-00", german));
+        assertFalse(DupeUtils.isDatedDir("2027-53", new SimpleDateFormat("yyyy-ww", Locale.US)));
+    }
+
+    @Test
     public void onlyReleasesAreComparedWhenStartingFromRoot() {
         // The examples of the review: whole sections, dated dirs and sub dirs of different releases
         List<Copy> found = List.of(
@@ -422,6 +446,92 @@ public class DupeUtilsTest {
         assertEquals(OptionalLong.of(DupeUtils.ACTIVITY_UNKNOWN), DupeUtils.lastActivity(fs, "/A/Release-GRP", 10, 4));
 
         assertTrue(DupeUtils.isActive(DupeUtils.ACTIVITY_UNKNOWN, NOW, MIN_AGE));
+    }
+
+    /** A release nested deeper than the activity walk goes (ACTIVITY_MAX_DEPTH levels) */
+    private static FakeFs deepFs(String... releases) {
+        FakeFs fs = new FakeFs(releases);
+        for (String release : releases) {
+            String dir = release;
+            for (int i = 1; i <= DupeUtils.ACTIVITY_MAX_DEPTH + 1; i++) {
+                dir = dir + "/" + i;
+                fs.touch(dir, OLD);
+            }
+        }
+        return fs;
+    }
+
+    @Test
+    public void tooLargeToCheckIsNeverActedOnWhateverTheMinAge() {
+        for (long minAge : new long[]{MIN_AGE, 0}) {
+            Copy kept = copy("/A/Release-GRP", OLD - 2);
+            Copy dupe = copy("/B/Release-GRP", OLD - 1);
+            List<DupeGroup> groups = DupeUtils.findDupes(List.of(kept, dupe), KeepPolicy.OLDEST, EXCLUDE);
+            FakeFs fs = deepFs("/A/Release-GRP", "/B/Release-GRP");
+
+            RunResult result = DupeUtils.run(groups, 10, false, NOW, minAge, fs, fs::wipe);
+
+            assertTrue(fs.wiped.isEmpty(), "min age " + minAge);
+            assertTrue(result.lines().stream().anyMatch(l -> l.startsWith("  SKIP (too large to check) /B/Release-GRP (created ")),
+                    result.lines().toString());
+            assertFalse(result.lines().stream().anyMatch(l -> l.contains("recently") || l.contains("(active)")),
+                    result.lines().toString());
+        }
+    }
+
+    @Test
+    public void tooLargeKeptCopyIsReportedAndSkipsTheGroup() {
+        for (long minAge : new long[]{MIN_AGE, 0}) {
+            Copy kept = copy("/A/Release-GRP", OLD - 2);
+            Copy dupe = copy("/B/Release-GRP", OLD - 1);
+            List<DupeGroup> groups = DupeUtils.findDupes(List.of(kept, dupe), KeepPolicy.OLDEST, EXCLUDE);
+            FakeFs fs = deepFs("/A/Release-GRP");
+            fs.touch("/B/Release-GRP", OLD);
+
+            RunResult result = DupeUtils.run(groups, 10, false, NOW, minAge, fs, fs::wipe);
+
+            assertTrue(fs.wiped.isEmpty(), "min age " + minAge);
+            assertTrue(result.lines().stream().anyMatch(l -> l.startsWith("  SKIP (kept copy too large to check) /B/Release-GRP")),
+                    result.lines().toString());
+            assertNull(DupeUtils.checkKeptCopy(copy("/B/Release-GRP", OLD), List.of(), fs, NOW, minAge));
+            assertEquals("kept copy /A/Release-GRP is too large to check",
+                    DupeUtils.checkKeptCopy(kept, List.of(), fs, NOW, minAge));
+        }
+    }
+
+    @Test
+    public void copyThatGrewTooLargeAfterTheScanIsSkippedInTheRecheck() {
+        Copy kept = copy("/A/Release-GRP", OLD - 2);
+        Copy dupe = copy("/B/Release-GRP", OLD - 1);
+        List<DupeGroup> groups = DupeUtils.findDupes(List.of(kept, dupe), KeepPolicy.OLDEST, EXCLUDE);
+        FakeFs fs = new FakeFs("/A/Release-GRP", "/B/Release-GRP");
+        // The scan sees small copies, the recheck right before acting sees a too deep tree
+        boolean[] grown = {false};
+        DupeUtils.DupeFileSystem growing = new DupeUtils.DupeFileSystem() {
+            @Override
+            public OptionalLong lastModified(String path) {
+                return fs.lastModified(path);
+            }
+
+            @Override
+            public Collection<DupeUtils.Inode> children(String path) {
+                if (path.equals("/B/Release-GRP") && grown[0]) {
+                    return List.of(new DupeUtils.Inode(path + "/1", OLD, true));
+                }
+                if (path.startsWith("/B/Release-GRP/") && grown[0]) {
+                    int depth = path.split("/").length - 3;
+                    return depth > DupeUtils.ACTIVITY_MAX_DEPTH ? List.of()
+                            : List.of(new DupeUtils.Inode(path + "/" + (depth + 1), OLD, true));
+                }
+                grown[0] |= path.equals("/B/Release-GRP"); // the scan walked it, it grows from now on
+                return fs.children(path);
+            }
+        };
+
+        RunResult result = DupeUtils.run(groups, 10, true, NOW, 0, growing, fs::wipe);
+
+        assertTrue(fs.wiped.isEmpty());
+        assertTrue(result.lines().contains("    SKIP (too large to check) /B/Release-GRP"), result.lines().toString());
     }
 
     @Test

@@ -69,7 +69,11 @@ public final class DupeUtils {
         /** A dupe that was modified recently (upload in progress?), not acted on */
         SKIP_ACTIVE("SKIP (active)"),
         /** A dupe not acted on because the kept copy was modified recently and may be incomplete */
-        SKIP_KEPT_ACTIVE("SKIP (kept copy active)");
+        SKIP_KEPT_ACTIVE("SKIP (kept copy active)"),
+        /** A dupe not acted on because it is too large to check for activity, see {@link #ACTIVITY_UNKNOWN} */
+        SKIP_TOO_LARGE("SKIP (too large to check)"),
+        /** A dupe not acted on because the kept copy is too large to check for activity */
+        SKIP_KEPT_TOO_LARGE("SKIP (kept copy too large to check)");
 
         private final String _label;
 
@@ -171,7 +175,7 @@ public final class DupeUtils {
     public static final int ACTIVITY_MAX_INODES = 10_000;
 
     /**
-     * Activity of a release whose walk hit a bound: unknown, treated as active (now) so it is never acted on.
+     * Activity of a release whose walk hit a bound: unknown, never acted on whatever the minimum age.
      */
     public static final long ACTIVITY_UNKNOWN = Long.MAX_VALUE;
 
@@ -328,7 +332,38 @@ public final class DupeUtils {
         // The first week of a year can start in the previous calendar year, so with a calendar year
         // (yyyy-ww) the dir 2026-01 does not round trip: compare using the week year (YYYY-ww) instead
         if (letters.indexOf('w') >= 0 && letters.indexOf('Y') < 0) {
-            return roundTrips(text, withPattern(simple, replaceUnquoted(pattern, 'y', 'Y')));
+            return roundTrips(text, withPattern(simple, replaceUnquoted(pattern, 'y', 'Y')))
+                    || isProducedByFormat(text, simple);
+        }
+        return false;
+    }
+
+    /**
+     * Some locales (de_DE: 1-3 January 2027 is week 53 of 2026) make yyyy-ww produce names such as 2027-53 that
+     * no week year parses back to. The text is parsed leniently using the week year to find the neighbourhood of
+     * the date, then it is accepted when the format itself produces exactly this text for one of the days around.
+     */
+    private static boolean isProducedByFormat(String text, SimpleDateFormat format) {
+        SimpleDateFormat lenient = withPattern(format, replaceUnquoted(format.toPattern(), 'y', 'Y'));
+        lenient.setLenient(true);
+        ParsePosition pos = new ParsePosition(0);
+        Date date = lenient.parse(text, pos);
+        if (date == null || pos.getErrorIndex() >= 0 || pos.getIndex() != text.length()) {
+            return false;
+        }
+        Calendar calendar = (Calendar) lenient.getCalendar().clone();
+        calendar.setTime(date);
+        int year = calendar.get(Calendar.YEAR);
+        // From the start of the previous year to the end of the next one, the week 53 text of a year is
+        // produced at the start of the calendar year, up to a year before the week year based date
+        calendar.clear();
+        calendar.set(year - 1, Calendar.JANUARY, 1, 12, 0, 0);
+        DateFormat f = (DateFormat) format.clone();
+        for (int day = 0; day < 3 * 366; day++) {
+            if (f.format(calendar.getTime()).equals(text)) {
+                return true;
+            }
+            calendar.add(Calendar.DAY_OF_YEAR, 1);
         }
         return false;
     }
@@ -465,8 +500,15 @@ public final class DupeUtils {
         if (copy.equals(group.kept())) {
             return Status.KEEP;
         }
+        // A release too large to check is never acted on, whatever the minimum age
+        if (copy.lastModified() == ACTIVITY_UNKNOWN) {
+            return Status.SKIP_TOO_LARGE;
+        }
         if (isActive(copy.lastModified(), now, minAgeMillis)) {
             return Status.SKIP_ACTIVE;
+        }
+        if (group.kept().lastModified() == ACTIVITY_UNKNOWN) {
+            return Status.SKIP_KEPT_TOO_LARGE;
         }
         if (isActive(group.kept().lastModified(), now, minAgeMillis)) {
             return Status.SKIP_KEPT_ACTIVE;
@@ -498,6 +540,9 @@ public final class DupeUtils {
         if (activity.isEmpty()) {
             return "kept copy " + keptPath + " no longer exists";
         }
+        if (activity.getAsLong() == ACTIVITY_UNKNOWN) {
+            return "kept copy " + keptPath + " is too large to check";
+        }
         // An upload into the kept copy started after the scan, it may be incomplete or replaced
         if (isActive(activity.getAsLong(), now, minAgeMillis)) {
             return "kept copy " + keptPath + " was modified recently";
@@ -512,7 +557,7 @@ public final class DupeUtils {
      * directory of a release (CD2, Sample, ...) would not show on the release itself. Release directories
      * are small, but the walk is bounded defensively: when it goes deeper than {@link #ACTIVITY_MAX_DEPTH}
      * or sees more than {@link #ACTIVITY_MAX_INODES} inodes it stops and returns {@link #ACTIVITY_UNKNOWN},
-     * which is always active, so such a release is never acted on.
+     * which is never safe to act on, whatever dupe.min.age is (see {@link Status#SKIP_TOO_LARGE}).
      *
      * @return the newest last modified time, empty when the directory does not exist (anymore)
      */
@@ -639,6 +684,10 @@ public final class DupeUtils {
                     OptionalLong lastModified = lastActivity(fs, copy.path());
                     if (lastModified.isEmpty()) {
                         lines.add("    SKIP " + copy.path() + ": no longer exists");
+                        continue;
+                    }
+                    if (lastModified.getAsLong() == ACTIVITY_UNKNOWN) {
+                        lines.add("    " + Status.SKIP_TOO_LARGE.label() + " " + copy.path());
                         continue;
                     }
                     if (isActive(lastModified.getAsLong(), now, minAgeMillis)) {

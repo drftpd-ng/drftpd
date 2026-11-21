@@ -23,9 +23,11 @@ import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.drftpd.common.misc.CaseInsensitiveHashMap;
 import org.drftpd.common.util.Bytes;
 import org.drftpd.find.master.action.ActionInterface;
+import org.drftpd.find.master.action.NukeAction;
 import org.drftpd.find.master.option.OptionInterface;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.commands.*;
+import org.drftpd.master.commands.nuke.NukeBeans;
 import org.drftpd.master.commands.nuke.NukeUtils;
 import org.drftpd.master.indexation.AdvancedSearchParams;
 import org.drftpd.master.indexation.IndexEngineInterface;
@@ -414,6 +416,12 @@ public class Find extends CommandInterface {
             for (ActionInterface action : actions) {
                 try {
                     DirectoryHandle dir = new DirectoryHandle(copy.path());
+                    // NukeAction refuses a name that is in the nuke log (the first copy nuked, or an earlier nuke
+                    // of the name), report it as a skip instead of a failed action
+                    if (action instanceof NukeAction && NukeBeans.getNukeBeans().findName(copy.name()) != null) {
+                        lines.add("    SKIP (name already nuked) " + copy.path());
+                        continue;
+                    }
                     logger.debug("Action {} executing on dupe {}", action.getClass(), dir.getPath());
                     String text = action.exec(request, dir);
                     if (!settings.getQuiet() || action.failed()) {
