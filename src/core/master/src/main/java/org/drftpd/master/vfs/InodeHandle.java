@@ -369,15 +369,19 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable<In
                     }
 
                     if (merge) {
+                        // Tell every slave first, using the old path, and only then move the inode: renaming the
+                        // inode inside the loop made every slave after the first get "rename newpath to newpath",
+                        // so its copy stayed at the old path and was deleted with the source directory below
+                        String fromPath = inode.getPath();
                         Set<String> slaves = ((VirtualFileSystemFile) inode).getSlaves();
                         for (String slaveName : slaves) {
                             try {
-                                getGlobalContext().getSlaveManager().getRemoteSlave(slaveName).simpleRename(inode.getPath(), toInode.getPath(), inode.getName());
-                                inode.rename(toInode.getPath() + "/" + inode.getName());
+                                getGlobalContext().getSlaveManager().getRemoteSlave(slaveName).simpleRename(fromPath, toInode.getPath(), inode.getName());
                             } catch (ObjectNotFoundException e) {
                                 // slave doesn't exist, no reason to tell it to rename this file
                             }
                         }
+                        inode.rename(toInode.getPath() + "/" + inode.getName());
                     } else {
                         ih.deleteUnchecked();
                     }
