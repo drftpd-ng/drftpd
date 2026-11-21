@@ -167,7 +167,7 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable<In
      */
     public void checkWipePermission(User user) throws PermissionDeniedException {
         if (!getVFSPermissions().checkPathPermission("wipe", user, this, true)) {
-            throw new PermissionDeniedException("You are not allowed to wipe " + getPath());
+            throw new PermissionDeniedException("Wiping this path is not allowed");
         }
     }
 
@@ -175,9 +175,11 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable<In
      * Checks the 'wipe' path permission (perms.conf) for everything below this directory, because
      * a recursive wipe also removes all of it. Does nothing for non-directories, and costs nothing
      * when perms.conf has no wipe/wipeex line at all.
-     * The walk is unchecked on purpose: a protected dir hidden by privpath must still block the wipe.
+     * The walk is unchecked on purpose: a protected dir hidden by privpath must still block the wipe
+     * (this is also why isEmpty(user), which only sees visible entries, is not enough for a non-recursive wipe).
      *
-     * @throws PermissionDeniedException if any descendant is denied, the message names the first one found.
+     * @throws PermissionDeniedException if any descendant is denied, the message is generic and the
+     * denied path is only logged at debug.
      */
     public void checkWipeSubtreePermission(User user) throws PermissionDeniedException, FileNotFoundException {
         if (!isDirectory() || !getVFSPermissions().hasPathPermissions("wipe")) {
@@ -195,8 +197,11 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable<In
             }
         }, inode -> !getVFSPermissions().checkPathPermission("wipe", user, inode, true));
         if (denied != null) {
-            throw new PermissionDeniedException("You are not allowed to wipe " + denied.getPath()
-                    + " (inside " + getPath() + ")");
+            // the denied path may be hidden by privpath, keep it out of the exception message
+            logger.debug("Wipe of {} denied for {}: {} is protected by a wipe permission",
+                    getPath(), user.getName(), denied.getPath());
+            throw new PermissionDeniedException(
+                    "Wiping this directory is not allowed: a path inside it is protected");
         }
     }
 

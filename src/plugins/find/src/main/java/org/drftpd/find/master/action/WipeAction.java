@@ -56,6 +56,7 @@ public class WipeAction implements ActionInterface {
             logger.error("The file was there and now it's gone, how?", e);
         } catch (PermissionDeniedException e) {
             _failed = true;
+            logger.debug("Wipe denied for {} on {}: {}", request.getUser(), inode.getPath(), e.getMessage());
             return "You do not have the proper permissions to wipe " + inode.getPath();
         }
         return "Wiped " + inode.getPath();
