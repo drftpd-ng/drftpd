@@ -109,7 +109,16 @@ public class ZipscriptVFSDataZip {
         DizInfo dizInfo = null;
         boolean anyRead = false;
         for (FileHandle file : _dir.getFilesUnchecked()) {
-            if (!isEligibleZip(file.getName(), file.isFile(), file.isUploading(), file.getSize(), file.getXfertime())) {
+            // Cheap name/type checks first, so the other files of the dir (.nfo, .sfv...) are never queried
+            if (!file.isFile() || !isZipName(file.getName())) {
+                continue;
+            }
+            try {
+                if (!isEligibleZip(file.getName(), true, file.isUploading(), file.getSize(), file.getXfertime())) {
+                    continue;
+                }
+            } catch (FileNotFoundException e) {
+                // The zip was deleted while we were looking at the dir, try the next one
                 continue;
             }
             try {
@@ -137,9 +146,13 @@ public class ZipscriptVFSDataZip {
     /**
      * Only complete .zip files can give valid dizinfo.
      */
+    static boolean isZipName(String name) {
+        return name.toLowerCase(Locale.ROOT).endsWith(".zip");
+    }
+
     static boolean isEligibleZip(String name, boolean isFile, boolean isUploading, long size, long xfertime) {
         return isFile
-                && name.toLowerCase(Locale.ROOT).endsWith(".zip")
+                && isZipName(name)
                 && !isUploading
                 && size > 0
                 && xfertime != -1;
