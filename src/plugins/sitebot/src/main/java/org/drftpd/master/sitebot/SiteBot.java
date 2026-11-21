@@ -39,6 +39,7 @@ import org.drftpd.master.vfs.DirectoryHandle;
 import org.reflections.Reflections;
 
 import javax.net.SocketFactory;
+import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLSocket;
 import java.io.*;
 import java.net.InetAddress;
@@ -323,7 +324,28 @@ public class SiteBot implements ReplyConstants, Runnable {
                 logger.debug("[{}] Enabled protocols for this new connection are as follows: '{}'",
                         ((SSLSocket) socket).getRemoteSocketAddress(), Arrays.toString(((SSLSocket) socket).getEnabledProtocols()));
                 ((SSLSocket) socket).setUseClientMode(true);
-                ((SSLSocket) socket).startHandshake();
+                if (serverConfig.isTlsVerificationRequired()) {
+                    // set by the socket factory, never send the SASL password without it
+                    if (!"HTTPS".equals(((SSLSocket) socket).getSSLParameters().getEndpointIdentificationAlgorithm())) {
+                        socket.close();
+                        throw new IOException("TLS host name verification is not enabled on the socket, refusing to connect");
+                    }
+                } else if (useSasl) {
+                    logger.warn("sasl.allow_insecure_tls=true for {}:{}: the server certificate is not fully verified,"
+                            + " a man in the middle could capture the SASL password", _server, _port);
+                }
+                try {
+                    ((SSLSocket) socket).startHandshake();
+                } catch (SSLException e) {
+                    if (serverConfig.isTlsVerificationRequired()) {
+                        logger.error("TLS certificate verification of {}:{} failed: {}. SASL is configured, so the certificate"
+                                + " must chain to a trusted CA (or be in config/plugins/irc/certs with ssl.strictTrust=true)"
+                                + " and match the configured host name (or set sasl.allow_insecure_tls=true)",
+                                _server, _port, e.getMessage());
+                    }
+                    socket.close();
+                    throw e;
+                }
             }
             logger.info("*** Connected to server [{}:{}]", _server, _port);
         } catch (IOException e) {

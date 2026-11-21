@@ -37,6 +37,21 @@ server.1.use_ssl=true
 #  server is skipped (counts as a SASL failure), otherwise the bot connects without
 #  SASL. Set it to true only if you accept sending the password in clear text.
 # Default for server.N.sasl.allow_plaintext: [false]
+# Certificate verification: when SASL is configured for a server with use_ssl=true
+#  the server certificate is fully verified before the password is sent: its chain
+#  must lead to a CA trusted by the Java runtime (or, with ssl.strictTrust=true, to
+#  one of those or a certificate in config/plugins/irc/certs) AND it must be valid
+#  for server.N.host (host name verification). So server.N.host must be the name
+#  on the certificate (e.g. irc.libera.chat), not an IP address or another alias.
+#  If verification fails the bot does not connect to that server.
+# server.N.sasl.allow_insecure_tls: set to true to skip this verification (e.g. a
+#  private ircd with a self-signed certificate not in config/plugins/irc/certs);
+#  a warning is logged at every connect as the password could then be captured by
+#  a man in the middle.
+# Default for server.N.sasl.allow_insecure_tls: [false]
+# Servers without SASL keep the previous TLS behaviour (see ssl.strictTrust below,
+#  no host name verification); enabling verification for them too would be a
+#  separate change.
 # Networks with SASL support include Libera.Chat and most IRCv3 networks.
 #  EFnet does not support SASL: leave sasl.* empty there (or required=false).
 # Example (Libera.Chat, the username is your NickServ account name):
@@ -50,6 +65,7 @@ server.1.sasl.username=
 server.1.sasl.password=
 server.1.sasl.required=false
 server.1.sasl.allow_plaintext=false
+server.1.sasl.allow_insecure_tls=false
 
 # The time to wait (in seconds) before trying another server when connecting or
 # reconnecting.
@@ -217,6 +233,10 @@ line.length.max=512
 #  certificate in a config/plugins/irc/certs directory. The certificates should be
 #  in base64 encoded PEM format and contain nothing more than the base64 data block
 #  delimited by "-----BEGIN CERTIFICATE----- and -----END CERTIFICATE-----".
+# With this disabled the certificate is not checked at all, except for servers with
+#  SASL configured, which are always verified (see server.N.sasl.allow_insecure_tls).
+#  Note that this setting checks the certificate chain only: host name verification
+#  is done for servers with SASL only.
 # Default: [false]
 ssl.strictTrust=false
 

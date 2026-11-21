@@ -80,4 +80,33 @@ public class SiteBotConfigSaslTest {
         assertFalse(sc.isSaslEnabled());
         assertFalse(sc.isSaslRefusedWithoutTls());
     }
+
+    @Test
+    public void tlsVerificationRequiredWithSaslByDefault() {
+        Properties p = SiteBotSaslConnectTest.baseProperties(6697, false);
+        p.setProperty("server.1.use_ssl", "true");
+        ServerConfig sc = server(p);
+        assertFalse(sc.isSaslInsecureTlsAllowed());
+        assertTrue(sc.isTlsVerificationRequired());
+    }
+
+    @Test
+    public void tlsVerificationOptOut() {
+        Properties p = SiteBotSaslConnectTest.baseProperties(6697, false);
+        p.setProperty("server.1.use_ssl", "true");
+        p.setProperty("server.1.sasl.allow_insecure_tls", "true");
+        ServerConfig sc = server(p);
+        assertTrue(sc.isSaslInsecureTlsAllowed());
+        assertFalse(sc.isTlsVerificationRequired());
+    }
+
+    @Test
+    public void noTlsVerificationWithoutSaslOrWithoutTls() {
+        Properties p = SiteBotSaslConnectTest.baseProperties(6697, false);
+        p.setProperty("server.1.use_ssl", "true");
+        p.setProperty("server.1.sasl.username", "");
+        p.setProperty("server.1.sasl.password", "");
+        assertFalse(server(p).isTlsVerificationRequired());
+        assertFalse(server(SiteBotSaslConnectTest.baseProperties(6667, false)).isTlsVerificationRequired());
+    }
 }

@@ -17,6 +17,7 @@
  */
 package org.drftpd.master.sitebot.config;
 
+import org.drftpd.master.network.BlindTrustManager;
 import org.drftpd.master.sitebot.SiteBotSSLSocketFactory;
 
 import javax.net.SocketFactory;
@@ -46,12 +47,15 @@ public class ServerConfig {
 
     private final boolean _saslAllowPlaintext;
 
+    private final boolean _saslAllowInsecureTls;
+
     public ServerConfig(String hostName, int port, String password, boolean ssl, X509TrustManager trustManager) {
-        this(hostName, port, password, ssl, trustManager, null, null, false, false);
+        this(hostName, port, password, ssl, trustManager, null, null, false, false, false);
     }
 
     public ServerConfig(String hostName, int port, String password, boolean ssl, X509TrustManager trustManager,
-                        String saslUsername, String saslPassword, boolean saslRequired, boolean saslAllowPlaintext) {
+                        String saslUsername, String saslPassword, boolean saslRequired, boolean saslAllowPlaintext,
+                        boolean saslAllowInsecureTls) {
         _hostName = hostName;
         _port = port;
         _password = password;
@@ -61,6 +65,7 @@ public class ServerConfig {
         _saslPassword = saslPassword;
         _saslRequired = saslRequired;
         _saslAllowPlaintext = saslAllowPlaintext;
+        _saslAllowInsecureTls = saslAllowInsecureTls;
     }
 
     public String getHostName() {
@@ -77,9 +82,31 @@ public class ServerConfig {
 
     public SocketFactory getSocketFactory() {
         if (_ssl) {
+            if (isTlsVerificationRequired()) {
+                // A SASL password is sent over this connection: the certificate chain must be validated
+                // (JDK default trust store instead of the blind trust manager used when ssl.strictTrust=false,
+                // or the configured strict trust manager) and the certificate must match the host name.
+                X509TrustManager trustManager = _trustManager instanceof BlindTrustManager ? null : _trustManager;
+                return new SiteBotSSLSocketFactory(trustManager, true);
+            }
             return new SiteBotSSLSocketFactory(_trustManager);
         }
         return null;
+    }
+
+    /**
+     * @return true when the TLS certificate of this server must be fully verified (validated chain and
+     * host name): TLS with SASL configured, unless sasl.allow_insecure_tls=true
+     */
+    public boolean isTlsVerificationRequired() {
+        return _ssl && isSaslEnabled() && !_saslAllowInsecureTls;
+    }
+
+    /**
+     * @return true when sasl.allow_insecure_tls=true: SASL over TLS without certificate verification
+     */
+    public boolean isSaslInsecureTlsAllowed() {
+        return _saslAllowInsecureTls;
     }
 
     public boolean isSsl() {

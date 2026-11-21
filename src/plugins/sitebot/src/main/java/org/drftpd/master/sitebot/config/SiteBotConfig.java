@@ -126,8 +126,9 @@ public class SiteBotConfig {
             String saslPassword = cfg.getProperty("server." + i + ".sasl.password", "");
             boolean saslRequired = cfg.getProperty("server." + i + ".sasl.required", "false").trim().equalsIgnoreCase("true");
             boolean saslAllowPlaintext = cfg.getProperty("server." + i + ".sasl.allow_plaintext", "false").trim().equalsIgnoreCase("true");
+            boolean saslAllowInsecureTls = cfg.getProperty("server." + i + ".sasl.allow_insecure_tls", "false").trim().equalsIgnoreCase("true");
             _servers.add(new ServerConfig(hostName, port, password, ssl, trustManager,
-                    saslUsername, saslPassword, saslRequired, saslAllowPlaintext));
+                    saslUsername, saslPassword, saslRequired, saslAllowPlaintext, saslAllowInsecureTls));
         }
         _connectDelay = Long.parseLong(cfg.getProperty("connect.delay")) * 1000;
         _messageDelay = Long.parseLong(cfg.getProperty("message.sendDelay"));
