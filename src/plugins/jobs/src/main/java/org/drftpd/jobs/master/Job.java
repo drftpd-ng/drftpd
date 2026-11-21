@@ -308,10 +308,21 @@ public class Job {
     }
 
     public synchronized void sentToSlave(RemoteSlave slave) throws FileNotFoundException {
-        if (_destSlaves.contains(slave.getName())) {
-            _transferNum--;
-        } else {
-            throw new IllegalArgumentException("Slave " + slave.getName() + " does not exist as a destination slave for job " + this);
+        sentToSlaves(Collections.singletonList(slave));
+    }
+
+    /**
+     * Registers that the file is present on all the given destination slaves. The consistency check is only done
+     * after all of them were counted, so a file that already is on every destination slave does not trigger a
+     * false "nothing left to transfer to" error half way through.
+     */
+    public synchronized void sentToSlaves(Collection<RemoteSlave> slaves) throws FileNotFoundException {
+        for (RemoteSlave slave : slaves) {
+            if (_destSlaves.contains(slave.getName())) {
+                _transferNum--;
+            } else {
+                throw new IllegalArgumentException("Slave " + slave.getName() + " does not exist as a destination slave for job " + this);
+            }
         }
 
         if (getSlavesToTransferTo().isEmpty() && (_transferNum > 0)) {
