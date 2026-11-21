@@ -205,6 +205,37 @@ public class SiteBot implements ReplyConstants, Runnable {
      * @throws NickAlreadyInUseException if our nick is already in use on the
      *                                   server.
      */
+    /**
+     * How many alternative nicks to try with autonick before giving up, so a server that rejects
+     * every nick cannot keep the bot in a loop.
+     */
+    static final int MAX_AUTONICK_TRIES = 50;
+
+    /**
+     * Returns the nick the server says is in use, from a 433 reply
+     * (":server 433 <current nick or *> <nick> :Nickname is already in use"), or null.
+     */
+    static String getNickFromNickInUse(String line) {
+        String[] parts = line.split(" ");
+        if (parts.length < 4) {
+            return null;
+        }
+        return parts[3];
+    }
+
+    /**
+     * The nick to try for the given attempt: the configured nick followed by the attempt number,
+     * with the configured nick shortened so the result fits in <tt>maxLength</tt> (0 = unknown).
+     */
+    static String getAutoNick(String baseNick, int tries, int maxLength) {
+        String suffix = Integer.toString(tries);
+        if (maxLength > 0 && baseNick.length() + suffix.length() > maxLength) {
+            int keep = Math.max(1, maxLength - suffix.length());
+            baseNick = baseNick.substring(0, Math.min(keep, baseNick.length()));
+        }
+        return baseNick + suffix;
+    }
+
     public final synchronized void connect() throws IOException, IrcException, NickAlreadyInUseException {
 
         ServerConfig serverConfig = _config.getServer();
@@ -290,6 +321,7 @@ public class SiteBot implements ReplyConstants, Runnable {
         // Read stuff back from the server to see if we connected.
         String line;
         int tries = 1;
+        int maxNickLength = 0; // unknown until the server truncates a nick
         while ((line = breader.readLine()) != null) {
 
             // Quickly process PING requests otherwise we might be kicked offline during our
@@ -315,9 +347,16 @@ public class SiteBot implements ReplyConstants, Runnable {
                     // We're connected to the server.
                     break;
                 } else if (code.equals("433")) {
-                    if (_config.getAutoNick()) {
+                    if (_config.getAutoNick() && tries < MAX_AUTONICK_TRIES) {
+                        // The server echoes the nick it tried. If that is shorter than what we sent,
+                        // it truncated our nick to its NICKLEN, and so would truncate "nick + tries"
+                        // back to the same taken nick forever. Learn the limit and fit the retry in it.
+                        String triedNick = getNickFromNickInUse(line);
+                        if (triedNick != null && triedNick.length() < nick.length()) {
+                            maxNickLength = triedNick.length();
+                        }
                         tries++;
-                        nick = _config.getNick() + tries;
+                        nick = getAutoNick(_config.getNick(), tries, maxNickLength);
                         OutputThread.sendRawLine(this, bwriter, "NICK " + nick);
                         this.setNick(nick);
                     } else {
