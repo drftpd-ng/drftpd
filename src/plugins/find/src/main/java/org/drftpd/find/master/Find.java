@@ -361,7 +361,10 @@ public class Find extends CommandInterface {
                 }
                 long lastModified = dir.lastModified();
                 long creationTime = dir.creationTime();
-                // Inodes without a creation time fall back to their last modification
+                // Inodes without a creation time fall back to their last modification.
+                // Note: adding a child lowers a directory's creation time to the child's (see
+                // VirtualFileSystemDirectory.addChild), so a copy remerged from a slave with old file
+                // mtimes can look created before the original upload and be kept as "first created".
                 dirs.add(new DupeUtils.Copy(dir.getPath(), creationTime > 0 ? creationTime : lastModified, lastModified));
             } catch (FileNotFoundException e) {
                 logger.warn("Index contained an unexistent inode: {}", item.getKey());

@@ -49,7 +49,10 @@ public final class DupeUtils {
     public static final long DEFAULT_MIN_AGE_MINUTES = 60;
 
     public enum KeepPolicy {
-        /** Keep the copy that was created first */
+        /**
+         * Keep the copy that was created first. The creation time of a directory is lowered to that of
+         * its oldest child when a child is added, so a copy remerged with old file mtimes can look first created.
+         */
         OLDEST,
         /** Keep the copy that was created last */
         NEWEST
