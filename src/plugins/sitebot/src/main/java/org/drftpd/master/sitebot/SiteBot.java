@@ -122,6 +122,16 @@ public class SiteBot implements ReplyConstants, Runnable {
     private boolean _isTerminated = false;
     private boolean _userDisconnected = false;
 
+    /** Upper bound of the delay between connection attempts after consecutive SASL failures. */
+    static final long MAX_SASL_RETRY_DELAY_MILLIS = 60L * 60L * 1000L;
+    /** Lower bound of the SASL backoff base, so that connect.delay=0 cannot hammer the services. */
+    static final long MIN_SASL_RETRY_BASE_MILLIS = 1000L;
+    // Consecutive SASL failures with sasl.required=true, reset on a successful SASL login
+    private int _saslFailures = 0;
+
+    /** Result of a single connection attempt, see {@link #connectOnce()}. */
+    private enum ConnectOutcome { CONNECTED, CONNECTION_FAILED, SASL_FAILED }
+
     // A HashMap to store the available prefixes and associated mode operator
     private HashMap<String, String> _userPrefixes = new HashMap<>();
     // prefixes as delivered from the server .. highest to lowest - default to op/voice
@@ -200,6 +210,61 @@ public class SiteBot implements ReplyConstants, Runnable {
      * @throws NickAlreadyInUseException if our nick is already in use on the server.
      */
     public final synchronized void connect() throws IOException, IrcException, NickAlreadyInUseException {
+        // Failed attempts are retried in this loop (next server in the list) instead of recursing
+        // through reconnect(), so that repeated failures do not grow the stack.
+        while (true) {
+            ConnectOutcome outcome = connectOnce();
+            if (outcome == ConnectOutcome.CONNECTED) {
+                return;
+            }
+            if (outcome == ConnectOutcome.SASL_FAILED) {
+                // Back off exponentially so a wrong password does not get the account locked or the bot banned
+                _saslFailures++;
+                long delay = saslRetryDelay(_config.getConnectDelay(), _saslFailures);
+                logger.warn("SASL failed {} time(s) in a row, next connection attempt in {} seconds",
+                        _saslFailures, delay / 1000);
+                try {
+                    wait(delay);
+                } catch (InterruptedException e) {
+                    // do nothing
+                }
+            } else if (!_userDisconnected) {
+                // Same delay as reconnect()
+                try {
+                    wait(_config.getConnectDelay());
+                } catch (InterruptedException e) {
+                    // do nothing
+                }
+            }
+        }
+    }
+
+    /**
+     * Delay before the next connection attempt after consecutive SASL failures:
+     * connect.delay (at least {@link #MIN_SASL_RETRY_BASE_MILLIS}) doubled for every failure after the
+     * first one, capped at {@link #MAX_SASL_RETRY_DELAY_MILLIS} (but never below connect.delay).
+     *
+     * @param connectDelayMillis  the configured connect.delay in milliseconds
+     * @param consecutiveFailures number of consecutive SASL failures, including the one just seen
+     */
+    static long saslRetryDelay(long connectDelayMillis, int consecutiveFailures) {
+        long base = Math.max(connectDelayMillis, MIN_SASL_RETRY_BASE_MILLIS);
+        if (base >= MAX_SASL_RETRY_DELAY_MILLIS) {
+            return base;
+        }
+        int exponent = Math.max(0, consecutiveFailures - 1);
+        if (exponent >= 62 || base > (MAX_SASL_RETRY_DELAY_MILLIS >> exponent)) {
+            return MAX_SASL_RETRY_DELAY_MILLIS;
+        }
+        return Math.min(base << exponent, MAX_SASL_RETRY_DELAY_MILLIS);
+    }
+
+    /**
+     * A single connection attempt to the next server in the list.
+     *
+     * @return CONNECTED on success, otherwise why the attempt failed so that {@link #connect()} retries
+     */
+    private ConnectOutcome connectOnce() throws IOException, IrcException, NickAlreadyInUseException {
 
         ServerConfig serverConfig = _config.getServer();
         _server = serverConfig.getHostName();
@@ -247,10 +312,9 @@ public class SiteBot implements ReplyConstants, Runnable {
             }
             logger.info("*** Connected to server [{}:{}]", _server, _port);
         } catch (IOException e) {
-            // Something failed during connecting, call reconnect() to try another server
+            // Something failed during connecting, connect() retries with another server
             logger.warn("Connection to {}:{} failed with error {}, retrying or trying next server if one is available", _server, _port, e.getMessage());
-            reconnect();
-            return;
+            return ConnectOutcome.CONNECTION_FAILED;
         }
 
         _inetAddress = socket.getLocalAddress();
@@ -310,8 +374,7 @@ public class SiteBot implements ReplyConstants, Runnable {
                     OutputThread.sendRawLine(this, bwriter, "QUIT :SASL authentication failed");
                     socket.close();
                     _inputThread = null;
-                    reconnect();
-                    return;
+                    return ConnectOutcome.SASL_FAILED;
                 }
                 if (consumed || line.isEmpty()) {
                     continue;
@@ -347,6 +410,11 @@ public class SiteBot implements ReplyConstants, Runnable {
                 }
             }
             this.setNick(nick);
+        }
+
+        if (sasl != null && sasl.isAuthenticated()) {
+            // reset the SASL backoff
+            _saslFailures = 0;
         }
 
         // Find what the server considers our hostmask to be
@@ -408,6 +476,7 @@ public class SiteBot implements ReplyConstants, Runnable {
         }
 
         this.onConnect();
+        return ConnectOutcome.CONNECTED;
     }
 
     /**

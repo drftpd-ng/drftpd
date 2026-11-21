@@ -124,6 +124,22 @@ public class SiteBotSaslConnectTest {
 
     @Test
     @Timeout(20)
+    public void saslFailuresBackOffAndResetOnSuccess() throws Exception {
+        // two failures then a success: the bot waits 1s then 2s (connect.delay=0 uses the 1s minimum base)
+        startServer(Mode.SASL_FAIL, Mode.SASL_FAIL, Mode.SASL_OK);
+        long start = System.nanoTime();
+        connectBot(true);
+        long elapsedMillis = (System.nanoTime() - start) / 1_000_000L;
+
+        assertEquals(3, _connections.size());
+        assertTrue(elapsedMillis >= 3000L, "elapsed " + elapsedMillis + "ms");
+        assertTrue(_connections.get(2).contains("WHOIS drftpd"));
+        // a successful SASL login resets the backoff
+        assertEquals(0, getField(_bot, "_saslFailures"));
+    }
+
+    @Test
+    @Timeout(20)
     public void serverWithoutCapSupport() throws Exception {
         startServer(Mode.NO_CAP);
         connectBot(false);
@@ -195,6 +211,12 @@ public class SiteBotSaslConnectTest {
         Field f = SiteBot.class.getDeclaredField(name);
         f.setAccessible(true);
         f.set(target, value);
+    }
+
+    private static Object getField(Object target, String name) throws Exception {
+        Field f = SiteBot.class.getDeclaredField(name);
+        f.setAccessible(true);
+        return f.get(target);
     }
 
     private void startServer(Mode... modes) throws IOException {
