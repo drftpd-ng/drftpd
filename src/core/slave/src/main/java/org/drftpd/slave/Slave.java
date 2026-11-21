@@ -36,6 +36,7 @@ import org.drftpd.common.slave.TransferIndex;
 import org.drftpd.common.util.ConfigLoader;
 import org.drftpd.common.util.PortRange;
 import org.drftpd.common.util.PropertyHelper;
+import org.drftpd.common.util.SSLConfigParser;
 import org.drftpd.slave.diskselection.DiskSelectionInterface;
 import org.drftpd.slave.exceptions.FileExistsException;
 import org.drftpd.slave.network.AsyncResponseDiskStatus;
@@ -200,6 +201,11 @@ public class Slave extends SslConfigurationLoader {
                     "specified by the operating system");
             _portRange = new PortRange(_bufferSize);
         }
+
+        // TLS settings for data transfers (#433), parsed the same way as master.conf.
+        // The control connection to the master is configured by master.ssl.* instead.
+        _sslProtocols = SSLConfigParser.parseSSLProtocols(p);
+        _cipherSuites = SSLConfigParser.parseCipherSuites(p);
 
         _ignorePartialRemerge = p.getProperty("ignore.partialremerge", "false").equalsIgnoreCase("true");
         _threadedRemerge = p.getProperty("threadedremerge", "false").equalsIgnoreCase("true");
