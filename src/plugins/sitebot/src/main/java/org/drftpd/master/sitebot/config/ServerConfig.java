@@ -44,12 +44,14 @@ public class ServerConfig {
 
     private final boolean _saslRequired;
 
+    private final boolean _saslAllowPlaintext;
+
     public ServerConfig(String hostName, int port, String password, boolean ssl, X509TrustManager trustManager) {
-        this(hostName, port, password, ssl, trustManager, null, null, false);
+        this(hostName, port, password, ssl, trustManager, null, null, false, false);
     }
 
     public ServerConfig(String hostName, int port, String password, boolean ssl, X509TrustManager trustManager,
-                        String saslUsername, String saslPassword, boolean saslRequired) {
+                        String saslUsername, String saslPassword, boolean saslRequired, boolean saslAllowPlaintext) {
         _hostName = hostName;
         _port = port;
         _password = password;
@@ -58,6 +60,7 @@ public class ServerConfig {
         _saslUsername = saslUsername;
         _saslPassword = saslPassword;
         _saslRequired = saslRequired;
+        _saslAllowPlaintext = saslAllowPlaintext;
     }
 
     public String getHostName() {
@@ -104,5 +107,20 @@ public class ServerConfig {
     public boolean isSaslEnabled() {
         return _saslUsername != null && !_saslUsername.isEmpty()
                 && _saslPassword != null && !_saslPassword.isEmpty();
+    }
+
+    /**
+     * @return true when SASL PLAIN may be sent over a connection without TLS (sasl.allow_plaintext=true)
+     */
+    public boolean isSaslPlaintextAllowed() {
+        return _saslAllowPlaintext;
+    }
+
+    /**
+     * @return true when SASL is configured but must not be used because the connection is not TLS
+     * and sending the password in clear text has not been explicitly allowed
+     */
+    public boolean isSaslRefusedWithoutTls() {
+        return isSaslEnabled() && !_ssl && !_saslAllowPlaintext;
     }
 }

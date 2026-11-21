@@ -27,8 +27,16 @@ server.1.use_ssl=true
 # server.N.sasl.required: if true and SASL fails, times out (30s) or is not
 #  offered by the server, the bot disconnects and tries the next server. If false
 #  a warning is logged and the bot registers without SASL.
+#  Consecutive SASL failures with required=true are retried with an exponential
+#  backoff: connect.delay, then twice as long after every further failure, up to
+#  1 hour. It is reset after a successful SASL login.
 # Default for server.N.sasl.required: [false]
-# Use SASL only over ssl, as PLAIN sends the password base64 encoded (not encrypted).
+# server.N.sasl.allow_plaintext: SASL PLAIN sends the password base64 encoded (not
+#  encrypted), so by default SASL is refused for a server with use_ssl=false: an
+#  error is logged and no CAP/AUTHENTICATE is sent; with sasl.required=true the
+#  server is skipped (counts as a SASL failure), otherwise the bot connects without
+#  SASL. Set it to true only if you accept sending the password in clear text.
+# Default for server.N.sasl.allow_plaintext: [false]
 # Networks with SASL support include Libera.Chat and most IRCv3 networks.
 #  EFnet does not support SASL: leave sasl.* empty there (or required=false).
 # Example (Libera.Chat, the username is your NickServ account name):
@@ -41,6 +49,7 @@ server.1.use_ssl=true
 server.1.sasl.username=
 server.1.sasl.password=
 server.1.sasl.required=false
+server.1.sasl.allow_plaintext=false
 
 # The time to wait (in seconds) before trying another server when connecting or
 # reconnecting.

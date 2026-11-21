@@ -140,6 +140,46 @@ public class SiteBotSaslConnectTest {
 
     @Test
     @Timeout(20)
+    public void saslRefusedWithoutTlsNotRequired() throws Exception {
+        // use_ssl=false and no sasl.allow_plaintext: no CAP/AUTHENTICATE at all, plain registration
+        startServer(Mode.SASL_OK);
+        connectBot(baseProperties(_serverSocket.getLocalPort(), false));
+
+        assertEquals(1, _connections.size());
+        List<String> lines = _connections.get(0);
+        assertEquals(List.of("NICK drftpd", "USER drftpd 8 * :drftpd", "WHOIS drftpd"), lines.subList(0, 3));
+        assertTrue(lines.stream().noneMatch(l -> l.startsWith("CAP") || l.startsWith("AUTHENTICATE")), lines.toString());
+        assertEquals("drftpd!drftpd@test.host", _bot.getHostMask());
+    }
+
+    @Test
+    @Timeout(20)
+    public void saslRefusedWithoutTlsRequiredSkipsServer() throws Exception {
+        // server 1: plain, required, not allowed -> skipped without even connecting;
+        // server 2 (same fake ircd): allow_plaintext=true -> SASL login
+        startServer(Mode.SASL_OK);
+        Properties p = baseProperties(_serverSocket.getLocalPort(), true);
+        p.setProperty("server.2.host", p.getProperty("server.1.host"));
+        p.setProperty("server.2.port", p.getProperty("server.1.port"));
+        p.setProperty("server.2.password", "");
+        p.setProperty("server.2.use_ssl", "false");
+        p.setProperty("server.2.sasl.username", "drftpd");
+        p.setProperty("server.2.sasl.password", PASSWORD);
+        p.setProperty("server.2.sasl.required", "true");
+        p.setProperty("server.2.sasl.allow_plaintext", "true");
+        connectBot(p);
+
+        assertEquals(1, _connections.size());
+        List<String> lines = _connections.get(0);
+        assertEquals("CAP LS 302", lines.get(0));
+        assertEquals(1, Collections.frequency(lines, "CAP END"));
+        assertTrue(lines.contains("WHOIS drftpd"));
+        // the refused server counted as a SASL failure, the successful login reset the counter
+        assertEquals(0, getField(_bot, "_saslFailures"));
+    }
+
+    @Test
+    @Timeout(20)
     public void serverWithoutCapSupport() throws Exception {
         startServer(Mode.NO_CAP);
         connectBot(false);
@@ -169,10 +209,27 @@ public class SiteBotSaslConnectTest {
     }
 
     private void connectBot(boolean required) throws Exception {
+        Properties p = baseProperties(_serverSocket.getLocalPort(), required);
+        // the fake server is not TLS
+        p.setProperty("server.1.sasl.allow_plaintext", "true");
+        connectBot(p);
+    }
+
+    private void connectBot(Properties p) throws Exception {
+        _bot = new SiteBot("unused/");
+        setField(_bot, "_config", new SiteBotConfig(p));
+        _bot.setEncoding("UTF-8");
+        // skip the reconnect delay (wait(0) would block forever)
+        _bot.setDisconnected(true);
+        _bot.connect();
+    }
+
+    /** Minimal irc.conf for one plain (non-ssl) server with SASL configured. */
+    static Properties baseProperties(int port, boolean required) {
         Properties p = new Properties();
         p.setProperty("ssl.strictTrust", "false");
         p.setProperty("server.1.host", InetAddress.getLoopbackAddress().getHostAddress());
-        p.setProperty("server.1.port", Integer.toString(_serverSocket.getLocalPort()));
+        p.setProperty("server.1.port", Integer.toString(port));
         p.setProperty("server.1.password", "");
         p.setProperty("server.1.use_ssl", "false");
         p.setProperty("server.1.sasl.username", "drftpd");
@@ -198,13 +255,7 @@ public class SiteBotSaslConnectTest {
         p.setProperty("bot.name", "testbot");
         p.setProperty("commands.max", "1");
         p.setProperty("commands.full", "block");
-
-        _bot = new SiteBot("unused/");
-        setField(_bot, "_config", new SiteBotConfig(p));
-        _bot.setEncoding("UTF-8");
-        // skip the reconnect delay (wait(0) would block forever)
-        _bot.setDisconnected(true);
-        _bot.connect();
+        return p;
     }
 
     private static void setField(Object target, String name, Object value) throws Exception {

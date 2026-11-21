@@ -281,6 +281,21 @@ public class SiteBot implements ReplyConstants, Runnable {
         // Clear everything we may have know about channels.
         this.removeAllChannels();
 
+        // SASL PLAIN sends the password base64 encoded: never over a connection without TLS unless allowed.
+        boolean useSasl = serverConfig.isSaslEnabled();
+        if (serverConfig.isSaslRefusedWithoutTls()) {
+            useSasl = false;
+            if (serverConfig.isSaslRequired()) {
+                logger.error("SASL is configured for {}:{} but use_ssl=false: refusing to send the SASL password in clear text"
+                        + " (set use_ssl=true, or sasl.allow_plaintext=true to override). sasl.required=true, skipping this server",
+                        _server, _port);
+                return ConnectOutcome.SASL_FAILED;
+            }
+            logger.error("SASL is configured for {}:{} but use_ssl=false: refusing to send the SASL password in clear text"
+                    + " (set use_ssl=true, or sasl.allow_plaintext=true to override). Connecting without SASL",
+                    _server, _port);
+        }
+
         String bindAddress = _config.getLocalBindHost();
         Socket socket;
         try {
@@ -332,7 +347,7 @@ public class SiteBot implements ReplyConstants, Runnable {
         // IRCv3 capability negotiation and SASL PLAIN, only when configured for this server.
         // CAP LS goes after PASS and before NICK/USER so the server holds registration until CAP END.
         SaslNegotiator sasl = null;
-        if (serverConfig.isSaslEnabled()) {
+        if (useSasl) {
             sasl = new SaslNegotiator(serverConfig.getSaslUsername(), serverConfig.getSaslPassword(),
                     serverConfig.isSaslRequired(), SaslNegotiator.DEFAULT_TIMEOUT_MILLIS);
             sendRawLines(bwriter, sasl.start(System.currentTimeMillis()));
