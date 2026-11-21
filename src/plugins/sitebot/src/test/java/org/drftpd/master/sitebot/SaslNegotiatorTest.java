@@ -368,4 +368,16 @@ public class SaslNegotiatorTest {
             assertFalse(SaslNegotiator.maskForLog(l).contains("cHBw"), l);
         }
     }
+
+    @Test
+    public void maskForLogServerPassword() {
+        assertEquals("PASS <masked>", SaslNegotiator.maskForLog("PASS serverSecret"));
+        assertEquals("pass <masked>", SaslNegotiator.maskForLog("pass serverSecret"));
+        assertEquals("PASS <masked>", SaslNegotiator.maskForLog("PASS :with spaces secret"));
+        assertFalse(SaslNegotiator.maskForLog("PASS serverSecret").contains("serverSecret"));
+        // only the command itself, not text that merely contains PASS
+        assertEquals("PRIVMSG #chan :PASS x", SaslNegotiator.maskForLog("PRIVMSG #chan :PASS x"));
+        assertEquals("PASSWORD x", SaslNegotiator.maskForLog("PASSWORD x"));
+        assertEquals("NICK drftpd", SaslNegotiator.maskForLog("NICK drftpd"));
+    }
 }

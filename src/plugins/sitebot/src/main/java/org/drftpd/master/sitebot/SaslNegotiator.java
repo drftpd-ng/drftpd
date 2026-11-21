@@ -382,7 +382,8 @@ public class SaslNegotiator {
     }
 
     /**
-     * Masks AUTHENTICATE payloads so credentials never reach the logs.
+     * Masks AUTHENTICATE payloads and the PASS argument (server password) so credentials never
+     * reach the logs.
      */
     public static String maskForLog(String line) {
         if (line == null) {
@@ -403,6 +404,9 @@ public class SaslNegotiator {
                 return line;
             }
             return line.substring(0, start + 13) + "<masked>";
+        }
+        if (line.regionMatches(true, start, "PASS ", 0, 5)) {
+            return line.substring(0, start + 5) + "<masked>";
         }
         return line;
     }
