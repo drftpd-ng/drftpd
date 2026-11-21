@@ -294,11 +294,87 @@ public final class DupeUtils {
     }
 
     /**
+     * Year used for dated formats without a year field: a leap year, so 0229 is a valid MMdd.
+     */
+    private static final String LEAP_YEAR = "2000";
+
+    /**
      * @param relPath path relative to the section base directory
      * @return true when the path is exactly a date in the given format (strict parsing, the parsed
      * date must format back to the same text)
      */
     static boolean isDatedDir(String relPath, DateFormat format) {
+        if (roundTrips(relPath, format)) {
+            return true;
+        }
+        if (!(format instanceof SimpleDateFormat simple)) {
+            return false;
+        }
+        String pattern = simple.toPattern();
+        String letters = unquotedLetters(pattern);
+        String text = relPath;
+        // Without a year field the date is parsed in 1970, which has no February 29th: parse it in a
+        // leap year instead, so the 0229 dir of an MMdd section is recognised
+        if (letters.indexOf('y') < 0 && letters.indexOf('Y') < 0) {
+            pattern = pattern + " yyyy";
+            text = relPath + " " + LEAP_YEAR;
+            if (roundTrips(text, withPattern(simple, pattern))) {
+                return true;
+            }
+        }
+        // The first week of a year can start in the previous calendar year, so with a calendar year
+        // (yyyy-ww) the dir 2026-01 does not round trip: compare using the week year (YYYY-ww) instead
+        if (letters.indexOf('w') >= 0 && letters.indexOf('Y') < 0) {
+            return roundTrips(text, withPattern(simple, replaceUnquoted(pattern, 'y', 'Y')));
+        }
+        return false;
+    }
+
+    /**
+     * @return a copy of the format (same symbols, calendar and time zone) using the given pattern
+     */
+    private static SimpleDateFormat withPattern(SimpleDateFormat format, String pattern) {
+        SimpleDateFormat f = (SimpleDateFormat) format.clone();
+        f.applyPattern(pattern);
+        return f;
+    }
+
+    /**
+     * @return the pattern letters of a SimpleDateFormat pattern, without the quoted literal text
+     */
+    private static String unquotedLetters(String pattern) {
+        StringBuilder letters = new StringBuilder();
+        boolean quoted = false;
+        for (char c : pattern.toCharArray()) {
+            if (c == '\'') {
+                quoted = !quoted;
+            } else if (!quoted && Character.isLetter(c)) {
+                letters.append(c);
+            }
+        }
+        return letters.toString();
+    }
+
+    /**
+     * @return the pattern with every unquoted pattern letter from replaced by to
+     */
+    private static String replaceUnquoted(String pattern, char from, char to) {
+        StringBuilder result = new StringBuilder();
+        boolean quoted = false;
+        for (char c : pattern.toCharArray()) {
+            if (c == '\'') {
+                quoted = !quoted;
+            }
+            result.append(!quoted && c == from ? to : c);
+        }
+        return result.toString();
+    }
+
+    /**
+     * @return true when the text is exactly a date in the given format (strict parsing, the parsed
+     * date must format back to the same text)
+     */
+    private static boolean roundTrips(String relPath, DateFormat format) {
         DateFormat f = (DateFormat) format.clone();
         f.setLenient(false);
         ParsePosition pos = new ParsePosition(0);

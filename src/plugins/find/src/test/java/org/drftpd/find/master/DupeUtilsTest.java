@@ -220,6 +220,43 @@ public class DupeUtilsTest {
     }
 
     @Test
+    public void february29thIsADatedDirWithoutYearInTheFormat() {
+        // MMdd has no year, parsed in 1970 0229 would not be a valid date
+        assertTrue(DupeUtils.isDatedDir("0229", new SimpleDateFormat("MMdd")));
+        assertTrue(DupeUtils.isReleaseDir("/0DAY/0229/Tool.v1.0-GRP", ODAY_DATED));
+        assertTrue(DupeUtils.isDatedDir("1231", new SimpleDateFormat("MMdd")));
+        assertTrue(DupeUtils.isDatedDir("29-02", new SimpleDateFormat("dd-MM")));
+        assertFalse(DupeUtils.isDatedDir("0230", new SimpleDateFormat("MMdd")));
+        assertFalse(DupeUtils.isDatedDir("1301", new SimpleDateFormat("MMdd")));
+        // With a year the year decides
+        assertTrue(DupeUtils.isDatedDir("2024/0229", new SimpleDateFormat("yyyy/MMdd")));
+        assertFalse(DupeUtils.isDatedDir("2025/0229", new SimpleDateFormat("yyyy/MMdd")));
+    }
+
+    @Test
+    public void firstWeekOfAYearIsADatedDir() {
+        // Week 1 of 2026 starts in December 2025, yyyy-ww does not round trip for it
+        for (Locale locale : List.of(Locale.US, Locale.GERMANY)) {
+            SimpleDateFormat weekly = new SimpleDateFormat("yyyy-ww", locale);
+            assertTrue(DupeUtils.isDatedDir("2026-01", weekly), locale.toString());
+            assertTrue(DupeUtils.isDatedDir("2026-10", weekly), locale.toString());
+            assertTrue(DupeUtils.isDatedDir("2025-52", weekly), locale.toString());
+            assertFalse(DupeUtils.isDatedDir("2026-60", weekly), locale.toString());
+            assertFalse(DupeUtils.isDatedDir("2026-00", weekly), locale.toString());
+            assertFalse(DupeUtils.isDatedDir("2026-1", weekly), locale.toString());
+        }
+        SectionInfo weeklySection = new SectionInfo("/TV", new SimpleDateFormat("yyyy-ww", Locale.US));
+        assertTrue(DupeUtils.isReleaseDir("/TV/2026-01/Show.S01E01-GRP", weeklySection));
+        // Every dir the section creates is recognised, including the ones around the year boundary
+        SimpleDateFormat weekly = new SimpleDateFormat("yyyy-ww", Locale.US);
+        weekly.setTimeZone(TimeZone.getTimeZone("UTC"));
+        for (long day = 0; day < 3 * 366; day++) {
+            String dir = weekly.format(new Date(1_735_689_600_000L + day * 24 * 60 * MINUTE)); // 2025-01-01
+            assertTrue(DupeUtils.isDatedDir(dir, weekly), dir);
+        }
+    }
+
+    @Test
     public void onlyReleasesAreComparedWhenStartingFromRoot() {
         // The examples of the review: whole sections, dated dirs and sub dirs of different releases
         List<Copy> found = List.of(
