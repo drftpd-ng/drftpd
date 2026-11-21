@@ -40,6 +40,15 @@ final class SpeedTestSelection {
         return globalValue != null && "slave".equalsIgnoreCase(globalValue.trim());
     }
 
+    /** @return false if a per-slave speedtest.selection value is set but is neither 'slave' nor 'geo'. */
+    static boolean isKnownSetting(String slaveSetting) {
+        if (slaveSetting == null) {
+            return true;
+        }
+        String v = slaveSetting.trim();
+        return v.isEmpty() || v.equalsIgnoreCase("slave") || v.equalsIgnoreCase("geo");
+    }
+
     /**
      * @param globalSlaveMode global server.selection is 'slave'
      * @param slaveSetting    per-slave speedtest.selection property, may be null/empty/unknown (follow global)

@@ -18,7 +18,8 @@ distance.unit=K
 # slave property speedtest.selection:
 #   SITE SLAVE <slavename> SET speedtest.selection slave
 #   SITE SLAVE <slavename> SET speedtest.selection geo
-#   SITE SLAVE <slavename> SET speedtest.selection      (empty: follow server.selection)
+#   SITE SLAVE <slavename> UNSET speedtest.selection    (remove it: follow server.selection)
+# Any other value is ignored (with a warning) and the slave follows server.selection.
 # Only the automatic choice of the nearest servers is affected. A server ID given to
 # SITE SPEEDTEST is always looked up in the full server list, in every mode.
 # Default: [geo]

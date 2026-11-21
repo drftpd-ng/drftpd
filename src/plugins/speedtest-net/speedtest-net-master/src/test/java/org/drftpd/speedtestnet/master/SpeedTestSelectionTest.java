@@ -61,6 +61,31 @@ class SpeedTestSelectionTest {
     }
 
     @Test
+    void unknownSettingDetection() {
+        assertTrue(SpeedTestSelection.isKnownSetting(null));
+        assertTrue(SpeedTestSelection.isKnownSetting(""));
+        assertTrue(SpeedTestSelection.isKnownSetting("  "));
+        assertTrue(SpeedTestSelection.isKnownSetting("slave"));
+        assertTrue(SpeedTestSelection.isKnownSetting(" GEO "));
+        assertFalse(SpeedTestSelection.isKnownSetting("slaves"));
+        assertFalse(SpeedTestSelection.isKnownSetting("bogus"));
+    }
+
+    @Test
+    void unknownSettingFollowsGlobal() {
+        assertEquals(FULL_LIST, decide(false, "slaves", 0));
+        assertEquals(SLAVE_NEAREST, decide(true, "slaves", 0));
+    }
+
+    @Test
+    void perSlaveDecisionWithGlobalGeoOnlyNeedsFullListForGeoSlaves() {
+        // Global geo: only slaves that resolve to FULL_LIST need the downloaded list
+        assertEquals(SLAVE_NEAREST, decide(false, "slave", 0));
+        assertEquals(FULL_LIST, decide(false, null, 0));
+        assertEquals(FULL_LIST, decide(false, "geo", 0));
+    }
+
+    @Test
     void requestedServerIdAlwaysUsesFullList() {
         assertEquals(FULL_LIST, decide(false, null, 1234));
         assertEquals(FULL_LIST, decide(true, null, 1234));

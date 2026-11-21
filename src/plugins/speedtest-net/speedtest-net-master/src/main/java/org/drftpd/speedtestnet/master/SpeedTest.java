@@ -49,6 +49,7 @@ public class SpeedTest extends CommandInterface {
     private char _unit;
     private String _unitSuffix;
     private boolean _slaveSelection;
+    private final Set<String> _warnedSettings = ConcurrentHashMap.newKeySet();
 
     public void initialize(String method, String pluginName, StandardCommandManager cManager) {
         super.initialize(method, pluginName, cManager);
@@ -96,12 +97,6 @@ public class SpeedTest extends CommandInterface {
         Map<String, Object> env = new HashMap<>();
         StringTokenizer st = new StringTokenizer(request.getArgument());
 
-        // First run?, load server list
-        if (_servers == null && !_slaveSelection) {
-            refreshServers();
-            request.getSession().printOutput(200, request.getSession().jprintf(_bundle, "speedtest.servers.refresh", env, request.getUser()));
-        }
-
         if (st.countTokens() == 0) {
             throw new ImproperUsageException();
         }
@@ -133,14 +128,6 @@ public class SpeedTest extends CommandInterface {
                 }
             } else {
                 throw new ImproperUsageException();
-            }
-        }
-
-        if (!_slaveSelection) {
-            if (_servers == null) {
-                return new CommandResponse(500, request.getSession().jprintf(_bundle, "speedtest.servers.null", env, request.getUser()));
-            } else if (_servers.isEmpty()) {
-                return new CommandResponse(500, request.getSession().jprintf(_bundle, "speedtest.servers.empty", env, request.getUser()));
             }
         }
 
@@ -177,9 +164,19 @@ public class SpeedTest extends CommandInterface {
             }
             HashMap<String, SpeedTestServer> testServers = new HashMap<>();
 
+            String selectionSetting = rslave.getProperty(SpeedTestSelection.SLAVE_KEY);
+            if (!SpeedTestSelection.isKnownSetting(selectionSetting)) {
+                if (_warnedSettings.add(rslave.getName() + "=" + selectionSetting)) {
+                    logger.warn("Unknown {} value '{}' for slave {}, expected 'slave' or 'geo'; following server.selection",
+                            SpeedTestSelection.SLAVE_KEY, selectionSetting, rslave.getName());
+                }
+                env.put("selection.value", selectionSetting);
+                request.getSession().printOutput(200, request.getSession().jprintf(_bundle, "speedtest.selection.unknown", env, request.getUser()));
+            }
+
             // Preferred: let the slave ask speedtest.net for the servers closest to it
             List<SpeedTestServer> slaveServers = null;
-            if (SpeedTestSelection.decide(_slaveSelection, rslave.getProperty(SpeedTestSelection.SLAVE_KEY), testServerID)
+            if (SpeedTestSelection.decide(_slaveSelection, selectionSetting, testServerID)
                     == SpeedTestSelection.Source.SLAVE_NEAREST) {
                 slaveServers = SpeedTestUtils.getServersFromSlave(rslave, SLAVE_SERVER_LIMIT);
                 if (slaveServers == null) {
@@ -207,7 +204,11 @@ public class SpeedTest extends CommandInterface {
                 if (_servers == null) {
                     refreshServers();
                 }
-                if (_servers == null || _servers.isEmpty()) {
+                if (_servers == null) {
+                    request.getSession().printOutput(500, request.getSession().jprintf(_bundle, "speedtest.servers.null", env, request.getUser()));
+                    continue;
+                }
+                if (_servers.isEmpty()) {
                     request.getSession().printOutput(500, request.getSession().jprintf(_bundle, "speedtest.servers.empty", env, request.getUser()));
                     continue;
                 }
