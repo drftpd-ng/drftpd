@@ -128,6 +128,7 @@ public class HomeDirectoryTest {
         boolean makeDir;
         boolean concurrentCreate;
         boolean denyOnCreate;
+        boolean createdHidden;
         int created;
 
         @Override
@@ -152,7 +153,7 @@ public class HomeDirectoryTest {
         }
 
         @Override
-        public String create(String path) throws FileExistsException, PermissionDeniedException {
+        public void create(String path) throws FileExistsException, PermissionDeniedException {
             if (denyOnCreate) {
                 throw new PermissionDeniedException("denied");
             }
@@ -162,8 +163,12 @@ public class HomeDirectoryTest {
                 throw new FileExistsException(path + " already exists");
             }
             created++;
-            visible.add(path);
-            return path;
+            if (createdHidden) {
+                // Created, but privpath hides it from the user
+                hidden.add(path);
+            } else {
+                visible.add(path);
+            }
         }
     }
 
@@ -215,6 +220,15 @@ public class HomeDirectoryTest {
         access.concurrentCreate = true;
         assertEquals("/home/bob", HomeDirectory.locate("/home/bob", true, "bob", access));
         assertEquals(0, access.created);
+    }
+
+    @Test
+    public void testLocateCreatedButNotVisible() {
+        FakeAccess access = new FakeAccess();
+        access.makeDir = true;
+        access.createdHidden = true;
+        assertNull(HomeDirectory.locate("/home/bob", true, "bob", access));
+        assertEquals(1, access.created);
     }
 
     @Test

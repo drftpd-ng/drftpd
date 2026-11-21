@@ -27,7 +27,6 @@ import org.drftpd.master.commands.CommandRequest;
 import org.drftpd.master.commands.CommandResponse;
 import org.drftpd.master.commands.StandardCommandManager;
 import org.drftpd.master.commands.usermanagement.UserManagement;
-import org.drftpd.master.event.DirectoryFtpEvent;
 import org.drftpd.master.event.UserEvent;
 import org.drftpd.master.network.BaseFtpConnection;
 import org.drftpd.master.network.FtpReply;
@@ -181,7 +180,8 @@ public class LoginHandler extends CommandInterface {
      * {@code SITE CHANGE <user> homedir} takes precedence over 'homedir' in master.conf.
      * The directory is looked up as the user (privpath applies) and is only created when
      * 'homedir.create' is enabled, its parent already exists and the user has the 'makedir'
-     * permission for it, in which case it is created like MKD would (same event).
+     * permission for it, in which case it is created with the same permission and privpath
+     * checks as MKD. No MKD event is published and no MKD command hooks run.
      *
      * @return the home directory, or null to keep the default (root) directory
      */
@@ -217,21 +217,20 @@ public class LoginHandler extends CommandInterface {
 
             @Override
             public boolean canMakeDir(String dirPath) {
-                // Same check as DirectoryHandle.createDirectory, used by MKD
+                // Same permission check as DirectoryHandle.createDirectory, used by MKD
                 return GlobalContext.getConfig().getVFSPermissions().checkPathPermission("makedir", user, new DirectoryHandle(dirPath));
             }
 
             @Override
-            public DirectoryHandle create(String dirPath) throws FileExistsException, FileNotFoundException,
+            public void create(String dirPath) throws FileExistsException, FileNotFoundException,
                     ObjectNotValidException, PermissionDeniedException {
                 int idx = dirPath.lastIndexOf('/');
                 String parentPath = idx == 0 ? "/" : dirPath.substring(0, idx);
                 DirectoryHandle parent = root.getDirectory(parentPath, user);
-                // Same path as MKD: permission checks, then the MKD event
-                DirectoryHandle homeDir = parent.createDirectory(user, dirPath.substring(idx + 1));
-                GlobalContext.getEventService().publishAsync(new DirectoryFtpEvent(user, "MKD", homeDir));
-                // Look it up again as the user so privpath still applies to the new directory
-                return root.getDirectory(homeDir.getPath(), user);
+                // Same permission and privpath checks as MKD, nothing more: no MKD event
+                // (announce, latest dir, nfo/sfv missing) and no MKD command hooks, this is
+                // a server action at login and not an upload by the user.
+                parent.createDirectory(user, dirPath.substring(idx + 1));
             }
         });
     }

@@ -130,9 +130,12 @@ disk.commit.delay=10000
 # If the directory does not exist (or is hidden from the user) the user lands in /.
 #homedir=/home/${user}
 
-# Create a missing home directory at login, as if the user had run MKD:
-#  the user needs the 'makedir' permission for it in perms.conf, the MKD event
-#  is fired, and the directory is owned by the user and its primary group.
+# Create a missing home directory at login. It uses the same permission and
+#  privpath checks as MKD, nothing more: the user needs the 'makedir' permission
+#  for it in perms.conf, and the directory is owned by the user and its primary group.
+# No MKD event is sent (so nothing is announced and latest-dir, nfo/sfv-missing
+#  and similar plugins do not see it) and MKD command hooks (dupecheck, nukefilter,
+#  tvmaze, ...) do not run: this is a server action at login, not an upload.
 # If the user lacks 'makedir' the directory is not created (logged at info level)
 #  and the user lands in /.
 # Its parent directory (e.g. /home) must already exist and be visible to the user.

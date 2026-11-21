@@ -59,12 +59,13 @@ public final class HomeDirectory {
         boolean canMakeDir(String path);
 
         /**
-         * Creates the directory as the user would with MKD (permission check and events).
+         * Creates the directory as the user, with the same permission and privpath checks
+         * as MKD. No MKD event is published and no MKD command hooks run.
          *
          * @throws FileExistsException if it was created meanwhile (e.g. by a concurrent login)
          * @throws FileNotFoundException if the parent does not exist or is hidden from the user
          */
-        D create(String path) throws FileExistsException, FileNotFoundException,
+        void create(String path) throws FileExistsException, FileNotFoundException,
                 ObjectNotValidException, PermissionDeniedException;
     }
 
@@ -86,7 +87,8 @@ public final class HomeDirectory {
      * <ul>
      * <li>the home directory exists and is visible to the user: land in it</li>
      * <li>it is missing and {@code create} is false: stay in the root directory</li>
-     * <li>it is missing and the user has 'makedir' for it: create it, like MKD would</li>
+     * <li>it is missing and the user has 'makedir' for it: create it with the same permission
+     * and privpath checks as MKD (no MKD event is published and no MKD hooks run)</li>
      * <li>it is missing and the user lacks 'makedir': stay in the root directory</li>
      * <li>it was created meanwhile by a concurrent login: land in it</li>
      * </ul>
@@ -119,9 +121,14 @@ public final class HomeDirectory {
             return null;
         }
         try {
-            D homeDir = access.create(path);
+            access.create(path);
             logger.info("Created home directory '{}' for user '{}'", path, user);
-            return homeDir;
+            try {
+                return access.lookup(path);
+            } catch (FileNotFoundException | ObjectNotValidException e2) {
+                logger.warn("Home directory '{}' of user '{}' was created but is not visible to the user, staying at root", path, user);
+                return null;
+            }
         } catch (FileExistsException e) {
             // Created meanwhile, e.g. by a concurrent login of the same user
             try {
