@@ -308,6 +308,28 @@ public class DupeUtilsTest {
         assertThrows(IllegalArgumentException.class, () -> DupeUtils.parseMinAge("1h"));
     }
 
+    // --- actions ---
+
+    @Test
+    public void onlyReviewedActionsCanBeCombinedWithDupe() {
+        for (String allowed : List.of("Print", "Printf", "Wipe", "Nuke", "wipe")) {
+            assertTrue(DupeUtils.isDupeActionAllowed(allowed), allowed);
+        }
+        for (String refused : List.of("Unnuke", "SendToSlaves", "DeleteFromSlaves", "Delete", "SomeFutureAction")) {
+            assertFalse(DupeUtils.isDupeActionAllowed(refused), refused);
+        }
+        assertFalse(DupeUtils.isDupeActionAllowed(null));
+    }
+
+    @Test
+    public void actionsThatChangeSomethingNeedADupePermission() {
+        assertEquals("dupewipe", DupeUtils.dupeActionPermission("Wipe"));
+        // -nuke runs on dirs too, without its own permission -dupe -nuke would mass nuke with only "nuke"
+        assertEquals("dupenuke", DupeUtils.dupeActionPermission("Nuke"));
+        assertNull(DupeUtils.dupeActionPermission("Print"));
+        assertNull(DupeUtils.dupeActionPermission("Printf"));
+    }
+
     // --- kept copy re-check ---
 
     @Test

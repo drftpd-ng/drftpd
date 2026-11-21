@@ -163,6 +163,36 @@ public final class DupeUtils {
     public record RunResult(int groups, List<String> lines) {
     }
 
+    /**
+     * Actions that may be combined with -dupe (lower case action names) and the extra permission each one
+     * needs on top of its own action permission, "" when none. Every other action is refused: -dupe selects
+     * whole releases in bulk, so an action is only allowed once it has been reviewed for that and has its
+     * own dupe permission when it changes anything. Actions added later are refused until listed here.
+     */
+    private static final Map<String, String> DUPE_ACTIONS = Map.of(
+            "print", "",
+            "printf", "",
+            "wipe", "dupewipe",
+            "nuke", "dupenuke");
+
+    /**
+     * @param actionName name of a find action, e.g. "Wipe"
+     * @return true when the action may be combined with -dupe
+     */
+    public static boolean isDupeActionAllowed(String actionName) {
+        return actionName != null && DUPE_ACTIONS.containsKey(actionName.toLowerCase(Locale.ROOT));
+    }
+
+    /**
+     * @param actionName name of a find action, e.g. "Wipe"
+     * @return the extra permission (find.conf key) needed to combine the action with -dupe, null when none
+     * (printing actions, or actions that are refused anyway, see {@link #isDupeActionAllowed})
+     */
+    public static String dupeActionPermission(String actionName) {
+        String permission = actionName == null ? null : DUPE_ACTIONS.get(actionName.toLowerCase(Locale.ROOT));
+        return permission == null || permission.isEmpty() ? null : permission;
+    }
+
     private static final Comparator<Copy> OLDEST_FIRST =
             Comparator.comparingLong(Copy::creationTime).thenComparing(Copy::path);
 
