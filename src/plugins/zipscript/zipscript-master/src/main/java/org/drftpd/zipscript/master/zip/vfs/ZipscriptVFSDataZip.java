@@ -36,6 +36,7 @@ import org.drftpd.zipscript.master.zip.ZipscriptZipIssuer;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Locale;
 
 /**
  * @author djb61
@@ -61,42 +62,7 @@ public class ZipscriptVFSDataZip {
 
         // There is no existing dizinfo so we need to retrieve it and set it
         // Find the info for the first zip file we come across and use that
-        DizInfo dizInfo = null;
-        for (FileHandle file : _dir.getFilesUnchecked()) {
-            // We only care for files
-            if (!file.isFile()) {
-                continue;
-            }
-            // Only care for files ending in .zip
-            if (!file.getName().toLowerCase().endsWith(".zip")) {
-                continue;
-            }
-            // Ignore any files that are not complete yet
-            if (file.isUploading()) {
-                continue;
-            }
-
-            // If we get here we have a .diz file that should be complete and we can get valid dizinfo
-            if (file.getSize() > 0 && file.getXfertime() != -1) {
-                try {
-                    RemoteSlave rslave = file.getASlaveForFunction();
-                    logger.debug("Trying to retrieve DIZINFO from slave {} for file {}", rslave, file);
-                    String index = getZipIssuer().issueZipDizInfoToSlave(rslave, file.getPath());
-                    dizInfo = fetchDizInfoFromIndex(rslave, index);
-                } catch (NoAvailableSlaveException e) {
-                    // Not an issue, file was available but slave dropped, try next file
-                } catch (SlaveUnavailableException e) {
-                    // okay, it went offline while trying, try next file
-                } catch (RemoteIOException e) {
-                    // continue, the next zip might work
-                }
-
-                // If we have valid dizinfo stop the loop
-                if (dizInfo != null && dizInfo.isValid()) {
-                    break;
-                }
-            }
-        }
+        DizInfo dizInfo = readFromSlaves().getDizInfo();
 
         // We wait potentially very long above for diz info and we could have gotten dizinfo by now, so check that
         try {
@@ -114,6 +80,107 @@ public class ZipscriptVFSDataZip {
             }
         }
         throw new FileNotFoundException("No usable zip files found in directory");
+    }
+
+    /**
+     * Reads the DIZ info from the slaves, ignoring and not touching the cached value on the inode.
+     * Unlike {@link #getDizInfo()} this tells apart a DIZ that is really not there from a DIZ that could not be
+     * read (no slave answered, or no zip is complete yet), so callers can avoid dropping a good cached value.
+     */
+    public DizReadResult readDizInfoFresh() {
+        try {
+            DizReadResult result = readFromSlaves();
+            if (result.getStatus() == DizReadResult.Status.FOUND) {
+                return result;
+            }
+            return new DizReadResult(result.getStatus(), null);
+        } catch (FileNotFoundException e) {
+            // directory or file deleted meanwhile, nothing could be read
+            logger.debug("Unable to read DIZINFO, {} or one of its files is gone", _dir, e);
+            return new DizReadResult(DizReadResult.Status.UNAVAILABLE, null);
+        }
+    }
+
+    /**
+     * Asks the slaves for the DIZ info of the eligible zips until a valid one is found.
+     * The returned DizInfo is the last one read, valid or not, or null if nothing was read.
+     */
+    private DizReadResult readFromSlaves() throws FileNotFoundException {
+        DizInfo dizInfo = null;
+        boolean anyRead = false;
+        for (FileHandle file : _dir.getFilesUnchecked()) {
+            if (!isEligibleZip(file.getName(), file.isFile(), file.isUploading(), file.getSize(), file.getXfertime())) {
+                continue;
+            }
+            try {
+                RemoteSlave rslave = file.getASlaveForFunction();
+                logger.debug("Trying to retrieve DIZINFO from slave {} for file {}", rslave, file);
+                String index = getZipIssuer().issueZipDizInfoToSlave(rslave, file.getPath());
+                dizInfo = fetchDizInfoFromIndex(rslave, index);
+                anyRead = true;
+            } catch (NoAvailableSlaveException e) {
+                // Not an issue, file was available but slave dropped, try next file
+            } catch (SlaveUnavailableException e) {
+                // okay, it went offline while trying, try next file
+            } catch (RemoteIOException e) {
+                // continue, the next zip might work
+            }
+
+            // If we have valid dizinfo stop the loop
+            if (dizInfo != null && dizInfo.isValid()) {
+                break;
+            }
+        }
+        return new DizReadResult(decideStatus(anyRead, dizInfo), dizInfo);
+    }
+
+    /**
+     * Only complete .zip files can give valid dizinfo.
+     */
+    static boolean isEligibleZip(String name, boolean isFile, boolean isUploading, long size, long xfertime) {
+        return isFile
+                && name.toLowerCase(Locale.ROOT).endsWith(".zip")
+                && !isUploading
+                && size > 0
+                && xfertime != -1;
+    }
+
+    static DizReadResult.Status decideStatus(boolean anyRead, DizInfo dizInfo) {
+        if (dizInfo != null && dizInfo.isValid()) {
+            return DizReadResult.Status.FOUND;
+        }
+        return anyRead ? DizReadResult.Status.NOT_FOUND : DizReadResult.Status.UNAVAILABLE;
+    }
+
+    /**
+     * Outcome of reading the DIZ info from the slaves.
+     */
+    public static final class DizReadResult {
+        public enum Status {
+            /** A valid DIZ was read. */
+            FOUND,
+            /** At least one eligible zip was read from a slave and no valid DIZ was found. */
+            NOT_FOUND,
+            /** No eligible zip could be read: no slave answered or no zip is complete yet. */
+            UNAVAILABLE
+        }
+
+        private final Status _status;
+        private final DizInfo _dizInfo;
+
+        DizReadResult(Status status, DizInfo dizInfo) {
+            _status = status;
+            _dizInfo = dizInfo;
+        }
+
+        public Status getStatus() {
+            return _status;
+        }
+
+        /** @return the valid DizInfo for FOUND, null otherwise */
+        public DizInfo getDizInfo() {
+            return _dizInfo;
+        }
     }
 
     public DizStatus getDizStatus() throws IOException, NoAvailableSlaveException {
