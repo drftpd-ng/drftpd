@@ -46,7 +46,8 @@ public class VFSRegexPermission extends VFSPermHandler {
                 "rename", "renameex",
                 "renameown", "renameownex",
                 "privpath", "privpathex",
-                "download", "downloadex");
+                "download", "downloadex",
+                "wipe", "wipeex");
     }
 
     @Override

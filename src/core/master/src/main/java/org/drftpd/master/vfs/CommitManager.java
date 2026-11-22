@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * This classes handle all XML commits.
@@ -45,7 +44,6 @@ public class CommitManager {
 
     private final ConcurrentLinkedQueue<CommitableWrapper> _commitQueue;
     private boolean _isStarted;
-    private final AtomicInteger _queueSize;
     private volatile boolean _drainQueue;
     private Thread _commitThread;
 
@@ -54,7 +52,6 @@ public class CommitManager {
      */
     private CommitManager() {
         _commitQueue = new ConcurrentLinkedQueue<>();
-        _queueSize = new AtomicInteger();
     }
 
     /**
@@ -101,7 +98,6 @@ public class CommitManager {
             // object already queued to write
         }
         _commitQueue.offer(new CommitableWrapper(object));
-        _queueSize.incrementAndGet();
     }
 
     /**
@@ -126,9 +122,8 @@ public class CommitManager {
         for (Iterator<CommitableWrapper> iter = _commitQueue.iterator(); iter.hasNext(); ) {
             CommitableWrapper cw = iter.next();
             if (cw != null && cw.equals(object)) {
-                iter.remove();
-                _queueSize.decrementAndGet();
-                return true;
+                // Only report a removal if this call removed it: the commit thread may have just done so
+                return _commitQueue.remove(cw);
             }
         }
         return false;
@@ -151,9 +146,13 @@ public class CommitManager {
 
     /**
      * @return the number of outstanding objects to commit.
+     * Counted from the queue itself: a separate counter drifted (and could go negative) when the commit
+     * thread and {@link #remove(Commitable)} removed the same entry at the same time, because
+     * {@link java.util.concurrent.ConcurrentLinkedQueue}'s iterator remove() is a silent no-op when the
+     * entry is already gone but both sides decremented. The shutdown code waits on this value.
      */
     public int getQueueSize() {
-        return _queueSize.get();
+        return _commitQueue.size();
     }
 
     /**
@@ -199,7 +198,6 @@ public class CommitManager {
                 if (cw.getTime() < time || _drainQueue) {
                     if (writeCommitable(cw.getCommitable())) {
                         iter.remove();
-                        _queueSize.decrementAndGet();
                     }
                 }
             }

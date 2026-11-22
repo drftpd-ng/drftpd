@@ -67,14 +67,20 @@ public class ZipscriptDataExtension implements IndexDataExtensionInterface {
             try {
                 sfvInfo = inode.getPluginMetaData(SFVInfo.SFVINFO);
                 sfvStatus = getSFVStatus(sfvInfo, new DirectoryHandle(inode.getPath()));
-            } catch (KeyNotFoundException | IOException e) {
+            } catch (KeyNotFoundException e) {
                 // Fields will be cleared below
+            } catch (IOException e) {
+                // Fields will be cleared below
+                logger.debug("Unable to get SFV status for index of {}: {}", inode.getPath(), e.getMessage());
             }
             try {
                 dizInfo = inode.getPluginMetaData(DizInfo.DIZINFO);
                 dizStatus = getDizStatus(dizInfo, new DirectoryHandle(inode.getPath()));
-            } catch (KeyNotFoundException | IOException e) {
+            } catch (KeyNotFoundException e) {
                 // Fields will be cleared below
+            } catch (IOException e) {
+                // Fields will be cleared below
+                logger.debug("Unable to get .diz status for index of {}: {}", inode.getPath(), e.getMessage());
             }
         }
         if (sfvStatus == null && dizStatus == null) {

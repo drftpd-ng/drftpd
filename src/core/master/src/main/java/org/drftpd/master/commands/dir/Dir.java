@@ -53,6 +53,7 @@ public class Dir extends CommandInterface {
     public static final Key<String> FILENAME = new Key<>(Dir.class, "fileName");
     public static final Key<Boolean> ISFILE = new Key<>(Dir.class, "isFile");
     public static final Key<Long> XFERTIME = new Key<>(Dir.class, "xferTime");
+    public static final Key<Long> LASTMODIFIED = new Key<>(Dir.class, "lastModified");
     public static final Key<Boolean> WIPE_RECURSIVE = new Key<>(Dir.class, "wipe_recursive");
     public static final Key<String> WIPE_PATH = new Key<>(Dir.class, "wipe_path");
     private static final SimpleDateFormat DATE_FMT = new SimpleDateFormat(
@@ -125,6 +126,7 @@ public class Dir extends CommandInterface {
         response.setObject(USERNAME, victim.getUsername());
         response.setObject(ISFILE, victim.isFile());
         response.setObject(XFERTIME, victim.isFile() ? ((FileHandle) victim).getXfertime() : 0L);
+        response.setObject(LASTMODIFIED, victim.lastModified());
     }
 
     /**
@@ -672,6 +674,7 @@ public class Dir extends CommandInterface {
 
         try {
             wipeFile = request.getCurrentDirectory().getInodeHandle(arg, user);
+            wipeFile.checkWipePermission(user);
 
             if (wipeFile.isDirectory() && !recursive) {
                 if (!((DirectoryHandle) wipeFile).isEmpty(user)) {
@@ -679,9 +682,15 @@ public class Dir extends CommandInterface {
                 }
             }
 
+            // a recursive wipe also removes everything below, refuse it if any of it is protected
+            wipeFile.checkWipeSubtreePermission(user);
+
             if (wipeFile.isLink()) {
                 InodeHandle linkFile = wipeFile;
                 wipeFile = ((LinkHandle) wipeFile).getTargetInodeUnchecked();
+                // the link target is what really gets wiped, check it too
+                wipeFile.checkWipePermission(user);
+                wipeFile.checkWipeSubtreePermission(user);
                 linkFile.delete(request.getSession().getUserNull(request.getUser()));
             }
 

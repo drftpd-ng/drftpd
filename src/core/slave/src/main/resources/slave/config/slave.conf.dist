@@ -55,7 +55,7 @@ slave.timeout=60000
 # Default: [org.drftpd.slave.diskselection.filter.DiskSelectionFilter]
 diskselection=org.drftpd.slave.diskselection.filter.DiskSelectionFilter
 
-# Enabled cipher suites.
+# Enabled cipher suites for data transfers. The connection to the master uses master.ssl.* below.
 # If left empty, default set will be used.
 # Use whitelist to add specific chiphers to use.
 # All supported ciphers not included in whitelist will be removed.
@@ -67,7 +67,7 @@ diskselection=org.drftpd.slave.diskselection.filter.DiskSelectionFilter
 # Multiple whitelist/blacklist rules are supported.
 cipher.whitelist.1=.*_(POLY1305_SHA256|GCM_SHA384|GCM_SHA256).*
 
-# Enabled protocols.
+# Enabled protocols for data transfers. The connection to the master uses master.ssl.* below.
 # If left empty, default set will be used.
 protocol.1=TLSv1.2
 protocol.2=TLSv1.3
@@ -107,5 +107,7 @@ master.ssl.cipher_suites.2=TLS_AES_256_GCM_SHA384
 master.ssl.cipher_suites.3=TLS_CHACHA20_POLY1305_SHA256
 master.ssl.verification_mode=none
 master.ssl.client_authentication=optional
+# Keystore holding the certificate this slave presents to the master. Use a key unique to this slave
+# if the master pins slave certificates (see "SITE SLAVE <name> SET fingerprint" in master.conf).
 master.ssl.keystore.path=config/drftpd.key
 master.ssl.keystore.password=drftpd

@@ -297,9 +297,11 @@ public class ZipAnnouncer extends AbstractAnnouncer {
                 }
             }
         } catch (FileNotFoundException e) {
-            // SFV deleted?
+            // .zip deleted?
+            logger.debug(".zip in {} was deleted, skipping race announce", dir.getPath());
         } catch (IOException e) {
-            // SFV not readable
+            // .diz not readable
+            logger.warn("Unable to read .diz info in {}, skipping race announce", dir.getPath(), e);
         }
     }
 
@@ -377,6 +379,7 @@ public class ZipAnnouncer extends AbstractAnnouncer {
             } catch (Exception e1) {
                 // Failed to get diz data, safe to continue, that data
                 // will just not be available
+                logger.debug("Unable to get .diz totals for {}", dir.getPath(), e1);
             }
             if (event.getCommand().equals("PRE")) {
                 for (DirectoryHandle subdir : dir.getDirectoriesUnchecked()) {
@@ -390,6 +393,7 @@ public class ZipAnnouncer extends AbstractAnnouncer {
                     } catch (Exception e1) {
                         // Failed to get diz data, safe to continue, that data
                         // will just not be available
+                        logger.debug("Unable to get .diz totals for {}", subdir.getPath(), e1);
                     }
                 }
             }

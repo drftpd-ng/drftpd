@@ -32,6 +32,15 @@ public interface UserManager extends TimeEventInterface {
 
     User createUser(String username) throws UserFileException, FileExistsException;
 
+    /**
+     * Checks that a new password can be stored with the configured password hash,
+     * before an account is created or a password is changed.
+     *
+     * @throws IllegalArgumentException with a message for the user if the password is refused
+     */
+    default void checkNewPassword(String password) {
+    }
+
     Group createGroup(String groupname) throws GroupFileException, FileExistsException;
 
     Collection<Group> getAllGroups();

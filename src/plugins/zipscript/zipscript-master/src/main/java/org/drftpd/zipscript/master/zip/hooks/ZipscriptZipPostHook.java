@@ -170,7 +170,8 @@ public class ZipscriptZipPostHook extends ZipTools {
                 DizInfo dizInfo = zipData.getDizInfo();
                 response.addComment(new String(Base64.getMimeDecoder().decode(dizInfo.getString()), StandardCharsets.ISO_8859_1));
             } catch (IOException | NoAvailableSlaveException e) {
-                //Error fetching .diz, ignore
+                // Error fetching .diz, ignore
+                logger.debug("Unable to show .diz for {}: {}", response.getCurrentDirectory().getPath(), e.getMessage());
             }
         }
     }
@@ -345,7 +346,8 @@ public class ZipscriptZipPostHook extends ZipTools {
 
             response.addComment(ReplacerUtils.jprintf(raceTextBuilder.toString(), env));
         } catch (IOException | NoAvailableSlaveException e) {
-            //Error fetching SFV, ignore
+            // Error fetching .diz, ignore
+            logger.debug("Unable to show race stats for {}: {}", dir.getPath(), e.getMessage());
         }
     }
 }

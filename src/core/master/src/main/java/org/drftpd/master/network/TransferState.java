@@ -123,7 +123,7 @@ public class TransferState {
             return Transfer.TRANSFER_SENDING_DOWNLOAD;
         }
 
-        if ("STOR".equals(cmd) || "APPE".equals(cmd)) {
+        if ("STOR".equals(cmd)) {
             return Transfer.TRANSFER_RECEIVING_UPLOAD;
         }
         throw new IllegalStateException("Not transfering");
