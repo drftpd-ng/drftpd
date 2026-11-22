@@ -18,18 +18,21 @@
 package org.drftpd.master.commands.serverstatus;
 
 import org.drftpd.common.dynamicdata.Key;
+import org.drftpd.common.slave.SystemInfo;
 import org.drftpd.common.util.Bytes;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.commands.*;
 import org.drftpd.master.network.BaseFtpConnection;
 import org.drftpd.master.network.Session;
 import org.drftpd.master.slavemanagement.RemoteSlave;
+import org.drftpd.master.slavemanagement.SystemInfoReply;
 import org.drftpd.master.util.Time;
 import org.drftpd.master.vfs.CommitManager;
 import org.drftpd.slave.exceptions.ObjectNotFoundException;
 
 import java.lang.management.*;
 import java.util.*;
+import java.util.concurrent.*;
 
 /**
  * @author fr0w
@@ -37,6 +40,17 @@ import java.util.*;
  */
 public class ServerStatus extends CommandInterface {
     protected static final Key<Long> CONNECTTIME = new Key<>(ServerStatus.class, "connecttime");
+
+    /** Section names understood by doStatus; anything else after hardware/hw is a target name. */
+    static final Set<String> SECTIONS = Set.of("os", "vm", "memory", "classes", "threads", "gc", "cm", "cpu",
+            "network", "slaves", "hardware", "hw", "all");
+
+    // Slaves are asked in parallel so that one slow slave does not add up its timeout to the others
+    private static final ExecutorService HW_POOL = Executors.newCachedThreadPool(r -> {
+        Thread t = new Thread(r, "ServerStatus-sysinfo");
+        t.setDaemon(true);
+        return t;
+    });
 
     private ResourceBundle _bundle;
 
@@ -112,7 +126,12 @@ public class ServerStatus extends CommandInterface {
             throw new ImproperUsageException();
         }
 
-        String args = request.getArgument().toLowerCase().replaceAll(",", " ");
+        // "hardware <name>" / "hw <name>": the token following hardware is a slave name (or "master") unless
+        // it is a section name. It is taken out (keeping its case) before the sections are parsed.
+        List<String> tokens = new ArrayList<>(Arrays.asList(request.getArgument().replaceAll(",", " ").trim().split("\\s+")));
+        String hwTarget = removeHardwareTarget(tokens);
+
+        String args = String.join(" ", tokens).toLowerCase();
         StringTokenizer st = new StringTokenizer(args);
         boolean isAll = args.contains("all");
 
@@ -225,6 +244,14 @@ public class ServerStatus extends CommandInterface {
                 response.addComment(session.jprintf(_bundle, env, "status.netinfo"));
             }
 
+            if (arg.equals("hardware") || arg.equals("hw") || isAll) {
+                if (hwTarget == null) {
+                    addHardwareSummary(response, session);
+                } else {
+                    addHardwareDetail(response, session, hwTarget);
+                }
+            }
+
             if (arg.equals("slaves")) {
                 // Slave IP addresses are only exposed to FTP sessions, never to IRC (output goes to channels)
                 boolean showAddress = session instanceof BaseFtpConnection;
@@ -255,4 +282,103 @@ public class ServerStatus extends CommandInterface {
 
         return response;
     }
-} 
+
+    /**
+     * Finds the first "hardware"/"hw" token followed by a token that is not a section name, removes that
+     * following token from the list and returns it (with its original case).
+     *
+     * @return the target name (a slave name or "master"), or null if there is none
+     */
+    static String removeHardwareTarget(List<String> tokens) {
+        for (int i = 0; i < tokens.size() - 1; i++) {
+            String token = tokens.get(i).toLowerCase();
+            if ((token.equals("hardware") || token.equals("hw")) && !SECTIONS.contains(tokens.get(i + 1).toLowerCase())) {
+                return tokens.remove(i + 1);
+            }
+        }
+        return null;
+    }
+
+    private static SystemInfo collectMasterInfo() {
+        return SystemInfo.collect(GlobalContext.VERSION, List.of(HardwareStatus.MASTER_ROOT));
+    }
+
+    private void addHardwareSummary(CommandResponse response, Session session) {
+        List<RemoteSlave> slaves = GlobalContext.getGlobalContext().getSlaveManager().getSlaves();
+        List<Future<SystemInfoReply>> replies = new ArrayList<>();
+        for (RemoteSlave rs : slaves) {
+            replies.add(HW_POOL.submit(() -> rs.fetchSystemInfo(HardwareStatus.SLAVE_TIMEOUT_MILLIS)));
+        }
+
+        response.addComment(session.jprintf(_bundle,
+                HardwareStatus.summaryEnv(HardwareStatus.MASTER, collectMasterInfo()), "status.hw.summary"));
+
+        for (int i = 0; i < slaves.size(); i++) {
+            String name = slaves.get(i).getName();
+            SystemInfoReply reply = await(replies.get(i));
+            if (reply.getStatus() == SystemInfoReply.Status.OK) {
+                response.addComment(session.jprintf(_bundle,
+                        HardwareStatus.summaryEnv(name, reply.getSystemInfo()), "status.hw.summary"));
+            } else {
+                response.addComment(session.jprintf(_bundle, failureEnv(name),
+                        HardwareStatus.failureKey(reply.getStatus())));
+            }
+        }
+    }
+
+    private void addHardwareDetail(CommandResponse response, Session session, String target) {
+        // Root paths are only exposed to FTP sessions, IRC output can go to a public channel
+        boolean showPaths = session instanceof BaseFtpConnection;
+        String name;
+        SystemInfo si;
+        if (target.equalsIgnoreCase(HardwareStatus.MASTER)) {
+            name = HardwareStatus.MASTER;
+            si = collectMasterInfo();
+        } else {
+            RemoteSlave rs;
+            try {
+                rs = GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(target);
+            } catch (ObjectNotFoundException e) {
+                response.addComment(session.jprintf(_bundle, failureEnv(target), "status.hw.notfound"));
+                return;
+            }
+            name = rs.getName();
+            SystemInfoReply reply = rs.fetchSystemInfo(HardwareStatus.SLAVE_TIMEOUT_MILLIS);
+            if (reply.getStatus() != SystemInfoReply.Status.OK) {
+                response.addComment(session.jprintf(_bundle, failureEnv(name),
+                        HardwareStatus.failureKey(reply.getStatus())));
+                return;
+            }
+            si = reply.getSystemInfo();
+        }
+
+        Map<String, Object> env = HardwareStatus.detailEnv(name, si);
+        for (String key : new String[]{"status.hw.detail.header", "status.hw.detail.os", "status.hw.detail.cpu",
+                "status.hw.detail.memory", "status.hw.detail.jvm", "status.hw.detail.disks"}) {
+            response.addComment(session.jprintf(_bundle, env, key));
+        }
+        for (Map<String, Object> rootEnv : HardwareStatus.rootEnvs(name, si, showPaths)) {
+            response.addComment(session.jprintf(_bundle, rootEnv, "status.hw.detail.root"));
+        }
+    }
+
+    private static Map<String, Object> failureEnv(String name) {
+        Map<String, Object> env = new HashMap<>();
+        env.put("hw.name", name);
+        return env;
+    }
+
+    private static SystemInfoReply await(Future<SystemInfoReply> future) {
+        try {
+            // fetchSystemInfo has its own timeout, this one is only a safety net
+            return future.get(HardwareStatus.SLAVE_TIMEOUT_MILLIS + 5000L, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return SystemInfoReply.of(SystemInfoReply.Status.TIMEOUT, null);
+        } catch (TimeoutException e) {
+            return SystemInfoReply.of(SystemInfoReply.Status.TIMEOUT, null);
+        } catch (ExecutionException e) {
+            return SystemInfoReply.of(SystemInfoReply.Status.ERROR, null);
+        }
+    }
+}
