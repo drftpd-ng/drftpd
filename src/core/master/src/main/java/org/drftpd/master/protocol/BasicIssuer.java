@@ -176,4 +176,12 @@ public class BasicIssuer extends AbstractBasicIssuer {
 
         return index;
     }
+
+    @Override
+    public String issueSysInfoToSlave(RemoteSlave rslave) throws SlaveUnavailableException {
+        String index = rslave.fetchIndex();
+        rslave.sendCommand(new AsyncCommand(index, "sysinfo"));
+
+        return index;
+    }
 }

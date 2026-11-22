@@ -22,6 +22,7 @@ import org.apache.logging.log4j.Logger;
 import org.drftpd.common.exceptions.SSLServiceException;
 import org.drftpd.common.network.SSLGetContext;
 import org.drftpd.common.network.SSLService;
+import org.drftpd.common.slave.SystemInfo;
 import org.elasticsearch.common.ssl.SslConfiguration;
 import org.elasticsearch.common.ssl.SslConfigurationLoader;
 
@@ -284,6 +285,8 @@ public class Slave extends SslConfigurationLoader {
         System.out.println("https://github.com/drftpd-ng/drftpd");
         System.out.println("Further logging will be done using (mostly) log4j, check logs/");
         Thread.currentThread().setName("Slave Main Thread");
+        // the CPU load needs a first sample to report a meaningful value later on
+        SystemInfo.primeCpuLoad();
 
         Properties p = ConfigLoader.loadConfig("slave.conf");
         Slave s = new Slave(p);
