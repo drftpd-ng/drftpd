@@ -30,7 +30,9 @@ import org.drftpd.master.vfs.FileHandle;
  */
 public class ZipscriptBannedFilenamesPreHook {
 
-    @CommandHook(commands = "doSTOR", priority = 5, type = HookType.PRE)
+    // runs after the sfv pre check (priority 10): pre hooks all run and the last denial sets the reply,
+    // so this keeps the clearer "file name is not allowed" message for banned names
+    @CommandHook(commands = "doSTOR", priority = 11, type = HookType.PRE)
     public CommandRequestInterface doBannedFilenamesPreCheck(CommandRequest request) {
         if (!request.hasArgument()) {
             return request;
