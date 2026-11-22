@@ -97,6 +97,10 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
     // True from the moment a sysinfo request is issued until its reply has been consumed or discarded, so at
     // most one sysinfo is in flight per slave. Guarded by _abandonedIndexes.
     private transient boolean _sysInfoPending;
+    // Completed with the outcome by the caller that issued the request, so concurrent callers share it. Non-null
+    // only while that caller is still waiting; pending without a future means the request was abandoned.
+    // Guarded by _abandonedIndexes.
+    private transient CompletableFuture<SystemInfoReply> _sysInfoFuture;
     // Last successful sysinfo reply, reused for SYSINFO_CACHE_MILLIS. Guarded by _abandonedIndexes.
     private transient SystemInfoReply _sysInfoCache;
     private transient long _sysInfoCacheTime;
@@ -750,16 +754,50 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
         if (!isOnline()) {
             return SystemInfoReply.of(SystemInfoReply.Status.OFFLINE, null);
         }
+        CompletableFuture<SystemInfoReply> shared;
+        CompletableFuture<SystemInfoReply> mine;
         synchronized (_abandonedIndexes) {
             if (_sysInfoCache != null && System.currentTimeMillis() - _sysInfoCacheTime < SYSINFO_CACHE_MILLIS) {
                 return _sysInfoCache;
             }
-            if (_sysInfoPending) {
-                // a previous request is still being answered or was abandoned: do not pile up more
+            shared = _sysInfoFuture;
+            if (shared == null && _sysInfoPending) {
+                // a previous request timed out and the slave still owes the reply: do not pile up more
                 return SystemInfoReply.of(SystemInfoReply.Status.TIMEOUT, "still waiting for a previous request");
             }
-            _sysInfoPending = true;
+            if (shared == null) {
+                _sysInfoPending = true;
+                mine = new CompletableFuture<>();
+                _sysInfoFuture = mine;
+            } else {
+                mine = null;
+            }
         }
+        if (mine == null) {
+            // somebody else already asked the slave: wait for the same reply
+            try {
+                return shared.get(timeoutMillis, TimeUnit.MILLISECONDS);
+            } catch (TimeoutException | ExecutionException e) {
+                return SystemInfoReply.of(SystemInfoReply.Status.TIMEOUT, null);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return SystemInfoReply.of(SystemInfoReply.Status.TIMEOUT, null);
+            }
+        }
+        SystemInfoReply reply = SystemInfoReply.of(SystemInfoReply.Status.ERROR, "request failed");
+        try {
+            reply = requestSystemInfo(timeoutMillis, sender);
+            return reply;
+        } finally {
+            synchronized (_abandonedIndexes) {
+                _sysInfoFuture = null;
+            }
+            mine.complete(reply);
+        }
+    }
+
+    /** Issues the request and waits for its reply. The caller holds the pending flag and completes the future. */
+    private SystemInfoReply requestSystemInfo(long timeoutMillis, SysInfoSender sender) {
         String index;
         try {
             index = sender.send();
@@ -842,6 +880,13 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
             }
             _indexWithCommands.put(ar.getIndex(), ar);
             return true;
+        }
+    }
+
+    /** Called by the reader thread after storing a response: wakes the threads waiting for a reply. */
+    void wakeCommandWaiters() {
+        synchronized (_commandMonitor) {
+            _commandMonitor.notifyAll();
         }
     }
 
@@ -1080,9 +1125,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
                             String message = ((AsyncResponseSiteBotMessage) ar).getMessage();
                             GlobalContext.getEventService().publishAsync(new SlaveEvent("MSGSLAVE", message, this));
                         } else {
-                            synchronized (_commandMonitor) {
-                                _commandMonitor.notifyAll();
-                            }
+                            wakeCommandWaiters();
                         }
                     }
                 }
