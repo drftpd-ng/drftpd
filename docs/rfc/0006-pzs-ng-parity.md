@@ -191,6 +191,19 @@ Size: S = under about 200 lines of change, M = a few hundred, L = needs its own 
 
 Every PR should add a test where practicable (the zipscript module already has `SFVToolsTest` and `ZipscriptMP3HandlerTest`), update the relevant `.conf.dist` and theme defaults, and avoid changing the stored VFS format.
 
+## Decisions
+
+Answers from the maintainer (2026-11-22) to the open questions below:
+
+1. **Audio rules apply per section**, like `nukefilter` and `autonuke`.
+2. **Rejected audio removes the whole release**, not only the offending file.
+3. **Bad-file events get a new announcer**, separate from `SFVAnnouncer`, `ZipAnnouncer` and `MP3Announcer`.
+4. **Slave-side file writes are acceptable**, so `.m3u` (gap 11) and the stats file (gap 12) are in scope.
+5. **Hide-users is in scope as an option that defaults to off** (gap 10).
+6. The 4-file halfway minimum and the 30-minute leader expiry are convenient defaults. **Halfway should be computed from the SFV**, i.e. 50 % of the files it lists (gap 4).
+7. **Adding keys to `zipscript.conf` and the theme files is fine for 4.x.**
+8. **One tracking issue per gap.** Gap 3 is already tracked by #67.
+
 ## Open questions
 
 1. Should audio rules (gap 1) apply per section, per path, or globally? `nukefilter` and `autonuke` use sections; zipscript keys are global today.
