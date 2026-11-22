@@ -1228,25 +1228,31 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
         _lastRemergeCommandReceived = 0L;
         _remergeQueue.clear();
         _crcQueue.clear();
-        if (_sin != null) {
+        // Read each field once: setOffline can run on several threads at the same time (closing the socket makes
+        // the reader thread fail and call setOffline too), so another caller may null a field between a check
+        // and its use. Closing twice is harmless, a caller that comes after the fields were cleared skips this.
+        ObjectInputStream sin = _sin;
+        if (sin != null) {
             try {
-                _sin.close();
+                sin.close();
             } catch (IOException e) {
             }
             _sin = null;
         }
-        if (_sout != null) {
+        ObjectOutputStream sout = _sout;
+        if (sout != null) {
             try {
-                _sout.flush();
-                _sout.close();
+                sout.flush();
+                sout.close();
             } catch (IOException e) {
             }
             _sout = null;
         }
-        if (_socket != null) {
+        Socket socket = _socket;
+        if (socket != null) {
             setProperty("lastOnline", Long.toString(System.currentTimeMillis()));
             try {
-                _socket.close();
+                socket.close();
             } catch (IOException e) {
             }
             _socket = null;
