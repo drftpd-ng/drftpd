@@ -39,6 +39,7 @@ import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.master.vfs.InodeHandle;
 import org.drftpd.zipscript.common.zip.DizInfo;
+import org.drftpd.zipscript.master.RaceNameMasker;
 import org.drftpd.zipscript.master.zip.event.ZipTransferEvent;
 import org.drftpd.zipscript.master.zip.vfs.ZipscriptVFSDataZip;
 
@@ -96,6 +97,8 @@ public class ZipAnnouncer extends AbstractAnnouncer {
         Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
 
         DirectoryHandle dir = zipEvent.getDirectory();
+        RaceNameMasker masker = RaceNameMasker.load();
+        String maskSection = RaceNameMasker.sectionOf(dir);
 
         if (!zipEvent.getTransferFile().getName().toLowerCase().endsWith(".zip")) {
             return;
@@ -199,8 +202,8 @@ public class ZipAnnouncer extends AbstractAnnouncer {
 
                         raceenv.put("speed",
                                 Bytes.formatBytes(stat.getXferspeed()) + "/s");
-                        raceenv.put("user", stat.getUsername());
-                        raceenv.put("group", raceuser.getGroup());
+                        raceenv.put("user", masker.user(stat.getUsername(), String.valueOf(raceuser.getGroup()), maskSection));
+                        raceenv.put("group", masker.groupOf(stat.getUsername(), String.valueOf(raceuser.getGroup()), maskSection));
                         raceenv.put("files", "" + stat.getFiles());
                         raceenv.put("size", Bytes.formatBytes(stat.getBytes()));
                         raceenv.put("position", String.valueOf(position));
@@ -245,7 +248,7 @@ public class ZipAnnouncer extends AbstractAnnouncer {
                     for (GroupPosition stat : groups) {
                         Map<String, Object> raceenv = new HashMap<>(env);
 
-                        raceenv.put("group", stat.getGroupname());
+                        raceenv.put("group", masker.group(stat.getGroupname(), maskSection));
                         raceenv.put("position", String.valueOf(position));
                         raceenv.put("size", Bytes.formatBytes(stat.getBytes()));
                         raceenv.put("files", Integer.toString(stat.getFiles()));
@@ -290,8 +293,10 @@ public class ZipAnnouncer extends AbstractAnnouncer {
                     } catch (UserFileException e3) {
                         logger.warn("Error reading userfile for: {}", stat.getUsername(), e3);
                     }
-                    env.put("leaduser", leaduser != null ? leaduser.getName() : stat.getUsername());
-                    env.put("leadgroup", leaduser != null ? leaduser.getGroup() : "");
+                    String leadName = leaduser != null ? leaduser.getName() : stat.getUsername();
+                    String leadGroup = leaduser != null ? String.valueOf(leaduser.getGroup()) : "";
+                    env.put("leaduser", masker.user(leadName, leadGroup, maskSection));
+                    env.put("leadgroup", masker.groupOf(leadName, leadGroup, maskSection));
                     fillEnvSection(env, zipEvent, writer, false);
                     sayOutput(ReplacerUtils.jprintf("zip.store.halfway", env, _bundle), writer);
                 }
@@ -318,8 +323,18 @@ public class ZipAnnouncer extends AbstractAnnouncer {
     private void fillEnvSection(Map<String, Object> env,
                                 DirectoryFtpEvent direvent, AnnounceWriter writer, boolean isFile) {
         DirectoryHandle dir = direvent.getDirectory();
-        env.put("user", direvent.getUser().getName());
-        env.put("group", direvent.getUser().getGroup());
+        String uname = direvent.getUser().getName();
+        String ugroup = String.valueOf(direvent.getUser().getGroup());
+        if (direvent instanceof TransferEvent) {
+            // race output, user and group may be hidden
+            RaceNameMasker masker = RaceNameMasker.load();
+            String maskSection = RaceNameMasker.sectionOf(dir);
+            env.put("user", masker.user(uname, ugroup, maskSection));
+            env.put("group", masker.groupOf(uname, ugroup, maskSection));
+        } else {
+            env.put("user", uname);
+            env.put("group", ugroup);
+        }
         env.put("section", writer.getSectionName(dir));
         env.put("sectioncolor", GlobalContext.getGlobalContext().getSectionManager().lookup(dir).getColor());
         env.put("path", writer.getPath(dir));

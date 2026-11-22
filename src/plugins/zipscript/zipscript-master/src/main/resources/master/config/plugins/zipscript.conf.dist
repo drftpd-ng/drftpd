@@ -104,3 +104,26 @@ irc.zip.maxgroups=10
 cwd.flacinfo.enabled=true
 stor.flacinfo.enabled=true
 
+
+# Hide user and group names in race output: the race, halfway, complete and
+# new race leader announces on IRC and the race stats shown on CWD and STOR.
+# Default: [false] (names are shown as they are)
+hideuser.enabled=false
+
+# Members of these groups are shown as the placeholder instead of their name,
+# and the groups themselves are shown as the group placeholder in the group stats.
+# Space or comma separated, not case sensitive.
+hideuser.groups=
+
+# These users are shown as the placeholder instead of their name (and so is the
+# group shown next to them).
+hideuser.users=
+
+# Only hide names for releases in these sections (section names, space or comma
+# separated). Leave empty to hide them in every section.
+hideuser.sections=
+
+# What a hidden user is shown as, and a hidden group (empty: same as the user placeholder).
+# Default: [Anonymous]
+hideuser.placeholder=Anonymous
+hideuser.group.placeholder=
