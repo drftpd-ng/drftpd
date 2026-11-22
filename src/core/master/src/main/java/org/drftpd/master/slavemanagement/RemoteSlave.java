@@ -94,12 +94,19 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
     // Indexes whose caller gave up waiting without dropping the slave (see fetchSystemInfo).
     // Guarded by itself together with the insertion into _indexWithCommands.
     private final transient Set<String> _abandonedIndexes = new HashSet<>();
+    // True from the moment a sysinfo request is issued until its reply has been consumed or discarded, so at
+    // most one sysinfo is in flight per slave. Guarded by _abandonedIndexes.
+    private transient boolean _sysInfoPending;
+    // Last successful sysinfo reply, reused for SYSINFO_CACHE_MILLIS. Guarded by _abandonedIndexes.
+    private transient SystemInfoReply _sysInfoCache;
+    private transient long _sysInfoCacheTime;
     private transient ObjectInputStream _sin;
     private transient Socket _socket;
     private transient ObjectOutputStream _sout;
     private transient ConcurrentHashMap<TransferIndex, RemoteTransfer> _transfers;
     private transient boolean _initRemergeCompleted;
     private final transient Object _commandMonitor;
+    private static final long SYSINFO_CACHE_MILLIS = 3000L;
     private final transient LinkedBlockingQueue<RemergeMessage> _remergeQueue;
     private final transient LinkedBlockingQueue<FileHandle> _crcQueue;
     private transient RemergeThread _remergeThread;
@@ -590,22 +597,8 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
         return moreInfo();
     }
 
-    public synchronized void connect(Socket socket, ObjectInputStream in,
-                                     ObjectOutputStream out) {
-        _socket = socket;
-        _sout = out;
-
-        // Extract TLS session info if this is an SSL socket
-        if (socket instanceof SSLSocket sslSocket) {
-            SSLSession session = sslSocket.getSession();
-            _tlsProtocol = session.getProtocol();
-            _tlsCipherSuite = session.getCipherSuite();
-        } else {
-            _tlsProtocol = "N/A";
-            _tlsCipherSuite = "N/A";
-        }
-        _remoteAddress = socket.getInetAddress().getHostAddress();
-        _sin = in;
+    /** Rebuilds the pool of command indexes and forgets everything that was in flight. */
+    void resetIndexes() {
         if (_indexPool == null) {
             _indexPool = new LinkedBlockingDeque<>(256);
         } else {
@@ -629,7 +622,28 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
         }
         synchronized (_abandonedIndexes) {
             _abandonedIndexes.clear();
+            _sysInfoPending = false;
+            _sysInfoCache = null;
         }
+    }
+
+    public synchronized void connect(Socket socket, ObjectInputStream in,
+                                     ObjectOutputStream out) {
+        _socket = socket;
+        _sout = out;
+
+        // Extract TLS session info if this is an SSL socket
+        if (socket instanceof SSLSocket sslSocket) {
+            SSLSession session = sslSocket.getSession();
+            _tlsProtocol = session.getProtocol();
+            _tlsCipherSuite = session.getCipherSuite();
+        } else {
+            _tlsProtocol = "N/A";
+            _tlsCipherSuite = "N/A";
+        }
+        _remoteAddress = socket.getInetAddress().getHostAddress();
+        _sin = in;
+        resetIndexes();
 
         if (_transfers == null) {
             _transfers = new ConcurrentHashMap<>();
@@ -723,21 +737,46 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
      * @return the reply, never null
      */
     public SystemInfoReply fetchSystemInfo(long timeoutMillis) {
+        return fetchSystemInfo(timeoutMillis, () -> SlaveManager.getBasicIssuer().issueSysInfoToSlave(this));
+    }
+
+    /** Sends the sysinfo command and returns the index it was sent with. Seam for tests. */
+    @FunctionalInterface
+    interface SysInfoSender {
+        String send() throws SlaveUnavailableException;
+    }
+
+    SystemInfoReply fetchSystemInfo(long timeoutMillis, SysInfoSender sender) {
         if (!isOnline()) {
             return SystemInfoReply.of(SystemInfoReply.Status.OFFLINE, null);
         }
+        synchronized (_abandonedIndexes) {
+            if (_sysInfoCache != null && System.currentTimeMillis() - _sysInfoCacheTime < SYSINFO_CACHE_MILLIS) {
+                return _sysInfoCache;
+            }
+            if (_sysInfoPending) {
+                // a previous request is still being answered or was abandoned: do not pile up more
+                return SystemInfoReply.of(SystemInfoReply.Status.TIMEOUT, "still waiting for a previous request");
+            }
+            _sysInfoPending = true;
+        }
         String index;
         try {
-            index = SlaveManager.getBasicIssuer().issueSysInfoToSlave(this);
+            index = sender.send();
         } catch (SlaveUnavailableException e) {
+            clearSysInfoPending();
             return SystemInfoReply.of(SystemInfoReply.Status.OFFLINE, null);
+        } catch (RuntimeException e) {
+            clearSysInfoPending();
+            throw e;
         }
         long deadline = System.currentTimeMillis() + timeoutMillis;
         while (isOnline() && !_indexWithCommands.containsKey(index)) {
             if (System.currentTimeMillis() >= deadline) {
                 synchronized (_abandonedIndexes) {
                     if (!_indexWithCommands.containsKey(index)) {
-                        // the reader thread will recycle the index if the reply ever arrives
+                        // the reader thread will recycle the index (and clear the pending flag) if the reply
+                        // ever arrives
                         _abandonedIndexes.add(index);
                         return SystemInfoReply.of(SystemInfoReply.Status.TIMEOUT, null);
                     }
@@ -746,7 +785,12 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
             }
             try {
                 synchronized (_commandMonitor) {
-                    _commandMonitor.wait(50);
+                    // Check again while holding the monitor: the reader thread stores the response and then
+                    // calls notifyAll() on this monitor, so a reply that arrived after the check in the while
+                    // condition would otherwise cost a full 50 ms wait
+                    if (!_indexWithCommands.containsKey(index)) {
+                        _commandMonitor.wait(50);
+                    }
                 }
             } catch (InterruptedException e) {
                 // stop waiting: the next iteration abandons the index
@@ -757,6 +801,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
         AsyncResponse ar = _indexWithCommands.remove(index);
         if (ar == null) {
             // went offline while waiting: the index pool is rebuilt on reconnect
+            clearSysInfoPending();
             return SystemInfoReply.of(SystemInfoReply.Status.OFFLINE, null);
         }
         _indexPool.push(index);
@@ -764,7 +809,40 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
         if (reply.getStatus() == SystemInfoReply.Status.ERROR && ar instanceof AsyncResponseException) {
             logger.warn("Slave {} failed to answer sysinfo", getName(), ((AsyncResponseException) ar).getThrowable());
         }
+        synchronized (_abandonedIndexes) {
+            _sysInfoPending = false;
+            if (reply.getStatus() == SystemInfoReply.Status.OK) {
+                _sysInfoCache = reply;
+                _sysInfoCacheTime = System.currentTimeMillis();
+            }
+        }
         return reply;
+    }
+
+    private void clearSysInfoPending() {
+        synchronized (_abandonedIndexes) {
+            _sysInfoPending = false;
+        }
+    }
+
+    /**
+     * Hands a reply read from the slave to the thread waiting for it. A late reply for an index whose caller gave
+     * up waiting is dropped and its index returned to the pool instead.
+     *
+     * @return true if the reply was stored for a waiting caller, false if it was a discarded late reply
+     */
+    boolean storeResponse(AsyncResponse ar) {
+        synchronized (_abandonedIndexes) {
+            if (_abandonedIndexes.remove(ar.getIndex())) {
+                // late reply for a request whose caller gave up waiting: recycle the index
+                logger.debug("Discarding late reply for abandoned index {}", ar.getIndex());
+                _indexPool.push(ar.getIndex());
+                _sysInfoPending = false;
+                return false;
+            }
+            _indexWithCommands.put(ar.getIndex(), ar);
+            return true;
+        }
     }
 
     public AsyncResponse fetchResponse(String index)
@@ -992,14 +1070,8 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
                         }
                     }
                     default -> {
-                        synchronized (_abandonedIndexes) {
-                            if (_abandonedIndexes.remove(ar.getIndex())) {
-                                // late reply for a request whose caller gave up waiting: recycle the index
-                                logger.debug("Discarding late reply for abandoned index {}", ar.getIndex());
-                                _indexPool.push(ar.getIndex());
-                                continue;
-                            }
-                            _indexWithCommands.put(ar.getIndex(), ar);
+                        if (!storeResponse(ar)) {
+                            continue;
                         }
                         if (pingIndex != null && pingIndex.equals(ar.getIndex())) {
                             fetchResponse(pingIndex);
