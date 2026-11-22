@@ -34,9 +34,13 @@ import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.master.vfs.InodeHandle;
+import org.drftpd.master.vfs.ObjectNotValidException;
 
 import java.io.FileNotFoundException;
 import java.util.*;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 /**
  * @author Teflon
@@ -105,6 +109,54 @@ public class AutoFreeSpace implements PluginInterface {
         }
     }
 
+    /**
+     * Expands a path such as {@code /MP3/*} into every existing directory it matches.
+     * A {@code *} component matches all subdirectories at that level; any other component must exist exactly.
+     *
+     * @param children returns the subdirectories of a directory (empty if none)
+     * @param child    returns the named subdirectory, or {@code null} if it does not exist
+     */
+    static <T> List<T> expandPath(String path, T root, Function<T, Collection<T>> children, BiFunction<T, String, T> child) {
+        List<T> current = Collections.singletonList(root);
+        for (String part : path.split("/")) {
+            if (part.isEmpty()) {
+                continue;
+            }
+            List<T> next = new ArrayList<>();
+            for (T dir : current) {
+                if (part.equals("*")) {
+                    next.addAll(children.apply(dir));
+                } else {
+                    T found = child.apply(dir, part);
+                    if (found != null) {
+                        next.add(found);
+                    }
+                }
+            }
+            if (next.isEmpty()) {
+                return Collections.emptyList();
+            }
+            current = next;
+        }
+        return current;
+    }
+
+    /**
+     * Drops the root directory from the candidate base directories: its children are the top level directories
+     * (whole sections, PRE, group dirs), never releases. This covers a section whose base directory is the root.
+     */
+    static <T> List<T> withoutRoot(List<T> dirs, Predicate<T> isRoot) {
+        List<T> result = new ArrayList<>(dirs.size());
+        for (T dir : dirs) {
+            if (isRoot.test(dir)) {
+                logger.warn("AUTODELETE: Skipping the root directory, it can't be used as a base directory");
+            } else {
+                result.add(dir);
+            }
+        }
+        return result;
+    }
+
     private static class MrCleanIt extends TimerTask {
         // This contains a list of all releases that (would) have been deleted.
         // Only useful when option "announce.only" is enabled
@@ -148,6 +200,12 @@ public class AutoFreeSpace implements PluginInterface {
                     }
                     if (AutoFreeSpaceSettings.getSettings().getExcludeSlaves().contains(remoteSlave.getName())) {
                         logger.debug("Skipping [{}] as it is excluded", remoteSlave.getName());
+                        continue;
+                    }
+                    // With partial.remerge.mode=instant a slave is available while still remerging,
+                    // and its files are not all in the VFS yet: skip it until the remerge finishes.
+                    if (remoteSlave.isRemerging()) {
+                        logger.debug("Skipping [{}] as it is currently remerging", remoteSlave.getName());
                         continue;
                     }
 
@@ -237,8 +295,6 @@ public class AutoFreeSpace implements PluginInterface {
                     break;
                 }
 
-                long freespaceSaved = freespace;
-
                 try {
                     InodeHandle oldestRelease = getOldestRelease(remoteSlave);
                     if (oldestRelease == null) {
@@ -251,10 +307,17 @@ public class AutoFreeSpace implements PluginInterface {
                         logger.warn("AUTODELETE: (OnlyAnnounce) Would have deleted {}", oldestRelease.getName());
                         checkedReleases.add(oldestRelease.getName());
                     } else {
+                        // Measure before deleting: afterwards the files are gone from the VFS
+                        long sizeOnSlave = getSizeOnSlave(oldestRelease, remoteSlave);
                         logger.info("AUTODELETE: Removing {}", oldestRelease.getName());
                         oldestRelease.deleteUnchecked(); // Throws the FileNotFoundException
                         freespace = remoteSlave.getSlaveStatus().getDiskSpaceAvailable();
-                        logger.info("AUTODELETE: Removed {}, cleared {} on {}", oldestRelease.getName(), Bytes.formatBytes(remoteSlave.getSlaveStatus().getDiskSpaceAvailable() - freespace), remoteSlave.getName());
+                        logger.info("AUTODELETE: Removed {}, cleared {} on {}", oldestRelease.getName(), Bytes.formatBytes(sizeOnSlave), remoteSlave.getName());
+                        if (sizeOnSlave == 0) {
+                            logger.error("AUTODELETE: Removed {} but it held 0 bytes on slave {}, nothing was freed. Stopping iteration", oldestRelease.getName(), remoteSlave.getName());
+                            deletedCount++;
+                            break;
+                        }
                     }
                     deletedCount++;
                 } catch (FileNotFoundException e) {
@@ -262,12 +325,6 @@ public class AutoFreeSpace implements PluginInterface {
                     break;
                 }
 
-                if (freespaceSaved == freespace) {
-                    if (!AutoFreeSpaceSettings.getSettings().getOnlyAnnounce()) {
-                        logger.warn("AUTODELETE: We tried to clean slave {}, but free space has not changed. Stopping iteration", remoteSlave.getName());
-                        break;
-                    }
-                }
             }
             if (deletedCount > 0) {
                 if (deletedCount >= maxIterations) {
@@ -277,6 +334,33 @@ public class AutoFreeSpace implements PluginInterface {
             } else {
                 logger.warn("AUTODELETE: Found 0 oldest releases to clean for slave {}", remoteSlave.getName());
             }
+        }
+
+        /**
+         * Returns the total size of the files of inode that are stored on slave.
+         */
+        private long getSizeOnSlave(InodeHandle inode, RemoteSlave slave) {
+            long size = 0;
+            try {
+                if (inode.isFile()) {
+                    if (((FileHandle) inode).getAvailableSlaves().contains(slave)) {
+                        size = inode.getSize();
+                    }
+                } else if (inode.isDirectory()) {
+                    for (FileHandle file : ((DirectoryHandle) inode).getAllFilesRecursiveUnchecked()) {
+                        try {
+                            if (file.getAvailableSlaves().contains(slave)) {
+                                size += file.getSize();
+                            }
+                        } catch (NoAvailableSlaveException | FileNotFoundException e) {
+                            // File not on any online slave or already gone: it frees nothing here
+                        }
+                    }
+                }
+            } catch (NoAvailableSlaveException | FileNotFoundException e) {
+                // Inode already gone or not on any online slave
+            }
+            return size;
         }
 
         private boolean checkInvalidName(String name) {
@@ -334,56 +418,106 @@ public class AutoFreeSpace implements PluginInterface {
         private InodeHandle getOldestRelease(RemoteSlave slave) {
             InodeHandle oldest = null;
 
-            // Loop over all sections
-            for (SectionInterface si : GlobalContext.getGlobalContext().getSectionManager().getSections()) {
+            Collection<AutoFreeSpaceSettings.Section> entries = AutoFreeSpaceSettings.getSettings().getSections().values();
+            if (AutoFreeSpaceSettings.getSettings().getWipeAllSections()) {
+                // Opt-in (wipe.all.sections=true, space mode, no entry written): consider every section
+                for (SectionInterface si : GlobalContext.getGlobalContext().getSectionManager().getSections()) {
+                    DirectoryHandle baseDir = si.getBaseDirectory();
+                    if (baseDir.isRoot()) {
+                        continue; // never treat the top level directories themselves as releases
+                    }
+                    oldest = pickOlder(oldest, baseDir, new AutoFreeSpaceSettings.Section(0, si.getName(), null, 0), slave);
+                }
+                return oldest;
+            }
 
-                // We are only interested in sections we have a config for
-                AutoFreeSpaceSettings.Section section = AutoFreeSpaceSettings.getSettings().getSections().get(si.getName());
-                if (section == null) {
-                    logger.debug("Skipping section [{}] as no configuration exists", si.getName());
-                    continue;
+            // Loop over all configured entries (sections and paths)
+            for (AutoFreeSpaceSettings.Section section : entries) {
+                for (DirectoryHandle baseDir : withoutRoot(getBaseDirectories(section), DirectoryHandle::isRoot)) {
+                    oldest = pickOlder(oldest, baseDir, section, slave);
+                }
+            }
+
+            return oldest;
+        }
+
+        /**
+         * Returns the directories whose releases are candidates for this entry: the section's base directory,
+         * or every directory matching the configured path (each {@code *} level matches all subdirectories).
+         */
+        private List<DirectoryHandle> getBaseDirectories(AutoFreeSpaceSettings.Section section) {
+            if (section.getPath() == null) {
+                SectionInterface si = GlobalContext.getGlobalContext().getSectionManager().getSection(section.getName());
+                if (!si.getName().equalsIgnoreCase(section.getName())) {
+                    logger.debug("Skipping section [{}] as it no longer exists", section.getName());
+                    return Collections.emptyList();
+                }
+                return Collections.singletonList(si.getBaseDirectory());
+            }
+            List<DirectoryHandle> dirs = expandPath(section.getPath(), GlobalContext.getGlobalContext().getRoot(),
+                    dir -> {
+                        try {
+                            return dir.getDirectoriesUnchecked();
+                        } catch (FileNotFoundException e) {
+                            return Collections.emptySet();
+                        }
+                    },
+                    (dir, name) -> {
+                        try {
+                            DirectoryHandle child = dir.getDirectoryUnchecked(name);
+                            return child.exists() ? child : null;
+                        } catch (FileNotFoundException | ObjectNotValidException e) {
+                            return null;
+                        }
+                    });
+            if (dirs.isEmpty()) {
+                logger.debug("No directory matches path [{}]", section.getPath());
+            }
+            return dirs;
+        }
+
+        /** Returns whichever is older: the current candidate, or the oldest eligible release in baseDir. */
+        private InodeHandle pickOlder(InodeHandle oldest, DirectoryHandle baseDir, AutoFreeSpaceSettings.Section section, RemoteSlave slave) {
+            String where = baseDir.getPath();
+            logger.debug("AUTODELETE: Getting oldest release in {}", where);
+            try {
+                InodeHandle file = getOldestFile(baseDir, slave);
+
+                // Quickly skip if this directory does not have anything
+                if (file == null) {
+                    return oldest;
                 }
 
-                logger.debug("AUTODELETE: Getting oldest release in section {}", si.getName());
-                try {
-                    InodeHandle file = getOldestFile(si.getBaseDirectory(), slave);
+                logger.debug("AUTODELETE: Oldest file in {}: {}", where, file.getName());
 
-                    // Quickly skip if this sections does not have anything
-                    if (file == null) {
-                        continue;
-                    }
+                long age = System.currentTimeMillis() - file.creationTime();
+                long _wipeAfter = section.getWipeAfter();
 
-                    logger.debug("AUTODELETE: Oldest file in section {}: {}", si.getName(), file.getName());
-
-                    long age = System.currentTimeMillis() - file.creationTime();
-                    long _wipeAfter = section.getWipeAfter();
-
-                    // (Optionally) set newest oldest if oldest is null or the newly found file is older than oldest already is
-                    if (oldest == null || file.creationTime() < oldest.creationTime()) {
-                        boolean update = false;
-                        if (AutoFreeSpaceSettings.getSettings().getMode().equals(AutoFreeSpaceSettings.MODE_DATE)) {
-                            if (age > _wipeAfter) {
-                                update = true;
-                            }
-                        }
-                        if (AutoFreeSpaceSettings.getSettings().getMode().equals(AutoFreeSpaceSettings.MODE_SPACE)) {
+                // (Optionally) set newest oldest if oldest is null or the newly found file is older than oldest already is
+                if (oldest == null || file.creationTime() < oldest.creationTime()) {
+                    boolean update = false;
+                    if (AutoFreeSpaceSettings.getSettings().getMode().equals(AutoFreeSpaceSettings.MODE_DATE)) {
+                        if (age > _wipeAfter) {
                             update = true;
                         }
-                        if (update) {
-                            // Guard for announce.only setting
-                            if (!checkedReleases.contains(file.getName())) {
-                                if (oldest == null) {
-                                    logger.debug("AUTODELETE: Oldest file: {}. Found in section {}", file.getName(), si.getName());
-                                } else {
-                                    logger.debug("AUTODELETE: New oldest file: {} (previous oldest: {}). Found in section {}", file.getName(), oldest.getName(), si.getName());
-                                }
-                                oldest = file;
+                    }
+                    if (AutoFreeSpaceSettings.getSettings().getMode().equals(AutoFreeSpaceSettings.MODE_SPACE)) {
+                        update = true;
+                    }
+                    if (update) {
+                        // Guard for announce.only setting
+                        if (!checkedReleases.contains(file.getName())) {
+                            if (oldest == null) {
+                                logger.debug("AUTODELETE: Oldest file: {}. Found in {}", file.getName(), where);
+                            } else {
+                                logger.debug("AUTODELETE: New oldest file: {} (previous oldest: {}). Found in {}", file.getName(), oldest.getName(), where);
                             }
+                            oldest = file;
                         }
                     }
-                } catch (FileNotFoundException e) {
-                    logger.warn("AUTODELETE: File missing", e.getCause());
                 }
+            } catch (FileNotFoundException e) {
+                logger.warn("AUTODELETE: File missing", e.getCause());
             }
 
             return oldest;

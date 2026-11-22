@@ -31,6 +31,7 @@ import org.drftpd.master.exceptions.SlaveUnavailableException;
 import org.drftpd.master.network.Session;
 import org.drftpd.master.slavemanagement.RemergeMessage;
 import org.drftpd.master.slavemanagement.RemoteSlave;
+import org.drftpd.master.slavemanagement.SlaveCertificatePin;
 import org.drftpd.master.slavemanagement.SlaveManager;
 import org.drftpd.master.slavemanagement.SlaveStatus;
 import org.drftpd.master.slaveselection.filter.Filter;
@@ -415,11 +416,35 @@ public class SlaveManagement extends CommandInterface {
 
             String key = arguments.nextToken();
             String value = arguments.nextToken();
+            boolean fingerprint = key.equalsIgnoreCase(SlaveCertificatePin.PROPERTY);
+            if (fingerprint) {
+                String canonical = SlaveCertificatePin.canonical(value);
+                if (canonical == null) {
+                    response.addComment("Invalid fingerprint " + value + ": expected SHA256: followed by 64 hex "
+                            + "characters (colons allowed), as logged by the master when the slave connects");
+                    return response;
+                }
+                key = SlaveCertificatePin.PROPERTY;
+                value = canonical;
+            }
             rslave.setProperty(key, value);
             env.put("key", key);
             env.put("value", value);
             response.addComment(session.jprintf(_bundle,
                     "slave.set.success", env, request.getUser()));
+
+            if (fingerprint) {
+                SlaveCertificatePin.Result result = rslave.verifyConnectedCertificate();
+                if (result == SlaveCertificatePin.Result.ACCEPTED) {
+                    response.addComment("Slave " + rslave.getName()
+                            + " is online and its current certificate matches the pinned fingerprint");
+                } else if (result != null) {
+                    response.addComment("Slave " + rslave.getName() + " was disconnected: its current connection "
+                            + (result == SlaveCertificatePin.Result.NO_CERTIFICATE
+                            ? "has no client certificate" : "uses another certificate")
+                            + ". It will only be accepted again with the pinned certificate");
+                }
+            }
 
             return response;
         } else if (command.equalsIgnoreCase("unset")) {

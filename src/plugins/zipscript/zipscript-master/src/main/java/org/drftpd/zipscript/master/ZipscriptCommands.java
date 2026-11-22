@@ -321,6 +321,7 @@ public class ZipscriptCommands extends CommandInterface {
             /* Unable to read sfv in this dir, silently ignore so not to add
              * useless output in recursive mode
              */
+            logger.debug("Unable to read SFV in {}: {}", dirHandle.getPath(), e2.getMessage());
         }
         return info;
     }

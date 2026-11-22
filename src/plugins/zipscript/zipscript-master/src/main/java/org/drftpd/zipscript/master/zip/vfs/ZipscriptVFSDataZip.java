@@ -129,10 +129,13 @@ public class ZipscriptVFSDataZip {
                 anyRead = true;
             } catch (NoAvailableSlaveException e) {
                 // Not an issue, file was available but slave dropped, try next file
+                logger.debug("No available slave to retrieve DIZINFO for {}, trying next file", file.getPath());
             } catch (SlaveUnavailableException e) {
                 // okay, it went offline while trying, try next file
+                logger.debug("Slave went offline while retrieving DIZINFO for {}, trying next file", file.getPath());
             } catch (RemoteIOException e) {
                 // continue, the next zip might work
+                logger.warn("Slave failed to retrieve DIZINFO for {}: {}", file.getPath(), e.getCause() != null ? e.getCause().getMessage() : e.getMessage());
             }
 
             // If we have valid dizinfo stop the loop

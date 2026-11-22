@@ -125,6 +125,17 @@ slavemanager.ssl.cipher_suites.1=TLS_AES_128_GCM_SHA256
 slavemanager.ssl.cipher_suites.2=TLS_AES_256_GCM_SHA384
 slavemanager.ssl.cipher_suites.3=TLS_CHACHA20_POLY1305_SHA256
 slavemanager.ssl.verification_mode=none
+# Slaves present the certificate from their keystore (master.ssl.keystore.path in slave.conf) when
+# client_authentication is optional or required. The master logs each slave's certificate fingerprint
+# on connect. To only accept that certificate from a slave, pin it (in addition to its IP masks) with:
+#   SITE SLAVE <slavename> SET fingerprint SHA256:<fingerprint>
+# A pinned slave that presents no certificate or another one is refused. Pinning only works if each
+# slave has its own key: generate one keystore per slave (e.g. ./genkey.sh on each slave) instead of
+# copying the same drftpd.key everywhere, otherwise all slaves share one fingerprint.
+# Keep client_authentication at optional or required for pinned slaves.
+# The fingerprint is validated when set (64 hex characters, colons allowed). If the slave is online, its
+# current certificate is checked right away and the slave is disconnected if it does not match.
+# Remove the pin with: SITE SLAVE <slavename> UNSET fingerprint
 slavemanager.ssl.client_authentication=optional
 # slavemanager.ssl.certificate_authorities=(empty)
 # slavemanager.ssl.truststore.path=(empty)
