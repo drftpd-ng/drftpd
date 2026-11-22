@@ -20,6 +20,7 @@ package org.drftpd.zipscript.master;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
+import org.drftpd.common.exceptions.RemoteIOException;
 import org.drftpd.master.commands.*;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.exceptions.SlaveUnavailableException;
@@ -27,16 +28,22 @@ import org.drftpd.master.network.BaseFtpConnection;
 import org.drftpd.master.network.Checksum;
 import org.drftpd.master.network.Session;
 import org.drftpd.master.usermanager.User;
+import org.drftpd.master.GlobalContext;
+import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.master.vfs.*;
 import org.drftpd.slave.exceptions.FileExistsException;
+import org.drftpd.zipscript.common.sfv.AsyncResponseSFVInfo;
 import org.drftpd.zipscript.common.sfv.SFVInfo;
 import org.drftpd.zipscript.master.sfv.RescanOptions;
+import org.drftpd.zipscript.master.sfv.SFVGenerator;
+import org.drftpd.zipscript.master.sfv.ZipscriptIssuer;
 import org.drftpd.zipscript.master.sfv.vfs.ZipscriptVFSDataSFV;
 import org.drftpd.zipscript.master.zip.RescanPostProcessDirInterface;
 import org.reflections.Reflections;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -83,6 +90,7 @@ public class ZipscriptCommands extends CommandInterface {
         boolean quiet = options.quiet;
         boolean quick = options.quick;
         boolean markBad = options.markBad;
+        boolean makeSfv = options.makeSfv;
         boolean singleFile = false;
 
         String fileOrPath = options.fileOrPath;
@@ -98,8 +106,8 @@ public class ZipscriptCommands extends CommandInterface {
             logger.debug("Disabling forceRescan option as delete bad and zerobyte is not enabled");
             forceRescan = false;
         }
-        logger.debug("Rescan options -> recursive: {}, force: {}, deleteBad: {}, deleteZeroByte: {}, quiet: {}, quick: {}, markBad: {}, FileOrPath: {}",
-                recursive, forceRescan, deleteBad, deleteZeroByte, quiet, quick, markBad, fileOrPath);
+        logger.debug("Rescan options -> recursive: {}, force: {}, deleteBad: {}, deleteZeroByte: {}, quiet: {}, quick: {}, markBad: {}, makeSfv: {}, FileOrPath: {}",
+                recursive, forceRescan, deleteBad, deleteZeroByte, quiet, quick, markBad, makeSfv, fileOrPath);
 
         CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 
@@ -201,6 +209,9 @@ public class ZipscriptCommands extends CommandInterface {
                 }
                 if (workingSFV == null) {
                     logger.warn("Unable to get SFVInfo from: {}", workingDir.getPath());
+                    if (makeSfv) {
+                        createMissingSFV(session, user, workingDir, forceRescan);
+                    }
                     continue;
                 }
 
@@ -336,6 +347,65 @@ public class ZipscriptCommands extends CommandInterface {
             return " - not marked, " + badName + " already exists";
         }
         return "";
+    }
+
+    /**
+     * Creates <dirname>.sfv from the CRCs of the files in a directory which has no .sfv file at all.
+     */
+    private void createMissingSFV(Session session, User user, DirectoryHandle dir, boolean forceRescan) {
+        if (dir.isRoot()) {
+            return;
+        }
+        String sfvName = dir.getName() + ".sfv";
+        try {
+            Map<String, Long> entries = new HashMap<>();
+            FileHandle source = null;
+            for (FileHandle file : dir.getFilesUnchecked()) {
+                String name = file.getName();
+                if (name.toLowerCase().endsWith(".sfv")) {
+                    // There is an sfv, just not a readable one, leave it alone
+                    return;
+                }
+                if (file.isUploading() || file.getSize() == 0L || !SFVGenerator.isListable(name)) {
+                    continue;
+                }
+                long crc;
+                try {
+                    crc = getFileCheckSum(file, forceRescan);
+                } catch (NoAvailableSlaveException e) {
+                    session.printOutput(200, "Not creating " + sfvName + ", " + name + " OFFLINE");
+                    return;
+                }
+                if (crc == 0L) {
+                    session.printOutput(200, "Not creating " + sfvName + ", failed to checksum " + name);
+                    return;
+                }
+                entries.put(name, crc);
+                if (source == null) {
+                    source = file;
+                }
+            }
+            if (source == null) {
+                return;
+            }
+            String content = SFVGenerator.generate(entries);
+            ZipscriptIssuer issuer = (ZipscriptIssuer) GlobalContext.getGlobalContext().getSlaveManager()
+                    .getProtocolCentral().getIssuerForClass(ZipscriptIssuer.class);
+            RemoteSlave rslave = source.getASlaveForFunction();
+            String sfvPath = dir.getPath() + VirtualFileSystem.separator + sfvName;
+            String index = issuer.issueWriteSFVToSlave(rslave, sfvPath, content);
+            SFVInfo written = ((AsyncResponseSFVInfo) rslave.fetchResponse(index)).getSFV();
+
+            FileHandle sfvFile = dir.createFileUnchecked(sfvName, user.getName(), user.getGroup().getName(), rslave);
+            sfvFile.setSize(content.getBytes(StandardCharsets.UTF_8).length);
+            sfvFile.setCheckSum(written.getChecksum());
+            sfvFile.setXfertime(1);
+            session.printOutput(200, "Created " + sfvName + " with " + entries.size() + " entries in: " + dir.getPath());
+        } catch (FileNotFoundException | NoAvailableSlaveException | SlaveUnavailableException | RemoteIOException
+                 | FileExistsException e) {
+            logger.warn("Unable to create {} in {}", sfvName, dir.getPath(), e);
+            session.printOutput(200, "Unable to create " + sfvName + ": " + e.getMessage());
+        }
     }
 
     private SFVInfo getSFVInfo(DirectoryHandle dirHandle) throws NoAvailableSlaveException, SlaveUnavailableException {

@@ -35,6 +35,8 @@ public class RescanOptions {
     public boolean quick = false;
     /** Rename files failing the SFV check to name.bad instead of deleting them. */
     public boolean markBad = false;
+    /** Create <dirname>.sfv from the files' CRCs in directories that have no SFV. */
+    public boolean makeSfv = false;
     /** The (still unresolved) file or path argument, or null. */
     public String fileOrPath = null;
 
@@ -65,6 +67,8 @@ public class RescanOptions {
                 o.quiet = true;
             } else if (arg.equalsIgnoreCase("markbad")) {
                 o.markBad = true;
+            } else if (arg.equalsIgnoreCase("makesfv")) {
+                o.makeSfv = true;
             } else if (arg.equalsIgnoreCase("quick")) {
                 o.quick = true;
             } else {

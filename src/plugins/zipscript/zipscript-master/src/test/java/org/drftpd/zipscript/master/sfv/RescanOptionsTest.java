@@ -70,6 +70,16 @@ public class RescanOptionsTest {
     }
 
     @Test
+    void makeSfvIsOptIn() throws ImproperUsageException {
+        assertFalse(RescanOptions.parse("-r quick").makeSfv);
+        RescanOptions o = RescanOptions.parse("makesfv -r");
+        assertTrue(o.makeSfv);
+        assertTrue(o.recursive);
+        assertTrue(o.force);
+        assertNull(o.fileOrPath);
+    }
+
+    @Test
     void twoPathsAreRejected() {
         assertThrows(ImproperUsageException.class, () -> RescanOptions.parse("a b"));
     }
