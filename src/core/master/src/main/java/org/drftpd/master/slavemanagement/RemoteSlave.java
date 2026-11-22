@@ -91,6 +91,9 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
     private ConcurrentLinkedDeque<QueuedOperation> _renameQueue;
     private transient LinkedBlockingDeque<String> _indexPool;
     private transient ConcurrentHashMap<String, AsyncResponse> _indexWithCommands;
+    // Indexes whose caller gave up waiting without dropping the slave (see fetchSystemInfo).
+    // Guarded by itself together with the insertion into _indexWithCommands.
+    private final transient Set<String> _abandonedIndexes = new HashSet<>();
     private transient ObjectInputStream _sin;
     private transient Socket _socket;
     private transient ObjectOutputStream _sout;
@@ -624,6 +627,9 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
         } else {
             _indexWithCommands.clear();
         }
+        synchronized (_abandonedIndexes) {
+            _abandonedIndexes.clear();
+        }
 
         if (_transfers == null) {
             _transfers = new ConcurrentHashMap<>();
@@ -704,6 +710,61 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
         } catch (RemoteIOException e) {
             throw new FatalException("Slave had an error processing the ssl check");
         }
+    }
+
+    /**
+     * Asks the slave for its hardware / system information.
+     * <p>
+     * Unlike {@link #fetchResponse(String, int)} this never puts the slave offline: an older slave that does not
+     * know the command, a slow slave or an error on the slave side are all reported in the returned
+     * {@link SystemInfoReply}.
+     *
+     * @param timeoutMillis maximum time to wait for the reply
+     * @return the reply, never null
+     */
+    public SystemInfoReply fetchSystemInfo(long timeoutMillis) {
+        if (!isOnline()) {
+            return SystemInfoReply.of(SystemInfoReply.Status.OFFLINE, null);
+        }
+        String index;
+        try {
+            index = SlaveManager.getBasicIssuer().issueSysInfoToSlave(this);
+        } catch (SlaveUnavailableException e) {
+            return SystemInfoReply.of(SystemInfoReply.Status.OFFLINE, null);
+        }
+        long deadline = System.currentTimeMillis() + timeoutMillis;
+        while (isOnline() && !_indexWithCommands.containsKey(index)) {
+            if (System.currentTimeMillis() >= deadline) {
+                synchronized (_abandonedIndexes) {
+                    if (!_indexWithCommands.containsKey(index)) {
+                        // the reader thread will recycle the index if the reply ever arrives
+                        _abandonedIndexes.add(index);
+                        return SystemInfoReply.of(SystemInfoReply.Status.TIMEOUT, null);
+                    }
+                }
+                break;
+            }
+            try {
+                synchronized (_commandMonitor) {
+                    _commandMonitor.wait(50);
+                }
+            } catch (InterruptedException e) {
+                // stop waiting: the next iteration abandons the index
+                Thread.currentThread().interrupt();
+                deadline = 0L;
+            }
+        }
+        AsyncResponse ar = _indexWithCommands.remove(index);
+        if (ar == null) {
+            // went offline while waiting: the index pool is rebuilt on reconnect
+            return SystemInfoReply.of(SystemInfoReply.Status.OFFLINE, null);
+        }
+        _indexPool.push(index);
+        SystemInfoReply reply = SystemInfoReply.fromResponse(ar);
+        if (reply.getStatus() == SystemInfoReply.Status.ERROR && ar instanceof AsyncResponseException) {
+            logger.warn("Slave {} failed to answer sysinfo", getName(), ((AsyncResponseException) ar).getThrowable());
+        }
+        return reply;
     }
 
     public AsyncResponse fetchResponse(String index)
@@ -931,7 +992,15 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
                         }
                     }
                     default -> {
-                        _indexWithCommands.put(ar.getIndex(), ar);
+                        synchronized (_abandonedIndexes) {
+                            if (_abandonedIndexes.remove(ar.getIndex())) {
+                                // late reply for a request whose caller gave up waiting: recycle the index
+                                logger.debug("Discarding late reply for abandoned index {}", ar.getIndex());
+                                _indexPool.push(ar.getIndex());
+                                continue;
+                            }
+                            _indexWithCommands.put(ar.getIndex(), ar);
+                        }
                         if (pingIndex != null && pingIndex.equals(ar.getIndex())) {
                             fetchResponse(pingIndex);
                             pingIndex = null;
