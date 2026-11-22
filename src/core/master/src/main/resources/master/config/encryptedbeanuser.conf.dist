@@ -4,8 +4,18 @@
 #                                                                                                  #
 # Encrypt User Passwords In json File.                                                             #
 #                                                                                                  #
-# Valid Options: md2, md5, sha-1, sha-256, sha-384, sha-512, bcrypt, glftpd, argon2                #
-#                none, clear, empty = No encryption                                                #
+# Valid Options: bcrypt, argon2, glftpd, md2, md5, sha-1, sha-256, sha-384, sha-512                #
+#                none, clear, empty = No encryption (passwords stored in CLEAR TEXT)               #
+#                                                                                                  #
+# Recommended: bcrypt or argon2. md2, md5 and sha-* are unsalted fast hashes, only kept for        #
+# compatibility with existing user files; a warning is logged at startup when they (or none) are   #
+# used.                                                                                            #
+#                                                                                                  #
+# The value is case-insensitive. If passcrypt is missing or not recognised, an error is logged     #
+# and bcrypt is used (never clear text).                                                           #
+#                                                                                                  #
+# Existing passwords stored with another scheme keep working and are converted to the configured   #
+# scheme on the user's next successful login.                                                      #
 #                                                                                                  #
 ####################################################################################################
 

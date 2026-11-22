@@ -19,6 +19,54 @@ server.1.port=6697
 server.1.password=
 server.1.use_ssl=true
 
+# IRCv3 SASL PLAIN authentication (optional, per server).
+# When both server.N.sasl.username and server.N.sasl.password are set the bot
+#  negotiates capabilities (CAP LS 302 / CAP REQ :sasl) and authenticates to
+#  services with SASL PLAIN before registration completes, so it is identified
+#  before it joins any channel. Leave them empty to disable SASL.
+# server.N.sasl.required: if true and SASL fails, times out (30s) or is not
+#  offered by the server, the bot disconnects and tries the next server. If false
+#  a warning is logged and the bot registers without SASL.
+#  Consecutive SASL failures with required=true are retried with an exponential
+#  backoff: connect.delay, then twice as long after every further failure, up to
+#  1 hour. It is reset after a successful SASL login.
+# Default for server.N.sasl.required: [false]
+# server.N.sasl.allow_plaintext: SASL PLAIN sends the password base64 encoded (not
+#  encrypted), so by default SASL is refused for a server with use_ssl=false: an
+#  error is logged and no CAP/AUTHENTICATE is sent; with sasl.required=true the
+#  server is skipped (counts as a SASL failure), otherwise the bot connects without
+#  SASL. Set it to true only if you accept sending the password in clear text.
+# Default for server.N.sasl.allow_plaintext: [false]
+# Certificate verification: when SASL is configured for a server with use_ssl=true
+#  the server certificate is fully verified before the password is sent: its chain
+#  must lead to a CA trusted by the Java runtime (or, with ssl.strictTrust=true, to
+#  one of those or a certificate in config/plugins/irc/certs) AND it must be valid
+#  for server.N.host (host name verification). So server.N.host must be the name
+#  on the certificate (e.g. irc.libera.chat), not an IP address or another alias.
+#  If verification fails the bot does not connect to that server.
+# server.N.sasl.allow_insecure_tls: set to true to skip this verification (e.g. a
+#  private ircd with a self-signed certificate not in config/plugins/irc/certs);
+#  a warning is logged at every connect as the password could then be captured by
+#  a man in the middle.
+# Default for server.N.sasl.allow_insecure_tls: [false]
+# Servers without SASL keep the previous TLS behaviour (see ssl.strictTrust below,
+#  no host name verification); enabling verification for them too would be a
+#  separate change.
+# Networks with SASL support include Libera.Chat and most IRCv3 networks.
+#  EFnet does not support SASL: leave sasl.* empty there (or required=false).
+# Example (Libera.Chat, the username is your NickServ account name):
+#server.1.host=irc.libera.chat
+#server.1.port=6697
+#server.1.use_ssl=true
+#server.1.sasl.username=drftpd
+#server.1.sasl.password=yourNickServPassword
+#server.1.sasl.required=false
+server.1.sasl.username=
+server.1.sasl.password=
+server.1.sasl.required=false
+server.1.sasl.allow_plaintext=false
+server.1.sasl.allow_insecure_tls=false
+
 # The time to wait (in seconds) before trying another server when connecting or
 # reconnecting.
 # Default: [30]
@@ -185,6 +233,10 @@ line.length.max=512
 #  certificate in a config/plugins/irc/certs directory. The certificates should be
 #  in base64 encoded PEM format and contain nothing more than the base64 data block
 #  delimited by "-----BEGIN CERTIFICATE----- and -----END CERTIFICATE-----".
+# With this disabled the certificate is not checked at all, except for servers with
+#  SASL configured, which are always verified (see server.N.sasl.allow_insecure_tls).
+#  Note that this setting checks the certificate chain only: host name verification
+#  is done for servers with SASL only.
 # Default: [false]
 ssl.strictTrust=false
 

@@ -241,6 +241,9 @@ public class Slave extends SslConfigurationLoader {
         }
 
         _socket.setSoTimeout(socketTimeout);
+        // Small commands and replies go both ways on this connection, often from several threads at once:
+        // don't let Nagle's algorithm hold a reply back until the previous message is acknowledged
+        _socket.setTcpNoDelay(true);
         _socket.connect(masterIsa);
         _socket.setUseClientMode(true);
 
@@ -588,6 +591,16 @@ public class Slave extends SslConfigurationLoader {
      * @throws IOException if any I/O related issue has arisen throw it
      */
     public void rename(String from, String toDirPath, String toName) throws IOException {
+        // The master only tracks the source, so an entry at the destination in a root that holds no part of the
+        // source is an untracked leftover that would end up duplicated next to the renamed entry
+        List<File> rootDirs = new ArrayList<>();
+        for (Iterator<Root> it = _roots.iterator(); it.hasNext(); ) {
+            rootDirs.add(it.next().getFile());
+        }
+        if (!(isWindows && from.equalsIgnoreCase(toDirPath + "/" + toName))) {
+            moveLeftoversAside(rootDirs, from, toDirPath + "/" + toName);
+        }
+
         for (Iterator<Root> rootItems = _roots.iterator(); rootItems.hasNext(); ) {
             Root root = rootItems.next();
 
@@ -687,6 +700,51 @@ public class Slave extends SslConfigurationLoader {
         move(to, aside, false);
         move(from, to, false);
         return 1;
+    }
+
+    /**
+     * Moves untracked leftovers for the destination of a rename aside in the roots other than the source's.
+     * In every root that holds no part of the source, an entry at the destination path is renamed (within its
+     * own root, so nothing is copied or deleted) to {@code <name>.drftpd-conflict-<time>}. A root that does hold
+     * part of the source is skipped: its own {@link #mergeInto(File, File)} deals with the destination there.
+     * Nothing is done when no root holds the source, because then the rename has already been carried out.
+     *
+     * @param rootDirs the root directories of the slave
+     * @param fromPath the source path relative to a root
+     * @param toPath the destination path relative to a root
+     * @return the number of leftovers that were moved aside
+     * @throws IOException if a move fails
+     */
+    static int moveLeftoversAside(List<File> rootDirs, String fromPath, String toPath) throws IOException {
+        // If no root holds the source, the rename was already done (the master replays a rename when the
+        // reply got lost): what is at the destination is then the tracked data, not a leftover
+        boolean sourceFound = false;
+        for (File rootDir : rootDirs) {
+            if (Files.exists(new File(rootDir, fromPath).toPath(), LinkOption.NOFOLLOW_LINKS)) {
+                sourceFound = true;
+                break;
+            }
+        }
+        if (!sourceFound) {
+            return 0;
+        }
+        int setAside = 0;
+        for (File rootDir : rootDirs) {
+            File fromFile = new File(rootDir, fromPath);
+            if (Files.exists(fromFile.toPath(), LinkOption.NOFOLLOW_LINKS)) {
+                continue;
+            }
+            File toFile = new File(rootDir, toPath);
+            if (!Files.exists(toFile.toPath(), LinkOption.NOFOLLOW_LINKS)) {
+                continue;
+            }
+            File aside = conflictName(toFile);
+            logger.warn("rename(), untracked [{}] in root [{}] is also a destination of [{}], moving it aside to [{}]",
+                    toFile.getPath(), rootDir.getPath(), fromPath, aside.getPath());
+            move(toFile, aside, false);
+            setAside++;
+        }
+        return setAside;
     }
 
     private static File conflictName(File to) {

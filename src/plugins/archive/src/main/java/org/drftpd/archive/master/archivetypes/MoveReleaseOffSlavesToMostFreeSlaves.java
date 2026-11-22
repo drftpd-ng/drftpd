@@ -21,6 +21,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.drftpd.archive.master.Archive;
 import org.drftpd.common.util.PropertyHelper;
+import org.drftpd.jobs.master.Job;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.sections.SectionInterface;
@@ -138,8 +139,32 @@ public class MoveReleaseOffSlavesToMostFreeSlaves extends ArchiveType {
                 }
             }
         }
-        return isArchivedToSpecificSlaves(lrf, _numOfSlaves, findDestinationSlaves());
+        // Archived means no file is on an offofslave any more, copies on other slaves are left alone
+        return true;
+    }
 
+    /*
+     * Only files that have a copy on an offofslave get a Job. The destination set of that Job also holds the
+     * slaves the file already is on (minus the offofslaves) as a finished Job deletes the file from all slaves
+     * that are not in it. Files that are not on an offofslave are left untouched.
+     */
+    @Override
+    protected Job createJob(FileHandle file) throws FileNotFoundException {
+        Set<String> free = new HashSet<>();
+        for (RemoteSlave rslave : findDestinationSlaves()) {
+            free.add(rslave.getName());
+        }
+        Set<String> off = new HashSet<>();
+        for (RemoteSlave rslave : _offOfSlaves) {
+            off.add(rslave.getName());
+        }
+
+        Set<String> dest = OffSlaveSelection.jobDestination(file.getSlaveNames(), off, free);
+        if (dest == null) {
+            logger.debug("Not moving {}, it is not on any of the slaves to move off of (or no destination slave found)", file.getPath());
+            return null;
+        }
+        return new Job(file, dest, _priority, dest.size());
     }
 
     /*

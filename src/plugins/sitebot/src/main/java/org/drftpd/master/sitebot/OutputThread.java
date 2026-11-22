@@ -63,7 +63,8 @@ public class OutputThread extends Thread {
             try {
                 bwriter.write(line + "\r\n");
                 bwriter.flush();
-                logger.debug("[RAW OUTPUT]: {}", line);
+                // Never log SASL credentials
+                logger.debug("[RAW OUTPUT]: {}", SaslNegotiator.maskForLog(line));
             } catch (Exception e) {
                 logger.debug("We were unable to send message due to some exception", e);
                 // Silent response - just lose the line.

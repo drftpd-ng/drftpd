@@ -78,8 +78,8 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
     private transient boolean _isRemerging;
     private transient boolean _remergeChecksums;
     private transient int _prevSocketTimeout;
-    private transient long _lastDownloadSending = 0L;
-    private transient long _lastUploadReceiving = 0L;
+    private transient volatile long _lastDownloadSending = 0L;
+    private transient volatile long _lastUploadReceiving = 0L;
     private transient long _lastResponseReceived = System.currentTimeMillis();
     private transient long _lastCommandSent = System.currentTimeMillis();
     private transient long _lastRemergeCommandReceived = 0L;
@@ -909,7 +909,12 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
             // Any longer and we risk slow exchange of commands between master and slave
             try {
                 synchronized (_commandMonitor) {
-                    _commandMonitor.wait(50);
+                    // Check again while holding the monitor: the reader thread stores the response and then
+                    // calls notifyAll() on this monitor, so a response that arrived after the check in the
+                    // while condition would otherwise be missed and cost a full 50 ms wait
+                    if (!_indexWithCommands.containsKey(index)) {
+                        _commandMonitor.wait(50);
+                    }
                 }
             } catch (InterruptedException e) {
                 // Ignore interupt

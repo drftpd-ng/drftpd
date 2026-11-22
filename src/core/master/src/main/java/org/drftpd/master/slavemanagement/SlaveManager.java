@@ -403,6 +403,9 @@ public class SlaveManager extends SslConfigurationLoader implements Runnable, Ti
                 socket = (SSLSocket) _serverSocket.accept();
                 logger.debug("[{}] Accepted new connection", socket.getRemoteSocketAddress());
                 socket.setSoTimeout(socketTimeout);
+                // Small commands and replies go both ways on this connection, often from several threads at
+                // once: don't let Nagle's algorithm hold a reply back until the previous message is acknowledged
+                socket.setTcpNoDelay(true);
                 logger.debug("[{}] Enabled ciphers for this new connection are as follows: '{}'",
                         socket.getRemoteSocketAddress(), Arrays.toString(socket.getEnabledCipherSuites()));
                 logger.debug("[{}] Enabled protocols for this new connection are as follows: '{}'",

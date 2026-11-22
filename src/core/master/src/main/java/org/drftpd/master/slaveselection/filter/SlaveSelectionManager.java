@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
+import java.util.function.Function;
 
 /**
  * @author mog
@@ -45,16 +46,30 @@ public class SlaveSelectionManager extends SlaveSelectionManagerInterface {
 
     protected static final Logger logger = LogManager.getLogger(SlaveSelectionManager.class);
 
-    private FilterChain _downChain;
-    private FilterChain _upChain;
-    private FilterChain _jobDownChain;
-    private FilterChain _jobUpChain;
+    private volatile FilterChain _downChain;
+    private volatile FilterChain _upChain;
+    private volatile FilterChain _jobDownChain;
+    private volatile FilterChain _jobUpChain;
 
     private CaseInsensitiveHashMap<String, Class<? extends Filter>> _filtersMap;
 
+    // builds a chain from its config file name; replaceable by the tests
+    private final Function<String, FilterChain> _chainLoader;
+
     public SlaveSelectionManager() throws IOException {
+        _chainLoader = cfgFileName -> new FilterChain(cfgFileName, getFiltersMap());
         initFilters();
-        reload();
+        // at startup a broken config is fatal
+        loadChains();
+    }
+
+    /**
+     * Used by the tests, chains are built by <code>chainLoader</code> instead of from the config files.
+     */
+    SlaveSelectionManager(Function<String, FilterChain> chainLoader) {
+        _chainLoader = chainLoader;
+        _filtersMap = new CaseInsensitiveHashMap<>();
+        loadChains();
     }
 
     @EventSubscriber
@@ -138,7 +153,7 @@ public class SlaveSelectionManager extends SlaveSelectionManagerInterface {
             throw new NoAvailableSlaveException();
         }
 
-        return process("jobup", new ScoreChart(slaves), null, Transfer.TRANSFER_SENDING_DOWNLOAD, file, sourceSlave);
+        return process("jobup", new ScoreChart(slaves), null, Transfer.TRANSFER_RECEIVING_UPLOAD, file, sourceSlave);
     }
 
 
@@ -147,11 +162,33 @@ public class SlaveSelectionManager extends SlaveSelectionManagerInterface {
         return getFilterChain(filterchain).getBestSlave(sc, conn, direction, file, sourceSlave);
     }
 
+    /**
+     * Reloads all four chains. If any of them fails to load (e.g. a FatalException for an unknown
+     * filter or slave) the previous chains are kept and the error is reported as an IOException.
+     */
     public void reload() throws IOException {
-        _downChain = new FilterChain("slaveselection-down.conf", getFiltersMap());
-        _upChain = new FilterChain("slaveselection-up.conf", getFiltersMap());
-        _jobUpChain = new FilterChain("slaveselection-jobup.conf", getFiltersMap());
-        _jobDownChain = new FilterChain("slaveselection-jobdown.conf", getFiltersMap());
+        try {
+            loadChains();
+        } catch (RuntimeException e) {
+            logger.error("Error Re-loading SlaveSelection Configuration Files, keeping the previous filter chains", e);
+            throw new IOException("Error Re-loading SlaveSelection Configuration Files, previous filter chains kept: "
+                    + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Builds all four chains first and only swaps them in if every one loaded, so an error
+     * in one config file never leaves a mix of old and new chains.
+     */
+    private void loadChains() {
+        FilterChain down = _chainLoader.apply("slaveselection-down.conf");
+        FilterChain up = _chainLoader.apply("slaveselection-up.conf");
+        FilterChain jobUp = _chainLoader.apply("slaveselection-jobup.conf");
+        FilterChain jobDown = _chainLoader.apply("slaveselection-jobdown.conf");
+        _downChain = down;
+        _upChain = up;
+        _jobUpChain = jobUp;
+        _jobDownChain = jobDown;
     }
 
     public FilterChain getFilterChain(String type) {

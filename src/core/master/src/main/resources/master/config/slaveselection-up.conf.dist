@@ -21,6 +21,9 @@
 # .filter=matchdir                                                                                 #
 # .match=/section/*                                                                                #
 # .assign=slave1+500 slave2-500 slave3+remove                                                      #
+# (name+N / name-N adds or subtracts score, name+remove / name-remove removes slave;               #
+#  all+N / all-N applies to every slave, all+remove removes every slave;                           #
+#  entries are applied in order; slave names may contain "-", e.g. slave-1-500)                    #
 # .assume.remove=false (if true removes all slaves not mentioned in assign).                       #
 # .negate.expression=false (if true negates the glob set in match).                                #
 #                                                                                                  #
@@ -28,6 +31,9 @@
 # .filter=matchdirex                                                                               #
 # .match=^/section/.*$                                                                             #
 # .assign=slave1+500 slave2-500 slave3+remove                                                      #
+# (name+N / name-N adds or subtracts score, name+remove / name-remove removes slave;               #
+#  all+N / all-N applies to every slave, all+remove removes every slave;                           #
+#  entries are applied in order; slave names may contain "-", e.g. slave-1-500)                    #
 # .assume.remove=false (if true removes all slaves not mentioned in assign).                       #
 # .negate.expression=false (if true negates the glob set in match).                                #
 #                                                                                                  #

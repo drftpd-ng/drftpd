@@ -120,7 +120,7 @@ public class DirectoryspaceFilter extends Filter {
                 for (FileHandle file : files) {
                     try {
                         if (file.getSlaveNames().contains(slave.getName())) {
-                            slaveHasFilesSize += dirHandleSize;
+                            slaveHasFilesSize += file.getSize();
                         }
                     } catch (FileNotFoundException e) {
                         // couldn't find that file, do nothing and continue on

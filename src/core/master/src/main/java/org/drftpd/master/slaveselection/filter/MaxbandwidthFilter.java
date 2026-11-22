@@ -43,7 +43,7 @@ public class MaxbandwidthFilter extends Filter {
         int slashIndex = max.indexOf('/'); // parse kb/s too.
 
         if (slashIndex != -1) {
-            max = max.substring(0, slashIndex - 1);
+            max = max.substring(0, slashIndex).trim();
         }
 
         _maxBandwidth = Bytes.parseBytes(max);

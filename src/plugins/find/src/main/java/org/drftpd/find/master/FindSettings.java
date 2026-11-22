@@ -8,6 +8,11 @@ public class FindSettings {
 
     private boolean _quiet;
 
+    private DupeUtils.KeepPolicy _dupe;
+    private final String _dupeExclude;
+    private final String _dupeMinAge;
+    private String _fileOnlyOption;
+
     private int _limit;
     private int _maxLimit;
 
@@ -20,6 +25,11 @@ public class FindSettings {
 
         _quiet = false;
 
+        _dupe = null;
+        _dupeExclude = request.getProperties().getProperty("dupe.exclude");
+        _dupeMinAge = request.getProperties().getProperty("dupe.min.age");
+        _fileOnlyOption = null;
+
         // We by default initialize to root!
         _dirHandle = GlobalContext.getGlobalContext().getRoot();
     }
@@ -30,6 +40,39 @@ public class FindSettings {
 
     public void setQuiet(boolean quiet) {
         _quiet = quiet;
+    }
+
+    /**
+     * @return the keep policy when the -dupe option is used, null otherwise
+     */
+    public DupeUtils.KeepPolicy getDupe() {
+        return _dupe;
+    }
+
+    public void setDupe(DupeUtils.KeepPolicy dupe) {
+        _dupe = dupe;
+    }
+
+    public String getDupeExclude() {
+        return _dupeExclude;
+    }
+
+    /**
+     * @return the configured dupe.min.age in minutes, null when not configured
+     */
+    public String getDupeMinAge() {
+        return _dupeMinAge;
+    }
+
+    /**
+     * @return the last given option that restricts the results to files (e.g. -f), null when none
+     */
+    public String getFileOnlyOption() {
+        return _fileOnlyOption;
+    }
+
+    public void setFileOnlyOption(String option) {
+        _fileOnlyOption = option;
     }
 
     public int getLimit() {

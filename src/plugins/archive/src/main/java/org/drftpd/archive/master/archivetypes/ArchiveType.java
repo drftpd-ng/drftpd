@@ -22,11 +22,14 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.drftpd.archive.master.Archive;
 import org.drftpd.archive.master.DuplicateArchiveException;
+import org.drftpd.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.common.extensibility.PluginInterface;
 import org.drftpd.common.util.PropertyHelper;
 import org.drftpd.jobs.master.Job;
 import org.drftpd.jobs.master.JobManager;
 import org.drftpd.master.GlobalContext;
+import org.drftpd.master.commands.nuke.NukeUtils;
+import org.drftpd.master.commands.nuke.metadata.NukeData;
 import org.drftpd.master.sections.SectionInterface;
 import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.master.vfs.DirectoryHandle;
@@ -111,6 +114,12 @@ public abstract class ArchiveType {
     // Used for: extracting the ${rls} part of a release name in rls: destination types (group 1 is used)
     static final String DEFAULT_RLS_REGEX = "(?i)(.*)(\\.|-|_)S\\d.*";
     private String _rlsRegex;
+
+    // Used for: not archiving releases that are not complete (according to the zipscript SFV check)
+    private boolean _skipIncomplete;
+
+    // Used for: not archiving nuked releases
+    private boolean _skipNuked;
 
     /**
      * Sets _slaveList, _numOfSlaves, _section, _parent, and _archiveAfter Each
@@ -316,8 +325,19 @@ public abstract class ArchiveType {
         try {
             // Checks regex to see if dir should be archived or not
             if (lrf.getName().matches(getArchiveRegex())) {
-                //make sure dir is archived before moving it
                 long age = System.currentTimeMillis() - lrf.creationTime();
+                if (!(age > getArchiveAfter() && (age < getIgnoreAfter() || getIgnoreAfter() == -1))) {
+                    // too young or too old, nothing below would add it
+                    return;
+                }
+                // Leave out nuked and/or incomplete releases (if configured), they don't block other releases.
+                // Checked only for releases old enough to archive, the SFV check can read from slaves.
+                if (ReleaseCompleteness.shouldSkip(_skipNuked, _skipIncomplete,
+                        () -> isNuked(lrf), () -> isComplete(lrf))) {
+                    logger.debug("{} - Skipping {}, it is nuked or incomplete", getClass(), lrf.getPath());
+                    return;
+                }
+                //make sure dir is archived before moving it
                 if (!isArchivedDir(lrf)) {
                     if (age > getArchiveAfter() && (age < getIgnoreAfter() || getIgnoreAfter() == -1)) {
                         oldDirs.add(lrf);
@@ -337,6 +357,34 @@ public abstract class ArchiveType {
             logger.debug("Received OfflineSlaveException", e);
         } catch (FileNotFoundException e) {
             logger.debug("Received FileNotFoundException", e);
+        }
+    }
+
+    /*
+     * A nuked release is renamed with the nuke prefix and gets nuke metadata, either one is enough.
+     */
+    private static boolean isNuked(DirectoryHandle dir) {
+        if (dir.getName().startsWith(NukeUtils._nukePrefix)) {
+            return true;
+        }
+        try {
+            dir.getPluginMetaData(NukeData.NUKEDATA);
+            return true;
+        } catch (KeyNotFoundException | FileNotFoundException e) {
+            return false;
+        }
+    }
+
+    /*
+     * Uses the zipscript SFV check. The zipscript plugin is only touched when skipincomplete is enabled,
+     * if it isn't loaded the release is treated as complete (same as a release without SFV).
+     */
+    private static boolean isComplete(DirectoryHandle dir) {
+        try {
+            return ReleaseCompleteness.isComplete(new SfvDirectoryNode(dir));
+        } catch (LinkageError e) {
+            logger.error("skipincomplete is enabled but the zipscript plugin is not available, treating {} as complete", dir.getPath(), e);
+            return true;
         }
     }
 
@@ -454,6 +502,19 @@ public abstract class ArchiveType {
         return jobs;
     }
 
+    /**
+     * Creates the Job used to archive a single file. The default is one Job per file that sends it to
+     * {@link #findDestinationSlaves()}; note that a finished Job removes the file from every slave that is
+     * not in its destination set. Archive types that must leave some copies alone override this.
+     *
+     * @param file the file to archive
+     * @return the Job to queue, or null if nothing has to be done for this file
+     * @throws FileNotFoundException if the file no longer exists
+     */
+    protected Job createJob(FileHandle file) throws FileNotFoundException {
+        return new Job(file, _priority, _numOfSlaves, findDestinationSlaves());
+    }
+
     /*
      * Adds the files in the directory (and subdirs) to the job manager to be archived
      */
@@ -464,8 +525,12 @@ public abstract class ArchiveType {
             jobQueue.addAll(recursiveSend(directoryHandle));
         }
         for (FileHandle file : lrf.getFilesUnchecked()) {
+            Job job = createJob(file);
+            if (job == null) {
+                logger.debug("No job needed for {}", file.getPath());
+                continue;
+            }
             logger.info("Adding {} to the job queue", file.getPath());
-            Job job = new Job(file, _priority, _numOfSlaves, findDestinationSlaves());
             jobQueue.add(job);
         }
 
@@ -521,6 +586,10 @@ public abstract class ArchiveType {
                 DEFAULT_SCANSUBDIRS_REGEX, false, _confNum + ".scansubdirsregex");
         _rlsRegex = resolveRegex(properties.getProperty(_confNum + ".rlsregex"),
                 DEFAULT_RLS_REGEX, true, _confNum + ".rlsregex");
+        _skipIncomplete = ReleaseCompleteness.parseFlag(properties.getProperty(_confNum + ".skipincomplete"),
+                false, _confNum + ".skipincomplete");
+        _skipNuked = ReleaseCompleteness.parseFlag(properties.getProperty(_confNum + ".skipnuked"),
+                false, _confNum + ".skipnuked");
 
         // Guard that repeat is not negative
         if (_repeat < 1) {

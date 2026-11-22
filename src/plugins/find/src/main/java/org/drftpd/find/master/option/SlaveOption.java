@@ -47,6 +47,8 @@ public class SlaveOption implements OptionInterface {
         if (args == null) {
             throw new ImproperUsageException("Missing argument for " + option + " option");
         }
+        // Only files are stored on slaves, directories never match a slave filter
+        settings.setFileOnlyOption(option);
         if (option.equalsIgnoreCase("-slaves")) {
             HashSet<String> slaves = new HashSet<>(Arrays.asList(args));
             params.setSlaves(slaves);
