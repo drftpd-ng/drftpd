@@ -25,6 +25,7 @@ import org.drftpd.common.exceptions.TransferSlowException;
 import org.drftpd.common.io.AddAsciiOutputStream;
 import org.drftpd.common.io.PhysicalFile;
 import org.drftpd.common.network.PassiveConnection;
+import org.drftpd.common.network.SocketCloser;
 import org.drftpd.common.slave.Connection;
 import org.drftpd.common.slave.TransferIndex;
 import org.drftpd.common.slave.TransferStatus;
@@ -243,6 +244,7 @@ public class Transfer {
     public TransferStatus receiveFile(String dirname, char mode, String filename, long offset, String inetAddress)
             throws IOException, TransferDeniedException {
         _pathForUpload = dirname + separator + filename;
+        boolean success = false;
         try {
             _slave.getRoots().getFile(_pathForUpload);
             throw new FileExistsException("File " + dirname + separator + filename + " exists");
@@ -270,14 +272,11 @@ public class Transfer {
 
             logger.info("UL: {}/{}{}", dirname, filename, getNegotiatedSSLString());
             transfer(null);
+            success = true;
             _slave.sendResponse(new AsyncResponseDiskStatus(_slave.getDiskStatus()));
             return getTransferStatus();
         } finally {
-            if (_sock != null) {
-                try {
-                    _sock.close();
-                } catch (IOException ignored) {}
-            }
+            closeDataSocket(success);
             if (_out != null) {
                 try {
                     _out.close();
@@ -306,6 +305,7 @@ public class Transfer {
      */
     public TransferStatus sendFile(String path, char mode, long offset, String inetAddress)
             throws IOException, TransferDeniedException {
+        boolean success = false;
         try {
 
             _in = new FileInputStream(new PhysicalFile(_slave.getRoots().getFile(path)));
@@ -335,13 +335,10 @@ public class Transfer {
             } catch (ObjectNotFoundException e) {
                 transfer(null);
             }
+            success = true;
             return getTransferStatus();
         } finally {
-            if (_sock != null) {
-                try {
-                    _sock.close();
-                } catch (IOException ignored) {}
-            }
+            closeDataSocket(success);
             if (_out != null) {
                 try {
                     _out.close();
@@ -352,6 +349,23 @@ public class Transfer {
                     _in.close();
                 } catch (IOException ignored) {}
             }
+        }
+    }
+
+    /**
+     * Closes the data socket. After a successful transfer an SSL socket sends close_notify first,
+     * on errors and aborts it is closed right away.
+     */
+    private void closeDataSocket(boolean success) {
+        if (_sock == null) {
+            return;
+        }
+        if (success && _abortReason == null) {
+            SocketCloser.closeGracefully(_sock);
+        } else {
+            try {
+                _sock.close();
+            } catch (IOException ignored) {}
         }
     }
 

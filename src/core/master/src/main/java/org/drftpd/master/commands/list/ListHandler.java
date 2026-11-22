@@ -21,6 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
+import org.drftpd.common.network.SocketCloser;
 import org.drftpd.common.slave.LightRemoteInode;
 import org.drftpd.common.vfs.InodeHandleInterface;
 import org.drftpd.master.GlobalContext;
@@ -34,6 +35,7 @@ import org.drftpd.master.vfs.*;
 import org.reflections.Reflections;
 
 import java.io.*;
+import java.net.Socket;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -194,6 +196,7 @@ public class ListHandler extends CommandInterface {
                 directoryFile = conn.getCurrentDirectory();
             }
             Writer os = null;
+            Socket dataSocket = null;
 
             if (isStat) {
                 response = new CommandResponse(213, "End of STAT");
@@ -211,9 +214,11 @@ public class ListHandler extends CommandInterface {
                 conn.printOutput(new FtpReply(StandardCommandManager.genericResponse("RESPONSE_150_OK")));
 
                 try {
-                    os = new PrintWriter(new OutputStreamWriter(ts.getDataSocketForLIST().getOutputStream()));
+                    dataSocket = ts.getDataSocketForLIST();
+                    os = new PrintWriter(new OutputStreamWriter(dataSocket.getOutputStream()));
                 } catch (IOException ex) {
                     logger.warn(ex);
+                    closeQuietly(dataSocket);
                     return new CommandResponse(425, ex.getMessage());
                 }
             }
@@ -223,6 +228,7 @@ public class ListHandler extends CommandInterface {
                 container = listElements(directoryFile, conn, request.getUser(), slavenames);
             } catch (IOException e) {
                 logger.error(e);
+                closeQuietly(dataSocket);
                 return new CommandResponse(450, e.getMessage());
             }
 
@@ -240,17 +246,28 @@ public class ListHandler extends CommandInterface {
                 }
                 if (isStat || isMlst)
                     return response;
-                os.close();
+                // flush, then close the socket itself so an SSL data connection sends close_notify
+                os.flush();
+                SocketCloser.closeGracefully(dataSocket);
                 response = StandardCommandManager.genericResponse("RESPONSE_226_CLOSING_DATA_CONNECTION");
                 response.addComment(conn.status());
                 return response;
             } catch (IOException ex) {
                 logger.warn(ex);
+                closeQuietly(dataSocket);
                 return new CommandResponse(450, ex.getMessage());
             }
         } finally {
             BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
             conn.getTransferState().reset();
+        }
+    }
+
+    private static void closeQuietly(Socket sock) {
+        if (sock != null) {
+            try {
+                sock.close();
+            } catch (IOException ignored) {}
         }
     }
 
