@@ -223,6 +223,7 @@ public class UserManagementHandler extends CommandInterface {
             String maxsimdn = cfg.getProperty("max_downloads", "2");
             String idletime = cfg.getProperty("idle_time", "300");
             String wklyallotment = cfg.getProperty("wkly_allotment", "0");
+            String mthlyallotment = cfg.getProperty("mthly_allotment", "0");
             String credits = cfg.getProperty("credits", "0b");
             String tagline = cfg.getProperty("tagline", "No tagline set.");
             String group = cfg.getProperty("group", "NoGroup");
@@ -243,6 +244,7 @@ public class UserManagementHandler extends CommandInterface {
             int idletimeVal = Integer.parseInt(idletime);
             long creditsVal = Bytes.parseBytes(credits);
             long wklyallotmentVal = Bytes.parseBytes(wklyallotment);
+            long mthlyallotmentVal = Bytes.parseBytes(mthlyallotment);
 
             // Refuse a password the configured hash can't store before the account is created and saved,
             // otherwise a failing setPassword() would leave a saved account without a password
@@ -271,6 +273,7 @@ public class UserManagementHandler extends CommandInterface {
             newUser.getKeyedMap().setObject(UserManagement.MAXSIMUP, maxsimupVal);
             newUser.getKeyedMap().setObject(UserManagement.MAXSIMDN, maxsimdnVal);
             newUser.getKeyedMap().setObject(UserManagement.WKLYALLOTMENT, wklyallotmentVal);
+            newUser.getKeyedMap().setObject(UserManagement.MTHLYALLOTMENT, mthlyallotmentVal);
 
             newUser.setIdleTime(idletimeVal);
             newUser.setCredits(creditsVal);
@@ -342,6 +345,9 @@ public class UserManagementHandler extends CommandInterface {
      * "#,###" The first number is the section number (0=default section), the
      * second is the number of kilobytes to give. (user's credits are replaced,
      * not added to, with this value) Only one section at a time is supported,
+     * mthly_allotment Same as wkly_allotment, but refilled once a month at the
+     * monthly reset. Syntax: site change user mthly_allotment &lt;bytes&gt;
+     * (0 = off),
      * homedir This will change the user's homedir. NOTE: This command is
      * disabled by default. To enable it, add "min_homedir /site" to your config
      * file, where "/site" is the minimum directory that users can have, i.e.
@@ -703,6 +709,17 @@ public class UserManagementHandler extends CommandInterface {
                             UserManagement.WKLYALLOTMENT), weeklyAllotment);
                     userToChange.getKeyedMap().setObject(UserManagement.WKLYALLOTMENT,
                             weeklyAllotment);
+                    response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
+                }
+                case "mthly_allotment" -> {
+                    if (commandArguments.length != 1) {
+                        throw new ImproperUsageException();
+                    }
+                    long monthlyAllotment = Bytes.parseBytes(commandArguments[0]);
+                    logger.info("'{}' changed mthly_allotment for '{}' from '{}' to {}'", session.getUserNull(request.getUser()).getName(), userToChange.getName(), userToChange.getKeyedMap().getObjectLong(
+                            UserManagement.MTHLYALLOTMENT), monthlyAllotment);
+                    userToChange.getKeyedMap().setObject(UserManagement.MTHLYALLOTMENT,
+                            monthlyAllotment);
                     response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
                 }
                 case "tagline" -> {

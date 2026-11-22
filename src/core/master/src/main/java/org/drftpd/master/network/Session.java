@@ -61,6 +61,8 @@ public abstract class Session extends KeyedMap<Key<?>, Object> {
             env.put("username", user.getName());
             env.put("idletime", "" + user.getIdleTime());
             env.put("credits", Bytes.formatBytes(user.getCredits()));
+            // Read through the getter so users created before mthly_allotment existed show 0 instead of nothing
+            env.put("mthlyallotment", "" + user.getKeyedMap().getObjectLong(UserManagement.MTHLYALLOTMENT));
             env.put("ratio", "" + user.getKeyedMap().get(UserManagement.RATIO));
             env.put("tagline", user.getKeyedMap().get(UserManagement.TAGLINE));
             env.put("uploaded", Bytes.formatBytes(user.getUploadedBytes()));

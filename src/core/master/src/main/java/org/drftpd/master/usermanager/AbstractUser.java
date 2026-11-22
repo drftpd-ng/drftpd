@@ -279,15 +279,22 @@ public abstract class AbstractUser extends User implements Commitable {
         super.resetMonth(resetDate);
         super.resetDay(resetDate);
         super.resetHour(resetDate);
+        setCredits(creditsAfterAllotment(getCredits(), getKeyedMap().getObjectLong(UserManagement.MTHLYALLOTMENT)));
         logger.info("Reset monthly stats for {}", getName());
+    }
+
+    /**
+     * Credits a user has after a weekly or monthly allotment refill. A positive allotment replaces the current
+     * credits (it is not added to them), 0 (or less) means the allotment is off and the credits are kept.
+     */
+    static long creditsAfterAllotment(long currentCredits, long allotment) {
+        return allotment > 0 ? allotment : currentCredits;
     }
 
     public void resetWeek(Date resetDate) {
         GlobalContext.getEventService().publish(new UserEvent(this, "RESETWEEK", resetDate.getTime()));
         super.resetWeek(resetDate);
-        if (getKeyedMap().getObjectLong(UserManagement.WKLYALLOTMENT) > 0) {
-            setCredits(getKeyedMap().getObjectLong(UserManagement.WKLYALLOTMENT));
-        }
+        setCredits(creditsAfterAllotment(getCredits(), getKeyedMap().getObjectLong(UserManagement.WKLYALLOTMENT)));
         logger.info("Reset weekly stats for {}", getName());
     }
 
@@ -302,6 +309,8 @@ public abstract class AbstractUser extends User implements Commitable {
         super.resetMonth(resetDate);
         super.resetDay(resetDate);
         super.resetHour(resetDate);
+        // TimeManager runs resetYear() instead of resetMonth() on January 1st, so the monthly allotment is refilled here too
+        setCredits(creditsAfterAllotment(getCredits(), getKeyedMap().getObjectLong(UserManagement.MTHLYALLOTMENT)));
         logger.info("Reset Yearly stats for {}", getName());
     }
 

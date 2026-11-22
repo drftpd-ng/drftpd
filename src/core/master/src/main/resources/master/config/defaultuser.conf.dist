@@ -30,6 +30,10 @@
 # Default: 0
 # wkly_allotment=0
 
+# Monthly allotment: credits are replaced with this value at the monthly reset (0 = disabled)
+# Default: 0
+# mthly_allotment=0
+
 # Credits
 # Default: 0b
 # credits=0b
