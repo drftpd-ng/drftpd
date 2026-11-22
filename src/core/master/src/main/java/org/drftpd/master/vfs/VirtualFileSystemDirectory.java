@@ -75,11 +75,24 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 
     protected synchronized void addSize(long l) {
         if (l != 0L) {
-            _size = getSize() + l;
+            _size = clampSize(getSize() + l, l);
             getParent().addSize(l);
             commit();
             getVFS().notifySizeChanged(this, _size);
         }
+    }
+
+    /**
+     * Safety net: a directory size can never be negative. If the bookkeeping would make it negative
+     * the size is out of sync with the children (SITE FIXSIZE recalculates it), so log it and use 0.
+     */
+    protected long clampSize(long newSize, long change) {
+        if (newSize < 0L) {
+            logger.warn("Size of {} would become negative ({} after a change of {}), setting it to 0;"
+                    + " run SITE FIXSIZE to recalculate it", getPath(), newSize, change);
+            return 0L;
+        }
+        return newSize;
     }
 
     /**
@@ -335,6 +348,18 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
      * @param child
      */
     protected synchronized void removeChild(VirtualFileSystemInode child) {
+        if (!_files.containsKey(child.getName())) {
+            // Already removed, its size must not be subtracted again
+            logger.warn("removeChild({}) called for a child that is not in {}, ignoring", child.getName(), getPath());
+            return;
+        }
+        SoftReference<VirtualFileSystemInode> ref = _files.get(child.getName());
+        VirtualFileSystemInode current = ref == null ? null : ref.get();
+        if (current != null && current != child) {
+            // A different inode now has this name (the child was removed and a new one was created)
+            logger.warn("removeChild({}) called with a stale inode for {}, ignoring", child.getName(), getPath());
+            return;
+        }
         addSize(-child.getSize());
         removeChildSlaveRefCounts(child, child.getSlaveRefCounts());
         removeMissingChild(child.getName());

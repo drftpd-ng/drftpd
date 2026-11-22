@@ -30,6 +30,8 @@ public class UserManagement {
 
     public static final Key<String> TAGLINE = new Key<>(UserManagement.class, "tagline");
 
+    public static final Key<String> HOMEDIR = new Key<>(UserManagement.class, "homedir");
+
     public static final Key<Boolean> DEBUG = new Key<>(UserManagement.class, "debug");
 
     public static final Key<Float> RATIO = new Key<>(UserManagement.class, "ratio");

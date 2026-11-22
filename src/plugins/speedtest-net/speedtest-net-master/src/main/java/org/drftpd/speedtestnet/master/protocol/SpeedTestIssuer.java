@@ -38,4 +38,11 @@ public class SpeedTestIssuer extends AbstractIssuer {
         rslave.sendCommand(ac);
         return index;
     }
+
+    public String issueSpeedTestServersToSlave(RemoteSlave rslave, int limit) throws SlaveUnavailableException {
+        String index = rslave.fetchIndex();
+        AsyncCommandArgument ac = new AsyncCommandArgument(index, "speedTestServers", String.valueOf(limit));
+        rslave.sendCommand(ac);
+        return index;
+    }
 }

@@ -54,7 +54,7 @@ public class VirtualFileSystemRoot extends VirtualFileSystemDirectory {
     @Override
     protected void addSize(long l) {
         if (l != 0L) {
-            _size = getSize() + l;
+            _size = clampSize(getSize() + l, l);
             commit();
             getVFS().notifySizeChanged(this, _size);
         }

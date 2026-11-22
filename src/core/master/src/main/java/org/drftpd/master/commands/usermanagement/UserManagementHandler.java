@@ -28,6 +28,7 @@ import org.drftpd.common.util.ConfigLoader;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.Master;
 import org.drftpd.master.commands.*;
+import org.drftpd.master.commands.login.HomeDirectory;
 import org.drftpd.master.network.BaseFtpConnection;
 import org.drftpd.master.network.Session;
 import org.drftpd.master.network.TransferState;
@@ -711,6 +712,23 @@ public class UserManagementHandler extends CommandInterface {
                     logger.info("'{}' changed tagline for '{}' from '{}' to '{}'", session.getUserNull(request.getUser()).getName(), userToChange.getName(), userToChange.getKeyedMap().getObjectString(UserManagement.TAGLINE), fullCommandArgument);
                     userToChange.getKeyedMap().setObject(UserManagement.TAGLINE,
                             fullCommandArgument);
+                    response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
+                }
+                case "homedir" -> {
+                    if (commandArguments.length < 1) {
+                        throw new ImproperUsageException();
+                    }
+                    // Like tagline, the rest of the line is the value so paths may contain spaces
+                    String homeDir = HomeDirectory.parseChangeArgument(fullCommandArgument);
+                    if (homeDir == null) {
+                        return new CommandResponse(501, "Invalid home directory, it must be an absolute path without '.' or '..' segments");
+                    }
+                    logger.info("'{}' changed homedir for '{}' from '{}' to '{}'", session.getUserNull(request.getUser()).getName(), userToChange.getName(), userToChange.getKeyedMap().getObject(UserManagement.HOMEDIR, ""), homeDir);
+                    if (homeDir.isEmpty()) {
+                        userToChange.getKeyedMap().remove(UserManagement.HOMEDIR);
+                    } else {
+                        userToChange.getKeyedMap().setObject(UserManagement.HOMEDIR, homeDir);
+                    }
                     response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
                 }
                 default -> throw new ImproperUsageException();

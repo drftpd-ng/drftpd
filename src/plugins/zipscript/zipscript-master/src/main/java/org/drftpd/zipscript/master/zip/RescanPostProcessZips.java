@@ -28,9 +28,12 @@ import org.drftpd.master.network.Session;
 import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.FileHandle;
+import org.drftpd.zipscript.common.zip.DizInfo;
 import org.drftpd.zipscript.master.zip.vfs.ZipscriptVFSDataZip;
+import org.drftpd.zipscript.master.zip.vfs.ZipscriptVFSDataZip.DizReadResult;
 
 import java.io.FileNotFoundException;
+import java.util.Locale;
 
 /**
  * @author djb61
@@ -40,16 +43,48 @@ public class RescanPostProcessZips extends ZipTools implements RescanPostProcess
 
     private static final Logger logger = LogManager.getLogger(RescanPostProcessZips.class);
 
+    /**
+     * What a rescan has to do with the cached DIZ info of a directory.
+     */
+    enum DizAction {
+        /** DIZ info can not be refreshed right now (no slave to ask), keep the cached one. */
+        KEEP,
+        /** No valid DIZ was found in the zips, the DIZ is gone: drop the cached one. */
+        DROP,
+        /** A fresh valid DIZ was read: store it. */
+        SET
+    }
+
+    static boolean isZip(String name) {
+        return name.toLowerCase(Locale.ROOT).endsWith(".zip");
+    }
+
+    /**
+     * Decides what to do with the cached DIZ info after the slaves were asked.
+     */
+    static DizAction decideResult(DizReadResult.Status status) {
+        switch (status) {
+            case FOUND:
+                return DizAction.SET;
+            case NOT_FOUND:
+                return DizAction.DROP;
+            default:
+                return DizAction.KEEP;
+        }
+    }
+
     public void initialize(StandardCommandManager cManager) {
     }
 
     public void postProcessDir(CommandRequest workingDirReq, boolean quiet) {
         Session session = workingDirReq.getSession();
         DirectoryHandle dir = workingDirReq.getCurrentDirectory();
+        boolean hasZips = false;
         try {
             for (FileHandle file : dir.getSortedFiles(
                     session.getUserNull(workingDirReq.getUser()))) {
-                if (file.getSize() > 0 && file.getName().endsWith(".zip")) {
+                if (file.getSize() > 0 && isZip(file.getName())) {
+                    hasZips = true;
                     try {
                         RemoteSlave rslave = file.getASlaveForFunction();
                         String index = ZipscriptVFSDataZip.getZipIssuer().issueZipCRCToSlave(rslave, file.getPath());
@@ -79,6 +114,40 @@ public class RescanPostProcessZips extends ZipTools implements RescanPostProcess
             }
         } catch (FileNotFoundException e) {
             session.printOutput(200, dir.getName() + " - Directory deleted  whilst checking integrity of zips");
+            return;
+        }
+        if (hasZips) {
+            refreshDizInfo(session, dir, quiet);
+        }
+    }
+
+    /**
+     * Reads the DIZ info again from the slaves so that a corrected or late .diz is picked up. The cache is only
+     * changed once the read is done: a valid DIZ replaces it, no valid DIZ drops it and, if no slave could be asked
+     * (temporary), the previous DIZ info is kept.
+     */
+    private void refreshDizInfo(Session session, DirectoryHandle dir, boolean quiet) {
+        DizReadResult result = new ZipscriptVFSDataZip(dir).readDizInfoFresh();
+        try {
+            switch (decideResult(result.getStatus())) {
+                case SET:
+                    dir.addPluginMetaData(DizInfo.DIZINFO, result.getDizInfo());
+                    if (!quiet) {
+                        session.printOutput(200, dir.getName() + " - DIZ info refreshed, expecting " + result.getDizInfo().getTotal() + " files");
+                    }
+                    break;
+                case DROP:
+                    dir.removePluginMetaData(DizInfo.DIZINFO);
+                    if (!quiet) {
+                        session.printOutput(200, dir.getName() + " - No usable DIZ info found");
+                    }
+                    break;
+                default:
+                    session.printOutput(200, dir.getName() + " - Unable to refresh DIZ info, keeping the previous one");
+            }
+        } catch (FileNotFoundException e) {
+            // directory deleted meanwhile, nothing to update
+            logger.debug("Directory {} gone while refreshing DIZ info", dir, e);
         }
     }
 

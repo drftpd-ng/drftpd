@@ -45,6 +45,7 @@ public class TypeOption implements OptionInterface {
     public void executeOption(String option, String[] args, AdvancedSearchParams params, FindSettings settings) throws ImproperUsageException {
         if (option.equalsIgnoreCase("-f") || option.equalsIgnoreCase("-file")) {
             params.setInodeType(AdvancedSearchParams.InodeType.FILE);
+            settings.setFileOnlyOption(option);
         } else if (option.equalsIgnoreCase("-d") || option.equalsIgnoreCase("-dir")) {
             params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
         }

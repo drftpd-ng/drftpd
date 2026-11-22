@@ -151,7 +151,10 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
         if (removed) {
             getParent().decrementSlaveRefCount(rslave);
         }
-        if (isEmpty) {
+        // Only the call that removed the last slave deletes the file. A call that removed nothing
+        // (for instance a second remover of the same slave, holding this instance after it was
+        // already deleted) must not delete it again, as that subtracts its size from the parent twice
+        if (removed && isEmpty) {
             delete();
         } else if (removed) {
             commit();

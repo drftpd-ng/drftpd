@@ -1,3 +1,4 @@
 # $Id$
 find.header=Found ${results} entries in index (limit ${limit}):
 find.empty=No results found!
+find.dupe.header=Found ${results} dupe(s) in index (limit ${limit}), KEEP is never touched, actions only run on DUPE copies:

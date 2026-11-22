@@ -1063,7 +1063,13 @@ public class DirectoryHandle extends InodeHandle implements DirectoryHandleInter
             }
             newSize += inode.getSize();
         }
-        getInode().setSize(newSize);
+        // Adjust by the difference so the parents up to / are corrected too: setSize() only changes
+        // this directory. The fixes of the subdirectories above already reached this directory
+        // through addSize(), so take the difference against the size it has now, not oldSize.
+        VirtualFileSystemDirectory dir = getInode();
+        synchronized (dir) {
+            dir.addSize(newSize - dir.getSize());
+        }
         return oldSize - newSize;
     }
 

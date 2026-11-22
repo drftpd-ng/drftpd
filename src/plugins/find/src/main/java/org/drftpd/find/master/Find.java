@@ -23,13 +23,18 @@ import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.drftpd.common.misc.CaseInsensitiveHashMap;
 import org.drftpd.common.util.Bytes;
 import org.drftpd.find.master.action.ActionInterface;
+import org.drftpd.find.master.action.NukeAction;
 import org.drftpd.find.master.option.OptionInterface;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.commands.*;
+import org.drftpd.master.commands.nuke.NukeBeans;
+import org.drftpd.master.commands.nuke.NukeUtils;
 import org.drftpd.master.indexation.AdvancedSearchParams;
 import org.drftpd.master.indexation.IndexEngineInterface;
 import org.drftpd.master.indexation.IndexException;
 import org.drftpd.master.network.Session;
+import org.drftpd.master.sections.SectionInterface;
+import org.drftpd.master.sections.conf.DatedSection;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.FileHandle;
@@ -38,6 +43,8 @@ import org.reflections.Reflections;
 
 import java.io.FileNotFoundException;
 import java.util.*;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 
 /**
@@ -209,7 +216,29 @@ public class Find extends CommandInterface {
             }
         }
 
-        if (actions.isEmpty()) {
+        if (settings.getDupe() != null) {
+            // Dupes are directories, an option that only matches files would silently find nothing
+            if (settings.getFileOnlyOption() != null) {
+                return new CommandResponse(500, "Option " + settings.getFileOnlyOption().toLowerCase()
+                        + " only matches files and can not be combined with -dupe, dupes are directories");
+            }
+            // -dupe acts on whole releases in bulk: only printing, -wipe and -nuke are allowed, and the
+            // actions that change something need their own dupe permission on top of the action permission
+            for (ActionInterface action : actions) {
+                String name = action.name().toLowerCase();
+                if (!DupeUtils.isDupeActionAllowed(name)) {
+                    return new CommandResponse(500, "Action -" + name + " can not be combined with -dupe,"
+                            + " only -print, -printf, -wipe and -nuke can");
+                }
+            }
+            for (ActionInterface action : actions) {
+                String permission = DupeUtils.dupeActionPermission(action.name());
+                if (permission != null && !checkCustomPermission(request, permission, "=siteop")) {
+                    return new CommandResponse(500, "You do not have the proper permissions for -dupe -"
+                            + action.name().toLowerCase());
+                }
+            }
+        } else if (actions.isEmpty()) {
             throw new ImproperUsageException();
         }
 
@@ -230,6 +259,10 @@ public class Find extends CommandInterface {
         }
 
         Map<String, Object> env = new HashMap<>();
+
+        if (settings.getDupe() != null) {
+            return doDupe(request, user, settings, actions, inodes, env);
+        }
 
         CommandResponse response = new CommandResponse(200, "Find complete!");
 
@@ -284,6 +317,152 @@ public class Find extends CommandInterface {
         }
 
         return response;
+    }
+
+    /**
+     * Handles the -dupe option: groups the found release directories by name, keeps one copy of every
+     * dupe according to the keep policy and only runs the actions on the other copies.
+     * Recently modified copies are skipped, see {@link DupeUtils#run}.
+     * Without any action this is a dry run that only lists the dupes.
+     * The limit applies to the number of dupe groups.
+     */
+    private CommandResponse doDupe(CommandRequest request, User user, FindSettings settings,
+                                   List<ActionInterface> actions, Map<String, String> inodes, Map<String, Object> env) {
+        Session session = request.getSession();
+        Pattern exclude;
+        try {
+            exclude = DupeUtils.compileExclude(settings.getDupeExclude());
+        } catch (PatternSyntaxException e) {
+            logger.error("Invalid dupe.exclude pattern in find.conf", e);
+            return new CommandResponse(500, "Invalid dupe.exclude pattern: " + e.getMessage());
+        }
+        long minAge;
+        try {
+            minAge = DupeUtils.parseMinAge(settings.getDupeMinAge());
+        } catch (IllegalArgumentException e) {
+            logger.error("Invalid dupe.min.age in find.conf: {}", e.getMessage());
+            return new CommandResponse(500, "Invalid find.conf: " + e.getMessage());
+        }
+        boolean observePrivPath = request.getProperties().getProperty("observe.privpath", "true").equalsIgnoreCase("true");
+
+        List<DupeUtils.Copy> dirs = new ArrayList<>();
+        for (Map.Entry<String, String> item : inodes.entrySet()) {
+            if (!item.getValue().equals("d")) {
+                continue;
+            }
+            String path = item.getKey();
+            if (path.length() > 1 && path.endsWith("/")) {
+                path = path.substring(0, path.length() - 1);
+            }
+            // Nuked releases are ignored, they are not dupes of the release that replaced them
+            if (!NukeUtils.getPathWithoutNukePrefix(path).equals(path)) {
+                continue;
+            }
+            try {
+                DirectoryHandle dir = new DirectoryHandle(path);
+                if (observePrivPath ? dir.isHidden(user) : dir.isHidden(null)) {
+                    continue;
+                }
+                long lastModified = dir.lastModified();
+                long creationTime = dir.creationTime();
+                // Inodes without a creation time fall back to their last modification.
+                // Note: adding a child lowers a directory's creation time to the child's (see
+                // VirtualFileSystemDirectory.addChild), so a copy remerged from a slave with old file
+                // mtimes can look created before the original upload and be kept as "first created".
+                dirs.add(new DupeUtils.Copy(dir.getPath(), creationTime > 0 ? creationTime : lastModified, lastModified));
+            } catch (FileNotFoundException e) {
+                logger.warn("Index contained an unexistent inode: {}", item.getKey());
+            }
+        }
+
+        // Only releases are compared: not section dirs, dated dirs or sub dirs of releases
+        List<DupeUtils.Copy> releases = DupeUtils.removeNested(DupeUtils.filterReleaseDirs(dirs, this::lookupSection));
+        List<DupeUtils.DupeGroup> groups = DupeUtils.findDupes(releases, settings.getDupe(), exclude);
+
+        CommandResponse response = new CommandResponse(200, actions.isEmpty()
+                ? "Find complete! Dry run, nothing was changed." : "Find complete!");
+        if (groups.isEmpty()) {
+            response.addComment(session.jprintf(_bundle, "find.empty", env, user.getName()));
+            return response;
+        }
+
+        DupeUtils.DupeFileSystem fs = new DupeUtils.DupeFileSystem() {
+            @Override
+            public OptionalLong lastModified(String path) {
+                try {
+                    return OptionalLong.of(new DirectoryHandle(path).lastModified());
+                } catch (FileNotFoundException e) {
+                    return OptionalLong.empty();
+                }
+            }
+
+            @Override
+            public Collection<DupeUtils.Inode> children(String path) {
+                List<DupeUtils.Inode> children = new ArrayList<>();
+                try {
+                    for (InodeHandle inode : new DirectoryHandle(path).getInodeHandlesUnchecked()) {
+                        try {
+                            children.add(new DupeUtils.Inode(inode.getPath(), inode.lastModified(), inode.isDirectory()));
+                        } catch (FileNotFoundException e) {
+                            // Removed while walking, nothing to check
+                        }
+                    }
+                } catch (FileNotFoundException e) {
+                    return List.of();
+                }
+                return children;
+            }
+        };
+        DupeUtils.DupeActor actor = actions.isEmpty() ? null : copy -> {
+            List<String> lines = new ArrayList<>();
+            for (ActionInterface action : actions) {
+                try {
+                    DirectoryHandle dir = new DirectoryHandle(copy.path());
+                    // NukeAction refuses a name that is in the nuke log (the first copy nuked, or an earlier nuke
+                    // of the name), report it as a skip instead of a failed action
+                    if (action instanceof NukeAction && NukeBeans.getNukeBeans().findName(copy.name()) != null) {
+                        lines.add("    SKIP (name already nuked) " + copy.path());
+                        continue;
+                    }
+                    logger.debug("Action {} executing on dupe {}", action.getClass(), dir.getPath());
+                    String text = action.exec(request, dir);
+                    if (!settings.getQuiet() || action.failed()) {
+                        lines.add("    " + text);
+                    }
+                } catch (RuntimeException e) {
+                    logger.warn("Action {} failed on dupe {}", action.getClass(), copy.path(), e);
+                    lines.add("    " + action.name() + " failed on " + copy.path() + ": " + e.getMessage());
+                }
+            }
+            return lines;
+        };
+        DupeUtils.RunResult result = DupeUtils.run(groups, settings.getLimit(), settings.getQuiet(),
+                System.currentTimeMillis(), minAge, fs, actor);
+
+        env.put("limit", settings.getLimit());
+        env.put("results", result.groups());
+        response.addComment(session.jprintf(_bundle, "find.dupe.header", env, user.getName()));
+        for (String line : result.lines()) {
+            response.addComment(line);
+        }
+        return response;
+    }
+
+    /**
+     * @return the section layout of the directory for the -dupe release depth check, null when unknown
+     */
+    private DupeUtils.SectionInfo lookupSection(String path) {
+        try {
+            SectionInterface section = GlobalContext.getGlobalContext().getSectionManager().lookup(new DirectoryHandle(path));
+            if (section == null || section.getBaseDirectory() == null) {
+                return null;
+            }
+            return new DupeUtils.SectionInfo(section.getBaseDirectory().getPath(),
+                    section instanceof DatedSection dated ? dated.getDateFormat() : null);
+        } catch (RuntimeException e) {
+            logger.debug("No section found for {}", path, e);
+            return null;
+        }
     }
 
     /**
