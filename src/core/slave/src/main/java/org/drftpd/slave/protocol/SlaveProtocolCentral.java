@@ -44,6 +44,11 @@ import java.util.stream.Collectors;
  */
 public class SlaveProtocolCentral {
     private static final Logger logger = LogManager.getLogger(SlaveProtocolCentral.class);
+    /**
+     * Suffix of the message of the exception returned for a command without handler.
+     * Do not change it: the master relies on it to detect slaves that predate a command (e.g. "sysinfo").
+     */
+    public static final String OPERATION_NOT_SUPPORTED = " - Operation Not Supported";
     private static final Class<?>[] CONSTRUCTORPARMS = {SlaveProtocolCentral.class};
     private static final Class<?>[] METHODPARMS = {AsyncCommandArgument.class};
     public Map<String, HandlerWrapper> _handlersMap;
@@ -172,7 +177,7 @@ public class SlaveProtocolCentral {
         HandlerWrapper wrapper = _handlersMap.get(ac.getName());
 
         if (wrapper == null) {
-            return new AsyncResponseException(ac.getIndex(), new Exception(ac.getName() + " - Operation Not Supported"));
+            return new AsyncResponseException(ac.getIndex(), new Exception(ac.getName() + OPERATION_NOT_SUPPORTED));
         }
 
         Method m = wrapper.getMethod();
