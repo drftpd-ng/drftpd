@@ -81,6 +81,17 @@ public class NukeUtils {
         return 0L;
     }
 
+    /**
+     * Kept so that plugins compiled against the old signature still link.
+     *
+     * @deprecated use {@link #getNukeUsers(DirectoryHandle, Map)}
+     */
+    @Deprecated
+    public static void getNukeUsers(DirectoryHandle nukeDir,
+                                    java.util.Hashtable<String, Long> nukees) throws FileNotFoundException {
+        getNukeUsers(nukeDir, (Map<String, Long>) nukees);
+    }
+
     public static void getNukeUsers(DirectoryHandle nukeDir,
                                     Map<String, Long> nukees) throws FileNotFoundException {
         for (InodeHandle inode : nukeDir.getInodeHandlesUnchecked()) {
