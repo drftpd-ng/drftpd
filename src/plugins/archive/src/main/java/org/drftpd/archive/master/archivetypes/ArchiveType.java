@@ -325,14 +325,19 @@ public abstract class ArchiveType {
         try {
             // Checks regex to see if dir should be archived or not
             if (lrf.getName().matches(getArchiveRegex())) {
-                // Leave out nuked and/or incomplete releases (if configured), they don't block other releases
+                long age = System.currentTimeMillis() - lrf.creationTime();
+                if (!(age > getArchiveAfter() && (age < getIgnoreAfter() || getIgnoreAfter() == -1))) {
+                    // too young or too old, nothing below would add it
+                    return;
+                }
+                // Leave out nuked and/or incomplete releases (if configured), they don't block other releases.
+                // Checked only for releases old enough to archive, the SFV check can read from slaves.
                 if (ReleaseCompleteness.shouldSkip(_skipNuked, _skipIncomplete,
                         () -> isNuked(lrf), () -> isComplete(lrf))) {
                     logger.debug("{} - Skipping {}, it is nuked or incomplete", getClass(), lrf.getPath());
                     return;
                 }
                 //make sure dir is archived before moving it
-                long age = System.currentTimeMillis() - lrf.creationTime();
                 if (!isArchivedDir(lrf)) {
                     if (age > getArchiveAfter() && (age < getIgnoreAfter() || getIgnoreAfter() == -1)) {
                         oldDirs.add(lrf);
