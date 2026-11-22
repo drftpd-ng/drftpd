@@ -243,6 +243,14 @@ public class UserManagementHandler extends CommandInterface {
             long creditsVal = Bytes.parseBytes(credits);
             long wklyallotmentVal = Bytes.parseBytes(wklyallotment);
 
+            // Refuse a password the configured hash can't store before the account is created and saved,
+            // otherwise a failing setPassword() would leave a saved account without a password
+            try {
+                GlobalContext.getGlobalContext().getUserManager().checkNewPassword(pass);
+            } catch (IllegalArgumentException e) {
+                return new CommandResponse(501, e.getMessage());
+            }
+
             // action, no more NoSuchElementException below here
             newUser = GlobalContext.getGlobalContext().getUserManager().createUser(newUsername);
 
@@ -755,7 +763,12 @@ public class UserManagementHandler extends CommandInterface {
                 return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
             }
 
-            requestedUser.setPassword(args[1]);
+            try {
+                GlobalContext.getGlobalContext().getUserManager().checkNewPassword(args[1]);
+                requestedUser.setPassword(args[1]);
+            } catch (IllegalArgumentException e) {
+                return new CommandResponse(501, e.getMessage());
+            }
             requestedUser.commit();
             logger.info("'{}' changed password for '{}'", currentUser.getName(), requestedUser.getName());
 
@@ -1212,9 +1225,14 @@ public class UserManagementHandler extends CommandInterface {
 
         User currentUser = session.getUserNull(request.getUser());
 
-        logger.info("'{}' changed his password", currentUser.getName());
-        currentUser.setPassword(request.getArgument());
+        try {
+            GlobalContext.getGlobalContext().getUserManager().checkNewPassword(request.getArgument());
+            currentUser.setPassword(request.getArgument());
+        } catch (IllegalArgumentException e) {
+            return new CommandResponse(501, e.getMessage());
+        }
         currentUser.commit();
+        logger.info("'{}' changed his password", currentUser.getName());
 
         return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
     }

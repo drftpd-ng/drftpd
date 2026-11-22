@@ -58,7 +58,7 @@ public class StatsPreHook {
 
         try {
             long fileSize = dir.getFileUnchecked(request.getArgument()).getSize();
-            long creditsLoss = (long) ratio * fileSize;
+            long creditsLoss = StatsManager.creditsForBytes(ratio, fileSize);
             long userCredits = user.getCredits();
 
             if (userCredits < creditsLoss) {

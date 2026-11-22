@@ -56,6 +56,28 @@ public class MediaInfo implements Serializable {
      */
     public MediaInfo() { }
 
+    @FunctionalInterface
+    interface IsoFileOpener {
+        IsoFile open(String filePath) throws IOException;
+    }
+
+    /**
+     * Marks the sample as bad when the size isoparser computes from the MP4 boxes differs from the file size.
+     * If isoparser cannot parse the file the result is unknown, not bad: isoparser throws on some valid
+     * files (e.g. boxes over 2 GB fail in CastUtils.l2i), so the failure is logged and sampleOk is left as is.
+     */
+    static void checkMp4Size(MediaInfo mediaInfo, String filePath, IsoFileOpener opener) {
+        try (IsoFile isoFile = opener.open(filePath)) {
+            if (isoFile.getSize() != mediaInfo.getActFileSize()) {
+                logger.warn("MP4: IsoFile size {} != actual file size {} for file {}", isoFile.getSize(), mediaInfo.getActFileSize(), filePath);
+                mediaInfo.setSampleOk(false);
+                mediaInfo.setCalFileSize(isoFile.getSize());
+            }
+        } catch (RuntimeException | IOException e) {
+            logger.warn("MP4: Unable to parse {} to check its size, skipping the check: {}", filePath, e.toString());
+        }
+    }
+
     public static boolean hasWorkingMediaInfo() {
         boolean mediainfo_works = false;
         try {
@@ -164,15 +186,7 @@ public class MediaInfo implements Serializable {
 
         // Calculate valid filesize for mp4, mkv and avi
         switch (realFormat) {
-            case "MP4" -> {
-                try (IsoFile isoFile = new IsoFile(filePath)) {
-                    if (isoFile.getSize() != mediaInfo.getActFileSize()) {
-                        logger.warn("MP4: IsoFile size {} != actual file size {} for file {}", isoFile.getSize(), mediaInfo.getActFileSize(), filePath);
-                        mediaInfo.setSampleOk(false);
-                        mediaInfo.setCalFileSize(isoFile.getSize());
-                    }
-                }
-            }
+            case "MP4" -> checkMp4Size(mediaInfo, filePath, IsoFile::new);
             case "MKV" -> {
                 HashMap<String, String> generalInfo = mediaInfo.getGeneralInfo();
                 boolean incomplete = false;

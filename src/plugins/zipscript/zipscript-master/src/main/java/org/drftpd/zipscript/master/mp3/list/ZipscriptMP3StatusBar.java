@@ -17,6 +17,9 @@
  */
 package org.drftpd.zipscript.master.mp3.list;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import org.drftpd.common.util.ConfigLoader;
 import org.drftpd.master.commands.list.ListElementsContainer;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
@@ -36,6 +39,8 @@ import java.util.*;
  * @version $Id$
  */
 public class ZipscriptMP3StatusBar implements ZipscriptListStatusBarInterface {
+    private static final Logger logger = LogManager.getLogger(ZipscriptMP3StatusBar.class);
+
 
     public ArrayList<String> getStatusBarEntry(DirectoryHandle dir, ListElementsContainer container) throws NoEntryAvailableException {
         ResourceBundle bundle = container.getCommandManager().getResourceBundle();
@@ -60,7 +65,8 @@ public class ZipscriptMP3StatusBar implements ZipscriptListStatusBarInterface {
                 statusBarEntries.add(container.getSession().jprintf(bundle, "statusbar.id3tag", env, container.getUser()));
                 return statusBarEntries;
             } catch (NoAvailableSlaveException | IOException e) {
-                // Error fetching mp3 info, ignore
+                // Error fetching mp3 info, ignore (debug only: this runs on every directory listing)
+                logger.debug("Unable to get mp3 info for status bar in {}: {}", dir.getPath(), e.getMessage());
             }
         }
         throw new NoEntryAvailableException();

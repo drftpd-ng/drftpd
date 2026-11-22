@@ -10,3 +10,7 @@ status.slave.uptime=${slave} has been online for ${uptime}.
 status.threads=Threads running: ${current.threads} / Peak thread count: ${max.threads} / Amount of created threads since startup: ${total.threads}.
 status.vminfo=JVM: ${vm.name} vers. ${vm.version} by ${vm.vendor}.
 status.cminfo=CM: Queue size: ${cm.queue}. Thread state: ${cm.state}.
+status.cpuinfo=CPU: ${cpu.cores} core(s) (${cpu.arch}), load average: ${cpu.load}.
+status.netinfo=Network: FTP listening on ${net.bindip}:${net.port}. Slaves: ${net.slaves.online} online / ${net.slaves.total} total.
+status.slaveinfo=${slave.name}: ${slave.online} (${slave.address}) TLS: ${slave.tls.protocol} / ${slave.tls.cipher}
+status.slaveinfo.offline=${slave.name}: ${slave.online}

@@ -36,6 +36,7 @@ import org.drftpd.common.slave.TransferIndex;
 import org.drftpd.common.util.ConfigLoader;
 import org.drftpd.common.util.PortRange;
 import org.drftpd.common.util.PropertyHelper;
+import org.drftpd.common.util.SSLConfigParser;
 import org.drftpd.slave.diskselection.DiskSelectionInterface;
 import org.drftpd.slave.exceptions.FileExistsException;
 import org.drftpd.slave.network.AsyncResponseDiskStatus;
@@ -53,10 +54,13 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.NoSuchFileException;
 import java.security.GeneralSecurityException;
 import java.util.*;
@@ -200,6 +204,11 @@ public class Slave extends SslConfigurationLoader {
                     "specified by the operating system");
             _portRange = new PortRange(_bufferSize);
         }
+
+        // TLS settings for data transfers (#433), parsed the same way as master.conf.
+        // The control connection to the master is configured by master.ssl.* instead.
+        _sslProtocols = SSLConfigParser.parseSSLProtocols(p);
+        _cipherSuites = SSLConfigParser.parseCipherSuites(p);
 
         _ignorePartialRemerge = p.getProperty("ignore.partialremerge", "false").equalsIgnoreCase("true");
         _threadedRemerge = p.getProperty("threadedremerge", "false").equalsIgnoreCase("true");
@@ -565,7 +574,11 @@ public class Slave extends SslConfigurationLoader {
 
     /**
      * Rename a location on the (slave) local file system from A to B
-     * NOTE: master allows destination to exist and expects us to merge
+     * If the destination already exists (leftovers the master does not track) the two are merged:
+     * directories are merged recursively, a colliding file is replaced by the source file, and an entry of
+     * the other type (file vs directory) is moved aside to *.drftpd-conflict-*, so the source always ends up
+     * at the destination and the slave stays connected.
+     * Genuine I/O failures (failed move, failed mkdirs) are still thrown.
      * @param from The source location we need to rename from
      * @param toDirPath The destination parent path to rename/move too
      * @param toName The destination name under parent to rename/move too
@@ -600,17 +613,107 @@ public class Slave extends SslConfigurationLoader {
                 }
             }
 
-            // Master allows destination to exist, just how should we handle collisions (ignoring for now)
-            if (tofile.exists()) {
-                logger.error("rename(), tofile ["+tofile.getPath()+"] exists (from: ["+fromfile.getPath()+"]. " +
-                        "This used to cause an I/O exception, however master assumes we can merge, " +
-                        "so silently not doing anything (for now) - ISSUE");
-                continue;
+            int setAside = mergeInto(fromfile, tofile);
+            if (setAside > 0) {
+                logger.warn("rename(), [{}] -> [{}] moved {} untracked entries aside (*.drftpd-conflict-*), " +
+                        "nothing was deleted", fromfile.getPath(), tofile.getPath(), setAside);
             }
+        }
+    }
 
-            if (!fromfile.renameTo(tofile)) {
-                throw new PermissionDeniedException("renameTo(" + fromfile + ", " + tofile + ") failed");
+    /**
+     * Moves from to to. If to does not exist this is a plain move. If it does, the two are merged:
+     * <ul>
+     * <li>directory into directory: every child is merged recursively, afterwards the source directory is
+     * removed if it is empty;</li>
+     * <li>file (or symbolic link) onto file or link: the destination is replaced by the source;</li>
+     * <li>file vs directory: the destination is moved aside to {@code <name>.drftpd-conflict-<time>} and the
+     * source is moved in.</li>
+     * </ul>
+     * The source is always the copy the master tracks (the master refuses renames onto inodes it knows about,
+     * or deletes the target first when it merges), so whatever is in the way is an untracked leftover. Moving
+     * it aside instead of deleting it keeps the data, and always moving the source in means the master's view
+     * is right afterwards: it may delete the old source path later, which must not remove the only copy.
+     * A source that has disappeared meanwhile is skipped, so a half-done merge can simply be run again.
+     *
+     * @param from the existing source file or directory
+     * @param to the destination, which may or may not exist
+     * @return the number of untracked destination entries that were moved aside
+     * @throws IOException if a move or a directory listing fails
+     */
+    static int mergeInto(File from, File to) throws IOException {
+        // Symbolic links are never followed: a link is moved or replaced as an entry of its own, so merging
+        // can't reach into (and move files out of) whatever the link points to
+        if (!Files.exists(from.toPath(), LinkOption.NOFOLLOW_LINKS)) {
+            logger.warn("rename(), source [{}] no longer exists, skipping", from.getPath());
+            return 0;
+        }
+        if (!Files.exists(to.toPath(), LinkOption.NOFOLLOW_LINKS)) {
+            move(from, to, false);
+            return 0;
+        }
+        boolean fromDir = Files.isDirectory(from.toPath(), LinkOption.NOFOLLOW_LINKS);
+        boolean toDir = Files.isDirectory(to.toPath(), LinkOption.NOFOLLOW_LINKS);
+        if (fromDir && toDir) {
+            File[] children = from.listFiles();
+            if (children == null) {
+                throw new PermissionDeniedException("Unable to list directory " + from);
             }
+            int setAside = 0;
+            for (File child : children) {
+                setAside += mergeInto(child, new File(to, child.getName()));
+            }
+            try {
+                Files.deleteIfExists(from.toPath());
+            } catch (DirectoryNotEmptyException e) {
+                // something was added to the old path meanwhile (an upload for example), leave it
+                logger.warn("rename(), [{}] is not empty after merging into [{}], leaving it", from.getPath(), to.getPath());
+            }
+            return setAside;
+        }
+        if (!fromDir && !toDir) {
+            logger.warn("rename(), replacing existing file [{}] ({} bytes) with [{}] ({} bytes)",
+                    to.getPath(), to.length(), from.getPath(), from.length());
+            move(from, to, true);
+            return 0;
+        }
+        File aside = conflictName(to);
+        logger.warn("rename(), [{}] ({}) is in the way of [{}] ({}), moving it aside to [{}]",
+                to.getPath(), toDir ? "directory" : "file", from.getPath(), fromDir ? "directory" : "file",
+                aside.getPath());
+        move(to, aside, false);
+        move(from, to, false);
+        return 1;
+    }
+
+    private static File conflictName(File to) {
+        String base = to.getName() + ".drftpd-conflict-" + System.currentTimeMillis();
+        File aside = new File(to.getParentFile(), base);
+        for (int i = 1; Files.exists(aside.toPath(), LinkOption.NOFOLLOW_LINKS); i++) {
+            aside = new File(to.getParentFile(), base + "-" + i);
+        }
+        return aside;
+    }
+
+    /**
+     * Moves a file or directory, as an atomic rename where the file system allows it (this also replaces an
+     * existing file). Otherwise, for example across a mount point inside a root, it falls back to a plain move.
+     */
+    private static void move(File from, File to, boolean replace) throws IOException {
+        try {
+            try {
+                Files.move(from.toPath(), to.toPath(), StandardCopyOption.ATOMIC_MOVE);
+            } catch (AtomicMoveNotSupportedException e) {
+                if (replace) {
+                    Files.move(from.toPath(), to.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                } else {
+                    Files.move(from.toPath(), to.toPath());
+                }
+            }
+        } catch (IOException e) {
+            PermissionDeniedException pde = new PermissionDeniedException("renameTo(" + from + ", " + to + ") failed: " + e);
+            pde.initCause(e);
+            throw pde;
         }
     }
 

@@ -677,52 +677,6 @@ public class DataConnectionHandler extends CommandInterface {
     }
 
     /**
-     * {@code STOU <CRLF>}<br>
-     *
-     * This command behaves like STOR except that the resultant file is to be
-     * created in the current directory under a name unique to that directory.
-     * The 250 Transfer Started response must include the name generated.
-     */
-    //TODO STOU
-    /*
-     * public void doSTOU(FtpRequest request, PrintWriter out) {
-     *  // reset state variables resetState();
-     *  // get filenames String fileName =
-     * user.getVirtualDirectory().getAbsoluteName("ftp.dat"); String
-     * physicalName = user.getVirtualDirectory().getPhysicalName(fileName); File
-     * requestedFile = new File(physicalName); requestedFile =
-     * IoUtils.getUniqueFile(requestedFile); fileName =
-     * user.getVirtualDirectory().getVirtualName(requestedFile.getAbsolutePath());
-     * String args[] = {fileName};
-     *  // check permission
-     * if(!user.getVirtualDirectory().hasCreatePermission(fileName, false)) {
-     * out.write(ftpStatus.getResponse(550, request, user, null)); return; }
-     *  // now transfer file data out.print(FtpResponse.RESPONSE_150_OK);
-     * InputStream is = null; OutputStream os = null; try { Socket dataSoc =
-     * mDataConnection.getDataSocket(); if (dataSoc == null) {
-     * out.write(ftpStatus.getResponse(550, request, user, args)); return; }
-     *
-     *
-     * is = dataSoc.getInputStream(); os = user.getOutputStream( new
-     * FileOutputStream(requestedFile) );
-     *
-     * StreamConnector msc = new StreamConnector(is, os);
-     * msc.setMaxTransferRate(user.getMaxUploadRate()); msc.setObserver(this);
-     * msc.connect();
-     *
-     * if(msc.hasException()) { out.write(ftpStatus.getResponse(451, request,
-     * user, null)); return; } else {
-     * mConfig.getStatistics().setUpload(requestedFile, user,
-     * msc.getTransferredSize()); }
-     *
-     * out.write(ftpStatus.getResponse(226, request, user, null));
-     * mDataConnection.reset(); out.write(ftpStatus.getResponse(250, request,
-     * user, args)); } catch(IOException ex) {
-     * out.write(ftpStatus.getResponse(425, request, user, null)); } finally {
-     * IoUtils.close(is); IoUtils.close(os); mDataConnection.reset(); } }
-     */
-
-    /**
      * {@code RETR <SP> <pathname> <CRLF>}<br>
      * <p>
      * This command causes the server-DTP to transfer a copy of the file,
@@ -747,7 +701,6 @@ public class DataConnectionHandler extends CommandInterface {
      * ''zipscript?? renames bad uploads to .bad, how do we handle this with
      * resumes?
      */
-    //TODO add APPE support
     private CommandResponse transfer(CommandRequest request) {
         BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
         TransferState ts = conn.getTransferState();
@@ -763,14 +716,8 @@ public class DataConnectionHandler extends CommandInterface {
         char direction = TransferState.getDirectionFromRequest(new FtpRequest(cmd));
         boolean isStor = cmd.equalsIgnoreCase("STOR");
         boolean isRetr = cmd.equalsIgnoreCase("RETR");
-        boolean isAppe = cmd.equalsIgnoreCase("APPE");
-        boolean isStou = cmd.equalsIgnoreCase("STOU");
 
         try {
-            if (isAppe || isStou) {
-                return StandardCommandManager.genericResponse("RESPONSE_502_COMMAND_NOT_IMPLEMENTED");
-            }
-
             if (isStor && !ts.isPort() && !ts.isPasv()) {
                 // reset(); already done in finally block
                 return StandardCommandManager.genericResponse("RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS");

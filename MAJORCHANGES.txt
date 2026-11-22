@@ -2,6 +2,9 @@
 * Command configuration files (config/commands/ftp/*.conf and config/commands/irc/*.conf) now ship as
   .conf.dist files, like the other configuration files. A .conf.dist is only loaded when the matching .conf
   does not exist, so your customised command files are kept on upgrade. See UPGRADING.txt.
+* bcrypt passwords: a new password longer than 72 bytes (UTF-8) is now refused by SITE ADDUSER,
+  SITE CHPASS and SITE PASSWD. Before, only its first 72 bytes were used. Existing accounts are not
+  affected: their stored hash keeps working.
 
 ==== 4.0.8
 * Now compiles and runs on JDK17
