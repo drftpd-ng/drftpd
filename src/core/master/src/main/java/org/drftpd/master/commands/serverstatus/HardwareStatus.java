@@ -20,7 +20,6 @@ package org.drftpd.master.commands.serverstatus;
 import org.drftpd.common.slave.SystemInfo;
 import org.drftpd.common.util.Bytes;
 import org.drftpd.master.slavemanagement.SystemInfoReply;
-import org.drftpd.master.util.Time;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -73,6 +72,31 @@ public final class HardwareStatus {
         return (value == null || value.isEmpty()) ? NOT_AVAILABLE : value;
     }
 
+    /**
+     * Formats a duration for the uptime line: whole units only, single spaced, e.g. "36s", "1m 4s", "2h 5m",
+     * "3d 4h 5m". Negative values are N/A.
+     */
+    public static String duration(long millis) {
+        if (millis < 0) {
+            return NOT_AVAILABLE;
+        }
+        long totalSeconds = millis / 1000;
+        long days = totalSeconds / 86400;
+        long hours = (totalSeconds % 86400) / 3600;
+        long minutes = (totalSeconds % 3600) / 60;
+        long seconds = totalSeconds % 60;
+        if (days > 0) {
+            return days + "d " + hours + "h " + minutes + "m";
+        }
+        if (hours > 0) {
+            return hours + "h " + minutes + "m";
+        }
+        if (minutes > 0) {
+            return minutes + "m " + seconds + "s";
+        }
+        return seconds + "s";
+    }
+
     private static String loadAverage(double load) {
         return load < 0 ? NOT_AVAILABLE : String.format(Locale.ROOT, "%.2f", load);
     }
@@ -114,7 +138,7 @@ public final class HardwareStatus {
         env.put("hw.java.vendor", text(si.getJavaVendor()));
         env.put("hw.heap.used", bytes(si.getHeapUsed()));
         env.put("hw.heap.max", bytes(si.getHeapMax()));
-        env.put("hw.uptime", si.getProcessUptime() < 0 ? NOT_AVAILABLE : Time.formatTime(si.getProcessUptime()));
+        env.put("hw.uptime", si.getProcessUptime() < 0 ? NOT_AVAILABLE : duration(si.getProcessUptime()));
         env.put("hw.disk.free", bytes(si.getDisksFree()));
         env.put("hw.roots", si.getRoots().size());
         return env;

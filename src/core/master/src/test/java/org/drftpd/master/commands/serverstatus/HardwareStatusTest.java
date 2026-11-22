@@ -153,4 +153,16 @@ public class HardwareStatusTest {
             }
         }
     }
+
+    @Test
+    public void testDuration() {
+        assertEquals("0s", HardwareStatus.duration(0));
+        assertEquals("36s", HardwareStatus.duration(36691));
+        assertEquals("59s", HardwareStatus.duration(59999));
+        assertEquals("1m 4s", HardwareStatus.duration(64000));
+        assertEquals("1m 0s", HardwareStatus.duration(60000));
+        assertEquals("2h 5m", HardwareStatus.duration(2 * 3600000L + 5 * 60000L + 30000L));
+        assertEquals("3d 4h 5m", HardwareStatus.duration(((3 * 24 + 4) * 60 + 5) * 60000L));
+        assertEquals("N/A", HardwareStatus.duration(-1));
+    }
 }
