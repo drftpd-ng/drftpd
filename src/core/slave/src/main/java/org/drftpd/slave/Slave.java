@@ -701,6 +701,7 @@ public class Slave extends SslConfigurationLoader {
      * In every root that holds no part of the source, an entry at the destination path is renamed (within its
      * own root, so nothing is copied or deleted) to {@code <name>.drftpd-conflict-<time>}. A root that does hold
      * part of the source is skipped: its own {@link #mergeInto(File, File)} deals with the destination there.
+     * Nothing is done when no root holds the source, because then the rename has already been carried out.
      *
      * @param rootDirs the root directories of the slave
      * @param fromPath the source path relative to a root
@@ -709,6 +710,18 @@ public class Slave extends SslConfigurationLoader {
      * @throws IOException if a move fails
      */
     static int moveLeftoversAside(List<File> rootDirs, String fromPath, String toPath) throws IOException {
+        // If no root holds the source, the rename was already done (the master replays a rename when the
+        // reply got lost): what is at the destination is then the tracked data, not a leftover
+        boolean sourceFound = false;
+        for (File rootDir : rootDirs) {
+            if (Files.exists(new File(rootDir, fromPath).toPath(), LinkOption.NOFOLLOW_LINKS)) {
+                sourceFound = true;
+                break;
+            }
+        }
+        if (!sourceFound) {
+            return 0;
+        }
         int setAside = 0;
         for (File rootDir : rootDirs) {
             File fromFile = new File(rootDir, fromPath);

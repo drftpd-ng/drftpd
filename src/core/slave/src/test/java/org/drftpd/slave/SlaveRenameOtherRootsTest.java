@@ -123,4 +123,17 @@ class SlaveRenameOtherRootsTest {
         assertEquals(0, count("b/y", ""));
         assertEquals(0, count("b", "x"));
     }
+
+    @Test
+    void replayedRenameLeavesTheRenamedDataAlone() throws IOException {
+        // the rename already happened (source gone everywhere), the master replays it: the destination in
+        // both roots is the tracked data and must stay where it is
+        write("a/y/rel/f1.txt", "one");
+        write("b/y/rel/f2.txt", "two");
+        assertEquals(0, Slave.moveLeftoversAside(List.of(rootA(), rootB()), "/x/rel", "/y/rel"));
+        assertEquals("one", read("a/y/rel/f1.txt"));
+        assertEquals("two", read("b/y/rel/f2.txt"));
+        assertEquals(1, count("a/y", ""));
+        assertEquals(1, count("b/y", ""));
+    }
 }
