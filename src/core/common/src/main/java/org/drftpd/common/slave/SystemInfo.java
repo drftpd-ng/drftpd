@@ -165,6 +165,12 @@ public class SystemInfo implements Serializable {
                 si._processCpuLoad = probeDouble(sun::getProcessCpuLoad);
                 si._totalMemory = probeLong(sun::getTotalMemorySize);
                 si._freeMemory = probeLong(sun::getFreeMemorySize);
+                // On Linux getFreeMemorySize() is MemFree, which excludes the page cache and makes a busy
+                // machine look full: prefer MemAvailable when /proc/meminfo has it.
+                long available = probeLong(SystemInfo::readMemAvailable);
+                if (available >= 0) {
+                    si._freeMemory = available;
+                }
                 si._totalSwap = probeLong(sun::getTotalSwapSpaceSize);
                 si._freeSwap = probeLong(sun::getFreeSwapSpaceSize);
             }
@@ -291,6 +297,46 @@ public class SystemInfo implements Serializable {
         } catch (Throwable t) {
             return fallback;
         }
+    }
+
+    /** @return MemAvailable of /proc/meminfo in bytes, or UNKNOWN when not on Linux or not readable */
+    private static long readMemAvailable() {
+        Path meminfo = Path.of("/proc/meminfo");
+        if (!Files.isReadable(meminfo)) {
+            return UNKNOWN;
+        }
+        try {
+            return parseMemAvailable(Files.readAllLines(meminfo));
+        } catch (Exception e) {
+            return UNKNOWN;
+        }
+    }
+
+    /**
+     * Extracts MemAvailable from the lines of /proc/meminfo.
+     *
+     * @return the value in bytes, or UNKNOWN if the line is missing or malformed
+     */
+    static long parseMemAvailable(List<String> lines) {
+        for (String line : lines) {
+            if (!line.startsWith("MemAvailable:")) {
+                continue;
+            }
+            String[] parts = line.substring("MemAvailable:".length()).trim().split("\\s+");
+            try {
+                long value = Long.parseLong(parts[0]);
+                if (value < 0) {
+                    return UNKNOWN;
+                }
+                if (parts.length > 1 && !parts[1].equalsIgnoreCase("kB")) {
+                    return UNKNOWN;
+                }
+                return value * 1024L;
+            } catch (NumberFormatException e) {
+                return UNKNOWN;
+            }
+        }
+        return UNKNOWN;
     }
 
     private static long probeLong(LongSupplier s) {

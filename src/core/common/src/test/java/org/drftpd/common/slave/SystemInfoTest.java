@@ -205,4 +205,21 @@ public class SystemInfoTest {
         SystemInfo si = SystemInfo.collect("v", null);
         assertTrue(si.getSystemCpuLoad() <= 1.0);
     }
+
+    @Test
+    public void testParseMemAvailable() {
+        List<String> lines = List.of("MemTotal:       16384000 kB", "MemFree:          100000 kB",
+                "MemAvailable:    8192000 kB", "Buffers:  1 kB");
+        assertEquals(8192000L * 1024L, SystemInfo.parseMemAvailable(lines));
+    }
+
+    @Test
+    public void testParseMemAvailableMissingOrMalformed() {
+        assertEquals(SystemInfo.UNKNOWN, SystemInfo.parseMemAvailable(List.of("MemTotal: 1 kB")));
+        assertEquals(SystemInfo.UNKNOWN, SystemInfo.parseMemAvailable(List.of("MemAvailable: abc kB")));
+        assertEquals(SystemInfo.UNKNOWN, SystemInfo.parseMemAvailable(List.of("MemAvailable: 5 MB")));
+        assertEquals(SystemInfo.UNKNOWN, SystemInfo.parseMemAvailable(List.of("MemAvailable:")));
+        assertEquals(SystemInfo.UNKNOWN, SystemInfo.parseMemAvailable(List.of("MemAvailable: -5 kB")));
+        assertEquals(SystemInfo.UNKNOWN, SystemInfo.parseMemAvailable(List.of()));
+    }
 }
