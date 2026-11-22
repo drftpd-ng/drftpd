@@ -65,8 +65,8 @@ jobs:
           cache-to: type=gha,mode=max
           target: drftpd-master
           tags: |
-            ghcr.io/${{ github.actor }}/drftpd:master-latest
-            ghcr.io/${{ github.actor }}/drftpd:master-${{ github.ref_name }}
+            ghcr.io/${{ github.repository_owner }}/drftpd:master-latest
+            ghcr.io/${{ github.repository_owner }}/drftpd:master-${{ github.ref_name }}
 #            tags for pushing to Docker Hub
 #            docker.io/${{ env.DOCKERHUB_USERNAME }}/drftpd:master-latest
 #            docker.io/${{ env.DOCKERHUB_USERNAME }}/drftpd:master-${{ github.ref_name }}
@@ -83,8 +83,8 @@ jobs:
           cache-to: type=gha,mode=max
           target: drftpd-slave
           tags: |
-            ghcr.io/${{ github.actor }}/drftpd:slave-latest
-            ghcr.io/${{ github.actor }}/drftpd:slave-${{ github.ref_name }}
+            ghcr.io/${{ github.repository_owner }}/drftpd:slave-latest
+            ghcr.io/${{ github.repository_owner }}/drftpd:slave-${{ github.ref_name }}
 #            tags for pushing to Docker Hub
 #            docker.io/${{ env.DOCKERHUB_USERNAME }}/drftpd:slave-latest
 #            docker.io/${{ env.DOCKERHUB_USERNAME }}/drftpd:slave-${{ github.ref_name }}
