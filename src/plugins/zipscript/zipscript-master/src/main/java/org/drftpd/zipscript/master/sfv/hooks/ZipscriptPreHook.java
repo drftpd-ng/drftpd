@@ -35,6 +35,8 @@ import org.drftpd.master.usermanager.User;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.zipscript.common.sfv.SFVInfo;
+import org.drftpd.zipscript.master.badfile.BadFileEvent;
+import org.drftpd.zipscript.master.badfile.BadFileReason;
 import org.drftpd.zipscript.master.sfv.vfs.ZipscriptVFSDataSFV;
 
 import java.io.FileNotFoundException;
@@ -136,6 +138,8 @@ public class ZipscriptPreHook {
                         request.setAllowed(false);
                         request.setDeniedResponse(new CommandResponse(533,
                                 "Requested action not taken. File not found in sfv."));
+                        GlobalContext.getEventService().publishAsync(new BadFileEvent(request.getUser(),
+                                checkFile.getParent(), checkFile.getName(), BadFileReason.NOT_IN_SFV, ""));
                     }
                 }
             } else {
