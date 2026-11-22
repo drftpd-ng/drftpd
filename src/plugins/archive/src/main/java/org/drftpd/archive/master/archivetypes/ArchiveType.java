@@ -22,11 +22,14 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.drftpd.archive.master.Archive;
 import org.drftpd.archive.master.DuplicateArchiveException;
+import org.drftpd.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.common.extensibility.PluginInterface;
 import org.drftpd.common.util.PropertyHelper;
 import org.drftpd.jobs.master.Job;
 import org.drftpd.jobs.master.JobManager;
 import org.drftpd.master.GlobalContext;
+import org.drftpd.master.commands.nuke.NukeUtils;
+import org.drftpd.master.commands.nuke.metadata.NukeData;
 import org.drftpd.master.sections.SectionInterface;
 import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.master.vfs.DirectoryHandle;
@@ -111,6 +114,12 @@ public abstract class ArchiveType {
     // Used for: extracting the ${rls} part of a release name in rls: destination types (group 1 is used)
     static final String DEFAULT_RLS_REGEX = "(?i)(.*)(\\.|-|_)S\\d.*";
     private String _rlsRegex;
+
+    // Used for: not archiving releases that are not complete (according to the zipscript SFV check)
+    private boolean _skipIncomplete;
+
+    // Used for: not archiving nuked releases
+    private boolean _skipNuked;
 
     /**
      * Sets _slaveList, _numOfSlaves, _section, _parent, and _archiveAfter Each
@@ -316,6 +325,12 @@ public abstract class ArchiveType {
         try {
             // Checks regex to see if dir should be archived or not
             if (lrf.getName().matches(getArchiveRegex())) {
+                // Leave out nuked and/or incomplete releases (if configured), they don't block other releases
+                if (ReleaseCompleteness.shouldSkip(_skipNuked, _skipIncomplete,
+                        () -> isNuked(lrf), () -> isComplete(lrf))) {
+                    logger.debug("{} - Skipping {}, it is nuked or incomplete", getClass(), lrf.getPath());
+                    return;
+                }
                 //make sure dir is archived before moving it
                 long age = System.currentTimeMillis() - lrf.creationTime();
                 if (!isArchivedDir(lrf)) {
@@ -337,6 +352,34 @@ public abstract class ArchiveType {
             logger.debug("Received OfflineSlaveException", e);
         } catch (FileNotFoundException e) {
             logger.debug("Received FileNotFoundException", e);
+        }
+    }
+
+    /*
+     * A nuked release is renamed with the nuke prefix and gets nuke metadata, either one is enough.
+     */
+    private static boolean isNuked(DirectoryHandle dir) {
+        if (dir.getName().startsWith(NukeUtils._nukePrefix)) {
+            return true;
+        }
+        try {
+            dir.getPluginMetaData(NukeData.NUKEDATA);
+            return true;
+        } catch (KeyNotFoundException | FileNotFoundException e) {
+            return false;
+        }
+    }
+
+    /*
+     * Uses the zipscript SFV check. The zipscript plugin is only touched when skipincomplete is enabled,
+     * if it isn't loaded the release is treated as complete (same as a release without SFV).
+     */
+    private static boolean isComplete(DirectoryHandle dir) {
+        try {
+            return ReleaseCompleteness.isComplete(new SfvDirectoryNode(dir));
+        } catch (LinkageError e) {
+            logger.error("skipincomplete is enabled but the zipscript plugin is not available, treating {} as complete", dir.getPath(), e);
+            return true;
         }
     }
 
@@ -521,6 +564,10 @@ public abstract class ArchiveType {
                 DEFAULT_SCANSUBDIRS_REGEX, false, _confNum + ".scansubdirsregex");
         _rlsRegex = resolveRegex(properties.getProperty(_confNum + ".rlsregex"),
                 DEFAULT_RLS_REGEX, true, _confNum + ".rlsregex");
+        _skipIncomplete = ReleaseCompleteness.parseFlag(properties.getProperty(_confNum + ".skipincomplete"),
+                false, _confNum + ".skipincomplete");
+        _skipNuked = ReleaseCompleteness.parseFlag(properties.getProperty(_confNum + ".skipnuked"),
+                false, _confNum + ".skipnuked");
 
         // Guard that repeat is not negative
         if (_repeat < 1) {
