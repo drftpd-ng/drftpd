@@ -110,6 +110,10 @@ public class ZipscriptPreHook {
         String checkName = checkFile.getName().toLowerCase();
         // Read config
         Properties cfg = ConfigLoader.loadPluginConfig("zipscript.conf");
+        if (ZipscriptStrictness.isNoCheckDir(cfg, checkFile.getParent().getPath())) {
+            // nocheck.dirs: no zipscript checks in this directory
+            return request;
+        }
         boolean restrictSfvEnabled = cfg.getProperty("sfv.restrict.files", "false").equals("true");
         boolean sfvFirstEnforcedPath = checkSfvFirstEnforcedPath(checkFile.getParent(),
                 request.getSession().getUserNull(request.getUser()));

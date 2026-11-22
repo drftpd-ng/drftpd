@@ -17,8 +17,12 @@
  */
 package org.drftpd.zipscript.master.sfv;
 
+import org.drftpd.common.util.GlobPattern;
+
 import java.util.Collection;
 import java.util.Properties;
+import java.util.StringTokenizer;
+import java.util.regex.PatternSyntaxException;
 
 /**
  * Decisions for the optional strictness settings in zipscript.conf (all off by default).
@@ -66,5 +70,31 @@ public final class ZipscriptStrictness {
             }
         }
         return null;
+    }
+
+    /**
+     * Decides if the zipscript checks are skipped for a directory ("nocheck.dirs").
+     *
+     * @param cfg     zipscript.conf
+     * @param dirPath path of the directory, with or without a trailing slash
+     */
+    public static boolean isNoCheckDir(Properties cfg, String dirPath) {
+        String globs = cfg.getProperty("nocheck.dirs", "");
+        if (globs.isBlank()) {
+            return false;
+        }
+        // Same as path permissions: directories are matched with a trailing slash
+        String path = dirPath.endsWith("/") ? dirPath : dirPath + "/";
+        StringTokenizer st = new StringTokenizer(globs);
+        while (st.hasMoreTokens()) {
+            try {
+                if (GlobPattern.compile(st.nextToken()).matcher(path).matches()) {
+                    return true;
+                }
+            } catch (PatternSyntaxException e) {
+                // bad glob, ignore it
+            }
+        }
+        return false;
     }
 }

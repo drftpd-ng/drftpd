@@ -22,8 +22,10 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.Properties;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Tests for #591: optional strictness settings.
@@ -77,5 +79,27 @@ public class ZipscriptStrictnessTest {
         assertNull(ZipscriptStrictness.checkNfoUpload(c, "c.zip", List.of("a.zip")));
         // second nfo option is independent
         assertNull(ZipscriptStrictness.checkNfoUpload(c, "b.nfo", List.of("a.nfo")));
+    }
+
+    @Test
+    void noCheckDirsEmptyByDefault() {
+        assertFalse(ZipscriptStrictness.isNoCheckDir(cfg(), "/REQUESTS/Rel"));
+        assertFalse(ZipscriptStrictness.isNoCheckDir(cfg("nocheck.dirs", "  "), "/REQUESTS/Rel"));
+    }
+
+    @Test
+    void noCheckDirsMatchGlobs() {
+        Properties c = cfg("nocheck.dirs", "/REQUESTS/* /PRE/*/Sample/");
+        assertTrue(ZipscriptStrictness.isNoCheckDir(c, "/REQUESTS/Rel"));
+        assertTrue(ZipscriptStrictness.isNoCheckDir(c, "/REQUESTS/Rel/"));
+        assertTrue(ZipscriptStrictness.isNoCheckDir(c, "/PRE/Group/Sample"));
+        assertFalse(ZipscriptStrictness.isNoCheckDir(c, "/MP3/Rel"));
+        assertFalse(ZipscriptStrictness.isNoCheckDir(c, "/PRE/Group/Rel"));
+    }
+
+    @Test
+    void noCheckDirsIgnoreBadGlob() {
+        Properties c = cfg("nocheck.dirs", "[ /MP3/*");
+        assertTrue(ZipscriptStrictness.isNoCheckDir(c, "/MP3/Rel"));
     }
 }

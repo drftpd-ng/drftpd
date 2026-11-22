@@ -46,6 +46,7 @@ import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.zipscript.common.zip.DizInfo;
 import org.drftpd.zipscript.common.zip.DizStatus;
+import org.drftpd.zipscript.master.sfv.ZipscriptStrictness;
 import org.drftpd.zipscript.master.zip.ZipTools;
 import org.drftpd.zipscript.master.zip.event.ZipTransferEvent;
 import org.drftpd.zipscript.master.zip.vfs.ZipscriptVFSDataZip;
@@ -90,6 +91,11 @@ public class ZipscriptZipPostHook extends ZipTools {
             if (!transferFile.exists()) {
                 // No point checking the file as it has already been deleted (i.e. an abort)
                 logger.debug("doZipscriptSTORZipPostCheck() - transferFile ({}) no longer exists, not checking", transferFile);
+                return;
+            }
+
+            if (ZipscriptStrictness.isNoCheckDir(cfg, transferFile.getParent().getPath())) {
+                // nocheck.dirs: no zipscript checks in this directory
                 return;
             }
 
