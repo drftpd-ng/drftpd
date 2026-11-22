@@ -68,7 +68,9 @@ public class MoveReleaseToSpecificFolder extends ArchiveType {
         if (getDirectory() != null) {
             directory = getDirectory().getPath();
         }
-        return "MoveReleaseToSpecificFolder=[directory=[" + directory + "]dest=[" + _archiveToFolder.getPath() + "]]";
+        // no destination when todirectory and its parent don't exist (logged at startup), nothing is moved then
+        String dest = _archiveToFolder != null ? _archiveToFolder.getPath() : "N/A";
+        return "MoveReleaseToSpecificFolder=[directory=[" + directory + "]dest=[" + dest + "]]";
     }
 
 }
