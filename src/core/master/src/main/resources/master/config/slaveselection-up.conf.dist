@@ -43,6 +43,17 @@
 # .match=^/section/.*$                                                                             #
 # .negate.expression=false                                                                         #
 #                                                                                                  #
+#                                                                                                  #
+# MonthlyTraffic (per-slave monthly traffic quota with a soft and a hard limit, opt-in).           #
+# .filter=monthlytraffic                                                                           #
+# .limit=500GB (default hard limit, optional). At or over it the slave is removed.                 #
+# .limit.slave1=2TB (hard limit for one slave, overrides the default, optional).                   #
+# .warn=80% (soft limit: percent of the limit or bytes like 400GB, optional).                      #
+# Between warn and limit the score is lowered by (used - warn) * multiplier.                       #
+# .direction=both (up, down or both: which month counters count towards the quota).                #
+# .multiplier=1 (soft part only, "remove" removes the slave from warn on).                         #
+# Slaves without a limit are not touched. The sitebot announces warn/limit                         #
+# (announce type "slavequota"). Counters are the slave month stats.                                #
 ####################################################################################################
 
 ## Default Config (suggested for ultimate bandwidth usage).
