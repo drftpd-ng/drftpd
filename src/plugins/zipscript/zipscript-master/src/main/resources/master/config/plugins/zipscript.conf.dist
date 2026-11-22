@@ -104,3 +104,19 @@ irc.zip.maxgroups=10
 cwd.flacinfo.enabled=true
 stor.flacinfo.enabled=true
 
+
+# Race announce thresholds (SFV and zip releases)
+# The halfway announce is made once 50% of the files listed by the SFV (or .diz) are present
+# (rounded down: 7 files -> after 4 are in, 10 files -> after 5 are in).
+# Minimum number of files the SFV (or .diz) must list for a halfway announce.
+# Default: [4]
+halfway.min.files=4
+
+# Minimum size in MB of what has been uploaded to the release for a halfway announce, 0 = no limit.
+# Default: [0]
+halfway.min.size=0
+
+# Announce halfway and complete for releases that only one user uploaded.
+# Set to false to only announce them for races (2 or more users).
+# Default: [true]
+announce.norace=true

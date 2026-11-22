@@ -66,9 +66,21 @@ public class NewRaceLeader {
         return _winner;
     }
 
-    public void check(String user, int missing, int files, Collection<UploaderPosition> racers) {
+    public void check(String user, int missing, int files, Collection<UploaderPosition> racers,
+                      NewLeaderThresholds thresholds) {
         UploaderPosition uploaderposition = racers.iterator().next();
         if ((uploaderposition.getUsername().equals(user)) && (!user.equals(_winner))) {
+            int prevFiles = 0;
+            for (UploaderPosition pos : racers) {
+                if (pos.getUsername().equals(_winner)) {
+                    prevFiles = pos.getFiles();
+                    break;
+                }
+            }
+            if (!thresholds.leaderChangeAllowed(uploaderposition.getFiles(), uploaderposition.getBytes(), prevFiles)) {
+                // Not far enough ahead yet, keep the previous leader and check again on the next upload
+                return;
+            }
 
             // Ignore on halfway as we already announce leader during this point
             int halfway = (int) Math.floor((double) files / 2);

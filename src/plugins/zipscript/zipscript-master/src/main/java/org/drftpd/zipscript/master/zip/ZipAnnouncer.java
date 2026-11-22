@@ -39,6 +39,7 @@ import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.master.vfs.InodeHandle;
 import org.drftpd.zipscript.common.zip.DizInfo;
+import org.drftpd.zipscript.master.AnnounceThresholds;
 import org.drftpd.zipscript.master.zip.event.ZipTransferEvent;
 import org.drftpd.zipscript.master.zip.vfs.ZipscriptVFSDataZip;
 
@@ -101,7 +102,7 @@ public class ZipAnnouncer extends AbstractAnnouncer {
             return;
         }
 
-        int halfway = (int) Math.floor((double) zipEvent.getDizInfo().getTotal() / 2);
+        int halfway = AnnounceThresholds.halfwayMissing(zipEvent.getDizInfo().getTotal());
 
         try {
             String username = zipEvent.getUser().getName();
@@ -151,6 +152,11 @@ public class ZipAnnouncer extends AbstractAnnouncer {
                     Collection<UploaderPosition> racers = RankUtils.userSort(ZipTools.getZipFiles(dir),
                             "bytes", "high");
                     Collection<GroupPosition> groups = RankUtils.topFileGroup(ZipTools.getZipFiles(dir));
+
+                    if (!AnnounceThresholds.load().completeAllowed(racers::size)) {
+                        // announce.norace=false and only one user uploaded this release
+                        return;
+                    }
 
                     fillEnvSection(env, zipEvent, writer, false);
 
@@ -264,8 +270,9 @@ public class ZipAnnouncer extends AbstractAnnouncer {
                 }
 
                 //HALFWAY
-            } else if ((zipEvent.getDizInfo().getTotal() >= 4) &&
-                    (zipEvent.getDizStatus().getMissing() == halfway)) {
+            } else if ((zipEvent.getDizStatus().getMissing() == halfway) &&
+                    AnnounceThresholds.load().halfwayAllowed(zipEvent.getDizInfo().getTotal(), dir.getSize(),
+                            () -> countRacers(dir))) {
                 AnnounceWriter writer = _config.getPathWriter("store.halfway", dir);
                 if (writer != null) {
                     Collection<UploaderPosition> uploaders = RankUtils.userSort(ZipTools.getZipFiles(dir),
@@ -312,6 +319,15 @@ public class ZipAnnouncer extends AbstractAnnouncer {
             Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
             fillEnvSection(env, direvent, writer, false);
             sayOutput(ReplacerUtils.jprintf(type, env, _bundle), writer);
+        }
+    }
+
+    private int countRacers(DirectoryHandle dir) {
+        try {
+            return RankUtils.userSort(ZipTools.getZipFiles(dir), "bytes", "high").size();
+        } catch (IOException e) {
+            logger.debug("Unable to count racers in {}", dir.getPath(), e);
+            return 0;
         }
     }
 
