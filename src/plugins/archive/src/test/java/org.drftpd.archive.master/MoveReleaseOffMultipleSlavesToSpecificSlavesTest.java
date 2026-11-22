@@ -1,6 +1,7 @@
 package org.drftpd.archive.master;
 
 import org.drftpd.archive.master.archivetypes.MoveReleaseOffMultipleSlavesToSpecificSlaves;
+import org.drftpd.archive.master.archivetypes.MoveReleaseToSpecificFolder;
 import org.drftpd.common.extensibility.PluginInterface;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.protocol.MasterProtocolCentral;
@@ -93,6 +94,18 @@ public class MoveReleaseOffMultipleSlavesToSpecificSlavesTest {
         assertFalse(instance.isMovingRelease());
         assertNull(instance.getDestinationDirectory());
         assertFalse(instance.checkFailedDir("bla"));
+    }
+
+    @Test
+    public void testSpecificFolderWithoutDestinationToString() {
+        // no usable todirectory (here none at all): there is no destination, toString() must not throw
+        int confNum = 1;
+        Properties p = new Properties();
+        p.setProperty(confNum + ".archiveafter", String.valueOf(60));
+        MoveReleaseToSpecificFolder instance = new MoveReleaseToSpecificFolder(
+                new TestArchive(), new Section(new DirectoryHandle("/one")), p, confNum);
+        assertFalse(instance.isMovingRelease());
+        assertEquals("MoveReleaseToSpecificFolder=[directory=[N/A]dest=[N/A]]", instance.toString());
     }
 
     static class TestArchive extends Archive {
