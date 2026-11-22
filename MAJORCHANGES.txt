@@ -1,4 +1,4 @@
-==== 4.0.12
+==== 5.0
 * Now compiles and runs on JDK25 (LTS). JDK 17 is no longer supported: install a Java 25 runtime
   on the master and on every slave before upgrading. The Docker images use amazoncorretto:25.
 * The search index (SITE SEARCH, SITE FIND, dupecheck, ...) now uses Apache Lucene 10 instead of
@@ -12,6 +12,11 @@
   modification date, newest first for those commands. With Lucene 3.6 that sort used a field that
   doesn't exist and the results came out in reverse full path order, so which N results are shown
   under a limit changes.
+
+==== 4.0.12
+* bcrypt passwords: a new password longer than 72 bytes (UTF-8) is now refused by SITE ADDUSER,
+  SITE CHPASS and SITE PASSWD. Before, only its first 72 bytes were used. Existing accounts are not
+  affected: their stored hash keeps working.
 
 ==== 4.0.8
 * Now compiles and runs on JDK17

@@ -17,6 +17,9 @@
  */
 package org.drftpd.zipscript.master.mp3.hooks;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import org.drftpd.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.common.extensibility.CommandHook;
 import org.drftpd.common.extensibility.HookType;
@@ -45,6 +48,8 @@ import java.util.ResourceBundle;
  * @version $Id$
  */
 public class ZipscriptMP3PostHook {
+    private static final Logger logger = LogManager.getLogger(ZipscriptMP3PostHook.class);
+
 
     private final ResourceBundle _bundle;
 
@@ -164,6 +169,7 @@ public class ZipscriptMP3PostHook {
             }
         } catch (IOException | NoAvailableSlaveException e) {
             // Error fetching mp3 info, ignore
+            logger.debug("Unable to show MP3 info for {}: {}", inode.getPath(), e.getMessage());
         }
     }
 }

@@ -17,6 +17,9 @@
  */
 package org.drftpd.zipscript.master.zip.list;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import org.drftpd.common.util.Bytes;
 import org.drftpd.common.util.ConfigLoader;
 import org.drftpd.master.commands.list.ListElementsContainer;
@@ -37,6 +40,8 @@ import java.util.*;
  * @version $Id$
  */
 public class ZipscriptDizStatusBar extends ZipTools implements ZipscriptListStatusBarInterface {
+    private static final Logger logger = LogManager.getLogger(ZipscriptDizStatusBar.class);
+
 
     public ArrayList<String> getStatusBarEntry(DirectoryHandle dir, ListElementsContainer container) throws NoEntryAvailableException {
         ResourceBundle bundle = container.getCommandManager().getResourceBundle();
@@ -69,7 +74,8 @@ public class ZipscriptDizStatusBar extends ZipTools implements ZipscriptListStat
                     return statusBarEntries;
                 }
             } catch (IOException | NoAvailableSlaveException e) {
-                // Error fetching diz info, ignore
+                // Error fetching diz info, ignore (debug only: this runs on every directory listing)
+                logger.debug("Unable to get diz info for status bar in {}: {}", dir.getPath(), e.getMessage());
             }
         }
         throw new NoEntryAvailableException();
