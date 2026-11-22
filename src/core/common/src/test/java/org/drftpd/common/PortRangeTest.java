@@ -24,8 +24,11 @@ import javax.net.ServerSocketFactory;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
@@ -35,46 +38,85 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 public class PortRangeTest {
 
+    private static final int RANGE_SIZE = 11;
+
+    /**
+     * Finds RANGE_SIZE consecutive ports that are free right now.
+     * The bases are below the Linux ephemeral range (32768-60999), so outgoing connections on a busy
+     * CI runner don't take them in the middle of the test, as they could with the old fixed 45300-45310.
+     */
+    private static int findFreeRange() {
+        Random random = new Random();
+        for (int attempt = 0; attempt < 100; attempt++) {
+            int base = 20000 + random.nextInt(12000 - RANGE_SIZE);
+            if (allFree(base)) {
+                return base;
+            }
+        }
+        throw new IllegalStateException("No " + RANGE_SIZE + " consecutive free ports found");
+    }
+
+    private static boolean allFree(int base) {
+        List<ServerSocket> probes = new ArrayList<>();
+        try {
+            for (int port = base; port < base + RANGE_SIZE; port++) {
+                probes.add(new ServerSocket(port));
+            }
+            return true;
+        } catch (IOException e) {
+            return false;
+        } finally {
+            for (ServerSocket probe : probes) {
+                try {
+                    probe.close();
+                } catch (IOException ignored) {
+                }
+            }
+        }
+    }
+
     @Test
     public void testGetPort() throws IOException {
-        PortRange pr = new PortRange(45300, 45310, 0);
-        ArrayList<Integer> ports = new ArrayList<>();
-        ArrayList<ServerSocket> sockets = new ArrayList<>();
-
-        for (int x = 45300; x <= 45310; x++) {
-            ports.add(x);
-        }
-
-        assertEquals(11, ports.size());
-
-        ServerSocket ss = new ServerSocket(45305);
-        sockets.add(ss);
-        ports.remove(Integer.valueOf(ss.getLocalPort()));
-        assertEquals(10, ports.size());
-
-        for (int x = 0; x < 10; x++) {
-            ServerSocket socket = pr.getPort(ServerSocketFactory.getDefault(), null);
-            sockets.add(socket);
-            ports.remove(Integer.valueOf(socket.getLocalPort()));
-            assertEquals(9 - x, ports.size());
-        }
-
-        assertEquals(0, ports.size());
+        int min = findFreeRange();
+        int max = min + RANGE_SIZE - 1;
+        PortRange pr = new PortRange(min, max, 0);
+        List<Integer> ports = new ArrayList<>();
+        List<ServerSocket> sockets = new ArrayList<>();
 
         try {
-            pr.getPort(ServerSocketFactory.getDefault(), null);
-            throw new RuntimeException("PortRange should be exhausted!");
-        } catch (RuntimeException e) {
-            assertTrue(e.getMessage().equals("PortRange exhausted"));
-        }
+            for (int x = min; x <= max; x++) {
+                ports.add(x);
+            }
+            assertEquals(RANGE_SIZE, ports.size());
 
-        ss.close();
-        ss = pr.getPort(ServerSocketFactory.getDefault(), null);
+            // One port in the middle is already taken by someone else
+            ServerSocket ss = new ServerSocket(min + 5);
+            sockets.add(ss);
+            ports.remove(Integer.valueOf(ss.getLocalPort()));
+            assertEquals(RANGE_SIZE - 1, ports.size());
 
-        // clean up
-        ss.close();
-        for (ServerSocket socket : sockets) {
-            socket.close();
+            // PortRange hands out every other port in the range, each once
+            for (int x = 0; x < RANGE_SIZE - 1; x++) {
+                ServerSocket socket = pr.getPort(ServerSocketFactory.getDefault(), null);
+                sockets.add(socket);
+                assertTrue(ports.remove(Integer.valueOf(socket.getLocalPort())),
+                        "Port " + socket.getLocalPort() + " was outside the range or given twice");
+            }
+            assertEquals(0, ports.size());
+
+            RuntimeException e = assertThrows(RuntimeException.class,
+                    () -> pr.getPort(ServerSocketFactory.getDefault(), null));
+            assertEquals("PortRange exhausted", e.getMessage());
+
+            // Freeing a port makes it available again
+            ss.close();
+            ServerSocket again = pr.getPort(ServerSocketFactory.getDefault(), null);
+            sockets.add(again);
+            assertEquals(min + 5, again.getLocalPort());
+        } finally {
+            for (ServerSocket socket : sockets) {
+                socket.close();
+            }
         }
     }
 }
