@@ -71,6 +71,10 @@ sfvdeny.subdir.include=.*(?i)(cd[1-9]|dvd[1-9]|dis(c|k)[1-9]).*
 # List of sections/dirs to exclude when searching for deny sfv upload (regex).
 sfvdeny.subdir.exclude=.*(?i)(SPEEDTEST|REQUESTS|STAFF|PRE).*
 
+# Deny the upload of a second .nfo in a directory that already has one.
+# Default: [false]
+nfo.deny.second=false
+
 # Check integrity of .zip files on upload.
 # Default: [true]
 stor.zip.integrity.check.enabled=true

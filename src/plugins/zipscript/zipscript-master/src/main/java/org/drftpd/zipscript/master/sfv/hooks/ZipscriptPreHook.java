@@ -35,10 +35,13 @@ import org.drftpd.master.usermanager.User;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.zipscript.common.sfv.SFVInfo;
+import org.drftpd.zipscript.master.sfv.ZipscriptStrictness;
 import org.drftpd.zipscript.master.sfv.vfs.ZipscriptVFSDataSFV;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.regex.PatternSyntaxException;
@@ -115,6 +118,12 @@ public class ZipscriptPreHook {
             request.setDeniedResponse(new CommandResponse(533, "Requested action not taken. Cannot Upload Due To Subdir"));
             return request;
         }
+        String nfoDenied = checkNfoDenied(cfg, checkFile);
+        if (nfoDenied != null) {
+            request.setAllowed(false);
+            request.setDeniedResponse(new CommandResponse(533, nfoDenied));
+            return request;
+        }
         try {
             ZipscriptVFSDataSFV sfvData = new ZipscriptVFSDataSFV(checkFile.getParent());
             SFVInfo sfv = sfvData.getSFVInfo();
@@ -161,6 +170,25 @@ public class ZipscriptPreHook {
                     checkFile.getParent().getPath(), checkFile.getName());
         }
         return request;
+    }
+
+    /**
+     * @return the reason to deny the upload of this file according to the nfo.* options, or null
+     */
+    private String checkNfoDenied(Properties cfg, FileHandle file) {
+        if (!file.getName().toLowerCase().endsWith(".nfo")) {
+            return null;
+        }
+        List<String> existing = new ArrayList<>();
+        try {
+            for (FileHandle f : file.getParent().getFilesUnchecked()) {
+                existing.add(f.getName());
+            }
+        } catch (FileNotFoundException e) {
+            // parent no longer exists....ignore
+            return null;
+        }
+        return ZipscriptStrictness.checkNfoUpload(cfg, file.getName(), existing);
     }
 
     private boolean checkAllowedExtension(String file) {
