@@ -22,6 +22,7 @@ import org.apache.logging.log4j.Logger;
 import org.drftpd.common.io.PermissionDeniedException;
 import org.drftpd.master.commands.CommandRequest;
 import org.drftpd.master.commands.ImproperUsageException;
+import org.drftpd.master.usermanager.User;
 import org.drftpd.master.vfs.InodeHandle;
 
 import java.io.FileNotFoundException;
@@ -47,11 +48,15 @@ public class WipeAction implements ActionInterface {
     @Override
     public String exec(CommandRequest request, InodeHandle inode) {
         try {
-            inode.delete(request.getSession().getUserNull(request.getUser()));
+            User user = request.getSession().getUserNull(request.getUser());
+            inode.checkWipePermission(user);
+            inode.checkWipeSubtreePermission(user);
+            inode.delete(user);
         } catch (FileNotFoundException e) {
             logger.error("The file was there and now it's gone, how?", e);
         } catch (PermissionDeniedException e) {
             _failed = true;
+            logger.debug("Wipe denied for {} on {}: {}", request.getUser(), inode.getPath(), e.getMessage());
             return "You do not have the proper permissions to wipe " + inode.getPath();
         }
         return "Wiped " + inode.getPath();

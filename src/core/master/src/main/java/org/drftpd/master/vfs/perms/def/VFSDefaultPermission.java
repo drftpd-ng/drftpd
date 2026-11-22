@@ -45,7 +45,8 @@ public class VFSDefaultPermission extends VFSPermHandler {
                 "rename", "rename",
                 "renameown", "renameown",
                 "privpath", "privpath",
-                "download", "download");
+                "download", "download",
+                "wipe", "wipe");
     }
 
     @Override

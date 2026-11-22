@@ -57,6 +57,8 @@
 CLASSPATH="lib/*:build/*"
 # Add JVM Options here however you see fit and please check if the max memory Xmx is good enough for your master.
 JVM_OPTS="-Djdk.tls.acknowledgeCloseNotify=true -Xms3G -Xmx3G -XX:+UseG1GC"
+# Optional: -Dbytes.maxunit=M caps the largest unit used when formatting sizes (K, M, G, T, P or E).
+# It is global: it affects IRC announcements and FTP replies. Default: no cap (e.g. 50.0GB).
 OPTIONS="-Dlog4j.configurationFile=config/log4j2-master.xml"
 PROGRAM="org.drftpd.master.Master"
 

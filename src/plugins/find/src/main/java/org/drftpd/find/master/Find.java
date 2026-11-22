@@ -197,7 +197,9 @@ public class Find extends CommandInterface {
                 }
             } else if (_actionsMap.containsKey(arg)) {
                 // Check if arg matches any of the loaded actions
-                if (!checkCustomPermission(request, arg.toLowerCase(), "*")) {
+                ActionInterface permAction = _actionsMap.get(arg);
+                String permKey = actionPermissionKey(request.getProperties(), permAction.name());
+                if (!checkCustomPermission(request, permKey, defaultActionPermission(permAction.name()))) {
                     return new CommandResponse(500, "You do not have the proper permissions for " + arg);
                 }
                 try {
@@ -494,4 +496,33 @@ public class Find extends CommandInterface {
         return args.toString().split(" ");
     }
 
+    /**
+     * Returns the key of the permission line for an action in the command config (e.g. "wipe" or
+     * "sendToSlaves" for the -wipe / -sendToSlaves actions), matched case-insensitively, or the
+     * lower cased action name when the config has no line for it.
+     */
+    static String actionPermissionKey(java.util.Properties props, String actionName) {
+        for (String key : props.stringPropertyNames()) {
+            if (key.equalsIgnoreCase(actionName)) {
+                return key;
+            }
+        }
+        return actionName.toLowerCase();
+    }
+
+    /**
+     * Permission used when the command config has no line for an action: actions that only print
+     * are open to everyone, delete still goes through the VFS delete permissions, every other
+     * action (nuke, unnuke, wipe, slave transfers...) is restricted to siteops.
+     */
+    static String defaultActionPermission(String actionName) {
+        switch (actionName.toLowerCase()) {
+            case "print":
+            case "printf":
+            case "delete":
+                return "*";
+            default:
+                return "=siteop";
+        }
+    }
 }

@@ -84,6 +84,63 @@ public class BytesTest {
     }
 
     @Test
+    public void testMaxUnitUnsetKeepsDefault() {
+        assertEquals("50.0GB", Bytes.formatBytes(50 * Bytes.GIGA, false, null));
+        assertEquals("50.0GiB", Bytes.formatBytes(50 * Bytes.GIBI, true, null));
+    }
+
+    @Test
+    public void testMaxUnitMegabytes() {
+        assertEquals("50000.0MB", Bytes.formatBytes(50 * Bytes.GIGA, false, "M"));
+        assertEquals("51200.0MiB", Bytes.formatBytes(50 * Bytes.GIBI, true, "M"));
+    }
+
+    @Test
+    public void testMaxUnitLowercase() {
+        assertEquals("50000.0MB", Bytes.formatBytes(50 * Bytes.GIGA, false, "m"));
+    }
+
+    @Test
+    public void testMaxUnitGigabytesForTerabytes() {
+        assertEquals("2000.0GB", Bytes.formatBytes(2 * Bytes.TERRA, false, "G"));
+        assertEquals("2048.0GiB", Bytes.formatBytes(2 * Bytes.TEBI, true, "G"));
+    }
+
+    @Test
+    public void testMaxUnitKilobytes() {
+        assertEquals("5000.0KB", Bytes.formatBytes(5 * Bytes.MEGA, false, "K"));
+        assertEquals("5120.0KiB", Bytes.formatBytes(5 * Bytes.MEBI, true, "K"));
+    }
+
+    @Test
+    public void testMaxUnitDoesNotAffectSmallerValues() {
+        assertEquals("1.0MB", Bytes.formatBytes(Bytes.MEGA, false, "G"));
+        assertEquals("123B", Bytes.formatBytes(123, false, "K"));
+    }
+
+    @Test
+    public void testMaxUnitInvalidIsIgnored() {
+        assertEquals("50.0GB", Bytes.formatBytes(50 * Bytes.GIGA, false, "X"));
+        assertEquals("50.0GB", Bytes.formatBytes(50 * Bytes.GIGA, false, "MB"));
+        assertEquals("50.0GB", Bytes.formatBytes(50 * Bytes.GIGA, false, ""));
+    }
+
+    @Test
+    public void testMaxUnitSystemProperty() {
+        String old = System.getProperty("bytes.maxunit");
+        try {
+            System.setProperty("bytes.maxunit", "M");
+            assertEquals("50000.0MB", Bytes.formatBytes(50 * Bytes.GIGA));
+        } finally {
+            if (old == null) {
+                System.clearProperty("bytes.maxunit");
+            } else {
+                System.setProperty("bytes.maxunit", old);
+            }
+        }
+    }
+
+    @Test
     public void testParse1GB() {
         assertEquals(Bytes.GIGA, Bytes.parseBytes("1GB"));
     }

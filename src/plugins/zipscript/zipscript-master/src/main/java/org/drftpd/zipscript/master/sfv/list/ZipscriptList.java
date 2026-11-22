@@ -111,11 +111,11 @@ public class ZipscriptList extends SFVTools implements AddListElementsInterface 
                     }
                 }
             } catch (NoAvailableSlaveException | SlaveUnavailableException e) {
-                logger.warn("No available slaves for SFV file in{}", dir.getPath());
+                logger.warn("No available slaves for SFV file in {}", dir.getPath());
             } catch (FileNotFoundException e) {
-                // no sfv file in directory - just skip it
+                logger.debug("No SFV file found in directory {}", dir.getPath());
             } catch (IOException e) {
-                // unable to read sfv - just skip it
+                logger.warn("IOException reading SFV file in {}", dir.getPath(), e);
             }
             if (statusBarEnabled) {
                 for (ZipscriptListStatusBarInterface zle : _statusBarProviders) {
@@ -151,7 +151,7 @@ public class ZipscriptList extends SFVTools implements AddListElementsInterface 
                         container.getElements().add(
                                 new LightRemoteInode(statusDirName, "drftpd", "drftpd", statusBarIsDir, dir.lastModified(), 0L));
                     } catch (FileNotFoundException e) {
-                        // dir was deleted during list operation
+                        logger.debug("Directory {} was deleted during list operation", dir.getPath());
                     }
                 }
             }
