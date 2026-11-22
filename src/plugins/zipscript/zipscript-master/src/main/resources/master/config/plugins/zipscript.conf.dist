@@ -104,3 +104,22 @@ irc.zip.maxgroups=10
 cwd.flacinfo.enabled=true
 stor.flacinfo.enabled=true
 
+
+# Banned file names (opt-in, off while empty). Uploads (STOR) whose file name matches one of these
+# patterns are refused with "553 Requested action not taken. File name is not allowed on this site."
+# Comma separated globs (* ? [..], same syntax as perms.conf), matched case-insensitively against the
+# complete file name only (not the path). Unlike a shell, * also matches a leading dot, so ".*" bans
+# dotfiles. Spaces inside a pattern are literal, only commas separate patterns.
+# Note: perms.conf can already deny uploads by path/name ("upload /*.url !*" or
+# "uploadex (?i)\.(url|lnk)$ !*"), but it only answers with a generic permission denied and has no
+# per-section replacement list.
+# Default: [] (disabled)
+#banned.filenames=*.url,*.lnk,*.scr,*.bat,*.cmd,*.exe,*.pif,thumbs.db,desktop.ini,.*
+
+# Optional per-directory overrides, numbered from 1 without gaps. If the upload directory matches
+# .path (glob, case-insensitive, e.g. /PRE/* or /MP3/*), the .patterns list REPLACES banned.filenames
+# for that directory (an empty list bans nothing there). The first matching override wins.
+#banned.filenames.override.1.path=/PRE/*
+#banned.filenames.override.1.patterns=*.url,*.lnk
+#banned.filenames.override.2.path=/REQUESTS/*
+#banned.filenames.override.2.patterns=
