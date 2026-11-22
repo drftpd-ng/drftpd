@@ -33,6 +33,8 @@ public class RescanOptions {
     public boolean quiet = false;
     /** Skip files whose known CRC already matches the SFV, only checksum files without a known CRC. */
     public boolean quick = false;
+    /** Rename files failing the SFV check to name.bad instead of deleting them. */
+    public boolean markBad = false;
     /** The (still unresolved) file or path argument, or null. */
     public String fileOrPath = null;
 
@@ -40,6 +42,9 @@ public class RescanOptions {
      * @param argument the SITE RESCAN argument, may be null
      * @throws ImproperUsageException on more than one file/path argument
      */
+    /** Suffix appended to the name of files marked as bad. */
+    public static final String BAD_SUFFIX = ".bad";
+
     public static RescanOptions parse(String argument) throws ImproperUsageException {
         RescanOptions o = new RescanOptions();
         if (argument == null) {
@@ -58,6 +63,8 @@ public class RescanOptions {
                 o.deleteZeroByte = false;
             } else if (arg.equalsIgnoreCase("quiet")) {
                 o.quiet = true;
+            } else if (arg.equalsIgnoreCase("markbad")) {
+                o.markBad = true;
             } else if (arg.equalsIgnoreCase("quick")) {
                 o.quick = true;
             } else {

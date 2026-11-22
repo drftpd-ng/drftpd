@@ -60,6 +60,16 @@ public class RescanOptionsTest {
     }
 
     @Test
+    void markBadIsOptIn() throws ImproperUsageException {
+        assertFalse(RescanOptions.parse("-r").markBad);
+        RescanOptions o = RescanOptions.parse("MarkBad /x");
+        assertTrue(o.markBad);
+        assertTrue(o.force);
+        assertEquals("/x", o.fileOrPath);
+        assertEquals(".bad", RescanOptions.BAD_SUFFIX);
+    }
+
+    @Test
     void twoPathsAreRejected() {
         assertThrows(ImproperUsageException.class, () -> RescanOptions.parse("a b"));
     }

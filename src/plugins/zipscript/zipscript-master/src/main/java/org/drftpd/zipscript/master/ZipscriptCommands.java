@@ -28,6 +28,7 @@ import org.drftpd.master.network.Checksum;
 import org.drftpd.master.network.Session;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.vfs.*;
+import org.drftpd.slave.exceptions.FileExistsException;
 import org.drftpd.zipscript.common.sfv.SFVInfo;
 import org.drftpd.zipscript.master.sfv.RescanOptions;
 import org.drftpd.zipscript.master.sfv.vfs.ZipscriptVFSDataSFV;
@@ -81,6 +82,7 @@ public class ZipscriptCommands extends CommandInterface {
         boolean deleteZeroByte = options.deleteZeroByte;
         boolean quiet = options.quiet;
         boolean quick = options.quick;
+        boolean markBad = options.markBad;
         boolean singleFile = false;
 
         String fileOrPath = options.fileOrPath;
@@ -92,12 +94,12 @@ public class ZipscriptCommands extends CommandInterface {
             }
         }
 
-        if (!deleteBad && !deleteZeroByte) {
+        if (!deleteBad && !deleteZeroByte && !markBad) {
             logger.debug("Disabling forceRescan option as delete bad and zerobyte is not enabled");
             forceRescan = false;
         }
-        logger.debug("Rescan options -> recursive: {}, force: {}, deleteBad: {}, deleteZeroByte: {}, quiet: {}, quick: {}, FileOrPath: {}",
-                recursive, forceRescan, deleteBad, deleteZeroByte, quiet, quick, fileOrPath);
+        logger.debug("Rescan options -> recursive: {}, force: {}, deleteBad: {}, deleteZeroByte: {}, quiet: {}, quick: {}, markBad: {}, FileOrPath: {}",
+                recursive, forceRescan, deleteBad, deleteZeroByte, quiet, quick, markBad, fileOrPath);
 
         CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 
@@ -157,7 +159,7 @@ public class ZipscriptCommands extends CommandInterface {
                             return response;
                         }
                         fileChecksum = getFileCheckSum(workingFile, forceRescan);
-                        String status = checkSingleFile(session, workingFile.getName(), workingFile, sfvChecksum, fileChecksum, deleteZeroByte, deleteBad, quiet);
+                        String status = checkSingleFile(session, workingFile.getName(), workingFile, sfvChecksum, fileChecksum, deleteZeroByte, deleteBad, markBad, quiet);
                         if (status != null && !status.equals("")) {
                             session.printOutput(200, workingFile.getName() + "(" + status + ")" +
                                     " SFV: " + Checksum.formatChecksum(sfvChecksum) +
@@ -236,7 +238,7 @@ public class ZipscriptCommands extends CommandInterface {
                         continue;
                     }
 
-                    String status = checkSingleFile(session, sfvEntryName, file, sfvChecksum, fileChecksum, deleteZeroByte, deleteBad, quiet);
+                    String status = checkSingleFile(session, sfvEntryName, file, sfvChecksum, fileChecksum, deleteZeroByte, deleteBad, markBad, quiet);
                     if (status != null && !status.equals("")) {
                         session.printOutput(200, file.getName() + "(" + status + ")" +
                                 " SFV: " + Checksum.formatChecksum(sfvChecksum) +
@@ -269,7 +271,7 @@ public class ZipscriptCommands extends CommandInterface {
     }
 
     private String checkSingleFile(Session session, String sfvEntryName, FileHandle file, long sfvChecksum, long fileChecksum,
-                                   boolean deleteZeroByte, boolean deleteBad, boolean quiet) {
+                                   boolean deleteZeroByte, boolean deleteBad, boolean markBad, boolean quiet) {
         long fileSize;
         String status = "";
         try {
@@ -299,7 +301,9 @@ public class ZipscriptCommands extends CommandInterface {
             }
         } else {
             status = "FAILED - checksum mismatch";
-            if (deleteBad) {
+            if (markBad) {
+                status += markFileBad(file);
+            } else if (deleteBad) {
                 try {
                     file.deleteUnchecked();
                 } catch (FileNotFoundException e) {
@@ -309,6 +313,29 @@ public class ZipscriptCommands extends CommandInterface {
             }
         }
         return status;
+    }
+
+    /**
+     * Renames a file to name.bad, never overwriting an existing file.
+     *
+     * @return text to append to the status line
+     */
+    private String markFileBad(FileHandle file) {
+        String badName = file.getName() + RescanOptions.BAD_SUFFIX;
+        try {
+            FileHandle badFile = new FileHandle(file.getParent().getPath() + VirtualFileSystem.separator + badName);
+            if (badFile.exists()) {
+                return " - not marked, " + badName + " already exists";
+            }
+            file.renameToUnchecked(badFile);
+            return " - renamed to " + badName;
+        } catch (FileNotFoundException e) {
+            // File already gone, all is good
+            logger.debug("Tried to rename {}, but file was already gone", file.getName(), e);
+        } catch (FileExistsException e) {
+            return " - not marked, " + badName + " already exists";
+        }
+        return "";
     }
 
     private SFVInfo getSFVInfo(DirectoryHandle dirHandle) throws NoAvailableSlaveException, SlaveUnavailableException {
