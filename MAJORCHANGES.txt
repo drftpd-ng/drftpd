@@ -2,6 +2,9 @@
 * bcrypt passwords: a new password longer than 72 bytes (UTF-8) is now refused by SITE ADDUSER,
   SITE CHPASS and SITE PASSWD. Before, only its first 72 bytes were used. Existing accounts are not
   affected: their stored hash keeps working.
+* encryptedbeanuser.conf: a missing or unrecognised 'passcrypt' value now falls back to bcrypt (with an error
+  in the log) instead of silently storing passwords in clear text. 'clear' and 'empty' are now accepted as
+  aliases of 'none', as documented. A warning is logged when 'passcrypt' is none, md2, md5 or sha-*.
 
 ==== 4.0.8
 * Now compiles and runs on JDK17

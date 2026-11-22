@@ -30,6 +30,7 @@ import org.drftpd.master.usermanager.javabeans.BeanUserManager;
 
 import java.lang.ref.SoftReference;
 import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 import java.util.Properties;
 
 public class EncryptedBeanUserManager extends BeanUserManager {
@@ -47,11 +48,24 @@ public class EncryptedBeanUserManager extends BeanUserManager {
     public static final int PASSCRYPT_GLFTPD = 8;
     public static final int PASSCRYPT_ARGON2 = 9;
 
+    /**
+     * Marker used by {@link EncryptedBeanUser} to force a re-hash with the manager's configured
+     * passcrypt (see {@link EncryptedBeanUser#setPassword(String)}). It is NOT the hash used when
+     * the configuration is missing or invalid; that is {@link #PASSCRYPT_FALLBACK}.
+     */
     public static final int PASSCRYPT_DEFAULT = PASSCRYPT_NONE;
+
+    /**
+     * Hash used when {@code passcrypt} is missing or not recognised in encryptedbeanuser.conf.
+     * A configuration mistake must never result in passwords being stored in clear text.
+     */
+    public static final int PASSCRYPT_FALLBACK = PASSCRYPT_BCRYPT;
+
+    private static final int PASSCRYPT_UNKNOWN = -1;
 
     public static final int BCRYPT_MAX_PASSWORD_BYTES = 72;
 
-    protected int _passcrypt = PASSCRYPT_DEFAULT;
+    protected int _passcrypt = PASSCRYPT_FALLBACK;
 
     /*
      * Constructor to read encryption type, and subscribe to events
@@ -71,34 +85,70 @@ public class EncryptedBeanUserManager extends BeanUserManager {
      * Reads the Password Encryption into memory for user
      */
     protected void readPasscrypt() {
-        Properties cfg = ConfigLoader.loadConfig("encryptedbeanuser.conf");
-        String passcrypt = cfg.getProperty("passcrypt");
-        if (passcrypt == null) {
-            _passcrypt = PASSCRYPT_DEFAULT;
+        _passcrypt = resolvePasscrypt(ConfigLoader.loadConfig("encryptedbeanuser.conf"));
+    }
+
+    /**
+     * Resolves the {@code passcrypt} setting from the given configuration, logging an error when it
+     * is missing or invalid (and falling back to {@link #PASSCRYPT_FALLBACK}) and a warning when it
+     * is configured to a weak scheme.
+     */
+    public static int resolvePasscrypt(Properties cfg) {
+        String value = cfg.getProperty("passcrypt");
+        int passcrypt = lookupPasscrypt(value);
+        if (passcrypt == PASSCRYPT_UNKNOWN) {
+            passcrypt = PASSCRYPT_FALLBACK;
+            if (value == null) {
+                logger.error("No 'passcrypt' set in encryptedbeanuser.conf, falling back to bcrypt");
+            } else {
+                logger.error("Unknown 'passcrypt' value '{}' in encryptedbeanuser.conf, falling back to bcrypt", value);
+            }
+        } else if (passcrypt == PASSCRYPT_NONE) {
+            logger.warn("'passcrypt' is set to '{}': user passwords are stored in CLEAR TEXT. bcrypt or argon2 is strongly recommended", value.trim());
+        } else if (isWeakPasscrypt(passcrypt)) {
+            logger.warn("'passcrypt' is set to '{}', an unsalted fast hash that is easy to crack. bcrypt or argon2 is strongly recommended", value.trim());
         }
-        else if (passcrypt.equalsIgnoreCase("none")) {
-            _passcrypt = PASSCRYPT_NONE;
-        } else if (passcrypt.equalsIgnoreCase("md2")) {
-            _passcrypt = PASSCRYPT_MD2;
-        } else if (passcrypt.equalsIgnoreCase("md5")) {
-            _passcrypt = PASSCRYPT_MD5;
-        } else if (passcrypt.equalsIgnoreCase("sha-1")) {
-            _passcrypt = PASSCRYPT_SHA1;
-        } else if (passcrypt.equalsIgnoreCase("sha-256")) {
-            _passcrypt = PASSCRYPT_SHA256;
-        } else if (passcrypt.equalsIgnoreCase("sha-384")) {
-            _passcrypt = PASSCRYPT_SHA384;
-        } else if (passcrypt.equalsIgnoreCase("sha-512")) {
-            _passcrypt = PASSCRYPT_SHA512;
-        } else if (passcrypt.equalsIgnoreCase("bcrypt")) {
-            _passcrypt = PASSCRYPT_BCRYPT;
-        } else if (passcrypt.equalsIgnoreCase("glftpd")) {
-            _passcrypt = PASSCRYPT_GLFTPD;
-        } else if (passcrypt.equalsIgnoreCase("argon2")) {
-            _passcrypt = PASSCRYPT_ARGON2;
-        } else {
-            _passcrypt = PASSCRYPT_DEFAULT;
+        return passcrypt;
+    }
+
+    /**
+     * Parses a {@code passcrypt} value (case-insensitive, surrounding whitespace ignored).
+     * {@code none}, {@code clear} and {@code empty} explicitly select clear text; a missing or
+     * unrecognised value returns {@link #PASSCRYPT_FALLBACK}, never {@link #PASSCRYPT_NONE}.
+     */
+    public static int parsePasscrypt(String value) {
+        int passcrypt = lookupPasscrypt(value);
+        return passcrypt == PASSCRYPT_UNKNOWN ? PASSCRYPT_FALLBACK : passcrypt;
+    }
+
+    /**
+     * @return true for clear text and for the unsalted fast hashes (md2, md5, sha-*)
+     */
+    public static boolean isWeakPasscrypt(int passcrypt) {
+        return switch (passcrypt) {
+            case PASSCRYPT_NONE, PASSCRYPT_MD2, PASSCRYPT_MD5, PASSCRYPT_SHA1,
+                    PASSCRYPT_SHA256, PASSCRYPT_SHA384, PASSCRYPT_SHA512 -> true;
+            default -> false;
+        };
+    }
+
+    private static int lookupPasscrypt(String value) {
+        if (value == null) {
+            return PASSCRYPT_UNKNOWN;
         }
+        return switch (value.trim().toLowerCase(Locale.ROOT)) {
+            case "none", "clear", "empty" -> PASSCRYPT_NONE;
+            case "md2" -> PASSCRYPT_MD2;
+            case "md5" -> PASSCRYPT_MD5;
+            case "sha-1" -> PASSCRYPT_SHA1;
+            case "sha-256" -> PASSCRYPT_SHA256;
+            case "sha-384" -> PASSCRYPT_SHA384;
+            case "sha-512" -> PASSCRYPT_SHA512;
+            case "bcrypt" -> PASSCRYPT_BCRYPT;
+            case "glftpd" -> PASSCRYPT_GLFTPD;
+            case "argon2" -> PASSCRYPT_ARGON2;
+            default -> PASSCRYPT_UNKNOWN;
+        };
     }
 
     /*
