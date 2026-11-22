@@ -134,12 +134,13 @@ public class ArchiveCommandHandler extends CommandInterface {
             return response;
         }
 
-        // Get the section for our directory handle
-        SectionInterface section = GlobalContext.getGlobalContext().getSectionManager().lookup(dirHandle);
+        // Get the section for our directory handle, the root does not have one (lookup throws for it)
+        SectionInterface section = dirHandle.isRoot() ? null
+                : GlobalContext.getGlobalContext().getSectionManager().lookup(dirHandle);
 
         // Refuse to archive a section base directory, the current dated directory or the root as if it
         // were a release, that would move/mirror the whole section. A release directory has to be given instead.
-        if (ArchiveType.isSectionStructureDir(dirHandle, section)) {
+        if (section == null || ArchiveType.isSectionStructureDir(dirHandle, section)) {
             logger.warn("User {} tried to archive {} which is a section base/dated directory or the root, refusing",
                     request.getUser(), dirHandle.getPath());
             response.addComment("Refusing to archive " + dirHandle.getPath() + ": it is a section base/dated directory (or the root), not a release."
