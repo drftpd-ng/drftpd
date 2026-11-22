@@ -35,6 +35,7 @@ import org.drftpd.common.network.AsyncResponse;
 import org.drftpd.common.slave.DiskStatus;
 import org.drftpd.common.slave.TransferIndex;
 import org.drftpd.common.util.ConfigLoader;
+import org.drftpd.common.util.Version;
 import org.drftpd.common.util.PortRange;
 import org.drftpd.common.util.PropertyHelper;
 import org.drftpd.common.util.SSLConfigParser;
@@ -78,7 +79,7 @@ public class Slave extends SslConfigurationLoader {
 
     public static final boolean isWindows = System.getProperty("os.name").startsWith("Windows");
 
-    public static final String VERSION = "DrFTPD 4.0.12-git";
+    public static final String VERSION = Version.getDisplay();
 
     private static final String SETTING_PREFIX = "master.ssl.";
 
