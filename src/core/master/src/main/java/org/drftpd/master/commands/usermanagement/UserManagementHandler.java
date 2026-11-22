@@ -1297,6 +1297,68 @@ public class UserManagementHandler extends CommandInterface {
         return response;
     }
 
+    /**
+     * USAGE: site reset &lt;day|week|month|all&gt; &lt;user|=group&gt;
+     * <p>
+     * Zeroes the transfer stats (uploaded/downloaded bytes, files and time) of the given period for a user, or for
+     * every member of a group. "all" resets the day, week and month stats and also the all-time stats. Credits,
+     * ratio and every other user setting are left alone.
+     */
+    public CommandResponse doSITE_RESET(CommandRequest request) throws ImproperUsageException {
+        if (!request.hasArgument()) {
+            throw new ImproperUsageException();
+        }
+
+        String[] args = request.getArgument().trim().split("\\s+");
+        if (args.length != 2) {
+            throw new ImproperUsageException();
+        }
+
+        StatsResetPeriod period = StatsResetPeriod.parse(args[0]);
+        if (period == null) {
+            return new CommandResponse(501, "Unknown period '" + args[0] + "', use day, week, month or all");
+        }
+
+        Session session = request.getSession();
+        UserManager userManager = GlobalContext.getGlobalContext().getUserManager();
+        String target = args[1];
+        Collection<User> users;
+
+        try {
+            if (target.startsWith("=")) {
+                String groupName = target.substring(1);
+                Group g = groupName.isEmpty() ? null : session.getGroupNull(groupName);
+                if (g == null) {
+                    return new CommandResponse(550, "Unknown group");
+                }
+                users = userManager.getAllUsersByGroup(g);
+            } else {
+                users = new ArrayList<>();
+                users.add(userManager.getUserByName(target));
+            }
+        } catch (NoSuchUserException e) {
+            return new CommandResponse(550, "User " + target + " not found");
+        } catch (UserFileException e) {
+            logger.error("Error loading user", e);
+            return new CommandResponse(550, "Error loading user: " + e.getMessage());
+        }
+
+        String admin = request.getUser();
+        CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
+        int done = 0;
+        for (User user : users) {
+            period.reset(user);
+            user.commit();
+            done++;
+            logger.info("'{}' reset {} stats for '{}'", admin, period.lowerName(), user.getName());
+        }
+
+        response.addComment("Reset " + period.lowerName() + " stats for " + done + " user" + (done == 1 ? "" : "s")
+                + " (" + target + ")"
+                + (period == StatsResetPeriod.ALL ? ", including all-time stats" : "") + ".");
+        return response;
+    }
+
     public CommandResponse doSITE_READD(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {

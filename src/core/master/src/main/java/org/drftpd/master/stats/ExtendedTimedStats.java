@@ -328,6 +328,25 @@ public abstract class ExtendedTimedStats extends AbstractTimedStats {
         setUploadedBytesWeek(0);
     }
 
+    /**
+     * Zeroes the upload and download stats (bytes, files and time) of a single period, leaving the other periods alone.
+     * Unlike {@link #resetDay(Date)} and friends this does not cascade and does not touch anything else.
+     *
+     * @param p one of {@link #P_ALL}, {@link #P_MONTH}, {@link #P_WEEK} or {@link #P_DAY}
+     * @throws IllegalArgumentException if the period is not valid
+     */
+    public void resetStatsForPeriod(int p) {
+        if (p < 0 || p >= P_SIZE) {
+            throw new IllegalArgumentException("Invalid period: " + p);
+        }
+        _downloadedBytes[p] = 0;
+        _downloadedFiles[p] = 0;
+        _downloadedMilliSeconds[p] = 0;
+        _uploadedBytes[p] = 0;
+        _uploadedFiles[p] = 0;
+        _uploadedMilliSeconds[p] = 0;
+    }
+
     public void resetHour(Date d) {
         // do nothing for now
     }
