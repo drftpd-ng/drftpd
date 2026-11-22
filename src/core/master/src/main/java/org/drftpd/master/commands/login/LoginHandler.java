@@ -19,6 +19,7 @@ package org.drftpd.master.commands.login;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.drftpd.common.io.PermissionDeniedException;
 import org.drftpd.common.util.ConfigLoader;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.commands.CommandInterface;
@@ -32,7 +33,11 @@ import org.drftpd.master.network.FtpReply;
 import org.drftpd.master.usermanager.NoSuchUserException;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.usermanager.UserFileException;
+import org.drftpd.master.vfs.DirectoryHandle;
+import org.drftpd.master.vfs.ObjectNotValidException;
+import org.drftpd.slave.exceptions.FileExistsException;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -140,6 +145,12 @@ public class LoginHandler extends CommandInterface {
             request.getSession().setObject(BaseFtpConnection.FAILEDUSERNAME, "");
             request.getSession().setObject(BaseFtpConnection.FAILEDLOGIN, false);
 
+            // Land the user in its home directory if one is configured
+            DirectoryHandle homeDir = getHomeDirectory(conn.getUserNull());
+            if (homeDir != null) {
+                response.setCurrentDirectory(homeDir);
+            }
+
             // Handle killing of ghosts
             if (request.getSession().getObject(BaseFtpConnection.KILLGHOSTS, false)) {
                 for (BaseFtpConnection conn2 : GlobalContext.getConnectionManager().getConnections()) {
@@ -162,6 +173,66 @@ public class LoginHandler extends CommandInterface {
 
         request.getSession().setObject(BaseFtpConnection.FAILEDREASON, "PASS Failed");
         return new CommandResponse(530, conn.jprintf(_bundle, "pass.fail", request.getUser() == null ? request.getSession().getObject(BaseFtpConnection.FAILEDUSERNAME, "") : request.getUser()));
+    }
+
+    /**
+     * Resolves the home directory of the given user, the per-user override set with
+     * {@code SITE CHANGE <user> homedir} takes precedence over 'homedir' in master.conf.
+     * The directory is looked up as the user (privpath applies) and is only created when
+     * 'homedir.create' is enabled, its parent already exists and the user has the 'makedir'
+     * permission for it, in which case it is created with the same permission and privpath
+     * checks as MKD. No MKD event is published and no MKD command hooks run.
+     *
+     * @return the home directory, or null to keep the default (root) directory
+     */
+    private DirectoryHandle getHomeDirectory(User user) {
+        if (user == null) {
+            return null;
+        }
+        String template = user.getKeyedMap().getObject(UserManagement.HOMEDIR, "");
+        if (template.isBlank()) {
+            template = GlobalContext.getConfig().getMainProperties().getProperty(HomeDirectory.CONF_HOMEDIR, "");
+        }
+        if (template.isBlank()) {
+            return null;
+        }
+        String group = user.getGroup() == null ? null : user.getGroup().getName();
+        String path = HomeDirectory.resolve(template, user.getName(), group);
+        if (path == null) {
+            logger.warn("Ignoring invalid home directory '{}' for user '{}'", template, user.getName());
+            return null;
+        }
+        boolean create = GlobalContext.getConfig().getMainProperties().getProperty(HomeDirectory.CONF_CREATE, "false").equalsIgnoreCase("true");
+        DirectoryHandle root = new DirectoryHandle("/");
+        return HomeDirectory.locate(path, create, user.getName(), new HomeDirectory.Access<>() {
+            @Override
+            public DirectoryHandle lookup(String dirPath) throws FileNotFoundException, ObjectNotValidException {
+                return root.getDirectory(dirPath, user);
+            }
+
+            @Override
+            public boolean exists(String dirPath) {
+                return new DirectoryHandle(dirPath).exists();
+            }
+
+            @Override
+            public boolean canMakeDir(String dirPath) {
+                // Same permission check as DirectoryHandle.createDirectory, used by MKD
+                return GlobalContext.getConfig().getVFSPermissions().checkPathPermission("makedir", user, new DirectoryHandle(dirPath));
+            }
+
+            @Override
+            public void create(String dirPath) throws FileExistsException, FileNotFoundException,
+                    ObjectNotValidException, PermissionDeniedException {
+                int idx = dirPath.lastIndexOf('/');
+                String parentPath = idx == 0 ? "/" : dirPath.substring(0, idx);
+                DirectoryHandle parent = root.getDirectory(parentPath, user);
+                // Same permission and privpath checks as MKD, nothing more: no MKD event
+                // (announce, latest dir, nfo/sfv missing) and no MKD command hooks, this is
+                // a server action at login and not an upload by the user.
+                parent.createDirectory(user, dirPath.substring(idx + 1));
+            }
+        });
     }
 
     /**

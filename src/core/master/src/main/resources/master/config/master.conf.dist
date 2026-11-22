@@ -119,6 +119,29 @@ disk.commit.delay=10000
 # default.pre.user=drftpd
 # default.pre.group=drftpd
 
+# Home directory where users land after login.
+# Empty or commented = users land in the root directory (/).
+# Placeholders: ${user} = user name, ${group} = primary group name.
+# A per-user override can be set with 'SITE CHANGE <user> homedir <path|none>'.
+# The home directory does NOT grant any permission, perms.conf still applies,
+#  see the home directory example in perms.conf.
+# It is NOT a chroot: it only sets the starting directory, users can still
+#  'cd /' and go anywhere else perms.conf allows them to.
+# If the directory does not exist (or is hidden from the user) the user lands in /.
+#homedir=/home/${user}
+
+# Create a missing home directory at login. It uses the same permission and
+#  privpath checks as MKD, nothing more: the user needs the 'makedir' permission
+#  for it in perms.conf, and the directory is owned by the user and its primary group.
+# No MKD event is sent (so nothing is announced and latest-dir, nfo/sfv-missing
+#  and similar plugins do not see it) and MKD command hooks (dupecheck, nukefilter,
+#  tvmaze, ...) do not run: this is a server action at login, not an upload.
+# If the user lacks 'makedir' the directory is not created (logged at info level)
+#  and the user lands in /.
+# Its parent directory (e.g. /home) must already exist and be visible to the user.
+# Default: [false]
+#homedir.create=false
+
 # This next section defines how the slave manager allows ssl/tls connections.
 slavemanager.ssl.supported_protocols.1=TLSv1.3
 slavemanager.ssl.cipher_suites.1=TLS_AES_128_GCM_SHA256
