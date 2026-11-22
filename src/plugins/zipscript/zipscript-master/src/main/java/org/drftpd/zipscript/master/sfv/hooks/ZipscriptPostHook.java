@@ -32,6 +32,7 @@ import org.drftpd.master.commands.dataconnection.DataConnectionHandler;
 import org.drftpd.master.commands.dir.Dir;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.exceptions.SlaveUnavailableException;
+import org.drftpd.master.event.UploadRevokedEvent;
 import org.drftpd.master.network.BaseFtpConnection;
 import org.drftpd.master.network.Checksum;
 import org.drftpd.master.slavemanagement.RemoteSlave;
@@ -111,8 +112,13 @@ public class ZipscriptPostHook extends SFVTools {
             } catch (NoAvailableSlaveException | SlaveUnavailableException e1) {
                 response.addComment(
                         "slave with .sfv offline, checksum not verified");
+            } catch (FileNotFoundException e1) {
+                // No sfv in this directory, nothing to verify against
             } catch (IOException e1) {
-                //continue without verification
+                // continue without verification, but say why
+                logger.warn("Unable to read SFV to verify checksum of {}", transferFile.getPath(), e1);
+                response.addComment("zipscript - SFV unavailable, IO error: " + e1.getMessage()
+                        + ", checksum not verified");
             }
         } else { // slave has disabled download crc
 
@@ -203,10 +209,60 @@ public class ZipscriptPostHook extends SFVTools {
             } catch (FileNotFoundException e) {
                 // No sfv found in parent dir for this file, skip check
             } catch (IOException e) {
+                logger.warn("Unable to read SFV to verify checksum of {}", transferFile.getPath(), e);
                 response.addComment(
                         "zipscript - SFV unavailable, IO error: " +
                                 e.getMessage());
             }
+        } else {
+            // An .sfv was uploaded: files uploaded before it were never checked against it
+            checkFilesUploadedBeforeSFV(transferFile, response);
+        }
+    }
+
+    /**
+     * When an .sfv is uploaded after some of the files it lists, those files were not checked
+     * when they were uploaded because there was no sfv yet (#77). Check them now, using the
+     * checksum recorded during their transfer, and delete the ones that don't match, the same
+     * way a file uploaded after the sfv is deleted when its checksum doesn't match.
+     * Controlled by "sfv.check.existing" in zipscript.conf.
+     */
+    private void checkFilesUploadedBeforeSFV(FileHandle sfvFile, CommandResponse response) {
+        Properties cfg = ConfigLoader.loadPluginConfig("zipscript.conf");
+        if (!cfg.getProperty("sfv.check.existing", "true").equalsIgnoreCase("true")) {
+            return;
+        }
+        DirectoryHandle dir = sfvFile.getParent();
+        try {
+            SFVInfo sfvInfo = new ZipscriptVFSDataSFV(dir).getSFVInfo();
+            if (!sfvFile.getName().equalsIgnoreCase(sfvInfo.getSFVFileName())) {
+                // The directory's sfv info comes from another .sfv file, leave the files alone
+                logger.debug("Not checking existing files in {}: sfv info is from {}, not {}",
+                        dir.getPath(), sfvInfo.getSFVFileName(), sfvFile.getName());
+                return;
+            }
+            for (FileHandle file : SFVTools.getFilesNotMatchingSFV(sfvInfo, dir)) {
+                try {
+                    String slaveChecksum = Checksum.formatChecksum(file.getCheckSumCached());
+                    String expectedChecksum = Checksum.formatChecksum(sfvInfo.getEntries().get(file.getName()));
+                    logger.info("Deleting {} uploaded before {}: checksum mismatch SLAVE: {} SFV: {}",
+                            file.getPath(), sfvFile.getName(), slaveChecksum, expectedChecksum);
+                    response.addComment("checksum mismatch: " + file.getName() + " SLAVE: " + slaveChecksum
+                            + " SFV: " + expectedChecksum + " - deleting file");
+                    // The uploader got credits and stats for this file when it was uploaded, take them back
+                    GlobalContext.getEventService().publish(new UploadRevokedEvent(dir, file.getName(),
+                            file.getUsername(), file.getSize(), file.getXfertime(), file.lastModified()));
+                    file.deleteUnchecked();
+                } catch (FileNotFoundException e) {
+                    // Already deleted, nothing to do
+                }
+            }
+        } catch (NoAvailableSlaveException | SlaveUnavailableException e) {
+            logger.debug("Slave with {} is offline, not checking files uploaded before it", sfvFile.getPath());
+        } catch (FileNotFoundException e) {
+            // The sfv or directory was removed in the meantime
+        } catch (IOException e) {
+            logger.warn("Unable to read {}, not checking files uploaded before it", sfvFile.getPath(), e);
         }
     }
 
@@ -346,7 +402,8 @@ public class ZipscriptPostHook extends SFVTools {
             response.addComment(ReplacerUtils.jprintf(raceTextBuilder.toString(), env));
 
         } catch (SlaveUnavailableException | NoAvailableSlaveException | IOException e) {
-            //Error fetching SFV, ignore
+            // Error fetching SFV, ignore
+            logger.debug("Unable to show race stats for {}: {}", dir.getPath(), e.getMessage());
         }
     }
 }

@@ -31,6 +31,7 @@ import org.drftpd.master.usermanager.UserFileException;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.FileHandle;
 
+
 /**
  * @author fr0w
  * @version $Id$
@@ -47,7 +48,7 @@ public class StatsPostHook {
             // creditloss routine.
             float ratio = StatsManager.getStatsManager().getCreditLossRatio(dir, user);
             long transferredSize = status.getTransfered();
-            long creditsLoss = (long) ratio * transferredSize;
+            long creditsLoss = StatsManager.creditsForBytes(ratio, transferredSize);
             user.updateCredits(-creditsLoss);
 
             // nostatdn routine.
@@ -72,7 +73,7 @@ public class StatsPostHook {
             // creditcheck routine.
             float ratio = StatsManager.getStatsManager().getCreditCheckRatio(dir, user);
             long transferredSize = status.getTransfered();
-            long creditsCheck = (long) ratio * transferredSize;
+            long creditsCheck = StatsManager.creditsForBytes(ratio, transferredSize);
             user.updateCredits(creditsCheck);
 
             // nostatdn routine.
@@ -100,25 +101,11 @@ public class StatsPostHook {
         String userName = response.getObject(Dir.USERNAME, null);
         long fileSize = response.getObjectLong(Dir.FILESIZE);
         long xferTime = response.getObjectLong(Dir.XFERTIME);
+        long uploadTime = response.getObject(Dir.LASTMODIFIED, System.currentTimeMillis());
 
         try {
-            DirectoryHandle dir = request.getCurrentDirectory();
-            User user = GlobalContext.getGlobalContext().getUserManager().getUserByName(userName);
-
-            // updating credits
-            float ratio = StatsManager.getStatsManager().getCreditCheckRatio(dir, user);
-            long creditsCheck = (long) ratio * fileSize;
-            user.updateCredits(-creditsCheck);
-
-
-            // updating stats
-            if (!GlobalContext.getConfig().checkPathPermission("nostatsup", user, dir)) {
-                user.updateUploadedBytes(-fileSize);
-                user.updateUploadedFiles(-1);
-                user.updateUploadedTime(-xferTime);
-            }
-
-            user.commit();
+            StatsManager.getStatsManager().revokeUpload(request.getCurrentDirectory(), userName, fileSize, xferTime,
+                    uploadTime);
         } catch (UserFileException e) {
             response.addComment("Error updating credits & stats: " + e.getMessage());
         } catch (NoSuchUserException e) {

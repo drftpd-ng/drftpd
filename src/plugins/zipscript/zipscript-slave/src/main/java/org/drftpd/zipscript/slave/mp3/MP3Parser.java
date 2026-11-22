@@ -50,7 +50,7 @@ public class MP3Parser {
                     frameHeader = mp3Stream.readFrame();
                 } catch (BitstreamException e) {
                     // Not a valid MP3
-                    throw new IOException(_mp3file.getName() + " is not a valid MP3 file");
+                    throw new InvalidMP3Exception(_mp3file.getName() + " is not a valid MP3 file");
                 } finally {
                     if (mp3Stream != null) {
                         try {
@@ -62,7 +62,7 @@ public class MP3Parser {
                 }
                 if (frameHeader == null) {
                     // Not a valid MP3
-                    throw new IOException(_mp3file.getName() + " is not a valid MP3 file");
+                    throw new InvalidMP3Exception(_mp3file.getName() + " is not a valid MP3 file");
                 }
             }
         } finally {

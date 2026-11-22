@@ -203,6 +203,12 @@ Example minimal compose file for slaves:
     #entrypoint: sh -c ./initconfig
 ```
 
+## Optional JVM options
+- `-Dbytes.maxunit=M` : caps the largest unit used when DrFTPD formats sizes (`K`, `M`, `G`, `T`, `P` or `E`, case insensitive), e.g. `51200.0MB` instead of `50.0GB`. Unset by default (no cap). Invalid values are ignored. This is global: it affects IRC announcements and also FTP replies.
+- `-Dbytes.binary=true` : use binary units (KiB, MiB, ...) instead of decimal ones (KB, MB, ...).
+
+Add them to `JVM_OPTS`/`OPTIONS` in `master.sh`/`master.bat`, or to `JAVA_TOOL_OPTIONS` when using Docker.
+
 ## Documentation (incomplete)
 You can find the documentation online at: https://github.com/drftpd-ng/drftpd/wiki
 

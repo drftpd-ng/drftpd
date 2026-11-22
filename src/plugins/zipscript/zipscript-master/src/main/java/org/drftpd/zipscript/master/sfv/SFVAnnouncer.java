@@ -327,10 +327,13 @@ public class SFVAnnouncer extends AbstractAnnouncer {
             }
         } catch (NoAvailableSlaveException | SlaveUnavailableException e) {
             // Slave with sfv is offline
+            logger.debug("Slave with SFV for {} is offline, skipping race announce", dir.getPath());
         } catch (FileNotFoundException e) {
             // SFV deleted?
+            logger.debug("SFV in {} was deleted, skipping race announce", dir.getPath());
         } catch (IOException e) {
             // SFV not readable
+            logger.warn("Unable to read SFV in {}, skipping race announce", dir.getPath(), e);
         }
     }
 
@@ -398,6 +401,7 @@ public class SFVAnnouncer extends AbstractAnnouncer {
             } catch (Exception e1) {
                 // Failed to get sfv data, safe to continue, that data
                 // will just not be available
+                logger.debug("Unable to get SFV totals for {}", dir.getPath(), e1);
             }
             if (totalsfv > 0) {
                 env.put("totalfiles", "" + totalfiles);

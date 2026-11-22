@@ -97,10 +97,13 @@ public class ZipscriptVFSDataFlac {
                         flacinfo = fetchFlacInfoFromIndex(rslave, index);
                     } catch (NoAvailableSlaveException e) {
                         // Not an issue, file was available but slave dropped, try next file
+                        logger.debug("No available slave to retrieve FLACINFO for {}, trying next file", file.getPath());
                     } catch (SlaveUnavailableException e) {
                         // okay, it went offline while trying, try next file
+                        logger.debug("Slave went offline while retrieving FLACINFO for {}, trying next file", file.getPath());
                     } catch (RemoteIOException e) {
                         // continue, the next flac might work
+                        logger.warn("Slave failed to retrieve FLACINFO for {}: {}", file.getPath(), e.getCause() != null ? e.getCause().getMessage() : e.getMessage());
                     }
                 }
 
@@ -124,7 +127,7 @@ public class ZipscriptVFSDataFlac {
                     String index = getFlacIssuer().issueFlacFileToSlave(rslave, file.getPath());
                     flacinfo = fetchFlacInfoFromIndex(rslave, index);
                 } catch (SlaveUnavailableException | RemoteIOException e) {
-                    throw new IOException(e.getMessage());
+                    throw new IOException(e.getMessage(), e);
                 }
             }
 
