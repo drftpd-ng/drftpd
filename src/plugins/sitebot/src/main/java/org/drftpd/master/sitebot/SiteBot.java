@@ -39,10 +39,12 @@ import org.drftpd.master.vfs.DirectoryHandle;
 import org.reflections.Reflections;
 
 import javax.net.SocketFactory;
+import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLSocket;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.*;
@@ -121,6 +123,16 @@ public class SiteBot implements ReplyConstants, Runnable {
     private String _hostMask = null;
     private boolean _isTerminated = false;
     private boolean _userDisconnected = false;
+
+    /** Upper bound of the delay between connection attempts after consecutive SASL failures. */
+    static final long MAX_SASL_RETRY_DELAY_MILLIS = 60L * 60L * 1000L;
+    /** Lower bound of the SASL backoff base, so that connect.delay=0 cannot hammer the services. */
+    static final long MIN_SASL_RETRY_BASE_MILLIS = 1000L;
+    // Consecutive SASL failures with sasl.required=true, reset on a successful SASL login
+    private int _saslFailures = 0;
+
+    /** Result of a single connection attempt, see {@link #connectOnce()}. */
+    private enum ConnectOutcome { CONNECTED, CONNECTION_FAILED, SASL_FAILED }
 
     // A HashMap to store the available prefixes and associated mode operator
     private HashMap<String, String> _userPrefixes = new HashMap<>();
@@ -237,6 +249,61 @@ public class SiteBot implements ReplyConstants, Runnable {
     }
 
     public final synchronized void connect() throws IOException, IrcException, NickAlreadyInUseException {
+        // Failed attempts are retried in this loop (next server in the list) instead of recursing
+        // through reconnect(), so that repeated failures do not grow the stack.
+        while (true) {
+            ConnectOutcome outcome = connectOnce();
+            if (outcome == ConnectOutcome.CONNECTED) {
+                return;
+            }
+            if (outcome == ConnectOutcome.SASL_FAILED) {
+                // Back off exponentially so a wrong password does not get the account locked or the bot banned
+                _saslFailures++;
+                long delay = saslRetryDelay(_config.getConnectDelay(), _saslFailures);
+                logger.warn("SASL failed {} time(s) in a row, next connection attempt in {} seconds",
+                        _saslFailures, delay / 1000);
+                try {
+                    wait(delay);
+                } catch (InterruptedException e) {
+                    // do nothing
+                }
+            } else if (!_userDisconnected) {
+                // Same delay as reconnect()
+                try {
+                    wait(_config.getConnectDelay());
+                } catch (InterruptedException e) {
+                    // do nothing
+                }
+            }
+        }
+    }
+
+    /**
+     * Delay before the next connection attempt after consecutive SASL failures:
+     * connect.delay (at least {@link #MIN_SASL_RETRY_BASE_MILLIS}) doubled for every failure after the
+     * first one, capped at {@link #MAX_SASL_RETRY_DELAY_MILLIS} (but never below connect.delay).
+     *
+     * @param connectDelayMillis  the configured connect.delay in milliseconds
+     * @param consecutiveFailures number of consecutive SASL failures, including the one just seen
+     */
+    static long saslRetryDelay(long connectDelayMillis, int consecutiveFailures) {
+        long base = Math.max(connectDelayMillis, MIN_SASL_RETRY_BASE_MILLIS);
+        if (base >= MAX_SASL_RETRY_DELAY_MILLIS) {
+            return base;
+        }
+        int exponent = Math.max(0, consecutiveFailures - 1);
+        if (exponent >= 62 || base > (MAX_SASL_RETRY_DELAY_MILLIS >> exponent)) {
+            return MAX_SASL_RETRY_DELAY_MILLIS;
+        }
+        return Math.min(base << exponent, MAX_SASL_RETRY_DELAY_MILLIS);
+    }
+
+    /**
+     * A single connection attempt to the next server in the list.
+     *
+     * @return CONNECTED on success, otherwise why the attempt failed so that {@link #connect()} retries
+     */
+    private ConnectOutcome connectOnce() throws IOException, IrcException, NickAlreadyInUseException {
 
         ServerConfig serverConfig = _config.getServer();
         _server = serverConfig.getHostName();
@@ -252,6 +319,21 @@ public class SiteBot implements ReplyConstants, Runnable {
 
         // Clear everything we may have know about channels.
         this.removeAllChannels();
+
+        // SASL PLAIN sends the password base64 encoded: never over a connection without TLS unless allowed.
+        boolean useSasl = serverConfig.isSaslEnabled();
+        if (serverConfig.isSaslRefusedWithoutTls()) {
+            useSasl = false;
+            if (serverConfig.isSaslRequired()) {
+                logger.error("SASL is configured for {}:{} but use_ssl=false: refusing to send the SASL password in clear text"
+                        + " (set use_ssl=true, or sasl.allow_plaintext=true to override). sasl.required=true, skipping this server",
+                        _server, _port);
+                return ConnectOutcome.SASL_FAILED;
+            }
+            logger.error("SASL is configured for {}:{} but use_ssl=false: refusing to send the SASL password in clear text"
+                    + " (set use_ssl=true, or sasl.allow_plaintext=true to override). Connecting without SASL",
+                    _server, _port);
+        }
 
         String bindAddress = _config.getLocalBindHost();
         Socket socket;
@@ -282,15 +364,35 @@ public class SiteBot implements ReplyConstants, Runnable {
                         ((SSLSocket) socket).getRemoteSocketAddress(),
                         Arrays.toString(((SSLSocket) socket).getEnabledProtocols()));
                 ((SSLSocket) socket).setUseClientMode(true);
-                ((SSLSocket) socket).startHandshake();
+                if (serverConfig.isTlsVerificationRequired()) {
+                    // set by the socket factory, never send the SASL password without it
+                    if (!"HTTPS".equals(((SSLSocket) socket).getSSLParameters().getEndpointIdentificationAlgorithm())) {
+                        socket.close();
+                        throw new IOException("TLS host name verification is not enabled on the socket, refusing to connect");
+                    }
+                } else if (useSasl) {
+                    logger.warn("sasl.allow_insecure_tls=true for {}:{}: the server certificate is not fully verified,"
+                            + " a man in the middle could capture the SASL password", _server, _port);
+                }
+                try {
+                    ((SSLSocket) socket).startHandshake();
+                } catch (SSLException e) {
+                    if (serverConfig.isTlsVerificationRequired()) {
+                        logger.error("TLS certificate verification of {}:{} failed: {}. SASL is configured, so the certificate"
+                                + " must chain to a trusted CA (or be in config/plugins/irc/certs with ssl.strictTrust=true)"
+                                + " and match the configured host name (or set sasl.allow_insecure_tls=true)",
+                                _server, _port, e.getMessage());
+                    }
+                    socket.close();
+                    throw e;
+                }
             }
             logger.info("*** Connected to server [{}:{}]", _server, _port);
         } catch (IOException e) {
-            // Something failed during connecting, call reconnect() to try another server
+            // Something failed during connecting, connect() retries with another server
             logger.warn("Connection to {}:{} failed with error {}, retrying or trying next server if one is available",
                     _server, _port, e.getMessage());
-            reconnect();
-            return;
+            return ConnectOutcome.CONNECTION_FAILED;
         }
 
         _inetAddress = socket.getLocalAddress();
@@ -304,6 +406,14 @@ public class SiteBot implements ReplyConstants, Runnable {
         // Attempt to join the server.
         if (_password != null && !_password.equals("")) {
             OutputThread.sendRawLine(this, bwriter, "PASS " + _password);
+        }
+        // IRCv3 capability negotiation and SASL PLAIN, only when configured for this server.
+        // CAP LS goes after PASS and before NICK/USER so the server holds registration until CAP END.
+        SaslNegotiator sasl = null;
+        if (useSasl) {
+            sasl = new SaslNegotiator(serverConfig.getSaslUsername(), serverConfig.getSaslPassword(),
+                    serverConfig.isSaslRequired(), SaslNegotiator.DEFAULT_TIMEOUT_MILLIS);
+            sendRawLines(bwriter, sasl.start(System.currentTimeMillis()));
         }
         String nick = _config.getNick();
         OutputThread.sendRawLine(this, bwriter, "NICK " + nick);
@@ -322,13 +432,36 @@ public class SiteBot implements ReplyConstants, Runnable {
         String line;
         int tries = 1;
         int maxNickLength = 0; // unknown until the server truncates a nick
-        while ((line = breader.readLine()) != null) {
+        while ((line = readRegistrationLine(socket, breader, bwriter, sasl)) != null) {
 
             // Quickly process PING requests otherwise we might be kicked offline during our
             // connecting phase
             if (line.startsWith("PING ")) {
                 this.onServerPing(line.substring(5));
                 continue;
+            }
+            if (sasl != null) {
+                boolean consumed = false;
+                if (!line.isEmpty()) {
+                    SaslNegotiator.Result result = sasl.handleLine(line, System.currentTimeMillis());
+                    if (result.isConsumed()) {
+                        logger.debug("[RAW INPUT]: {}", SaslNegotiator.maskForLog(line));
+                        consumed = true;
+                    }
+                    sendRawLines(bwriter, result.getLinesToSend());
+                }
+                if (sasl.isAborted()) {
+                    // sasl.required=true and SASL did not succeed: drop this server and try the next one
+                    logger.warn("SASL required but failed on {}:{} ({}), retrying or trying next server if one is available",
+                            _server, _port, sasl.getFailureReason());
+                    OutputThread.sendRawLine(this, bwriter, "QUIT :SASL authentication failed");
+                    socket.close();
+                    _inputThread = null;
+                    return ConnectOutcome.SASL_FAILED;
+                }
+                if (consumed || line.isEmpty()) {
+                    continue;
+                }
             }
             storedCommands.add(line);
 
@@ -374,6 +507,11 @@ public class SiteBot implements ReplyConstants, Runnable {
                     throw new IrcException("Could not log into the IRC server: " + line);
                 }
             }
+        }
+
+        if (sasl != null && sasl.isAuthenticated()) {
+            // reset the SASL backoff
+            _saslFailures = 0;
         }
 
         // Find what the server considers our hostmask to be
@@ -436,6 +574,37 @@ public class SiteBot implements ReplyConstants, Runnable {
         }
 
         this.onConnect();
+        return ConnectOutcome.CONNECTED;
+    }
+
+    /**
+     * Reads one line during registration. While a SASL negotiation is pending the read is bounded
+     * by the negotiation timeout; when it expires the negotiator falls back (CAP END) or aborts
+     * and an empty line is returned so the caller can check the negotiator state.
+     */
+    private String readRegistrationLine(Socket socket, BufferedReader breader, BufferedWriter bwriter,
+                                        SaslNegotiator sasl) throws IOException {
+        if (sasl == null) {
+            return breader.readLine();
+        }
+        if (!sasl.isPending()) {
+            socket.setSoTimeout(0);
+            return breader.readLine();
+        }
+        long now = System.currentTimeMillis();
+        socket.setSoTimeout((int) Math.max(1L, Math.min(Integer.MAX_VALUE, sasl.millisUntilTimeout(now))));
+        try {
+            return breader.readLine();
+        } catch (SocketTimeoutException e) {
+            sendRawLines(bwriter, sasl.checkTimeout(System.currentTimeMillis()));
+            return "";
+        }
+    }
+
+    private void sendRawLines(BufferedWriter bwriter, List<String> lines) {
+        for (String l : lines) {
+            OutputThread.sendRawLine(this, bwriter, l);
+        }
     }
 
     /**
