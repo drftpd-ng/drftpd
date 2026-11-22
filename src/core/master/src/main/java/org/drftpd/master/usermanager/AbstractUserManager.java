@@ -246,16 +246,31 @@ public abstract class AbstractUserManager implements UserManager {
         for (User user : getAllUsers()) {
             try {
                 String uidentList = user.getKeyedMap().getObject(UserManagement.IRCIDENT);
-                String[] identArray = uidentList.split(",");
-                for (String anIdentArray : identArray) {
-                    if (anIdentArray.matches("^" + botName + "\\|" + ident + "$")) {
-                        return user;
-                    }
+                if (identListContains(uidentList, botName, ident)) {
+                    return user;
                 }
             } catch (KeyNotFoundException ignored) {
             }
         }
         throw new NoSuchUserException("No user found with ident = " + ident);
+    }
+
+    /**
+     * Tells whether a user's stored IRC idents (comma separated "botname|nick!user@host" entries, as written
+     * by the sitebot's IDENT command) contain exactly this bot and ident.
+     * The comparison is literal: the nick, user and host come from the IRC server and are not a pattern.
+     */
+    static boolean identListContains(String identList, String botName, String ident) {
+        if (identList == null || botName == null || ident == null) {
+            return false;
+        }
+        String wanted = botName + "|" + ident;
+        for (String stored : identList.split(",")) {
+            if (stored.equals(wanted)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public abstract User getUserByNameUnchecked(String username) throws NoSuchUserException, UserFileException;
