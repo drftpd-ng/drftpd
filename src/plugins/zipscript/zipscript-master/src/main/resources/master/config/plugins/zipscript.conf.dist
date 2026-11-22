@@ -75,6 +75,11 @@ sfvdeny.subdir.exclude=.*(?i)(SPEEDTEST|REQUESTS|STAFF|PRE).*
 # Default: [false]
 nfo.deny.second=false
 
+# Deny the upload of an .nfo in a directory that already contains .zip files
+# (zip releases). An .nfo uploaded before the first .zip is not affected.
+# Default: [false]
+nfo.deny.zipdir=false
+
 # Check integrity of .zip files on upload.
 # Default: [true]
 stor.zip.integrity.check.enabled=true

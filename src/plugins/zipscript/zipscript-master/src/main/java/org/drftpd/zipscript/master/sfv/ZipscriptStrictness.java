@@ -57,6 +57,14 @@ public final class ZipscriptStrictness {
                 }
             }
         }
+        if (enabled(cfg, "nfo.deny.zipdir")) {
+            for (String name : existingNames) {
+                if (name.toLowerCase().endsWith(".zip")) {
+                    return "Requested action not taken. NFO files are not allowed in zip releases ("
+                            + name + " is already here).";
+                }
+            }
+        }
         return null;
     }
 }

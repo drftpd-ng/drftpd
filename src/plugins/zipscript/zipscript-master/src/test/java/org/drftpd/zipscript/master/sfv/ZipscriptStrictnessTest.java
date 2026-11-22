@@ -57,4 +57,25 @@ public class ZipscriptStrictnessTest {
         assertNull(ZipscriptStrictness.checkNfoUpload(c, "a.r01", List.of("a.nfo")));
         assertNull(ZipscriptStrictness.checkNfoUpload(c, "a.nfo", List.of()));
     }
+
+    @Test
+    void nfoInZipDirAllowedByDefault() {
+        assertNull(ZipscriptStrictness.checkNfoUpload(cfg(), "a.nfo", List.of("a.zip")));
+    }
+
+    @Test
+    void nfoInZipDirDeniedWhenEnabled() {
+        Properties c = cfg("nfo.deny.zipdir", "true");
+        assertNotNull(ZipscriptStrictness.checkNfoUpload(c, "a.nfo", List.of("a.ZIP", "b.zip")));
+    }
+
+    @Test
+    void zipNfoOptionOnlyAffectsNfoInZipDirs() {
+        Properties c = cfg("nfo.deny.zipdir", "true");
+        assertNull(ZipscriptStrictness.checkNfoUpload(c, "a.nfo", List.of("a.sfv", "a.r00")));
+        assertNull(ZipscriptStrictness.checkNfoUpload(c, "a.nfo", List.of()));
+        assertNull(ZipscriptStrictness.checkNfoUpload(c, "c.zip", List.of("a.zip")));
+        // second nfo option is independent
+        assertNull(ZipscriptStrictness.checkNfoUpload(c, "b.nfo", List.of("a.nfo")));
+    }
 }
