@@ -28,10 +28,12 @@ import org.drftpd.common.network.AsyncResponse;
 import org.drftpd.common.network.PassiveConnection;
 import org.drftpd.common.slave.ConnectInfo;
 import org.drftpd.common.slave.LightRemoteInode;
+import org.drftpd.common.slave.SystemInfo;
 import org.drftpd.common.slave.TransferIndex;
 import org.drftpd.common.slave.TransferStatus;
 import org.drftpd.slave.Slave;
 import org.drftpd.slave.network.*;
+import org.drftpd.slave.vfs.Root;
 import org.drftpd.slave.vfs.RootCollection;
 
 import java.io.File;
@@ -401,6 +403,18 @@ public class BasicHandler extends AbstractHandler {
     // CHECK SSL
     public AsyncResponse handleCheckSSL(AsyncCommandArgument ac) {
         return new AsyncResponseSSLCheck(ac.getIndex(), getSlaveObject().getSSLContext() != null);
+    }
+
+    // SYSINFO
+    public AsyncResponse handleSysinfo(AsyncCommandArgument ac) {
+        List<String> rootPaths = new ArrayList<>();
+        RootCollection roots = getSlaveObject().getRoots();
+        if (roots != null) {
+            for (Iterator<Root> it = roots.iterator(); it.hasNext(); ) {
+                rootPaths.add(it.next().getPath());
+            }
+        }
+        return new AsyncResponseSystemInfo(ac.getIndex(), SystemInfo.collect(Slave.VERSION, rootPaths));
     }
 
     private void updateDepth(String path) {

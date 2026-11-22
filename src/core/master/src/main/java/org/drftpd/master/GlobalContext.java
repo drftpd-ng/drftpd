@@ -26,6 +26,7 @@ import org.drftpd.common.extensibility.CommandHook;
 import org.drftpd.common.extensibility.PluginDependencies;
 import org.drftpd.common.extensibility.PluginInterface;
 import org.drftpd.common.network.SSLGetContext;
+import org.drftpd.common.slave.SystemInfo;
 import org.drftpd.common.util.PortRange;
 import org.drftpd.common.util.PropertyHelper;
 import org.drftpd.master.commands.CommandManagerInterface;
@@ -415,6 +416,9 @@ public class GlobalContext {
     }
 
     public void init() {
+        // the CPU load needs a first sample to report a meaningful value later on
+        SystemInfo.primeCpuLoad();
+
         _config = new ConfigManager();
         _config.reload();
 

@@ -29,20 +29,19 @@ import org.drftpd.zipscript.common.zip.AsyncResponseZipCRCInfo;
 import org.drftpd.zipscript.common.zip.DizInfo;
 
 import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.*;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Base64;
-import java.util.Collections;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Enumeration;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 /**
  * Handler for Zip requests.
@@ -52,6 +51,8 @@ import java.util.zip.CheckedInputStream;
  */
 public class ZipscriptZipHandler extends AbstractHandler {
     private static final Logger logger = LogManager.getLogger(ZipscriptZipHandler.class);
+    // same match as before: a FILE_ID.DIZ in any directory of the zip, any case
+    private static final Pattern DIZ_NAME = Pattern.compile("(?i).*file_id.diz");
 
     public ZipscriptZipHandler(SlaveProtocolCentral central) {
         super(central);
@@ -72,97 +73,105 @@ public class ZipscriptZipHandler extends AbstractHandler {
                 getDizInfo(getSlaveObject(), ac.getArgs()));
     }
 
-    private URI getZipURI(Slave slave, String path) throws FileNotFoundException, URISyntaxException {
-        return new URI("jar:file", slave.getRoots().getFile(path).toURI().getPath(), null);
-    }
-
     private boolean checkZipFile(Slave slave, String path) {
-        URI zipURI;
+        File zip;
         try {
-            zipURI = getZipURI(slave, path);
-        } catch (FileNotFoundException | URISyntaxException e) {
+            zip = slave.getRoots().getFile(path);
+        } catch (FileNotFoundException e) {
             return false;
         }
-
-        boolean integrityOk = true;
-
-        try (FileSystem zipFs = FileSystems.newFileSystem(zipURI, Collections.emptyMap())) {
-            AtomicInteger files = new AtomicInteger();
-            for (Path root : zipFs.getRootDirectories()) {
-                Files.walkFileTree(root, new SimpleFileVisitor<>() {
-                    @Override
-                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
-                            throws IOException {
-                        if (Files.isRegularFile(file)) {
-                            calculateChecksum(file);
-                            files.incrementAndGet();
-                        }
-                        return FileVisitResult.CONTINUE;
-                    }
-                });
-            }
-            if (files.get() == 0) {
-                throw new IOException("Zip file empty");
-            }
+        try {
+            checkZip(zip);
+            return true;
         } catch (Throwable t) {
-            integrityOk = false;
-            logger.debug("Error validating integrity of {} : {}", path, t.getMessage());
+            logger.debug("Error validating integrity of {} : {}", path, t.toString());
+            return false;
         }
-
-        return integrityOk;
     }
 
-    private void calculateChecksum(Path file) throws IOException {
+    /**
+     * Reads every file in the zip to the end and checks its CRC against the one stored in the zip.
+     * Uses {@link ZipFile}, which can be opened by several threads at once: the zip file system
+     * ({@code FileSystems.newFileSystem}) refuses a second open of the same zip, which made the integrity
+     * check fail at random when the DIZ was read at the same time.
+     *
+     * @throws IOException if the zip can't be read, a file is corrupt, or there is no file in it
+     */
+    static void checkZip(File zip) throws IOException {
         final byte[] buff = new byte[16384];
-        try (CheckedInputStream in = new CheckedInputStream(new BufferedInputStream(
-                Files.newInputStream(file)), new CRC32())) {
-            while (in.read(buff) != -1) {
-                // do nothing, we are only checking for crc
+        int files = 0;
+        try (ZipFile zipFile = new ZipFile(zip)) {
+            Enumeration<? extends ZipEntry> entries = zipFile.entries();
+            while (entries.hasMoreElements()) {
+                ZipEntry entry = entries.nextElement();
+                if (entry.isDirectory()) {
+                    continue;
+                }
+                CRC32 crc = new CRC32();
+                try (CheckedInputStream in = new CheckedInputStream(new BufferedInputStream(
+                        zipFile.getInputStream(entry)), crc)) {
+                    while (in.read(buff) != -1) {
+                        // only reading, the CRC is computed on the way
+                    }
+                } catch (IOException e) {
+                    throw new IOException("CRC check failed for " + entry.getName(), e);
+                }
+                if (entry.getCrc() != -1 && entry.getCrc() != crc.getValue()) {
+                    throw new IOException("CRC mismatch for " + entry.getName());
+                }
+                files++;
             }
-        } catch (IOException e) {
-            throw new IOException("CRC check failed for " + file);
+        }
+        if (files == 0) {
+            throw new IOException("Zip file empty");
         }
     }
 
     private DizInfo getDizInfo(Slave slave, String path) {
-        DizInfo dizInfo = new DizInfo();
-        URI zipURI;
+        File zip;
         try {
-            zipURI = getZipURI(slave, path);
-        } catch (FileNotFoundException | URISyntaxException e) {
-            return dizInfo;
+            zip = slave.getRoots().getFile(path);
+        } catch (FileNotFoundException e) {
+            return new DizInfo();
         }
-
-        try (FileSystem zipFs = FileSystems.newFileSystem(zipURI, Collections.emptyMap())) {
-            final PathMatcher matcher = FileSystems.getDefault().getPathMatcher("regex:(?i).*file_id.diz");
-            for (Path root : zipFs.getRootDirectories()) {
-                Files.walkFileTree(root, new SimpleFileVisitor<>() {
-                    @Override
-                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
-                            throws IOException {
-                        if (Files.isRegularFile(file) && matcher.matches(file)) {
-                            String dizString = Files.readString(file, StandardCharsets.ISO_8859_1);
-                            int total = getDizTotal(dizString);
-                            if (total > 0) {
-                                dizInfo.setValid(true);
-                                dizInfo.setTotal(total);
-                                dizString = Base64.getMimeEncoder().encodeToString(dizString.getBytes(StandardCharsets.ISO_8859_1));
-                                dizInfo.setString(dizString);
-                                return FileVisitResult.TERMINATE;
-                            }
-                        }
-                        return FileVisitResult.CONTINUE;
-                    }
-                });
-            }
+        try {
+            return readDiz(zip);
         } catch (Throwable t) {
-            logger.debug("Error getting diz info from {} : {}", path, t.getMessage());
+            logger.debug("Error getting diz info from {} : {}", path, t.toString());
+            return new DizInfo();
         }
+    }
 
+    /**
+     * Returns the info of the first FILE_ID.DIZ (any directory, any case) in the zip that holds a file total,
+     * or an invalid {@link DizInfo} if there is none.
+     */
+    static DizInfo readDiz(File zip) throws IOException {
+        DizInfo dizInfo = new DizInfo();
+        try (ZipFile zipFile = new ZipFile(zip)) {
+            Enumeration<? extends ZipEntry> entries = zipFile.entries();
+            while (entries.hasMoreElements()) {
+                ZipEntry entry = entries.nextElement();
+                if (entry.isDirectory() || !DIZ_NAME.matcher(entry.getName()).matches()) {
+                    continue;
+                }
+                String dizString;
+                try (InputStream in = zipFile.getInputStream(entry)) {
+                    dizString = new String(in.readAllBytes(), StandardCharsets.ISO_8859_1);
+                }
+                int total = getDizTotal(dizString);
+                if (total > 0) {
+                    dizInfo.setValid(true);
+                    dizInfo.setTotal(total);
+                    dizInfo.setString(Base64.getMimeEncoder().encodeToString(dizString.getBytes(StandardCharsets.ISO_8859_1)));
+                    return dizInfo;
+                }
+            }
+        }
         return dizInfo;
     }
 
-    private int getDizTotal(String dizString) {
+    static int getDizTotal(String dizString) {
         int total = 0;
         String regex = "[\\[\\(\\<\\:\\s](?:\\s)?[0-9oOxX\\*]*(?:\\s)?/(?:\\s)?([0-9oOxX]*[0-9oO])(?:\\s)?[\\]\\)\\>\\s]";
         Pattern p = Pattern.compile(regex);

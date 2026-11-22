@@ -1191,7 +1191,8 @@ method doStatus
 perms =siteop
 help Will show current information about the server.
 help.specific ${command} Usage:
-help.specific ${command} <os, vm, memory, threads, gc, classes, cm, cpu, network, slaves, all>
+help.specific ${command} <os, vm, memory, threads, gc, classes, cm, cpu, network, hardware, slaves, all>
+help.specific ${command} hardware <master|slavename> - detail of one machine (alias: hw)
 help.specific ${command} OS - Will show Operational System Info
 help.specific ${command} VM - Will show VM Info.
 help.specific ${command} MEMORY - Will show Memory Info.
@@ -1201,8 +1202,10 @@ help.specific ${command} CLASSES - Will show Classes Info.
 help.specific ${command} CM - Will show Commit Manager Info.
 help.specific ${command} CPU - Will show CPU Info.
 help.specific ${command} NETWORK - Will show Network Info.
+help.specific ${command} HARDWARE (or HW) - Will show a hardware summary (OS, cores, CPU, RAM, disks) of the master and of each slave. It can take a few seconds while slaves answer, so it is not included in ALL (like SLAVES). RAM is total minus available memory (on Linux the page cache counts as available).
+help.specific ${command} HARDWARE <master|slavename> - Will show the hardware detail of the master or of one slave, including each root.
 help.specific ${command} SLAVES - Will show Slave connection and TLS Info (not included in ALL).
-help.specific ${command} ALL - shortcut to display ALL Info.
+help.specific ${command} ALL - Shortcut to display ALL Info (except SLAVES and HARDWARE).
 }
 
 SITE SWAP {
