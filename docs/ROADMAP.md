@@ -73,7 +73,7 @@ Goal: modernise the base in **one** upgrade with **one** upgrade guide, instead 
 | Lucene 3.6 → 10 search index | #534 | Nothing by hand: the old index is set aside and rebuilt automatically at first start, which is I/O-heavy on large sites. Third-party plugins that add index fields must be updated |
 | VFS per-slave file counts | #494 | Back up `userdata/vfs`; after the upgrade, older versions can't read it. Run `SITE FIXSLAVECOUNT` once |
 | Plugin command configs renamed to `.dist` | #505 | Copy the `.dist` files and re-apply local changes |
-| json-io 4.14 → 4.x latest | #427 | No action expected, but users, groups and the VFS are stored with json-io, so this needs a migration test on real data before it ships |
+| json-io 4.14 → 4.30+ | #557 | No action expected. json-io 4.30 removed the `com.cedarsoftware.util.io` API, so seven files need porting to `com.cedarsoftware.io`. #557 has the bump and `JsonIoUpgradeCompatTest`, which checks that files written by 4.14 (VFS, users, groups) still load |
 
 Three of these PRs currently describe themselves as 4.0.12 (`MAJORCHANGES.txt`, `UPGRADING.txt`). If this plan is accepted, those notes move to a `5.0` section.
 
