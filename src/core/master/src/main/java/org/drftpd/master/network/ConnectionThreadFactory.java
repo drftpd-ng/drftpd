@@ -28,7 +28,7 @@ public class ConnectionThreadFactory implements ThreadFactory {
 
     public Thread newThread(Runnable r) {
         Thread t = Executors.defaultThreadFactory().newThread(r);
-        t.setName(getIdleThreadName(t.getId()));
+        t.setName(getIdleThreadName(t.threadId()));
         return t;
     }
 }

@@ -98,7 +98,7 @@ public class ArchiveHandler implements Runnable {
     public void run() {
         // Set the name for this thread
         Thread t = Thread.currentThread();
-        t.setName("Archive Handler-" + t.getId() + " - " + _archiveType.getClass().getName() + " archiving " + _archiveType.getSection().getName());
+        t.setName("Archive Handler-" + t.threadId() + " - " + _archiveType.getClass().getName() + " archiving " + _archiveType.getSection().getName());
 
         // Check to make sure that we are the only timer based runner for this archive type
         if (hasActiveThreadForArchiveTypeAndSection()) {
@@ -106,7 +106,7 @@ public class ArchiveHandler implements Runnable {
             if (_archiveType._parent.removeArchiveHandler(this) == null) {
                 logger.error("We were unable to remove this ArchiveHandler from the registered ArchiveHandlers");
             }
-            t.setName(Archive.ArchiveHandlerThreadFactory.getIdleThreadName(t.getId()));
+            t.setName(Archive.ArchiveHandlerThreadFactory.getIdleThreadName(t.threadId()));
             return;
         }
         logger.debug("Starting this ArchiveHandler");
@@ -175,6 +175,6 @@ public class ArchiveHandler implements Runnable {
             logger.error("We were unable to remove this ArchiveHandler from the registered ArchiveHandlers");
         }
         // Give the thread a correct name (Waiting for archive)
-        t.setName(Archive.ArchiveHandlerThreadFactory.getIdleThreadName(t.getId()));
+        t.setName(Archive.ArchiveHandlerThreadFactory.getIdleThreadName(t.threadId()));
     }
 }
