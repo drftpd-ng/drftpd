@@ -27,13 +27,13 @@ import org.drftpd.master.sections.SectionInterface;
 import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.vfs.DirectoryHandle;
-import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.master.vfs.InodeHandle;
 import org.drftpd.slave.exceptions.ObjectNotFoundException;
 
 import java.io.FileNotFoundException;
 import java.net.InetAddress;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author mog
@@ -65,47 +65,55 @@ public class SlavetopFilter extends Filter {
             dir = dir.getParent();
         }
 
+        // The per-slave file counts come from the VFS slave ref counts of the release directory
+        // (recursive number of files per slave) instead of walking every file in the release.
+        // If they ever drift, SITE FIXSLAVECOUNT rebuilds them.
+        Map<String, Integer> counts = new HashMap<>();
+        try {
+            for (Map.Entry<String, AtomicInteger> entry : dir.getSlaveRefCounts().entrySet()) {
+                counts.put(entry.getKey(), entry.getValue().get());
+            }
+        } catch (FileNotFoundException e) {
+            // directory was removed, not much we can do
+            return;
+        }
+        assignTopSlaves(scorechart, counts, _topslaves, _assign);
+    }
+
+    /**
+     * Scores every slave in the chart by its file count and gives the top slaves the bonus.
+     *
+     * @param counts number of files per slave name; slaves without an entry count as 0 and
+     *               names not in the score chart are ignored
+     */
+    static void assignTopSlaves(ScoreChart scorechart, Map<String, Integer> counts, int topslaves, long assign) {
         Hashtable<RemoteSlave, ScoreChart.SlaveScore> slavesmap =
                 new Hashtable<>();
 
         for (ScoreChart.SlaveScore slaveScore : scorechart.getSlaveScores()) {
-            slavesmap.put(slaveScore.getRSlave(), new ScoreChart.SlaveScore(
-                    slaveScore.getRSlave()));
-        }
-
-        ArrayList<FileHandle> files = dir.getAllFilesRecursiveUnchecked();
-
-        for (FileHandle file : files) {
-            try {
-                for (RemoteSlave rslave : file.getSlaves()) {
-                    ScoreChart.SlaveScore score = slavesmap.get(rslave);
-                    if (score == null) {
-                        // the slave was already removed from SlaveSelection
-                        continue;
-                    }
-                    score.addScore(1);
-                }
-            } catch (FileNotFoundException e) {
-                // file was removed, not much we can do, just continue
+            ScoreChart.SlaveScore score = new ScoreChart.SlaveScore(slaveScore.getRSlave());
+            Integer count = counts.get(slaveScore.getRSlave().getName());
+            if (count != null) {
+                score.addScore(count);
             }
+            slavesmap.put(slaveScore.getRSlave(), score);
         }
+
         ArrayList<ScoreChart.SlaveScore> slavescores =
                 new ArrayList<>(slavesmap.values());
-        ArrayList<ScoreChart.SlaveScore> ss = slavescores;
-        ss.sort(Collections.reverseOrder());
+        slavescores.sort(Collections.reverseOrder());
 
-
-        if (_assign == 0) {
-            for (ScoreChart.SlaveScore score : slavescores.subList(_topslaves, slavescores.size())) {
+        if (assign == 0) {
+            for (ScoreChart.SlaveScore score : slavescores.subList(topslaves, slavescores.size())) {
                 scorechart.removeSlaveFromChart(score.getRSlave());
             }
         }
         Iterator<ScoreChart.SlaveScore> iter = slavescores.iterator();
-        for (int i = 0; i < _topslaves && iter.hasNext(); i++) {
+        for (int i = 0; i < topslaves && iter.hasNext(); i++) {
             ScoreChart.SlaveScore score = iter.next();
 
             try {
-                scorechart.getScoreForSlave(score.getRSlave()).addScore(_assign);
+                scorechart.getScoreForSlave(score.getRSlave()).addScore(assign);
             } catch (ObjectNotFoundException e1) {
                 logger.error("Unable to assign points to slave {}", score.getRSlave().getName());
             }
