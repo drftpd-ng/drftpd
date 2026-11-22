@@ -7,12 +7,14 @@
     <artifactId>drftpd</artifactId>
     <packaging>pom</packaging>
 
-    <version>4.0.12-SNAPSHOT</version>
+    <version>${revision}</version>
     <name>Drftpd project</name>
     <url>https://github.com/drftpd-ng/drftpd</url>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!-- Single source of the version. Override with -Drevision=x.y.z -->
+        <revision>4.0.12-SNAPSHOT</revision>
     </properties>
 
     <modules>
@@ -31,6 +33,31 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>flatten-maven-plugin</artifactId>
+                <version>1.7.3</version>
+                <configuration>
+                    <updatePomFile>true</updatePomFile>
+                    <flattenMode>resolveCiFriendliesOnly</flattenMode>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>flatten</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>flatten</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>flatten-clean</id>
+                        <phase>clean</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>

@@ -4,10 +4,15 @@
                       http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.drftpd</groupId>
+    <parent>
+        <groupId>org.drftpd</groupId>
+        <artifactId>drftpd</artifactId>
+        <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
     <artifactId>drftpd-dev</artifactId>
     <packaging>pom</packaging>
-    <version>4.0.12-SNAPSHOT</version>
 
     <dependencies>
         <dependency>

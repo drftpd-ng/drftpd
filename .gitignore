@@ -45,3 +45,4 @@ hs_err_pid*
 /dependencies/
 /lib/
 /core/master/userdata/vfs/.dirProperties
+.flattened-pom.xml
