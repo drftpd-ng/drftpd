@@ -28,6 +28,7 @@ import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.InodeHandle;
+import org.drftpd.master.vfs.VirtualFileSystem;
 import org.drftpd.slave.exceptions.ObjectNotFoundException;
 
 import java.io.FileNotFoundException;
@@ -55,14 +56,16 @@ public class SlavetopFilter extends Filter {
     }
 
     public void process(ScoreChart scorechart, DirectoryHandle dir) {
-        //// find the section part of the path name
+        // Find the release directory: the child of the section base directory that contains dir.
+        // Outside of any section (or at the root) there is no release, so the scores are left alone.
+        if (dir.getPath().equals(VirtualFileSystem.separator)) {
+            return;
+        }
         SectionInterface section = GlobalContext.getGlobalContext().getSectionManager().lookup(dir);
-        while (!dir.getParent().equals(section.getBaseDirectory())) {
-            if (dir.equals(GlobalContext.getGlobalContext().getRoot())) {
-                // this is not a "release", don't process
-                return;
-            }
-            dir = dir.getParent();
+        dir = findReleaseDir(dir, section.getBaseDirectory());
+        if (dir == null) {
+            // this is not a "release", don't process
+            return;
         }
 
         // The per-slave file counts come from the VFS slave ref counts of the release directory
@@ -78,6 +81,23 @@ public class SlavetopFilter extends Filter {
             return;
         }
         assignTopSlaves(scorechart, counts, _topslaves, _assign);
+    }
+
+    /**
+     * Walks up from dir to the directory directly below the section base directory.
+     *
+     * @return that release directory, or null if dir is not below the base directory
+     * (reaching the root without finding it, e.g. a directory outside of any section)
+     */
+    static DirectoryHandle findReleaseDir(DirectoryHandle dir, DirectoryHandle baseDir) {
+        while (!dir.getPath().equals(VirtualFileSystem.separator)) {
+            DirectoryHandle parent = dir.getParent();
+            if (parent.equals(baseDir)) {
+                return dir;
+            }
+            dir = parent;
+        }
+        return null;
     }
 
     /**
