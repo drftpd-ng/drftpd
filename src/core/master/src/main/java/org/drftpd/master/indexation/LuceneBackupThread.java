@@ -22,12 +22,13 @@ import org.apache.logging.log4j.Logger;
 import org.apache.lucene.store.FSDirectory;
 import org.drftpd.common.io.PhysicalFile;
 import org.drftpd.master.GlobalContext;
+import org.drftpd.master.util.LegacyDateTimeFormatter;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
-import java.util.Date;
 
 /**
  * Thread that performs backup operations on the index.
@@ -38,7 +39,7 @@ import java.util.Date;
 public class LuceneBackupThread extends Thread {
     private static final Logger logger = LogManager.getLogger(LuceneBackupThread.class);
 
-    private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd-HHmmss");
+    private static final DateTimeFormatter BACKUP_DATE_FMT = LegacyDateTimeFormatter.ofPattern("yyyyMMdd-HHmmss");
     private static final String BACKUP_DIRNAME = "index.bkp";
     private static final File BACKUP_HOME = new File(BACKUP_DIRNAME);
     protected int _maxNumberBackup;
@@ -81,7 +82,7 @@ public class LuceneBackupThread extends Thread {
                 synchronized (_engine.getWriter()) {
                     setRunning(true);
 
-                    String dateTxt = sdf.format(new Date(System.currentTimeMillis()));
+                    String dateTxt = BACKUP_DATE_FMT.format(Instant.now());
                     File f = new File(BACKUP_DIRNAME + "/" + dateTxt);
 
                     try {
