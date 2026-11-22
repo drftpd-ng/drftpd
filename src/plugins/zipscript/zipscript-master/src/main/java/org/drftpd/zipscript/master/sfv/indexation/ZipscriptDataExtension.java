@@ -21,12 +21,11 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
-import org.apache.lucene.document.NumericField;
 
 import org.drftpd.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.common.vfs.CaseInsensitiveTreeMap;
 import org.drftpd.master.indexation.IndexDataExtensionInterface;
+import org.drftpd.master.indexation.LuceneUtils;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.master.vfs.event.ImmutableInodeHandle;
@@ -46,16 +45,6 @@ public class ZipscriptDataExtension implements IndexDataExtensionInterface {
 
     private static final Logger logger = LogManager.getLogger(ZipscriptDataExtension.class);
 
-    private static final NumericField FIELD_PRESENT = new NumericField("present", Field.Store.YES, Boolean.TRUE);
-    private static final NumericField FIELD_MISSING = new NumericField("missing", Field.Store.YES, Boolean.TRUE);
-    private static final NumericField FIELD_PERCENT = new NumericField("percent", Field.Store.YES, Boolean.TRUE);
-
-    @Override
-    public void initializeFields(Document doc) {
-        doc.add(FIELD_PRESENT);
-        doc.add(FIELD_MISSING);
-        doc.add(FIELD_PERCENT);
-    }
 
     @Override
     public void addData(Document doc, ImmutableInodeHandle inode) {
@@ -84,17 +73,17 @@ public class ZipscriptDataExtension implements IndexDataExtensionInterface {
             }
         }
         if (sfvStatus == null && dizStatus == null) {
-            FIELD_PRESENT.setIntValue(-1);
-            FIELD_MISSING.setIntValue(-1);
-            FIELD_PERCENT.setIntValue(-1);
+            LuceneUtils.addIntField(doc, "present", -1);
+            LuceneUtils.addIntField(doc, "missing", -1);
+            LuceneUtils.addIntField(doc, "percent", -1);
         } else if (sfvStatus != null) {
-            FIELD_PRESENT.setIntValue(sfvStatus.getPresent());
-            FIELD_MISSING.setIntValue(sfvStatus.getMissing());
-            FIELD_PERCENT.setIntValue((sfvStatus.getPresent() * 100) / sfvInfo.getSize());
+            LuceneUtils.addIntField(doc, "present", sfvStatus.getPresent());
+            LuceneUtils.addIntField(doc, "missing", sfvStatus.getMissing());
+            LuceneUtils.addIntField(doc, "percent", (sfvStatus.getPresent() * 100) / sfvInfo.getSize());
         } else {
-            FIELD_PRESENT.setIntValue(dizStatus.getPresent());
-            FIELD_MISSING.setIntValue(dizStatus.getMissing());
-            FIELD_PERCENT.setIntValue((dizStatus.getPresent() * 100) / dizInfo.getTotal());
+            LuceneUtils.addIntField(doc, "present", dizStatus.getPresent());
+            LuceneUtils.addIntField(doc, "missing", dizStatus.getMissing());
+            LuceneUtils.addIntField(doc, "percent", (dizStatus.getPresent() * 100) / dizInfo.getTotal());
         }
     }
 

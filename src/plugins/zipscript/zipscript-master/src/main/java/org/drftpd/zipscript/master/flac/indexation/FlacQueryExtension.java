@@ -17,10 +17,8 @@
  */
 package org.drftpd.zipscript.master.flac.indexation;
 
-import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.NumericRangeQuery;
 import org.apache.lucene.search.Query;
 import org.drftpd.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.master.indexation.AdvancedSearchParams;
@@ -32,34 +30,28 @@ import org.drftpd.master.indexation.QueryTermExtensionInterface;
  */
 public class FlacQueryExtension implements QueryTermExtensionInterface {
 
-    private static final Term TERM_GENRE = new Term("flacGenre", "");
-    private static final Term TERM_TITLE = new Term("flacTitle", "");
-    private static final Term TERM_ARTIST = new Term("flacArtist", "");
-    private static final Term TERM_ALBUM = new Term("flacAlbum", "");
-
     @Override
-    public void addQueryTerms(BooleanQuery query, AdvancedSearchParams params) {
+    public void addQueryTerms(BooleanQuery.Builder query, AdvancedSearchParams params) {
         try {
             FlacQueryParams queryParams = params.getExtensionData(FlacQueryParams.FLACQUERYPARAMS);
             if (queryParams.getGenre() != null) {
-                Query genreQuery = LuceneUtils.analyze("flacGenre", TERM_GENRE, queryParams.getGenre());
+                Query genreQuery = LuceneUtils.analyze("flacGenre", queryParams.getGenre());
                 query.add(genreQuery, Occur.MUST);
             }
             if (queryParams.getTitle() != null) {
-                Query titleQuery = LuceneUtils.analyze("flacTitle", TERM_TITLE, queryParams.getTitle());
+                Query titleQuery = LuceneUtils.analyze("flacTitle", queryParams.getTitle());
                 query.add(titleQuery, Occur.MUST);
             }
             if (queryParams.getArtist() != null) {
-                Query artistQuery = LuceneUtils.analyze("flacArtist", TERM_ARTIST, queryParams.getArtist());
+                Query artistQuery = LuceneUtils.analyze("flacArtist", queryParams.getArtist());
                 query.add(artistQuery, Occur.MUST);
             }
             if (queryParams.getAlbum() != null) {
-                Query albumQuery = LuceneUtils.analyze("flacAlbum", TERM_ALBUM, queryParams.getAlbum());
+                Query albumQuery = LuceneUtils.analyze("flacAlbum", queryParams.getAlbum());
                 query.add(albumQuery, Occur.MUST);
             }
             if (queryParams.getMinYear() != null || queryParams.getMaxYear() != null) {
-                Query yearQuery = NumericRangeQuery.newIntRange("flacYear",
-                        queryParams.getMinYear(), queryParams.getMaxYear(), true, true);
+                Query yearQuery = LuceneUtils.intRangeQuery("flacYear", queryParams.getMinYear(), queryParams.getMaxYear());
                 query.add(yearQuery, Occur.MUST);
             }
         } catch (KeyNotFoundException e) {

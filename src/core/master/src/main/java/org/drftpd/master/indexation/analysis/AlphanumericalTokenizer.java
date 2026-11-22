@@ -17,31 +17,101 @@
  */
 package org.drftpd.master.indexation.analysis;
 
-import org.apache.lucene.analysis.CharTokenizer;
-import org.apache.lucene.util.Version;
+import org.apache.lucene.analysis.Tokenizer;
+import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
+import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 
-import java.io.Reader;
+import java.io.IOException;
 
 /**
- * @author fr0w
- * @version $Id$
+ * Splits the input on every character that is not a letter, a digit or one of the
+ * wildcard characters {@code ?} and {@code *}, and lowercases letters.
+ * <p>
+ * This reproduces what the Lucene 3.6 based implementation did through {@code CharTokenizer}
+ * (which is no longer part of lucene-core): the input is examined code point by code point and
+ * a token reaching {@link #MAX_WORD_LEN} chars is cut there, the rest becoming a new token.
+ * <p>
+ * The indexed values (inode names, slave lists, plugin metadata) are short, so the whole input
+ * is read in memory before tokenizing.
  */
-public class AlphanumericalTokenizer extends CharTokenizer {
-    public AlphanumericalTokenizer(Reader input) {
-        super(Version.LUCENE_36, input);
+public final class AlphanumericalTokenizer extends Tokenizer {
+
+    /** Same limit as the Lucene 3.6 CharTokenizer. */
+    static final int MAX_WORD_LEN = 255;
+
+    private final CharTermAttribute _termAtt = addAttribute(CharTermAttribute.class);
+    private final OffsetAttribute _offsetAtt = addAttribute(OffsetAttribute.class);
+
+    private final StringBuilder _text = new StringBuilder();
+    private final char[] _readBuffer = new char[1024];
+    private boolean _textRead = false;
+    private int _pos = 0;
+
+    static boolean isTokenChar(int c) {
+        return Character.isLetter(c) || Character.isDigit(c) || c == '?' || c == '*';
+    }
+
+    static int normalize(int c) {
+        return Character.isLetter(c) ? Character.toLowerCase(c) : c;
+    }
+
+    private void readText() throws IOException {
+        int len;
+        while ((len = input.read(_readBuffer)) != -1) {
+            _text.append(_readBuffer, 0, len);
+        }
+        _textRead = true;
     }
 
     @Override
-    protected boolean isTokenChar(int c) {
-        return Character.isLetter(c) || Character.isDigit(c) || isWildcardChar(c);
-    }
-
-    private boolean isWildcardChar(int c) {
-        return c == '?' || c == '*';
+    public boolean incrementToken() throws IOException {
+        clearAttributes();
+        if (!_textRead) {
+            readText();
+        }
+        final int textLength = _text.length();
+        // skip separators
+        while (_pos < textLength) {
+            int c = Character.codePointAt(_text, _pos);
+            if (isTokenChar(c)) {
+                break;
+            }
+            _pos += Character.charCount(c);
+        }
+        if (_pos >= textLength) {
+            return false;
+        }
+        final int start = _pos;
+        int length = 0;
+        char[] buffer = _termAtt.buffer();
+        while (_pos < textLength && length < MAX_WORD_LEN) {
+            int c = Character.codePointAt(_text, _pos);
+            if (!isTokenChar(c)) {
+                break;
+            }
+            if (length + 2 > buffer.length) {
+                buffer = _termAtt.resizeBuffer(length + 2);
+            }
+            length += Character.toChars(normalize(c), buffer, length);
+            _pos += Character.charCount(c);
+        }
+        _termAtt.setLength(length);
+        _offsetAtt.setOffset(correctOffset(start), correctOffset(_pos));
+        return true;
     }
 
     @Override
-    protected int normalize(int c) {
-        return (Character.isLetter(c) ? Character.toLowerCase(c) : c);
+    public void end() throws IOException {
+        super.end();
+        int finalOffset = correctOffset(_text.length());
+        _offsetAtt.setOffset(finalOffset, finalOffset);
+    }
+
+    @Override
+    public void reset() throws IOException {
+        super.reset();
+        _text.setLength(0);
+        _textRead = false;
+        _pos = 0;
     }
 }

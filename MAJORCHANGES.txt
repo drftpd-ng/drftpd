@@ -1,3 +1,18 @@
+==== 5.0
+* Now compiles and runs on JDK25 (LTS). JDK 17 is no longer supported: install a Java 25 runtime
+  on the master and on every slave before upgrading. The Docker images use amazoncorretto:25.
+* The search index (SITE SEARCH, SITE FIND, dupecheck, ...) now uses Apache Lucene 10 instead of
+  Lucene 3.6. Lucene 10 can't read the old index: on the first start, userdata/index is renamed to
+  userdata/index.incompatible-<date> and rebuilt from the virtual file system in the background
+  (see UPGRADING.txt). The "-regex" option keeps the java.util.regex syntax and still has to match
+  the whole path. optimize_interval in indexation.conf is now a periodic commit interval.
+  Plugins adding data to the index have to use the new IndexDataExtensionInterface /
+  QueryTermExtensionInterface signatures (see LuceneUtils).
+* Sorting by "lastmodified" (nuke, approve, imdb and tvmaze listings) now really sorts on the last
+  modification date, newest first for those commands. With Lucene 3.6 that sort used a field that
+  doesn't exist and the results came out in reverse full path order, so which N results are shown
+  under a limit changes.
+
 ==== 4.0.12
 * bcrypt passwords: a new password longer than 72 bytes (UTF-8) is now refused by SITE ADDUSER,
   SITE CHPASS and SITE PASSWD. Before, only its first 72 bytes were used. Existing accounts are not

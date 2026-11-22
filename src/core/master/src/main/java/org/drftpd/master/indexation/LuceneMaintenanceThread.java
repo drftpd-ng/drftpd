@@ -19,10 +19,6 @@ package org.drftpd.master.indexation;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.lucene.index.CorruptIndexException;
-import org.drftpd.master.GlobalContext;
-
-import java.io.IOException;
 
 /**
  * Optimizes the index and update the search engine.
@@ -40,9 +36,9 @@ public class LuceneMaintenanceThread extends Thread {
 
     private final LuceneEngine _engine;
 
-    public LuceneMaintenanceThread() {
+    public LuceneMaintenanceThread(LuceneEngine engine) {
         setName("IndexMaintenanceThread");
-        _engine = (LuceneEngine) GlobalContext.getGlobalContext().getIndexEngine();
+        _engine = engine;
 
         _lastOptimization = System.currentTimeMillis();
     }
@@ -56,12 +52,15 @@ public class LuceneMaintenanceThread extends Thread {
                     break;
                 }
 
+                // Lucene 3.6 optimize() (merge everything into a single segment) is gone: segments are
+                // merged in the background by the merge policy, forcing it would just waste I/O.
+                // What is left to do periodically is committing, so that a crash loses at most one
+                // interval of changes (the VFS events are not replayed).
                 if ((currentTime >= _lastOptimization + _optimizeInterval) && !_engine.isRebuilding()) {
-                    _engine.getWriter().optimize();
-                    _engine.getWriter().commit();
+                    _engine.commit();
                     updateLastOptimizationTime();
 
-                    logger.debug("Index was optimized successfully.");
+                    logger.debug("Index was committed successfully.");
                 }
 
                 // obtaining the object monitor's.
@@ -69,8 +68,8 @@ public class LuceneMaintenanceThread extends Thread {
                     wait(_optimizeInterval);
                 }
             } catch (InterruptedException e) {
-            } catch (IOException e) {
-                throw new IllegalStateException("Corrupt index, couldn't run periodical maintenance, that's bad!", e);
+            } catch (IndexException e) {
+                logger.error("Couldn't run periodical index maintenance", e);
             }
         }
     }

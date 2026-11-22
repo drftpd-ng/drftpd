@@ -19,17 +19,13 @@ package org.drftpd.master.indexation;
 
 import org.apache.lucene.search.BooleanQuery;
 
-/**
- * @author djb61
- * @version $Id$
- */
 public interface QueryTermExtensionInterface {
 
     /**
      * This method is called whenever a query is made to the index.
      * If any relevant data is contained within the extension map of
      * the search parameters this should be added to the index query
-     * appropriately.
+     * appropriately, usually as {@link org.apache.lucene.search.BooleanClause.Occur#MUST} clauses.
      */
-    void addQueryTerms(BooleanQuery query, AdvancedSearchParams params);
+    void addQueryTerms(BooleanQuery.Builder query, AdvancedSearchParams params);
 }

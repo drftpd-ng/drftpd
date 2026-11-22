@@ -17,10 +17,8 @@
  */
 package org.drftpd.imdb.master.index;
 
-import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.NumericRangeQuery;
 import org.apache.lucene.search.Query;
 import org.drftpd.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.master.indexation.AdvancedSearchParams;
@@ -33,44 +31,36 @@ import org.drftpd.master.indexation.QueryTermExtensionInterface;
  */
 public class IMDBQueryExtension implements QueryTermExtensionInterface {
 
-    private static final Term TERM_TITLE = new Term("imdbtitle", "");
-    private static final Term TERM_DIRECTOR = new Term("imdbdirector", "");
-    private static final Term TERM_GENRES = new Term("imdbgenres", "");
-
     @Override
-    public void addQueryTerms(BooleanQuery query, AdvancedSearchParams params) {
+    public void addQueryTerms(BooleanQuery.Builder query, AdvancedSearchParams params) {
         try {
             IMDBQueryParams queryParams = params.getExtensionData(IMDBQueryParams.IMDBQUERYPARAMS);
             if (queryParams.getTitle() != null) {
-                Query titleQuery = LuceneUtils.analyze("imdbtitle", TERM_TITLE, queryParams.getTitle());
+                Query titleQuery = LuceneUtils.analyze("imdbtitle", queryParams.getTitle());
                 query.add(titleQuery, Occur.MUST);
             }
             if (queryParams.getDirector() != null) {
-                Query directorQuery = LuceneUtils.analyze("imdbdirector", TERM_DIRECTOR, queryParams.getDirector());
+                Query directorQuery = LuceneUtils.analyze("imdbdirector", queryParams.getDirector());
                 query.add(directorQuery, Occur.MUST);
             }
             if (queryParams.getGenres() != null) {
-                Query genresQuery = LuceneUtils.analyze("imdbgenres", TERM_GENRES, queryParams.getGenres());
+                Query genresQuery = LuceneUtils.analyze("imdbgenres", queryParams.getGenres());
                 query.add(genresQuery, Occur.MUST);
             }
             if (queryParams.getMinVotes() != null || queryParams.getMaxVotes() != null) {
-                Query votesQuery = NumericRangeQuery.newIntRange("imdbvotes",
-                        queryParams.getMinVotes(), queryParams.getMaxVotes(), true, true);
+                Query votesQuery = LuceneUtils.intRangeQuery("imdbvotes", queryParams.getMinVotes(), queryParams.getMaxVotes());
                 query.add(votesQuery, Occur.MUST);
             }
             if (queryParams.getMinRating() != null || queryParams.getMaxRating() != null) {
-                Query ratingQuery = NumericRangeQuery.newIntRange("imdbrating",
-                        queryParams.getMinRating(), queryParams.getMaxRating(), true, true);
+                Query ratingQuery = LuceneUtils.intRangeQuery("imdbrating", queryParams.getMinRating(), queryParams.getMaxRating());
                 query.add(ratingQuery, Occur.MUST);
             }
             if (queryParams.getMinYear() != null || queryParams.getMaxYear() != null) {
-                Query yearQuery = NumericRangeQuery.newIntRange("imdbyear",
-                        queryParams.getMinYear(), queryParams.getMaxYear(), true, true);
+                Query yearQuery = LuceneUtils.intRangeQuery("imdbyear", queryParams.getMinYear(), queryParams.getMaxYear());
                 query.add(yearQuery, Occur.MUST);
             }
             if (queryParams.getMinRuntime() != null || queryParams.getMaxRuntime() != null) {
-                Query runtimeQuery = NumericRangeQuery.newIntRange("imdbruntime",
-                        queryParams.getMinRuntime(), queryParams.getMaxRuntime(), true, true);
+                Query runtimeQuery = LuceneUtils.intRangeQuery("imdbruntime", queryParams.getMinRuntime(), queryParams.getMaxRuntime());
                 query.add(runtimeQuery, Occur.MUST);
             }
         } catch (KeyNotFoundException e) {

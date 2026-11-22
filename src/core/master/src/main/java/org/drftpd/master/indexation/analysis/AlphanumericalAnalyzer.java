@@ -18,18 +18,14 @@
 package org.drftpd.master.indexation.analysis;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.TokenStream;
-
-import java.io.Reader;
 
 /**
- * @author fr0w
- * @version $Id$
+ * Analyzer used for every analyzed (text) field of the index, see {@link AlphanumericalTokenizer}.
  */
 public class AlphanumericalAnalyzer extends Analyzer {
 
     @Override
-    public TokenStream tokenStream(String fieldName, Reader input) {
-        return new AlphanumericalTokenizer(input);
+    protected TokenStreamComponents createComponents(String fieldName) {
+        return new TokenStreamComponents(new AlphanumericalTokenizer());
     }
 }
