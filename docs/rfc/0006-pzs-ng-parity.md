@@ -204,6 +204,8 @@ Answers from the maintainer (2026-11-22) to the open questions below:
 7. **Adding keys to `zipscript.conf` and the theme files is fine for 4.x.**
 8. **One tracking issue per gap.** Gap 3 is already tracked by #67.
 
+Tracking issues: gap 1 #580, gap 2 #581, gap 3 #67, gap 4 #582, gap 5 #583, gap 6 #584, gap 7 #585, gap 8 #586, gap 9 #587, gap 10 #588, gap 11 #589, gap 12 #590, gap 13 #591, gap 14 #592.
+
 ## Open questions
 
 1. Should audio rules (gap 1) apply per section, per path, or globally? `nukefilter` and `autonuke` use sections; zipscript keys are global today.
