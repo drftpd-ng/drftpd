@@ -37,7 +37,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
 
 /**
@@ -576,7 +575,7 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable<In
         return getInode().getUntypedPluginMetaData(key);
     }
 
-    public Map<String, AtomicInteger> getSlaveRefCounts() throws FileNotFoundException {
+    public Map<String, Integer> getSlaveRefCounts() throws FileNotFoundException {
         return getInode().getSlaveRefCounts();
     }
 

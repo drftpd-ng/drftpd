@@ -17,16 +17,27 @@
  */
 package org.drftpd.master.vfs;
 
+import com.cedarsoftware.util.io.JsonReader;
+import com.cedarsoftware.util.io.JsonWriter;
 import org.apache.commons.io.FileUtils;
 import org.drftpd.slave.exceptions.FileExistsException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class VirtualFileSystemTest {
@@ -111,5 +122,93 @@ public class VirtualFileSystemTest {
     public void testStripLast() {
         assertEquals("/full/path/to", VirtualFileSystem.stripLast("/full/path/to/file"));
         assertEquals("/full/path", VirtualFileSystem.stripLast("/full/path/to"));
+    }
+
+    @Test
+    public void testSlaveRefCount() throws Exception {
+        vfs.getRoot().createDirectory("SlaveRefTest", "drftpd", "drftpd");
+        VirtualFileSystemDirectory dir = (VirtualFileSystemDirectory) vfs.getInodeByPath("/SlaveRefTest");
+        assertEquals(0, dir.getSlaveRefCounts().size());
+
+        dir.createFile("file1", "drftpd", "drftpd", "slave1");
+        dir.createFile("file2", "drftpd", "drftpd", "slave1");
+        dir.createFile("file3", "drftpd", "drftpd", "slave2");
+        assertEquals(2, dir.getRefCountForSlave("slave1"));
+        assertEquals(1, dir.getRefCountForSlave("slave2"));
+
+        dir.getInodeByName("file1").delete();
+        dir.getInodeByName("file3").delete();
+        assertEquals(1, dir.getRefCountForSlave("slave1"));
+        // A count that reaches 0 is removed instead of being kept around
+        assertFalse(dir.getSlaveRefCounts().containsKey("slave2"));
+    }
+
+    @Test
+    public void testRecalcDoesNotOverwriteChildCounts() throws Exception {
+        // Before the fix, recalc stored the first child's AtomicInteger in the parent map and then
+        // added the other children to that same object, overwriting the first child's count.
+        vfs.getRoot().createDirectory("RecalcTest", "drftpd", "drftpd");
+        VirtualFileSystemDirectory parent = (VirtualFileSystemDirectory) vfs.getInodeByPath("/RecalcTest");
+        parent.createDirectory("a", "drftpd", "drftpd");
+        parent.createDirectory("b", "drftpd", "drftpd");
+        VirtualFileSystemDirectory a = (VirtualFileSystemDirectory) parent.getInodeByName("a");
+        VirtualFileSystemDirectory b = (VirtualFileSystemDirectory) parent.getInodeByName("b");
+        a.createFile("f1", "drftpd", "drftpd", "slave1");
+        b.createFile("f2", "drftpd", "drftpd", "slave1");
+        b.createFile("f3", "drftpd", "drftpd", "slave1");
+
+        parent.recalcSlaveRefCounts();
+
+        assertEquals(3, parent.getRefCountForSlave("slave1"));
+        assertEquals(1, a.getRefCountForSlave("slave1"));
+        assertEquals(2, b.getRefCountForSlave("slave1"));
+    }
+
+    private static VirtualFileSystemDirectory roundTrip(VirtualFileSystemDirectory dir) throws Exception {
+        // Same json-io calls as VirtualFileSystem.writeInode / loadInode
+        Map<String, Object> params = new HashMap<>();
+        params.put(JsonWriter.PRETTY_PRINT, true);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        try (JsonWriter writer = new JsonWriter(out, params)) {
+            writer.write(dir);
+        }
+        try (JsonReader reader = new JsonReader(new ByteArrayInputStream(out.toByteArray()))) {
+            VirtualFileSystemDirectory loaded = (VirtualFileSystemDirectory) reader.readObject();
+            loaded.inodeLoadCompleted();
+            return loaded;
+        }
+    }
+
+    @Test
+    public void testLoadsDirectoryWithLegacyAtomicIntegerCounts() throws Exception {
+        // Simulate a .dirProperties written by the previous version, where counts were AtomicIntegers
+        VirtualFileSystemDirectory legacy = new VirtualFileSystemDirectory("drftpd", "drftpd");
+        Map<String, Object> oldCounts = new TreeMap<>();
+        oldCounts.put("slave1", new AtomicInteger(3));
+        oldCounts.put("slave2", new AtomicInteger(0));
+        Field field = VirtualFileSystemDirectory.class.getDeclaredField("_slaveRefCounts");
+        field.setAccessible(true);
+        field.set(legacy, oldCounts);
+
+        VirtualFileSystemDirectory loaded = roundTrip(legacy);
+
+        Map<String, Integer> counts = loaded.getSlaveRefCounts();
+        assertInstanceOf(Integer.class, ((Map<String, ?>) counts).get("slave1"));
+        assertEquals(3, counts.get("slave1").intValue());
+        assertEquals(3, loaded.getRefCountForSlave("slave1"));
+        assertFalse(counts.containsKey("slave2"));
+    }
+
+    @Test
+    public void testIntegerCountsSurviveRoundTrip() throws Exception {
+        VirtualFileSystemDirectory dir = new VirtualFileSystemDirectory("drftpd", "drftpd");
+        Map<String, Integer> counts = new TreeMap<>();
+        counts.put("slave1", 5);
+        dir.setSlaveRefCounts(counts);
+
+        VirtualFileSystemDirectory loaded = roundTrip(dir);
+
+        assertInstanceOf(Integer.class, ((Map<String, ?>) loaded.getSlaveRefCounts()).get("slave1"));
+        assertEquals(5, loaded.getRefCountForSlave("slave1"));
     }
 }
