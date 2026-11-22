@@ -67,12 +67,27 @@ public abstract class Session extends KeyedMap<Key<?>, Object> {
             env.put("downloaded", Bytes.formatBytes(user.getDownloadedBytes()));
             env.put("group", user.getGroup());
             env.put("groups", user.getGroups());
-            env.put("averagespeed", Bytes.formatBytes((user.getDownloadedBytes() + user.getUploadedBytes())
-                    / (((user.getDownloadedTime() + user.getUploadedTime()) / 1000) + 1)));
+            env.put("averagespeed", Bytes.formatBytes(getAverageSpeed(user)));
             env.put("ipmasks", user.getHostMaskCollection().toString());
             env.put("isbanned", "" + (user.getKeyedMap().getObject(UserManagement.BANTIME, new Date()).getTime() > System.currentTimeMillis()));
         }
         return env;
+    }
+
+    /**
+     * Average transfer speed of a user in bytes per second.
+     * <p>
+     * The transfer time and byte counters can be negative, e.g. when deleting files subtracts more
+     * than was ever added (#345). A total transfer time of zero or less means no meaningful speed,
+     * so 0 is returned; this also avoids dividing by zero. Negative byte totals count as 0.
+     */
+    static long getAverageSpeed(User user) {
+        long millis = user.getDownloadedTime() + user.getUploadedTime();
+        if (millis <= 0) {
+            return 0L;
+        }
+        long bytes = Math.max(0L, user.getDownloadedBytes() + user.getUploadedBytes());
+        return bytes / ((millis / 1000) + 1);
     }
 
     public User getUserNull(String user) {

@@ -21,6 +21,7 @@ import org.drftpd.common.dynamicdata.Key;
 import org.drftpd.common.util.Bytes;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.commands.*;
+import org.drftpd.master.network.BaseFtpConnection;
 import org.drftpd.master.network.Session;
 import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.master.util.Time;
@@ -194,6 +195,56 @@ public class ServerStatus extends CommandInterface {
                 env.put("cm.state", cm.getThreadState());
 
                 response.addComment(session.jprintf(_bundle, env, "status.cminfo"));
+            }
+
+            if (arg.equals("cpu") || isAll) {
+                OperatingSystemMXBean omx = ManagementFactory.getOperatingSystemMXBean();
+                env.put("cpu.arch", omx.getArch());
+                env.put("cpu.cores", omx.getAvailableProcessors());
+                double loadAvg = omx.getSystemLoadAverage();
+                env.put("cpu.load", loadAvg >= 0 ? String.format("%.2f", loadAvg) : "N/A");
+                response.addComment(session.jprintf(_bundle, env, "status.cpuinfo"));
+            }
+
+            if (arg.equals("network") || isAll) {
+                Properties props = GlobalContext.getConfig().getMainProperties();
+                // The bind address is only shown on FTP: IRC output can go to a public channel
+                if (session instanceof BaseFtpConnection) {
+                    env.put("net.bindip", props.getProperty("master.ip", "0.0.0.0"));
+                }
+                env.put("net.port", props.getProperty("master.port", "?"));
+
+                List<RemoteSlave> slaves = GlobalContext.getGlobalContext().getSlaveManager().getSlaves();
+                int online = 0;
+                for (RemoteSlave rs : slaves) {
+                    if (rs.isOnline())
+                        online++;
+                }
+                env.put("net.slaves.online", online);
+                env.put("net.slaves.total", slaves.size());
+                response.addComment(session.jprintf(_bundle, env, "status.netinfo"));
+            }
+
+            if (arg.equals("slaves")) {
+                // Slave IP addresses are only exposed to FTP sessions, never to IRC (output goes to channels)
+                boolean showAddress = session instanceof BaseFtpConnection;
+                List<RemoteSlave> slaves = GlobalContext.getGlobalContext().getSlaveManager().getSlaves();
+                for (RemoteSlave rs : slaves) {
+                    Map<String, Object> slaveEnv = new HashMap<>();
+                    slaveEnv.put("slave.name", rs.getName());
+                    boolean online = rs.isOnline();
+                    slaveEnv.put("slave.online", online ? "Online" : "Offline");
+                    if (online) {
+                        // Address and TLS details are only valid while the slave is connected
+                        if (showAddress) {
+                            slaveEnv.put("slave.address", rs.getRemoteAddress());
+                        }
+                        slaveEnv.put("slave.tls.protocol", rs.getTlsProtocol());
+                        slaveEnv.put("slave.tls.cipher", rs.getTlsCipherSuite());
+                    }
+                    response.addComment(session.jprintf(_bundle, slaveEnv,
+                            online ? "status.slaveinfo" : "status.slaveinfo.offline"));
+                }
             }
 
             if (isAll) {

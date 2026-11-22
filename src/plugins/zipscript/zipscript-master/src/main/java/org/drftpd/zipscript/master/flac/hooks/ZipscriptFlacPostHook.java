@@ -17,6 +17,9 @@
  */
 package org.drftpd.zipscript.master.flac.hooks;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import org.drftpd.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.common.extensibility.CommandHook;
 import org.drftpd.common.extensibility.HookType;
@@ -44,6 +47,8 @@ import java.util.ResourceBundle;
  * @author norox
  */
 public class ZipscriptFlacPostHook {
+    private static final Logger logger = LogManager.getLogger(ZipscriptFlacPostHook.class);
+
 
     private final ResourceBundle _bundle;
 
@@ -161,6 +166,7 @@ public class ZipscriptFlacPostHook {
             }
         } catch (NoAvailableSlaveException | IOException e) {
             // Error fetching flac info, ignore
+            logger.debug("Unable to show FLAC info for {}: {}", inode.getPath(), e.getMessage());
         }
     }
 }

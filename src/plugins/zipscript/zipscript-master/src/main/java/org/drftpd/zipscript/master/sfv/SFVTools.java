@@ -31,6 +31,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * @author djb61
@@ -92,6 +93,51 @@ public class SFVTools {
         }
 
         return getSFVTotalBytes(dir, sfvData) / (totalXfertime / 1000);
+    }
+
+    /**
+     * Finds the files in a directory whose checksum does not match the entry for them in the sfv.
+     * <p>
+     * Used when an .sfv is uploaded after (some of) the files it lists: those files were not
+     * checked when they were uploaded, because there was no sfv to check them against (#77).
+     * <p>
+     * Only the checksum recorded during each file's transfer is used, so this never asks a slave
+     * to read a file. The rules match the checks done when a file is uploaded after the sfv:
+     * <ul>
+     *   <li>files not listed in the sfv, and files still being uploaded, are skipped;</li>
+     *   <li>a 0-byte file with no checksum is reported, unless the sfv expects 00000000;</li>
+     *   <li>a non-empty file with no recorded checksum (checksummed transfers disabled) is skipped,
+     *       as there is nothing to compare.</li>
+     * </ul>
+     *
+     * @param sfvInfo the parsed sfv
+     * @param dir     the directory holding the sfv and the files
+     * @return the files that do not match the sfv, in directory order
+     */
+    public static List<FileHandle> getFilesNotMatchingSFV(SFVInfo sfvInfo, DirectoryHandle dir)
+            throws FileNotFoundException {
+        List<FileHandle> mismatched = new ArrayList<>();
+        CaseInsensitiveTreeMap<String, Long> sfvEntries = sfvInfo.getEntries();
+        for (FileHandle file : dir.getFilesUnchecked()) {
+            try {
+                Long sfvChecksum = sfvEntries.get(file.getName());
+                if (sfvChecksum == null || !file.isFile() || file.isUploading()) {
+                    continue;
+                }
+                long checksum = file.getCheckSumCached();
+                if (checksum == sfvChecksum) {
+                    continue;
+                }
+                if (checksum == 0L && file.getSize() != 0L) {
+                    // No checksum recorded for this transfer, nothing to compare against
+                    continue;
+                }
+                mismatched.add(file);
+            } catch (FileNotFoundException e) {
+                // File was deleted while we were checking, nothing to do
+            }
+        }
+        return mismatched;
     }
 
     public static SFVStatus getSFVStatus(SFVInfo sfvInfo, DirectoryHandle dir)
