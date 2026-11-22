@@ -81,9 +81,10 @@ public class SystemInfoTest {
         assertEquals(SystemInfo.UNKNOWN, roots.get(2).getFree());
         assertEquals(SystemInfo.UNKNOWN, roots.get(2).getUsed());
 
-        // totals only add up the known roots
-        assertEquals(roots.get(0).getTotal() + roots.get(1).getTotal(), si.getDisksTotal());
-        assertEquals(roots.get(0).getFree() + roots.get(1).getFree(), si.getDisksFree());
+        // totals only add up the known roots, and a filesystem shared by two roots counts once
+        assertEquals(roots.get(0).getTotal(), si.getDisksTotal());
+        assertEquals(roots.get(0).getFree(), si.getDisksFree());
+        assertEquals(1, si.getFilesystemCount());
         assertEquals(si.getDisksTotal() - si.getDisksFree(), si.getDisksUsed());
     }
 
@@ -126,5 +127,82 @@ public class SystemInfoTest {
         assertEquals("v1", copy.getDrftpdVersion());
         assertEquals(1, copy.getRoots().size());
         assertEquals(dir.toString(), copy.getRoots().get(0).getPath());
+    }
+
+    @Test
+    public void rootsOnTheSameFilesystemAreCountedOnce(@TempDir Path dir) throws Exception {
+        Path a = Files.createDirectory(dir.resolve("a"));
+        Path b = Files.createDirectory(dir.resolve("b"));
+        SystemInfo one = SystemInfo.collect("v", List.of(a.toString()));
+        SystemInfo two = SystemInfo.collect("v", List.of(a.toString(), b.toString()));
+
+        assertEquals(2, two.getRoots().size());
+        assertNotNull(two.getRoots().get(0).getFsKey());
+        assertEquals(two.getRoots().get(0).getFsKey(), two.getRoots().get(1).getFsKey());
+        assertEquals(1, two.getFilesystemCount());
+        assertEquals(one.getRoots().get(0).getTotal(), two.getDisksTotal());
+    }
+
+    @Test
+    public void sameDirectoryTwiceIsOneFilesystem(@TempDir Path dir) {
+        SystemInfo si = SystemInfo.collect("v", List.of(dir.toString(), dir.toString()));
+        assertEquals(2, si.getRoots().size());
+        assertEquals(1, si.getFilesystemCount());
+        assertEquals(si.getRoots().get(0).getTotal(), si.getDisksTotal());
+    }
+
+    @Test
+    public void totalsSumDistinctFilesystemsOnly() {
+        SystemInfo si = new SystemInfo();
+        List<SystemInfo.RootInfo> roots = List.of(
+                new SystemInfo.RootInfo("/a", 10, 100, "dev:1"),
+                new SystemInfo.RootInfo("/b", 10, 100, "dev:1"),
+                new SystemInfo.RootInfo("/c", 50, 200, "dev:2"),
+                new SystemInfo.RootInfo("/d", 5, 20, null),
+                new SystemInfo.RootInfo("/e", -1, -1, null));
+        setRoots(si, roots);
+        assertEquals(3, si.getFilesystemCount());
+        assertEquals(320, si.getDisksTotal());
+        assertEquals(65, si.getDisksFree());
+        assertEquals(255, si.getDisksUsed());
+        assertEquals(5, si.getRoots().size());
+    }
+
+    private static void setRoots(SystemInfo si, List<SystemInfo.RootInfo> roots) {
+        try {
+            java.lang.reflect.Field f = SystemInfo.class.getDeclaredField("_roots");
+            f.setAccessible(true);
+            f.set(si, roots);
+        } catch (ReflectiveOperationException e) {
+            throw new AssertionError(e);
+        }
+    }
+
+    @Test
+    public void primeOnceSamplesOnlyTheFirstTime() {
+        java.util.concurrent.atomic.AtomicBoolean flag = new java.util.concurrent.atomic.AtomicBoolean(false);
+        int[] samples = {0};
+        int[] pauses = {0};
+        assertTrue(SystemInfo.primeOnce(flag, () -> samples[0]++, () -> pauses[0]++));
+        assertFalse(SystemInfo.primeOnce(flag, () -> samples[0]++, () -> pauses[0]++));
+        assertEquals(1, samples[0]);
+        assertEquals(1, pauses[0]);
+    }
+
+    @Test
+    public void primeOnceSurvivesAFailingSampler() {
+        java.util.concurrent.atomic.AtomicBoolean flag = new java.util.concurrent.atomic.AtomicBoolean(false);
+        assertTrue(SystemInfo.primeOnce(flag, () -> {
+            throw new UnsupportedOperationException();
+        }, null));
+        assertTrue(flag.get());
+    }
+
+    @Test
+    public void primeCpuLoadIsHarmless() {
+        SystemInfo.primeCpuLoad();
+        SystemInfo.primeCpuLoad();
+        SystemInfo si = SystemInfo.collect("v", null);
+        assertTrue(si.getSystemCpuLoad() <= 1.0);
     }
 }

@@ -95,6 +95,7 @@ public final class HardwareStatus {
         env.put("hw.disk.used", bytes(si.getDisksUsed()));
         env.put("hw.disk.total", bytes(si.getDisksTotal()));
         env.put("hw.disk.percent", percent(si.getDisksUsed(), si.getDisksTotal()));
+        env.put("hw.filesystems", si.getFilesystemCount());
         return env;
     }
 

@@ -22,10 +22,16 @@ import java.io.Serializable;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryUsage;
 import java.lang.management.OperatingSystemMXBean;
+import java.nio.file.FileStore;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.DoubleSupplier;
 import java.util.function.LongSupplier;
 import java.util.function.Supplier;
@@ -44,6 +50,12 @@ public class SystemInfo implements Serializable {
 
     /** Value used for an unknown / unsupported numeric value. */
     public static final long UNKNOWN = -1L;
+
+    /** How long collect() waits between the two CPU samples when this is the first sample of the JVM. */
+    private static final long CPU_SAMPLE_PAUSE_MILLIS = 200L;
+
+    /** Set once the CPU load counters of this JVM have been primed. */
+    private static final AtomicBoolean CPU_PRIMED = new AtomicBoolean(false);
 
     private String _osName;
     private String _osVersion;
@@ -73,11 +85,26 @@ public class SystemInfo implements Serializable {
         private final String _path;
         private final long _free;
         private final long _total;
+        private final String _fsKey;
 
         public RootInfo(String path, long free, long total) {
+            this(path, free, total, null);
+        }
+
+        /**
+         * @param fsKey identifies the filesystem holding the root (roots with the same key share the same
+         *              space), or null if it could not be determined
+         */
+        public RootInfo(String path, long free, long total, String fsKey) {
             _path = path;
             _free = free;
             _total = total;
+            _fsKey = fsKey;
+        }
+
+        /** @return an opaque identifier of the filesystem holding this root, or null if unknown */
+        public String getFsKey() {
+            return _fsKey;
         }
 
         public String getPath() {
@@ -131,6 +158,9 @@ public class SystemInfo implements Serializable {
 
             if (os instanceof com.sun.management.OperatingSystemMXBean) {
                 com.sun.management.OperatingSystemMXBean sun = (com.sun.management.OperatingSystemMXBean) os;
+                // The CPU load is computed between two samples: the very first call in a JVM has no previous
+                // sample and reports 0, so take a throw away sample and wait a little before the real one.
+                primeOnce(CPU_PRIMED, () -> sampleCpu(sun), SystemInfo::pauseBetweenSamples);
                 si._systemCpuLoad = probeDouble(sun::getCpuLoad);
                 si._processCpuLoad = probeDouble(sun::getProcessCpuLoad);
                 si._totalMemory = probeLong(sun::getTotalMemorySize);
@@ -164,11 +194,94 @@ public class SystemInfo implements Serializable {
                     total = UNKNOWN;
                     free = UNKNOWN;
                 }
-                roots.add(new RootInfo(path, free, total));
+                roots.add(new RootInfo(path, free, total, total < 0 ? null : filesystemKey(f)));
             }
         }
         si._roots = Collections.unmodifiableList(roots);
         return si;
+    }
+
+    /**
+     * Primes the CPU load counters of the JVM (one throw away sample), so that the first real measurement
+     * does not report 0. Meant to be called once at master and slave startup; harmless to call again.
+     */
+    public static void primeCpuLoad() {
+        OperatingSystemMXBean os = probe(ManagementFactory::getOperatingSystemMXBean, null);
+        if (os instanceof com.sun.management.OperatingSystemMXBean) {
+            com.sun.management.OperatingSystemMXBean sun = (com.sun.management.OperatingSystemMXBean) os;
+            primeOnce(CPU_PRIMED, () -> sampleCpu(sun), null);
+        }
+    }
+
+    /**
+     * Runs {@code sampler} and then {@code pause} the first time it is called with this flag, does nothing
+     * afterwards.
+     *
+     * @param pause optional, may be null
+     * @return true if the sampling was done by this call
+     */
+    static boolean primeOnce(AtomicBoolean primed, Runnable sampler, Runnable pause) {
+        if (!primed.compareAndSet(false, true)) {
+            return false;
+        }
+        try {
+            sampler.run();
+        } catch (Throwable t) {
+            // unsupported platform, the values will simply be reported as unknown
+        }
+        if (pause != null) {
+            pause.run();
+        }
+        return true;
+    }
+
+    private static void sampleCpu(com.sun.management.OperatingSystemMXBean sun) {
+        sun.getCpuLoad();
+        sun.getProcessCpuLoad();
+    }
+
+    private static void pauseBetweenSamples() {
+        try {
+            Thread.sleep(CPU_SAMPLE_PAUSE_MILLIS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    /**
+     * Builds a key identifying the filesystem that holds {@code f}, or null if it cannot be determined.
+     * <p>
+     * On Unix the device number of the path ({@code unix:dev}) is used: it is exact, and it also tells apart
+     * two mounts that happen to have the same name or size. On Windows the volume serial number of the
+     * {@link FileStore} is used when the JVM exposes it. Otherwise the key falls back to the file store name,
+     * type and total size, which can only wrongly merge two distinct filesystems with identical name, type
+     * and size (e.g. two unnamed same-size volumes), never split one filesystem in two. A filesystem
+     * mounted twice (bind mount) is seen as one device on Unix, which is what we want here.
+     */
+    static String filesystemKey(File f) {
+        try {
+            Path p = f.toPath();
+            try {
+                Object dev = Files.getAttribute(p, "unix:dev");
+                if (dev != null) {
+                    return "dev:" + dev;
+                }
+            } catch (Throwable t) {
+                // not a Unix filesystem view
+            }
+            FileStore store = Files.getFileStore(p);
+            try {
+                Object vsn = store.getAttribute("volume:vsn");
+                if (vsn != null) {
+                    return "vsn:" + vsn;
+                }
+            } catch (Throwable t) {
+                // attribute not supported
+            }
+            return "fs:" + store.name() + "|" + store.type() + "|" + store.getTotalSpace();
+        } catch (Throwable t) {
+            return null;
+        }
     }
 
     private static <T> T probe(Supplier<T> s, T fallback) {
@@ -286,29 +399,50 @@ public class SystemInfo implements Serializable {
         return _roots == null ? Collections.emptyList() : _roots;
     }
 
-    /** @return sum of the known root capacities, or a negative value if none is known */
+    /**
+     * @return the roots with a known capacity, one per distinct filesystem (the first root seen for each);
+     * roots whose filesystem could not be identified are all kept
+     */
+    private List<RootInfo> distinctFilesystems() {
+        List<RootInfo> list = new ArrayList<>();
+        Set<String> seen = new HashSet<>();
+        for (RootInfo r : getRoots()) {
+            if (r.getTotal() < 0) {
+                continue;
+            }
+            if (r.getFsKey() == null || seen.add(r.getFsKey())) {
+                list.add(r);
+            }
+        }
+        return list;
+    }
+
+    /** @return number of distinct filesystems among the roots with a known capacity */
+    public int getFilesystemCount() {
+        return distinctFilesystems().size();
+    }
+
+    /** @return sum of the capacities of the distinct filesystems, or a negative value if none is known */
     public long getDisksTotal() {
         long sum = UNKNOWN;
-        for (RootInfo r : getRoots()) {
-            if (r.getTotal() >= 0) {
-                sum = Math.max(sum, 0L) + r.getTotal();
-            }
+        for (RootInfo r : distinctFilesystems()) {
+            sum = Math.max(sum, 0L) + r.getTotal();
         }
         return sum;
     }
 
-    /** @return sum of the known root usable space, or a negative value if none is known */
+    /** @return sum of the usable space of the distinct filesystems, or a negative value if none is known */
     public long getDisksFree() {
         long sum = UNKNOWN;
-        for (RootInfo r : getRoots()) {
-            if (r.getTotal() >= 0 && r.getFree() >= 0) {
+        for (RootInfo r : distinctFilesystems()) {
+            if (r.getFree() >= 0) {
                 sum = Math.max(sum, 0L) + r.getFree();
             }
         }
         return sum;
     }
 
-    /** @return sum of the known root used space, or a negative value if none is known */
+    /** @return used space over the distinct filesystems, or a negative value if none is known */
     public long getDisksUsed() {
         return used(getDisksTotal(), getDisksFree());
     }
