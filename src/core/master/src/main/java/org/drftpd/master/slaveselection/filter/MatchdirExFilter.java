@@ -19,7 +19,6 @@ package org.drftpd.master.slaveselection.filter;
 
 import org.drftpd.common.util.PropertyHelper;
 import org.drftpd.common.vfs.InodeHandleInterface;
-import org.drftpd.master.GlobalContext;
 import org.drftpd.master.exceptions.FatalException;
 import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.master.usermanager.User;
@@ -27,6 +26,7 @@ import org.drftpd.master.usermanager.User;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Properties;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -51,30 +51,19 @@ public class MatchdirExFilter extends Filter {
 
     private final boolean _negateExpr;
 
+    // Names of slaves mentioned in assign, or null if non-assigned slaves are not to be removed.
+    private final Set<String> _assignedSlaves;
+
     public MatchdirExFilter(int i, Properties p) {
         super(i, p);
         try {
             _assigns = AssignSlave.parseAssign(PropertyHelper.getProperty(p, i + ".assign"));
 
+            // If assume.remove=true, every slave not mentioned in assign is removed in process(),
+            // so slaves added after the config was loaded are removed as well.
             boolean assumeRemove = PropertyHelper.getProperty(p, i + ".assume.remove", "false").
                     equalsIgnoreCase("true");
-            // If assume.remove=true, add all slaves not assigned a score to be removed
-            if (assumeRemove) {
-                for (RemoteSlave slave : GlobalContext.getGlobalContext().getSlaveManager().getSlaves()) {
-                    boolean assigned = false;
-                    for (AssignParser ap : _assigns) {
-                        if (slave.equals(ap.getRSlave())) {
-                            // Score added to slave already, skip
-                            assigned = true;
-                            break;
-                        }
-                    }
-                    if (!assigned) {
-                        // Add slave to be remove
-                        _assigns.add(new AssignParser(slave.getName() + "+remove"));
-                    }
-                }
-            }
+            _assignedSlaves = assumeRemove ? AssignSlave.getAssignedSlaveNames(_assigns) : null;
 
             _p = Pattern.compile(PropertyHelper.getProperty(p, i + ".match"),
                     Pattern.CASE_INSENSITIVE);
@@ -92,6 +81,7 @@ public class MatchdirExFilter extends Filter {
         boolean validPath = _negateExpr != m.find();
         if (validPath) {
             AssignSlave.addScoresToChart(_assigns, scorechart);
+            AssignSlave.removeSlavesNotIn(_assignedSlaves, scorechart);
         }
     }
 }

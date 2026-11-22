@@ -119,4 +119,68 @@ public class MatchdirExFilterTest {
             //success
         }
     }
+
+    private static java.util.List<String> names(ScoreChart sc) {
+        java.util.List<String> names = new java.util.ArrayList<>();
+        for (ScoreChart.SlaveScore score : sc.getSlaveScores()) {
+            names.add(score.getRSlave().getName());
+        }
+        return names;
+    }
+
+    @Test
+    public void testAssumeRemoveSlaveAddedLater() throws Exception {
+        Properties p = new Properties();
+        p.put("1.assign", "slave1+100 slave2-100");
+        p.put("1.match", "/path1/.*");
+        p.put("1.assume.remove", "true");
+
+        // Filter is built before slave4 exists (as with SITE ADDSLAVE after startup)
+        Filter f = new MatchdirExFilter(1, p);
+        RemoteSlave[] all = Arrays.copyOf(rslaves, 4);
+        all[3] = new DummyRemoteSlave("slave4");
+
+        ScoreChart sc = new ScoreChart(Arrays.asList(all));
+        f.process(sc, null, null, Transfer.TRANSFER_SENDING_DOWNLOAD, new DirectoryHandle("/path1/dir/file.txt"), null);
+        assertEquals(Arrays.asList("slave1", "slave2"), names(sc));
+        assertEquals(100, sc.getScoreForSlave(rslaves[0]).getScore());
+        assertEquals(-100, sc.getScoreForSlave(rslaves[1]).getScore());
+
+        sc = new ScoreChart(Arrays.asList(all));
+        f.process(sc, null, null, Transfer.TRANSFER_SENDING_DOWNLOAD, new DirectoryHandle("/path2/dir/file.txt"), null);
+        assertEquals(Arrays.asList("slave1", "slave2", "slave3", "slave4"), names(sc));
+    }
+
+    @Test
+    public void testAssumeRemoveNegated() throws Exception {
+        Properties p = new Properties();
+        p.put("1.assign", "slave1+100");
+        p.put("1.match", "/path1/.*");
+        p.put("1.assume.remove", "true");
+        p.put("1.negate.expression", "true");
+
+        Filter f = new MatchdirExFilter(1, p);
+        RemoteSlave[] all = Arrays.copyOf(rslaves, 4);
+        all[3] = new DummyRemoteSlave("slave4");
+
+        ScoreChart sc = new ScoreChart(Arrays.asList(all));
+        f.process(sc, null, null, Transfer.TRANSFER_SENDING_DOWNLOAD, new DirectoryHandle("/path1/dir/file.txt"), null);
+        assertEquals(Arrays.asList("slave1", "slave2", "slave3", "slave4"), names(sc));
+
+        sc = new ScoreChart(Arrays.asList(all));
+        f.process(sc, null, null, Transfer.TRANSFER_SENDING_DOWNLOAD, new DirectoryHandle("/path2/dir/file.txt"), null);
+        assertEquals(Arrays.asList("slave1"), names(sc));
+    }
+
+    @Test
+    public void testNoAssumeRemoveKeepsOthers() throws Exception {
+        Properties p = new Properties();
+        p.put("1.assign", "slave1+100");
+        p.put("1.match", "/path1/.*");
+
+        Filter f = new MatchdirExFilter(1, p);
+        ScoreChart sc = new ScoreChart(Arrays.asList(rslaves));
+        f.process(sc, null, null, Transfer.TRANSFER_SENDING_DOWNLOAD, new DirectoryHandle("/path1/dir/file.txt"), null);
+        assertEquals(3, sc.getSlaveScores().size());
+    }
 }

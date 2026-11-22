@@ -23,6 +23,8 @@ import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.slave.exceptions.ObjectNotFoundException;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 public class AssignSlave {
@@ -85,6 +87,32 @@ public class AssignSlave {
             }
         }
         return -1;
+    }
+
+    /**
+     * Returns the names of the slaves mentioned by the assign list. Returns null if the
+     * list contains an 'all' entry, as that mentions every slave, including ones added later.
+     */
+    public static Set<String> getAssignedSlaveNames(ArrayList<AssignParser> aps) {
+        Set<String> names = new HashSet<>();
+        for (AssignParser ap : aps) {
+            if (ap.allAssigned()) {
+                return null;
+            }
+            names.add(ap.getRSlave().getName());
+        }
+        return names;
+    }
+
+    /**
+     * Removes from the chart every slave whose name is not in names. Evaluated per call so
+     * slaves added after the filter was created are covered.
+     */
+    public static void removeSlavesNotIn(Set<String> names, ScoreChart sc) {
+        if (names == null) {
+            return;
+        }
+        sc.getSlaveScores().removeIf(score -> !names.contains(score.getRSlave().getName()));
     }
 
     public static void addScoresToChart(ArrayList<AssignParser> aps, ScoreChart sc) {
