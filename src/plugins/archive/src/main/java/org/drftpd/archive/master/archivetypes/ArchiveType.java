@@ -454,6 +454,19 @@ public abstract class ArchiveType {
         return jobs;
     }
 
+    /**
+     * Creates the Job used to archive a single file. The default is one Job per file that sends it to
+     * {@link #findDestinationSlaves()}; note that a finished Job removes the file from every slave that is
+     * not in its destination set. Archive types that must leave some copies alone override this.
+     *
+     * @param file the file to archive
+     * @return the Job to queue, or null if nothing has to be done for this file
+     * @throws FileNotFoundException if the file no longer exists
+     */
+    protected Job createJob(FileHandle file) throws FileNotFoundException {
+        return new Job(file, _priority, _numOfSlaves, findDestinationSlaves());
+    }
+
     /*
      * Adds the files in the directory (and subdirs) to the job manager to be archived
      */
@@ -464,8 +477,12 @@ public abstract class ArchiveType {
             jobQueue.addAll(recursiveSend(directoryHandle));
         }
         for (FileHandle file : lrf.getFilesUnchecked()) {
+            Job job = createJob(file);
+            if (job == null) {
+                logger.debug("No job needed for {}", file.getPath());
+                continue;
+            }
             logger.info("Adding {} to the job queue", file.getPath());
-            Job job = new Job(file, _priority, _numOfSlaves, findDestinationSlaves());
             jobQueue.add(job);
         }
 
