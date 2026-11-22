@@ -69,6 +69,12 @@ class VersionTest {
     }
 
     @Test
+    void expandPlaceholder() {
+        assertEquals(Version.getDisplay() + " https://example.org", Version.expandPlaceholder("${version} https://example.org"));
+        assertEquals("DrFTPD 4.0.11 https://example.org", Version.expandPlaceholder("DrFTPD 4.0.11 https://example.org"));
+    }
+
+    @Test
     void buildResourceIsFilteredAndConsistent() {
         // version.properties is filtered at build time: the real version must be resolved
         assertNotEquals("unknown", Version.getVersion());

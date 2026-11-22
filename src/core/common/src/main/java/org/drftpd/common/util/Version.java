@@ -92,6 +92,14 @@ public final class Version {
         return CURRENT.fullVersion();
     }
 
+    /**
+     * Replaces the {@code ${version}} placeholder in a text (used by login_prompt in perms.conf) by
+     * {@link #getDisplay()}. A text without the placeholder is returned unchanged.
+     */
+    public static String expandPlaceholder(String text) {
+        return text.replace("${version}", getDisplay());
+    }
+
     String version() {
         return _version.isEmpty() ? UNKNOWN : _version;
     }
