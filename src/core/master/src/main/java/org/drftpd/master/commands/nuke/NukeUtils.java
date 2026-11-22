@@ -41,7 +41,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Map;
 
 /**
@@ -83,7 +82,7 @@ public class NukeUtils {
     }
 
     public static void getNukeUsers(DirectoryHandle nukeDir,
-                                    Hashtable<String, Long> nukees) throws FileNotFoundException {
+                                    Map<String, Long> nukees) throws FileNotFoundException {
         for (InodeHandle inode : nukeDir.getInodeHandlesUnchecked()) {
 
             try {
@@ -198,7 +197,7 @@ public class NukeUtils {
             GlobalContext.getGlobalContext().getSlaveManager().cancelTransfersInDirectory(nukeDir);
 
             //get nukees with string as key
-            Hashtable<String, Long> nukees = new Hashtable<>();
+            Map<String, Long> nukees = new HashMap<>();
 
             try {
                 getNukeUsers(nukeDir, nukees);

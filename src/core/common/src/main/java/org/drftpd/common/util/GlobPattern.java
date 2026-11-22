@@ -136,9 +136,9 @@ public class GlobPattern {
     public static String toUnixRegexPattern(char[] pattern) {
         boolean inCharSet;
         int ch;
-        StringBuffer buffer;
+        StringBuilder buffer;
 
-        buffer = new StringBuffer(2 * pattern.length);
+        buffer = new StringBuilder(2 * pattern.length);
         inCharSet = false;
 
         for (ch = 0; ch < pattern.length; ch++) {

@@ -87,6 +87,7 @@ public class SlavetopFilter extends Filter {
      *               names not in the score chart are ignored
      */
     static void assignTopSlaves(ScoreChart scorechart, Map<String, Integer> counts, int topslaves, long assign) {
+        // Hashtable kept on purpose: its iteration order decides ties between equal scores below.
         Hashtable<RemoteSlave, ScoreChart.SlaveScore> slavesmap =
                 new Hashtable<>();
 

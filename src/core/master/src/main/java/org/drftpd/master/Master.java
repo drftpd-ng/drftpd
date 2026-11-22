@@ -38,6 +38,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.*;
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -57,7 +58,7 @@ public class Master {
 
     private HashMap<String, Properties> _cmds = null;
     private CommandManagerInterface _commandManager = null;
-    private final Vector<BaseFtpConnection> _conns = new Vector();
+    private final List<BaseFtpConnection> _conns = new CopyOnWriteArrayList<>();
     private ThreadPoolExecutor _pool = null;
     private List<HostMaskCollection> _hostmasks = null;
 
@@ -166,9 +167,6 @@ public class Master {
     }
 
     public void createThreadPool() {
-        // Make sure we can accomodate the max connections
-        _conns.ensureCapacity(getMaxConnections());
-
         _pool = new ThreadPoolExecutor(getMaxConnections(), getMaxConnections(), Long.MAX_VALUE, TimeUnit.NANOSECONDS,
                 new SynchronousQueue<>(), new ConnectionThreadFactory(), new ThreadPoolExecutor.AbortPolicy());
         _pool.allowCoreThreadTimeOut(false);
@@ -196,10 +194,8 @@ public class Master {
         int userCount = 0;
         int ipCount = 0;
 
-        Enumeration<BaseFtpConnection> conns = _conns.elements();
-        while (conns.hasMoreElements()) {
+        for (BaseFtpConnection tempConnection : _conns) {
             try {
-                BaseFtpConnection tempConnection = conns.nextElement();
                 if (tempConnection.getUser().getName().equals(user.getName())) {
                     userCount++;
                     if (tempConnection.getClientAddress().equals(baseConnection.getClientAddress())) {
