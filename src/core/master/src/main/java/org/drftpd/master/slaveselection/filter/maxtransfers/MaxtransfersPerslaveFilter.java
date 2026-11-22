@@ -115,15 +115,11 @@ public class MaxtransfersPerslaveFilter extends Filter {
         public AssignSlave(String s, SlaveManager slaveManager)
                 throws ObjectNotFoundException {
 
-            int pos = s.indexOf("+");
+            // Split at the last +/- followed by a number so slave names may contain '-'.
+            int pos = org.drftpd.master.slaveselection.filter.AssignSlave.findAssignSeparator(s);
 
-            if (pos != -1) {
-            } else {
-                pos = s.indexOf("-");
-
-                if (pos == -1) {
-                    throw new IllegalArgumentException(s + " is not a valid assign slave expression");
-                }
+            if (pos == -1 || s.substring(pos + 1).equals("remove")) {
+                throw new IllegalArgumentException(s + " is not a valid assign slave expression");
             }
 
             String slavename = s.substring(0, pos);
