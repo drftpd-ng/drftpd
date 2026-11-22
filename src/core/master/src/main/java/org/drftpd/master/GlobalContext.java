@@ -134,9 +134,24 @@ public class GlobalContext {
         LineNumberReader reader = null;
         try {
             Path targetPath = new File(configurationPath).toPath();
-            Stream<Path> pathStream = Files.walk(targetPath);
-            List<Path> confFiles = pathStream.filter(f -> f.getFileName().toString().endsWith(".conf")).collect(Collectors.toList());
+            List<Path> confFiles;
+            try (Stream<Path> pathStream = Files.walk(targetPath)) {
+                confFiles = pathStream.filter(f -> {
+                    String name = f.getFileName().toString();
+                    return name.endsWith(".conf") || name.endsWith(".conf.dist");
+                }).collect(Collectors.toList());
+            }
+
             for (Path confFile : confFiles) {
+                // If it is a dist file check if the real config exists, if so skip the dist
+                // file
+                if (confFile.toString().endsWith(".dist")) {
+                    String realConfigPath = confFile.toString().substring(0, confFile.toString().length() - 5);
+                    if (new File(realConfigPath).exists()) {
+                        continue;
+                    }
+                }
+
                 reader = new LineNumberReader(new FileReader(confFile.toFile()));
                 String curLine;
 
@@ -152,7 +167,7 @@ public class GlobalContext {
                             // internal loop
                             String cmdName = curLine.substring(0, curLine.lastIndexOf("{") - 1).toLowerCase();
                             if (commandsConfig.containsKey(cmdName)) {
-                                throw new FatalException(cmdName + " is already mapped on line " + reader.getLineNumber());
+                                throw new FatalException(cmdName + " is already mapped on line " + reader.getLineNumber() + " of " + confFile);
                             }
                             Properties p = getPropertiesUntilClosed(reader);
                             logger.trace("Adding command {}", cmdName);
@@ -163,6 +178,7 @@ public class GlobalContext {
                         }
                     }
                 }
+                reader.close();
             }
             // done reading for new commands, must be finished
         } catch (IOException e) {

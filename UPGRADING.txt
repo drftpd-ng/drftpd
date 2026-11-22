@@ -24,3 +24,17 @@ Before performing a upgrade of DrFTPD, make sure to delete the following folders
 - Run mvn install
 
 Regarding the configuration files, check that you are using the new ones once the build is done.
+
+### Command configuration files (4.0.12 and later)
+
+Command definitions in config/commands/ftp and config/commands/irc now ship as X.conf.dist.
+DrFTPD loads X.conf when it exists and falls back to X.conf.dist otherwise.
+
+- If you kept the X.conf files from an earlier version, they now completely replace the new
+  X.conf.dist files. Commands added in later releases will not show up until you merge the new
+  X.conf.dist into your X.conf by hand, or delete your X.conf to use the shipped defaults.
+- If a command moved from one file to another between versions (for example the request commands
+  moving out of core.conf), an old customised core.conf together with the new request.conf.dist
+  defines the command twice, and the master stops at startup with "already mapped". Remove the
+  duplicate definition from your own X.conf to fix it.
+- If you never customised a command file, delete your X.conf so the shipped X.conf.dist is used.
