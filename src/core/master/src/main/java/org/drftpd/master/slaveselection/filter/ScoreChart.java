@@ -20,10 +20,11 @@ package org.drftpd.master.slaveselection.filter;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.slave.exceptions.ObjectNotFoundException;
+import org.drftpd.slave.network.Transfer;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * @author mog
@@ -44,30 +45,64 @@ public class ScoreChart {
         return getBestSlaveScore().getRSlave();
     }
 
+    /**
+     * Returns the slave with the highest score. Ties are broken by picking the slave
+     * that was least recently used for the given direction, then at random.
+     */
+    public RemoteSlave getBestSlave(char direction) throws NoAvailableSlaveException {
+        return getBestSlaveScore(direction).getRSlave();
+    }
+
     public SlaveScore getBestSlaveScore() throws NoAvailableSlaveException {
-        SlaveScore bestScore;
+        return getBestSlaveScore(Transfer.TRANSFER_UNKNOWN);
+    }
 
-        Iterator<SlaveScore> slaveScoreIterator = getSlaveScores().iterator();
-
+    /**
+     * Returns the highest SlaveScore. When several slaves share the top score, the one
+     * least recently used for <code>direction</code> wins; if that is tied too, one of them
+     * is picked at random so no slave is favoured by its position in the chart.
+     */
+    public SlaveScore getBestSlaveScore(char direction) throws NoAvailableSlaveException {
         if (isEmpty()) {
             throw new NoAvailableSlaveException();
         }
 
-        bestScore = slaveScoreIterator.next();
+        ArrayList<SlaveScore> best = new ArrayList<>();
+        long bestValue = Long.MIN_VALUE;
 
-        while (slaveScoreIterator.hasNext()) {
-            SlaveScore score = slaveScoreIterator.next();
-
-            if (score.getScore() > bestScore.getScore()) {
-                bestScore = score;
+        for (SlaveScore score : getSlaveScores()) {
+            if (best.isEmpty() || score.getScore() > bestValue) {
+                best.clear();
+                best.add(score);
+                bestValue = score.getScore();
+            } else if (score.getScore() == bestValue) {
+                best.add(score);
             }
         }
 
-        if (bestScore == null) {
-            throw new NoAvailableSlaveException();
+        if (best.size() == 1) {
+            return best.get(0);
         }
 
-        return bestScore;
+        ArrayList<SlaveScore> leastUsed = new ArrayList<>();
+        long oldest = Long.MAX_VALUE;
+
+        for (SlaveScore score : best) {
+            long last = score.getRSlave().getLastTransferForDirection(direction);
+            if (last < oldest) {
+                leastUsed.clear();
+                leastUsed.add(score);
+                oldest = last;
+            } else if (last == oldest) {
+                leastUsed.add(score);
+            }
+        }
+
+        if (leastUsed.size() == 1) {
+            return leastUsed.get(0);
+        }
+
+        return leastUsed.get(ThreadLocalRandom.current().nextInt(leastUsed.size()));
     }
 
     /**

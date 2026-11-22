@@ -59,6 +59,9 @@ public class FilterChain {
 
     private CaseInsensitiveHashMap<String, Class<? extends Filter>> _filtersMap;
 
+    // last timestamp handed out by getBestSlave, guarded by this
+    private long _lastStamp;
+
     /*
      * Guard that we do not initialize an empty FilterChain
      */
@@ -95,11 +98,21 @@ public class FilterChain {
         }
     }
 
-    public RemoteSlave getBestSlave(ScoreChart sc, BaseFtpConnection conn, char direction, InodeHandleInterface file, RemoteSlave sourceSlave)
+    /**
+     * Runs the filters, picks the best slave and stamps it as used for <code>direction</code>.
+     * This is synchronized so that concurrent selections on the same chain see each other's
+     * stamp (used by the cycle filter and the tie-break); otherwise parallel uploads would
+     * all pick the same idle slave. Filters only read master-side state (cached slave
+     * status, VFS), so no network round-trip to a slave happens while the lock is held.
+     */
+    public synchronized RemoteSlave getBestSlave(ScoreChart sc, BaseFtpConnection conn, char direction, InodeHandleInterface file, RemoteSlave sourceSlave)
             throws NoAvailableSlaveException {
         filter(sc, conn, direction, file, sourceSlave);
-        RemoteSlave rslave = sc.getBestSlave();
-        rslave.setLastDirection(direction, System.currentTimeMillis());
+        RemoteSlave rslave = sc.getBestSlave(direction);
+        // strictly increasing per chain, so two picks in the same millisecond are still ordered
+        long now = Math.max(System.currentTimeMillis(), _lastStamp + 1);
+        _lastStamp = now;
+        rslave.setLastDirection(direction, now);
         return rslave;
     }
 
