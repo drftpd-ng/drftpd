@@ -19,6 +19,7 @@ package org.drftpd.master.slaveselection.filter;
 
 import org.drftpd.master.slavemanagement.DummyRemoteSlave;
 import org.drftpd.master.slavemanagement.RemoteSlave;
+import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.slave.exceptions.ObjectNotFoundException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -28,6 +29,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class SlavetopFilterTest {
     private final RemoteSlave[] rslaves = {
@@ -116,5 +118,31 @@ public class SlavetopFilterTest {
         SlavetopFilter.assignTopSlaves(sc, counts, 1, 0);
         assertEquals(1, sc.getSlaveScores().size());
         assertEquals(rslaves[0], sc.getSlaveScores().get(0).getRSlave());
+    }
+
+    @Test
+    public void testFindReleaseDirInsideSection() {
+        DirectoryHandle base = new DirectoryHandle("/MP3");
+        assertEquals(new DirectoryHandle("/MP3/Release"),
+                SlavetopFilter.findReleaseDir(new DirectoryHandle("/MP3/Release"), base));
+        assertEquals(new DirectoryHandle("/MP3/Release"),
+                SlavetopFilter.findReleaseDir(new DirectoryHandle("/MP3/Release/CD1/Sub"), base));
+    }
+
+    @Test
+    public void testFindReleaseDirOutsideSectionDoesNotCrash() {
+        DirectoryHandle base = new DirectoryHandle("/MP3");
+        assertNull(SlavetopFilter.findReleaseDir(new DirectoryHandle("/"), base));
+        assertNull(SlavetopFilter.findReleaseDir(new DirectoryHandle("/MP3"), base));
+        assertNull(SlavetopFilter.findReleaseDir(new DirectoryHandle("/somedir/x"), base));
+    }
+
+    @Test
+    public void testFindReleaseDirWithRootAsBase() {
+        // section-less paths use the root as base directory
+        DirectoryHandle root = new DirectoryHandle("/");
+        assertEquals(new DirectoryHandle("/somedir"),
+                SlavetopFilter.findReleaseDir(new DirectoryHandle("/somedir/x"), root));
+        assertNull(SlavetopFilter.findReleaseDir(new DirectoryHandle("/"), root));
     }
 }

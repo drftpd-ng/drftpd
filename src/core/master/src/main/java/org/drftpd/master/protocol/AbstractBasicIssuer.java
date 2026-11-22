@@ -69,4 +69,6 @@ public abstract class AbstractBasicIssuer extends AbstractIssuer {
     public abstract void issueRemergeResumeToSlave(RemoteSlave rslave) throws SlaveUnavailableException;
 
     public abstract String issueCheckSSL(RemoteSlave rslave) throws SlaveUnavailableException;
+
+    public abstract String issueSysInfoToSlave(RemoteSlave rslave) throws SlaveUnavailableException;
 }
