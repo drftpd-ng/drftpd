@@ -240,6 +240,9 @@ public class Slave extends SslConfigurationLoader {
         }
 
         _socket.setSoTimeout(socketTimeout);
+        // Small commands and replies go both ways on this connection, often from several threads at once:
+        // don't let Nagle's algorithm hold a reply back until the previous message is acknowledged
+        _socket.setTcpNoDelay(true);
         _socket.connect(masterIsa);
         _socket.setUseClientMode(true);
 
