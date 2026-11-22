@@ -18,6 +18,7 @@
 package org.drftpd.master.slaveselection.filter;
 
 import org.drftpd.common.slave.DiskStatus;
+import org.drftpd.common.util.Bytes;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.slavemanagement.DummyRemoteSlave;
 import org.drftpd.master.slavemanagement.RemoteSlave;
@@ -26,6 +27,7 @@ import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.slave.network.Transfer;
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -54,6 +56,26 @@ public class MaxbandwidthFilterTest {
 
         f.process(sc, null, null, Transfer.TRANSFER_SENDING_DOWNLOAD, new DirectoryHandle("/"), null);
         assertEquals(sc.getBestSlave(), rslaves[1]);
+    }
+
+    @Test
+    public void testPerSecondSuffixMatchesBareValue() throws Exception {
+        assertEquals(Bytes.parseBytes("1M"), parsedMaxBandwidth("1M/s"));
+        assertEquals(Bytes.parseBytes("1000k"), parsedMaxBandwidth("1000k/s"));
+        assertEquals(Bytes.parseBytes("1000kb"), parsedMaxBandwidth("1000kb/s"));
+    }
+
+    @Test
+    public void testBareValueWithBSuffix() throws Exception {
+        assertEquals(Bytes.parseBytes("1000kb"), parsedMaxBandwidth("1000kb"));
+    }
+
+    private static long parsedMaxBandwidth(String value) throws Exception {
+        Properties p = new Properties();
+        p.put("1.maxbandwidth", value);
+        Field field = MaxbandwidthFilter.class.getDeclaredField("_maxBandwidth");
+        field.setAccessible(true);
+        return field.getLong(new MaxbandwidthFilter(1, p));
     }
 
     static class RS extends DummyRemoteSlave {
