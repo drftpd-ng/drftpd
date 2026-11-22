@@ -91,9 +91,9 @@ public class AssignSlaveTest {
         assertEquals(0, sc.getScoreForSlave(rslaves[0]).getScore());
         assertEquals(500, sc.getScoreForSlave(rslaves[2]).getScore());
 
-        sc = apply("slave-1-remove");
-        assertEquals(2, sc.getSlaveScores().size());
-        assertThrows(ObjectNotFoundException.class, () -> sc.getScoreForSlave(rslaves[2]));
+        ScoreChart removed = apply("slave-1-remove");
+        assertEquals(2, removed.getSlaveScores().size());
+        assertThrows(ObjectNotFoundException.class, () -> removed.getScoreForSlave(rslaves[2]));
     }
 
     @Test
