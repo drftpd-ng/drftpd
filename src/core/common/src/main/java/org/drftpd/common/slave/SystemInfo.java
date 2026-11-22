@@ -166,11 +166,9 @@ public class SystemInfo implements Serializable {
                 si._totalMemory = probeLong(sun::getTotalMemorySize);
                 si._freeMemory = probeLong(sun::getFreeMemorySize);
                 // On Linux getFreeMemorySize() is MemFree, which excludes the page cache and makes a busy
-                // machine look full: prefer MemAvailable when /proc/meminfo has it.
-                long available = probeLong(SystemInfo::readMemAvailable);
-                if (available >= 0) {
-                    si._freeMemory = available;
-                }
+                // machine look full: prefer MemAvailable when /proc/meminfo has it (and it fits the total).
+                si._freeMemory = chooseFreeMemory(si._freeMemory, si._totalMemory,
+                        probeLong(SystemInfo::readMemAvailable));
                 si._totalSwap = probeLong(sun::getTotalSwapSpaceSize);
                 si._freeSwap = probeLong(sun::getFreeSwapSpaceSize);
             }
@@ -297,6 +295,22 @@ public class SystemInfo implements Serializable {
         } catch (Throwable t) {
             return fallback;
         }
+    }
+
+    /**
+     * Decides which "free memory" value to report. MemAvailable is only used when it is known and does not exceed
+     * the total memory reported by the JVM: in a container the JVM honours the cgroup limit, but /proc/meminfo
+     * still describes the host, so MemAvailable could be larger than the container's whole memory.
+     *
+     * @param jmxFree   free memory as reported by the JVM
+     * @param total     total memory as reported by the JVM
+     * @param available MemAvailable of /proc/meminfo, or a negative value when unknown
+     */
+    static long chooseFreeMemory(long jmxFree, long total, long available) {
+        if (available >= 0 && total >= 0 && available <= total) {
+            return available;
+        }
+        return jmxFree;
     }
 
     /** @return MemAvailable of /proc/meminfo in bytes, or UNKNOWN when not on Linux or not readable */

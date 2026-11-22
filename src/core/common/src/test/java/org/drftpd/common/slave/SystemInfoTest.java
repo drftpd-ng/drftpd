@@ -222,4 +222,17 @@ public class SystemInfoTest {
         assertEquals(SystemInfo.UNKNOWN, SystemInfo.parseMemAvailable(List.of("MemAvailable: -5 kB")));
         assertEquals(SystemInfo.UNKNOWN, SystemInfo.parseMemAvailable(List.of()));
     }
+
+    @Test
+    public void testChooseFreeMemory() {
+        long gb = 1024L * 1024L * 1024L;
+        // normal host: MemAvailable wins over MemFree
+        assertEquals(8 * gb, SystemInfo.chooseFreeMemory(1 * gb, 16 * gb, 8 * gb));
+        assertEquals(16 * gb, SystemInfo.chooseFreeMemory(1 * gb, 16 * gb, 16 * gb));
+        // container: MemAvailable is the host's (60 GB) but the cgroup total is 2 GB
+        assertEquals(1 * gb, SystemInfo.chooseFreeMemory(1 * gb, 2 * gb, 60 * gb));
+        // MemAvailable unknown, or total unknown: keep the JMX value
+        assertEquals(1 * gb, SystemInfo.chooseFreeMemory(1 * gb, 2 * gb, SystemInfo.UNKNOWN));
+        assertEquals(1 * gb, SystemInfo.chooseFreeMemory(1 * gb, SystemInfo.UNKNOWN, 8 * gb));
+    }
 }
