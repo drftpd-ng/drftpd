@@ -28,6 +28,12 @@
 #   Default: (?i)^(season.*|(\\d+|\\d+\\W\\d+|\\d+\\W\\d+\\W\\d+)$)                                #
 # x.rlsregex = (Optional) - Regex used for ${rls} in todirectorytype=rls:, group 1 is the value    #
 #   (backslashes doubled). Default: (?i)(.*)(\\.|-|_)S\\d.*                                        #
+# x.skipincomplete = (Optional) - true = don't archive releases that are not complete yet          #
+#   according to the zipscript (every SFV in the release, also in CD1/CD2 subdirs, must have all   #
+#   its files present). A release without any SFV counts as complete. Needs the zipscript plugin.  #
+#   Incomplete releases are skipped and do not block newer ones. Default: false                    #
+# x.skipnuked = (Optional) - true = don't archive nuked releases (dirs with the [NUKED]- prefix    #
+#   or nuke metadata). Default: false                                                              #
 # x.todirectory = (Optional) - Move directory after archive (Section name or FULL path only)       #
 # x.todirectorytype = (Optional) - Type to use while moving dir (alpha/dated/rls/regex)            #
 # x.priority = (Optional) - How high of a priority this ranks over other archives                  #
@@ -117,6 +123,17 @@
 # x.priority=1                                                                                     #
 # x.slavename.1=slave1                                                                             #
 # x.slavename.2=slave2                                                                             #
+#                                                                                                  #
+# This will move only complete, non nuked releases of SECTION1 to the slaves listed after 1 day.   #
+# Incomplete and nuked releases stay where they are.                                               #
+#                                                                                                  #
+# x.type=MoveReleaseToSpecificSlaves                                                               #
+# x.section=SECTION1                                                                               #
+# x.archiveafter=1440                                                                              #
+# x.skipincomplete=true                                                                            #
+# x.skipnuked=true                                                                                 #
+# x.numofslaves=1                                                                                  #
+# x.slavename.1=slave1                                                                             #
 #                                                                                                  #
 # This will MP3 Dated Subdirs (/SECTION1/0101/*) directories to                                    #
 #  the slaves listed after 1 day.                                                                  #
