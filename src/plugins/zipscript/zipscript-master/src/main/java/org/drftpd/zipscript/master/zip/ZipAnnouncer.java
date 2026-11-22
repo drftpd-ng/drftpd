@@ -41,6 +41,7 @@ import org.drftpd.master.vfs.InodeHandle;
 import org.drftpd.zipscript.common.zip.DizInfo;
 import org.drftpd.zipscript.master.announce.ReleaseTypes;
 import org.drftpd.zipscript.master.announce.TypeAwareBundle;
+import org.drftpd.zipscript.master.announce.UpdateThrottle;
 import org.drftpd.zipscript.master.zip.event.ZipTransferEvent;
 import org.drftpd.zipscript.master.zip.vfs.ZipscriptVFSDataZip;
 
@@ -58,6 +59,8 @@ public class ZipAnnouncer extends AbstractAnnouncer {
 
     private AnnounceConfig _config;
 
+    private final UpdateThrottle _updateThrottle = new UpdateThrottle();
+
     private ResourceBundle _bundle;
 
 
@@ -74,7 +77,7 @@ public class ZipAnnouncer extends AbstractAnnouncer {
     }
 
     public String[] getEventTypes() {
-        String[] types = {"pre", "store.complete", "store.first", "store.halfway", "store.race"};
+        String[] types = {"pre", "store.complete", "store.first", "store.halfway", "store.race", "store.update"};
         return types;
     }
 
@@ -94,6 +97,7 @@ public class ZipAnnouncer extends AbstractAnnouncer {
         ReleaseTypes.apply(_bundle, zipEvent.getDirectory(), zipEvent.getTransferFile().getName());
         try {
             outputZipSTOR(zipEvent);
+            outputZipUpdate(zipEvent);
         } finally {
             TypeAwareBundle.clearTypes();
         }
@@ -309,6 +313,59 @@ public class ZipAnnouncer extends AbstractAnnouncer {
         } catch (IOException e) {
             // .diz not readable
             logger.warn("Unable to read .diz info in {}, skipping race announce", dir.getPath(), e);
+        }
+    }
+
+    private void outputZipUpdate(ZipTransferEvent zipEvent) {
+        UpdateThrottle.Settings settings = UpdateThrottle.Settings.fromProperties(
+                ConfigLoader.loadPluginConfig("zipscript.conf"));
+        if (!settings.isEnabled()) {
+            return;
+        }
+        DirectoryHandle dir = zipEvent.getDirectory();
+        int total = zipEvent.getDizInfo().getTotal();
+        int present = total - zipEvent.getDizStatus().getMissing();
+        // FIRST covers the first file, COMPLETE the last one
+        if (!zipEvent.getTransferFile().getName().toLowerCase().endsWith(".zip") || present < 2 || total < 2) {
+            return;
+        }
+        AnnounceWriter writer = _config.getPathWriter("store.update", dir);
+        if (writer == null
+                || !_updateThrottle.shouldAnnounce(settings, dir.getPath(), present, total, System.currentTimeMillis())) {
+            return;
+        }
+        try {
+            Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
+            fillEnvSection(env, zipEvent, writer, true);
+            env.put("files", Integer.toString(total));
+            env.put("filesdone", Integer.toString(present));
+            env.put("filesleft", Integer.toString(zipEvent.getDizStatus().getMissing()));
+            env.put("percentdone", (present * 100) / total + "%");
+            env.put("racespeed", Bytes.formatBytes(ZipTools.getXferspeed(dir)) + "/s");
+
+            Collection<UploaderPosition> uploaders = RankUtils.userSort(
+                    ZipTools.getZipFiles(dir), "bytes", "high");
+            if (uploaders.isEmpty()) {
+                return;
+            }
+            UploaderPosition stat = uploaders.iterator().next();
+            env.put("leadspeed", Bytes.formatBytes(stat.getXferspeed()) + "/s");
+            env.put("leadfiles", Integer.toString(stat.getFiles()));
+            env.put("leadsize", Bytes.formatBytes(stat.getBytes()));
+            env.put("leadpercent", (stat.getFiles() * 100) / total + "%");
+            User leaduser = null;
+            try {
+                leaduser = GlobalContext.getGlobalContext().getUserManager().getUserByName(stat.getUsername());
+            } catch (NoSuchUserException | UserFileException e) {
+                logger.warn("Unable to look up race leader {}", stat.getUsername(), e);
+            }
+            env.put("leaduser", leaduser != null ? leaduser.getName() : stat.getUsername());
+            env.put("leadgroup", leaduser != null ? leaduser.getGroup() : "");
+            sayOutput(ReplacerUtils.jprintf("zip.store.update", env, _bundle), writer);
+        } catch (FileNotFoundException e) {
+            logger.debug(".zip in {} was deleted, skipping update announce", dir.getPath());
+        } catch (IOException e) {
+            logger.warn("Unable to read .diz info in {}, skipping update announce", dir.getPath(), e);
         }
     }
 

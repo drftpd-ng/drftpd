@@ -45,6 +45,7 @@ import org.drftpd.master.vfs.InodeHandle;
 import org.drftpd.zipscript.common.sfv.SFVInfo;
 import org.drftpd.zipscript.master.announce.ReleaseTypes;
 import org.drftpd.zipscript.master.announce.TypeAwareBundle;
+import org.drftpd.zipscript.master.announce.UpdateThrottle;
 import org.drftpd.zipscript.common.sfv.SFVStatus;
 import org.drftpd.zipscript.master.sfv.event.SFVMemberTransferEvent;
 import org.drftpd.zipscript.master.sfv.vfs.ZipscriptVFSDataSFV;
@@ -64,6 +65,8 @@ public class SFVAnnouncer extends AbstractAnnouncer {
     public static final Key<Boolean> SFV_COMPLETE = new Key<>(SFVAnnouncer.class, "sfv_complete");
     private static final Logger logger = LogManager.getLogger(SFVAnnouncer.class);
     private Timer _timer;
+
+    private final UpdateThrottle _updateThrottle = new UpdateThrottle();
 
     private AnnounceConfig _config;
 
@@ -85,7 +88,7 @@ public class SFVAnnouncer extends AbstractAnnouncer {
     }
 
     public String[] getEventTypes() {
-        return new String[]{"pre", "store.complete", "store.first", "store.halfway", "store.race"};
+        return new String[]{"pre", "store.complete", "store.first", "store.halfway", "store.race", "store.update"};
     }
 
     public void setResourceBundle(ResourceBundle bundle) {
@@ -97,6 +100,7 @@ public class SFVAnnouncer extends AbstractAnnouncer {
         ReleaseTypes.apply(_bundle, sfvEvent.getDirectory(), sfvEvent.getTransferFile().getName());
         try {
             outputSFVMemberSTOR(sfvEvent);
+            outputSFVUpdate(sfvEvent);
         } finally {
             TypeAwareBundle.clearTypes();
         }
@@ -341,6 +345,61 @@ public class SFVAnnouncer extends AbstractAnnouncer {
         } catch (IOException e) {
             // SFV not readable
             logger.warn("Unable to read SFV in {}, skipping race announce", dir.getPath(), e);
+        }
+    }
+
+    private void outputSFVUpdate(SFVMemberTransferEvent sfvEvent) {
+        UpdateThrottle.Settings settings = UpdateThrottle.Settings.fromProperties(
+                ConfigLoader.loadPluginConfig("zipscript.conf"));
+        if (!settings.isEnabled()) {
+            return;
+        }
+        DirectoryHandle dir = sfvEvent.getDirectory();
+        int total = sfvEvent.getSFVInfo().getSize();
+        int present = sfvEvent.getSFVStatus().getPresent();
+        // FIRST covers the first file, COMPLETE the last one
+        if (present < 2 || total < 2) {
+            return;
+        }
+        AnnounceWriter writer = _config.getPathWriter("store.update", dir);
+        if (writer == null
+                || !_updateThrottle.shouldAnnounce(settings, dir.getPath(), present, total, System.currentTimeMillis())) {
+            return;
+        }
+        try {
+            Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
+            fillEnvSection(env, sfvEvent, writer, true);
+            env.put("files", Integer.toString(total));
+            env.put("filesdone", Integer.toString(present));
+            env.put("filesleft", Integer.toString(sfvEvent.getSFVStatus().getMissing()));
+            env.put("percentdone", (present * 100) / total + "%");
+            env.put("racespeed", Bytes.formatBytes(SFVTools.getXferspeed(dir, sfvEvent.getSFVData())) + "/s");
+
+            Collection<UploaderPosition> uploaders = RankUtils.userSort(
+                    SFVTools.getSFVFiles(dir, sfvEvent.getSFVData()), "bytes", "high");
+            if (uploaders.isEmpty()) {
+                return;
+            }
+            UploaderPosition stat = uploaders.iterator().next();
+            env.put("leadspeed", Bytes.formatBytes(stat.getXferspeed()) + "/s");
+            env.put("leadfiles", Integer.toString(stat.getFiles()));
+            env.put("leadsize", Bytes.formatBytes(stat.getBytes()));
+            env.put("leadpercent", (stat.getFiles() * 100) / total + "%");
+            User leaduser = null;
+            try {
+                leaduser = GlobalContext.getGlobalContext().getUserManager().getUserByName(stat.getUsername());
+            } catch (NoSuchUserException | UserFileException e) {
+                logger.warn("Unable to look up race leader {}", stat.getUsername(), e);
+            }
+            env.put("leaduser", leaduser != null ? leaduser.getName() : stat.getUsername());
+            env.put("leadgroup", leaduser != null ? leaduser.getGroup() : "");
+            sayOutput(ReplacerUtils.jprintf("sfv.store.update", env, _bundle), writer);
+        } catch (NoAvailableSlaveException | SlaveUnavailableException e) {
+            logger.debug("Slave with SFV for {} is offline, skipping update announce", dir.getPath());
+        } catch (FileNotFoundException e) {
+            logger.debug("SFV in {} was deleted, skipping update announce", dir.getPath());
+        } catch (IOException e) {
+            logger.warn("Unable to read SFV in {}, skipping update announce", dir.getPath(), e);
         }
     }
 

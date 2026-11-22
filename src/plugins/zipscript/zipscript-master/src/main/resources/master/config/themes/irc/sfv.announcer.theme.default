@@ -7,6 +7,9 @@ sfv.store.complete.racer=${bold}${position}.${bold} ${bold}${user}${bold}${color
 sfv.store.complete.group.header=${color}15${bold}GroupTop${bold}${coloroff}:
 sfv.store.complete.group=${bold}${position}.${bold} ${bold}${group}${bold} [${size}/${files}F/${percent}/${speed}]
 
+## UPDATE: progress line during long races, only announced when irc.update.files and/or irc.update.percent are set in zipscript.conf
+sfv.store.update=${color}15${bold}UPDATE${bold}${coloroff} in ${color}${sectioncolor}${bold}${section}${bold}${coloroff}: -> ${bold}${path}${bold} ${bold}[${bold}${filesdone}/${files}F ${percentdone}${bold}]${bold} at ${racespeed} with ${bold}${filesleft}${bold} files left, race leader ${bold}${leaduser}${bold}${color}14${bold}/${bold}${coloroff}${leadgroup} ${bold}[${bold}${leadsize}/${leadfiles}F/${leadpercent}/${leadspeed}${bold}]${bold}.
+
 ## Optional per-release-type variants, only used with irc.themes.bytype=true in zipscript.conf.
 ## Append .mp3.cbr, .mp3.vbr, .mp3, .flac, .audio, .rar, .video or .zip to any key above (the
 ## plain key is used when no variant exists). Example, uncomment to try:

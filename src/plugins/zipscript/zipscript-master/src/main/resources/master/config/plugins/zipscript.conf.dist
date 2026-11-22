@@ -114,3 +114,17 @@ stor.flacinfo.enabled=true
 # With no suffixed keys in the theme, output is identical to leaving this off.
 # Default: [false]
 irc.themes.bytype=false
+
+# UPDATE announce during long races (opt-in, off by default).
+# An UPDATE line (announce type store.update, theme key sfv.store.update / zip.store.update) is
+#  announced when a release gets another N files (irc.update.files) and/or another N percent
+#  (irc.update.percent) closer to completion since the last UPDATE, but never more often than once
+#  per irc.update.interval seconds per release. Set a value to 0 to disable that trigger; with
+#  both at 0 no UPDATE is ever announced. The first file (FIRST) and the last (COMPLETE) are
+#  not announced as UPDATE.
+# Like other announce types it can be routed in irc.announce.conf (store.update.path.N / .section.N),
+#  otherwise it goes to the default channels.
+# Default: [0][0][60]
+irc.update.files=0
+irc.update.percent=0
+irc.update.interval=60
