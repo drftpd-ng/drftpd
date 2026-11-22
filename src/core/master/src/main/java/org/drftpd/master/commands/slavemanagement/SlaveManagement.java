@@ -93,6 +93,20 @@ public class SlaveManagement extends CommandInterface {
 
     }
 
+    /**
+     * Transfer direction the slave selection chain of the given type (up, down, jobup, jobdown) is used for.
+     *
+     * @throws ImproperUsageException if the type is not one of the chains
+     */
+    static char getDirection(String type) throws ImproperUsageException {
+        if (type.equalsIgnoreCase("up") || type.equalsIgnoreCase("jobup")) {
+            return Transfer.TRANSFER_RECEIVING_UPLOAD;
+        } else if (type.equalsIgnoreCase("down") || type.equalsIgnoreCase("jobdown")) {
+            return Transfer.TRANSFER_SENDING_DOWNLOAD;
+        }
+        throw new ImproperUsageException();
+    }
+
     public CommandResponse doSITE_SLAVESELECT(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {
@@ -111,14 +125,7 @@ public class SlaveManagement extends CommandInterface {
         if (!path.startsWith(VirtualFileSystem.separator)) {
             throw new ImproperUsageException();
         }
-        char direction;
-        if (type.equalsIgnoreCase("up")) {
-            direction = Transfer.TRANSFER_RECEIVING_UPLOAD;
-        } else if (type.equalsIgnoreCase("down")) {
-            direction = Transfer.TRANSFER_SENDING_DOWNLOAD;
-        } else {
-            throw new ImproperUsageException();
-        }
+        char direction = getDirection(type);
         Collection<RemoteSlave> slaves;
         try {
             slaves = GlobalContext.getGlobalContext().getSlaveManager().getAvailableSlaves();
