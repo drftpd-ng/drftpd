@@ -35,6 +35,7 @@ import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.master.vfs.InodeHandle;
 import org.drftpd.zipscript.common.mp3.ID3Tag;
 import org.drftpd.zipscript.common.mp3.MP3Info;
+import org.drftpd.zipscript.master.audio.AudioRulesEnforcer;
 import org.drftpd.zipscript.master.mp3.vfs.ZipscriptVFSDataMP3;
 
 import java.io.FileNotFoundException;
@@ -80,6 +81,9 @@ public class ZipscriptMP3PostHook {
         try {
             transferFile = response.getObject(DataConnectionHandler.TRANSFER_FILE);
             if (transferFile.getName().toLowerCase().endsWith(".mp3")) {
+                if (rejectedByAudioRules(response, transferFile)) {
+                    return;
+                }
                 addMP3Info(request, response, transferFile, true);
             }
         } catch (KeyNotFoundException e) {
@@ -115,6 +119,24 @@ public class ZipscriptMP3PostHook {
             } catch (FileNotFoundException e) {
                 // No inode to remove mp3info from or dir has been deleted
             }
+        }
+    }
+
+    /**
+     * Applies the per section audio rules (opt-in, see zipscript.conf).
+     *
+     * @return true if the release was removed
+     */
+    private boolean rejectedByAudioRules(CommandResponse response, FileHandle transferFile) {
+        try {
+            MP3Info info = new ZipscriptVFSDataMP3(transferFile).getMP3Info();
+            ID3Tag id3 = info.getID3Tag();
+            return AudioRulesEnforcer.enforce(response, transferFile, ".mp3",
+                    id3 == null ? null : id3.getGenre(), id3 == null ? null : id3.getYear(),
+                    info.getBitrate() / 1000, "VBR".equals(info.getEncodingtype()));
+        } catch (IOException | NoAvailableSlaveException e) {
+            logger.debug("Unable to check audio rules for {}: {}", transferFile.getPath(), e.getMessage());
+            return false;
         }
     }
 

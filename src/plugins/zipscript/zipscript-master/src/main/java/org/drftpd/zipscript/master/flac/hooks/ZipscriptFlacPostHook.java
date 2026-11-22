@@ -35,6 +35,8 @@ import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.master.vfs.InodeHandle;
 import org.drftpd.zipscript.common.flac.FlacInfo;
 import org.drftpd.zipscript.common.flac.VorbisTag;
+import org.drftpd.zipscript.master.audio.AudioRulesEnforcer;
+import org.drftpd.zipscript.common.flac.VorbisTag;
 import org.drftpd.zipscript.master.flac.vfs.ZipscriptVFSDataFlac;
 
 import java.io.FileNotFoundException;
@@ -78,6 +80,9 @@ public class ZipscriptFlacPostHook {
         try {
             transferFile = response.getObject(DataConnectionHandler.TRANSFER_FILE);
             if (transferFile.getName().toLowerCase().endsWith(".flac")) {
+                if (rejectedByAudioRules(response, transferFile)) {
+                    return;
+                }
                 addFlacInfo(request, response, transferFile, true);
             }
         } catch (KeyNotFoundException e) {
@@ -113,6 +118,23 @@ public class ZipscriptFlacPostHook {
             } catch (FileNotFoundException e) {
                 // No inode to remove flacinfo from or dir has been deleted
             }
+        }
+    }
+
+    /**
+     * Applies the per section audio rules (genre and year only, opt-in, see zipscript.conf).
+     *
+     * @return true if the release was removed
+     */
+    private boolean rejectedByAudioRules(CommandResponse response, FileHandle transferFile) {
+        try {
+            FlacInfo info = new ZipscriptVFSDataFlac(transferFile).getFlacInfo();
+            VorbisTag tag = info.getVorbisTag();
+            return AudioRulesEnforcer.enforce(response, transferFile, ".flac",
+                    tag == null ? null : tag.getGenre(), tag == null ? null : tag.getYear(), 0, false);
+        } catch (IOException | NoAvailableSlaveException e) {
+            logger.debug("Unable to check audio rules for {}: {}", transferFile.getPath(), e.getMessage());
+            return false;
         }
     }
 
