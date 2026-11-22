@@ -33,6 +33,7 @@ import org.drftpd.slave.exceptions.ObjectNotFoundException;
 import java.lang.management.*;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author fr0w
@@ -45,9 +46,12 @@ public class ServerStatus extends CommandInterface {
     static final Set<String> SECTIONS = Set.of("os", "vm", "memory", "classes", "threads", "gc", "cm", "cpu",
             "network", "slaves", "hardware", "hw", "all");
 
-    // Slaves are asked in parallel so that one slow slave does not add up its timeout to the others
-    private static final ExecutorService HW_POOL = Executors.newCachedThreadPool(r -> {
-        Thread t = new Thread(r, "ServerStatus-sysinfo");
+    // Slaves are asked in parallel so that one slow slave does not add up its timeout to the others. The pool is
+    // small and bounded (RemoteSlave also allows a single sysinfo in flight per slave); with more slaves than
+    // threads the extra requests simply queue.
+    private static final AtomicInteger HW_THREAD_COUNT = new AtomicInteger();
+    private static final ExecutorService HW_POOL = Executors.newFixedThreadPool(8, r -> {
+        Thread t = new Thread(r, "ServerStatus-sysinfo-" + HW_THREAD_COUNT.incrementAndGet());
         t.setDaemon(true);
         return t;
     });
@@ -134,6 +138,8 @@ public class ServerStatus extends CommandInterface {
         String args = String.join(" ", tokens).toLowerCase();
         StringTokenizer st = new StringTokenizer(args);
         boolean isAll = args.contains("all");
+        // hardware may wait for slaves for several seconds, so "all" does not include it (like "slaves")
+        boolean wantHardware = tokens.stream().anyMatch(t -> t.equalsIgnoreCase("hardware") || t.equalsIgnoreCase("hw"));
 
         // avoid output repetition
         // ex: gc, vm, all
@@ -244,7 +250,7 @@ public class ServerStatus extends CommandInterface {
                 response.addComment(session.jprintf(_bundle, env, "status.netinfo"));
             }
 
-            if (arg.equals("hardware") || arg.equals("hw") || isAll) {
+            if (wantHardware && (arg.equals("hardware") || arg.equals("hw") || isAll)) {
                 if (hwTarget == null) {
                     addHardwareSummary(response, session);
                 } else {
