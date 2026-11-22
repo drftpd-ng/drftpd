@@ -623,7 +623,7 @@ public abstract class ArchiveType {
         String _moveToDirProp = properties.getProperty(_confNum + ".todirectory", "").trim();
         if (!_moveToDirProp.equals("")) {
             SectionInterface sec = getGlobalContext().getSectionManager().getSection(_moveToDirProp);
-            if (sec.getName().isEmpty()) {
+            if (!isExistingSection(sec)) {
                 try {
                     DirectoryHandle moveInode = new DirectoryHandle(_moveToDirProp);
                     if (!moveInode.exists()) {
@@ -907,6 +907,16 @@ public abstract class ArchiveType {
             return defaultRegex;
         }
         return regex;
+    }
+
+    /**
+     * True if the section returned by SectionManager.getSection(todirectory) is a real, existing one.
+     * Both section managers return a stand-in for an unknown name: the conf one a section without
+     * name, the default one a section for the root (whose name is "/", not empty). Moving a release to
+     * that would put it in the root instead of the configured destination.
+     */
+    static boolean isExistingSection(SectionInterface sec) {
+        return !sec.getName().isEmpty() && !sec.getCurrentDirectory().getPath().equals(VirtualFileSystem.separator);
     }
 
     /**
