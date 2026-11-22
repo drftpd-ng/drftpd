@@ -24,6 +24,9 @@ import org.drftpd.slave.network.AsyncResponseSystemInfo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -45,10 +48,18 @@ public class RemoteSlaveSysInfoTest {
         }
 
         volatile boolean _online = true;
+        volatile String _offlineReason;
 
         @Override
         public boolean isOnline() {
             return _online;
+        }
+
+        /** Records the reason instead of tearing down a connection (there is none). */
+        @Override
+        public void setOffline(String reason) {
+            _offlineReason = reason;
+            _online = false;
         }
     }
 
@@ -270,5 +281,76 @@ public class RemoteSlaveSysInfoTest {
         _slave.resetIndexes();
         assertEquals(SystemInfoReply.Status.TIMEOUT, _slave.fetchSystemInfo(50, _sender).getStatus());
         assertEquals(2, _sent.get());
+    }
+
+    /** Takes every index from the pool and checks that each of the 256 is there exactly once. */
+    private Set<String> drainPool() throws SlaveUnavailableException {
+        Set<String> indexes = new HashSet<>();
+        for (int i = 0; i < 256; i++) {
+            assertTrue(indexes.add(_slave.fetchIndex()), "index handed out twice");
+        }
+        return indexes;
+    }
+
+    @Test
+    public void testReconnectWithinOneTickDoesNotAbandonIndexOfNewConnection() throws Exception {
+        ExecutorService pool = Executors.newCachedThreadPool();
+        try {
+            Future<SystemInfoReply> caller = pool.submit(() -> _slave.fetchSystemInfo(500, _sender));
+            waitUntilSent(1);
+            String stale = _lastIndex;
+            // the slave drops and comes back between two polls of the waiter: it never sees isOnline() == false
+            _slave.resetIndexes();
+            assertEquals(SystemInfoReply.Status.OFFLINE, caller.get(5, TimeUnit.SECONDS).getStatus());
+
+            // the rebuilt pool is intact and the index is usable again on the new connection: a reply to a
+            // command sent with it is delivered, not discarded as a late sysinfo reply
+            assertTrue(drainPool().contains(stale));
+            assertTrue(_slave.storeResponse(reply(stale)));
+        } finally {
+            pool.shutdownNow();
+        }
+    }
+
+    @Test
+    public void testReconnectWithinOneTickReleasesSharedCallersAndNextRequestGoesOut() throws Exception {
+        ExecutorService pool = Executors.newCachedThreadPool();
+        try {
+            Future<SystemInfoReply> first = pool.submit(() -> _slave.fetchSystemInfo(500, _sender));
+            waitUntilSent(1);
+            Future<SystemInfoReply> second = pool.submit(() -> _slave.fetchSystemInfo(5000, _sender));
+            Thread.sleep(100); // let the second caller join the request in flight
+            _slave.resetIndexes();
+            assertEquals(SystemInfoReply.Status.OFFLINE, first.get(5, TimeUnit.SECONDS).getStatus());
+            assertEquals(SystemInfoReply.Status.OFFLINE, second.get(5, TimeUnit.SECONDS).getStatus());
+
+            // nothing is left pending: the next request is sent on the new connection and answered
+            Future<?> reader = startReader(pool, 2);
+            assertEquals(SystemInfoReply.Status.OK, _slave.fetchSystemInfo(5000, _sender).getStatus());
+            reader.get(5, TimeUnit.SECONDS);
+            assertEquals(2, _sent.get());
+        } finally {
+            pool.shutdownNow();
+        }
+    }
+
+    @Test
+    public void testFetchResponseReconnectWithinOneTick() throws Exception {
+        ExecutorService pool = Executors.newCachedThreadPool();
+        try {
+            String stale = _slave.fetchIndex();
+            Future<?> caller = pool.submit(() -> _slave.fetchResponse(stale, 500));
+            Thread.sleep(100); // let the caller settle into its wait
+            _slave.resetIndexes();
+            ExecutionException e = assertThrows(ExecutionException.class, () -> caller.get(5, TimeUnit.SECONDS));
+            assertInstanceOf(SlaveUnavailableException.class, e.getCause());
+            // the new connection is not dropped because the old one's command timed out
+            assertNull(_slave._offlineReason);
+            assertTrue(_slave.isOnline());
+            // and the old index was not pushed into the rebuilt pool a second time
+            assertTrue(drainPool().contains(stale));
+        } finally {
+            pool.shutdownNow();
+        }
     }
 }
