@@ -29,6 +29,7 @@ import org.drftpd.master.network.Session;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.vfs.*;
 import org.drftpd.zipscript.common.sfv.SFVInfo;
+import org.drftpd.zipscript.master.sfv.RescanOptions;
 import org.drftpd.zipscript.master.sfv.vfs.ZipscriptVFSDataSFV;
 import org.drftpd.zipscript.master.zip.RescanPostProcessDirInterface;
 import org.reflections.Reflections;
@@ -73,40 +74,21 @@ public class ZipscriptCommands extends CommandInterface {
         Session session = request.getSession();
         User user = session.getUserNull(request.getUser());
 
-        String fileOrPath = null;
-        boolean recursive = false;
-        boolean forceRescan = true;
-        boolean deleteBad = true;
-        boolean deleteZeroByte = true;
-        boolean quiet = false;
+        RescanOptions options = RescanOptions.parse(request.getArgument());
+        boolean recursive = options.recursive;
+        boolean forceRescan = options.force;
+        boolean deleteBad = options.deleteBad;
+        boolean deleteZeroByte = options.deleteZeroByte;
+        boolean quiet = options.quiet;
+        boolean quick = options.quick;
         boolean singleFile = false;
 
-        StringTokenizer args = new StringTokenizer(request.getArgument());
-        while (args.hasMoreTokens()) {
-            String arg = args.nextToken();
-            if (arg.equalsIgnoreCase("-r")) {
-                recursive = true;
-            } else if (arg.equalsIgnoreCase("noforce")) {
-                forceRescan = false;
-            } else if (arg.equalsIgnoreCase("nodelete")) {
-                deleteBad = false;
-            } else if (arg.equalsIgnoreCase("nodelete0byte")) {
-                deleteZeroByte = false;
-            } else if (arg.equalsIgnoreCase("quiet")) {
-                quiet = true;
+        String fileOrPath = options.fileOrPath;
+        if (fileOrPath != null && !fileOrPath.startsWith(VirtualFileSystem.separator)) {
+            if (session instanceof BaseFtpConnection) {
+                fileOrPath = ((BaseFtpConnection) session).getCurrentDirectory().getPath() + VirtualFileSystem.separator + fileOrPath;
             } else {
-                if (fileOrPath != null) {
-                    throw new ImproperUsageException();
-                }
-                if (arg.startsWith(VirtualFileSystem.separator)) {
-                    fileOrPath = arg;
-                } else {
-                    if (session instanceof BaseFtpConnection) {
-                        fileOrPath = ((BaseFtpConnection) session).getCurrentDirectory().getPath() + VirtualFileSystem.separator + arg;
-                    } else {
-                        throw new ImproperUsageException();
-                    }
-                }
+                throw new ImproperUsageException();
             }
         }
 
@@ -114,8 +96,8 @@ public class ZipscriptCommands extends CommandInterface {
             logger.debug("Disabling forceRescan option as delete bad and zerobyte is not enabled");
             forceRescan = false;
         }
-        logger.debug("Rescan options -> recursive: {}, force: {}, deleteBad: {}, deleteZeroByte: {}, quiet: {}, FileOrPath: {}",
-                recursive, forceRescan, deleteBad, deleteZeroByte, quiet, fileOrPath);
+        logger.debug("Rescan options -> recursive: {}, force: {}, deleteBad: {}, deleteZeroByte: {}, quiet: {}, quick: {}, FileOrPath: {}",
+                recursive, forceRescan, deleteBad, deleteZeroByte, quiet, quick, fileOrPath);
 
         CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 
@@ -169,6 +151,11 @@ public class ZipscriptCommands extends CommandInterface {
                 } else {
                     long fileChecksum;
                     try {
+                        if (isQuickVerified(workingFile, sfvChecksum, quick)) {
+                            session.printOutput(200, workingFile.getName() + "(skipped, known CRC matches SFV)");
+                            doRescanPostProcess(request, workingDir, quiet);
+                            return response;
+                        }
                         fileChecksum = getFileCheckSum(workingFile, forceRescan);
                         String status = checkSingleFile(session, workingFile.getName(), workingFile, sfvChecksum, fileChecksum, deleteZeroByte, deleteBad, quiet);
                         if (status != null && !status.equals("")) {
@@ -237,6 +224,9 @@ public class ZipscriptCommands extends CommandInterface {
 
                     long fileChecksum;
                     try {
+                        if (isQuickVerified(file, sfvChecksum, quick)) {
+                            continue;
+                        }
                         fileChecksum = getFileCheckSum(file, forceRescan);
                     } catch (FileNotFoundException e) {
                         session.printOutput(200, "SFV: " + Checksum.formatChecksum(sfvChecksum) + " SLAVE: " + sfvEntryName + " MISSING");
@@ -261,6 +251,17 @@ public class ZipscriptCommands extends CommandInterface {
             }
         }
         return response;
+    }
+
+    /**
+     * Quick mode: a file whose CRC is already known and matches the SFV is considered verified.
+     */
+    private boolean isQuickVerified(FileHandle file, long sfvChecksum, boolean quick) throws FileNotFoundException {
+        if (!quick) {
+            return false;
+        }
+        long cached = file.getCheckSumCached();
+        return cached != 0L && cached == sfvChecksum;
     }
 
     private long getFileCheckSum(FileHandle file, boolean forceRescan) throws FileNotFoundException, NoAvailableSlaveException {
