@@ -401,28 +401,87 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
         }
     }
 
+    /**
+     * @return a copy of the slave reference counts of this directory. The values are new
+     * {@link AtomicInteger} objects, so changing them does not change the counts of this directory.
+     */
     public Map<String, AtomicInteger> getSlaveRefCounts() {
         synchronized (_slaveRefCounts) {
-            return new TreeMap<>(_slaveRefCounts);
+            return copySlaveRefCounts(_slaveRefCounts);
         }
     }
 
     public void setSlaveRefCounts(Map<String, AtomicInteger> slaveRefCounts) {
-        _slaveRefCounts = slaveRefCounts;
+        Map<String, AtomicInteger> copy = copySlaveRefCounts(slaveRefCounts);
+        synchronized (_slaveRefCounts) {
+            _slaveRefCounts.clear();
+            _slaveRefCounts.putAll(copy);
+        }
+    }
+
+    /**
+     * Counts that are 0 (or less) are kept in .dirProperties files written by earlier versions,
+     * drop them once the directory is loaded. The on-disk format is unchanged.
+     */
+    @Override
+    public void inodeLoadCompleted() {
+        synchronized (_slaveRefCounts) {
+            _slaveRefCounts.entrySet().removeIf(entry -> {
+                AtomicInteger count = entry.getValue();
+                if (count == null || count.get() == 0) {
+                    return true;
+                }
+                if (count.get() < 0) {
+                    logger.warn("Dropping negative ref count {} for slave {} loaded for {}", count.get(), entry.getKey(), getName());
+                    return true;
+                }
+                return false;
+            });
+        }
+        super.inodeLoadCompleted();
+    }
+
+    /**
+     * @return a new map holding new {@link AtomicInteger} objects with the positive counts of the given map.
+     */
+    private static Map<String, AtomicInteger> copySlaveRefCounts(Map<String, AtomicInteger> counts) {
+        Map<String, AtomicInteger> copy = new TreeMap<>();
+        if (counts == null) {
+            return copy;
+        }
+        for (Map.Entry<String, AtomicInteger> entry : counts.entrySet()) {
+            if (entry.getValue() != null && entry.getValue().get() > 0) {
+                copy.put(entry.getKey(), new AtomicInteger(entry.getValue().get()));
+            }
+        }
+        return copy;
+    }
+
+    /**
+     * Adds delta to the count of the given slave and removes the entry once it reaches 0.
+     * Must be called while holding the lock on _slaveRefCounts.
+     */
+    private void adjustSlaveRefCount(String slave, int delta) {
+        AtomicInteger currentCount = _slaveRefCounts.get(slave);
+        if (currentCount == null) {
+            currentCount = new AtomicInteger(0);
+            _slaveRefCounts.put(slave, currentCount);
+        }
+        int newCount = currentCount.addAndGet(delta);
+        if (newCount <= 0) {
+            if (newCount < 0) {
+                logger.warn("Ref count for slave {} on {} went negative ({}), removing it, run SITE FIXSLAVECOUNT to rebuild the counts", slave, getPath(), newCount);
+            }
+            _slaveRefCounts.remove(slave);
+        }
     }
 
     protected void addChildSlaveRefCounts(VirtualFileSystemInode childInode, Map<String, AtomicInteger> childRefCounts) {
         if (!childRefCounts.isEmpty()) {
-            for (Map.Entry<String, AtomicInteger> refEntry : childRefCounts.entrySet()) {
-                AtomicInteger currentCount;
-                synchronized (_slaveRefCounts) {
-                    currentCount = _slaveRefCounts.get(refEntry.getKey());
-                    if (currentCount == null) {
-                        currentCount = new AtomicInteger(0);
-                        _slaveRefCounts.put(refEntry.getKey(), currentCount);
-                    }
+            synchronized (_slaveRefCounts) {
+                for (Map.Entry<String, AtomicInteger> refEntry : childRefCounts.entrySet()) {
+                    adjustSlaveRefCount(refEntry.getKey(), refEntry.getValue().intValue());
                 }
-                currentCount.addAndGet(refEntry.getValue().intValue());
             }
             if (!isRoot()) {
                 getParent().addChildSlaveRefCounts(childInode, childRefCounts);
@@ -433,16 +492,16 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 
     protected void removeChildSlaveRefCounts(VirtualFileSystemInode childInode, Map<String, AtomicInteger> childRefCounts) {
         if (!childRefCounts.isEmpty()) {
-            for (Map.Entry<String, AtomicInteger> refEntry : childRefCounts.entrySet()) {
-                AtomicInteger currentCount;
-                currentCount = _slaveRefCounts.get(refEntry.getKey());
-                if (currentCount == null) {
-                    // Shouldn't happen since we're removing a child, therefore we should have
-                    // counts for the slaves referenced by the child
-                    logger.error("Removing child {} from {} child contained a count of {} for slave {} but the slave has no count against this directory", childInode.getPath(), getPath(), refEntry.getValue().intValue(), refEntry.getKey());
-                    continue;
+            synchronized (_slaveRefCounts) {
+                for (Map.Entry<String, AtomicInteger> refEntry : childRefCounts.entrySet()) {
+                    if (!_slaveRefCounts.containsKey(refEntry.getKey())) {
+                        // Shouldn't happen since we're removing a child, therefore we should have
+                        // counts for the slaves referenced by the child
+                        logger.error("Removing child {} from {} child contained a count of {} for slave {} but the slave has no count against this directory", childInode.getPath(), getPath(), refEntry.getValue().intValue(), refEntry.getKey());
+                        continue;
+                    }
+                    adjustSlaveRefCount(refEntry.getKey(), -refEntry.getValue().intValue());
                 }
-                currentCount.addAndGet(-refEntry.getValue().intValue());
             }
             if (!isRoot()) {
                 getParent().removeChildSlaveRefCounts(childInode, childRefCounts);
@@ -452,15 +511,9 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
     }
 
     protected void incrementSlaveRefCount(String slave) {
-        AtomicInteger currentCount;
         synchronized (_slaveRefCounts) {
-            currentCount = _slaveRefCounts.get(slave);
-            if (currentCount == null) {
-                currentCount = new AtomicInteger(0);
-                _slaveRefCounts.put(slave, currentCount);
-            }
+            adjustSlaveRefCount(slave, 1);
         }
-        currentCount.incrementAndGet();
         if (!isRoot()) {
             getParent().incrementSlaveRefCount(slave);
         }
@@ -468,15 +521,13 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
     }
 
     protected void decrementSlaveRefCount(String slave) {
-        AtomicInteger currentCount;
         synchronized (_slaveRefCounts) {
-            currentCount = _slaveRefCounts.get(slave);
-            if (currentCount == null) {
-                currentCount = new AtomicInteger(0);
-                _slaveRefCounts.put(slave, currentCount);
+            if (_slaveRefCounts.containsKey(slave)) {
+                adjustSlaveRefCount(slave, -1);
+            } else {
+                logger.warn("Decrementing ref count for slave {} on {} but the slave has no count against this directory, skipping", slave, getPath());
             }
         }
-        currentCount.decrementAndGet();
         if (!isRoot()) {
             getParent().decrementSlaveRefCount(slave);
         }
@@ -488,7 +539,10 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
     }
 
     protected int getRefCountForSlave(String slave) {
-        AtomicInteger slaveCount = _slaveRefCounts.get(slave);
+        AtomicInteger slaveCount;
+        synchronized (_slaveRefCounts) {
+            slaveCount = _slaveRefCounts.get(slave);
+        }
         if (slaveCount == null) {
             return 0;
         }
@@ -507,15 +561,13 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
                 }
             }
             try {
-                Map<String, AtomicInteger> inodeCounts = inode.getSlaveRefCounts();
-                for (String slave : inodeCounts.keySet()) {
-                    AtomicInteger currCount = updCounts.get(slave);
-                    if (currCount == null) {
-                        currCount = inodeCounts.get(slave);
-                    } else {
-                        currCount.addAndGet(inodeCounts.get(slave).get());
+                // Always sum into a new AtomicInteger: storing the child's object here and adding
+                // the other children to it would overwrite the child's own count (issue #52)
+                for (Map.Entry<String, AtomicInteger> entry : inode.getSlaveRefCounts().entrySet()) {
+                    int count = entry.getValue().get();
+                    if (count > 0) {
+                        updCounts.computeIfAbsent(entry.getKey(), k -> new AtomicInteger(0)).addAndGet(count);
                     }
-                    updCounts.put(slave, currCount);
                 }
             } catch (FileNotFoundException e) {
                 // Inode has been deleted, skip it
