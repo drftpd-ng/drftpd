@@ -138,7 +138,7 @@ public class SlaveSelectionManager extends SlaveSelectionManagerInterface {
             throw new NoAvailableSlaveException();
         }
 
-        return process("jobup", new ScoreChart(slaves), null, Transfer.TRANSFER_SENDING_DOWNLOAD, file, sourceSlave);
+        return process("jobup", new ScoreChart(slaves), null, Transfer.TRANSFER_RECEIVING_UPLOAD, file, sourceSlave);
     }
 
 
