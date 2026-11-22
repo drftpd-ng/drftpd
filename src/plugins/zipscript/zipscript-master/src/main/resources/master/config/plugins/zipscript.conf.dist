@@ -104,3 +104,13 @@ irc.zip.maxgroups=10
 cwd.flacinfo.enabled=true
 stor.flacinfo.enabled=true
 
+
+# Per-release-type announce themes (opt-in).
+# When true, the sfv.* and zip.* announce keys in the irc theme are first looked up with a
+#  release type suffix and fall back to the plain key when no such key exists, e.g.
+#  sfv.store.complete.mp3.vbr -> sfv.store.complete.mp3 -> sfv.store.complete.audio -> sfv.store.complete
+# Types: mp3.cbr, mp3.vbr, mp3, flac, audio, rar, video, zip
+#  (the type is taken from the file that was just uploaded; mp3.cbr/mp3.vbr come from the MP3 info)
+# With no suffixed keys in the theme, output is identical to leaving this off.
+# Default: [false]
+irc.themes.bytype=false

@@ -39,6 +39,8 @@ import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.master.vfs.InodeHandle;
 import org.drftpd.zipscript.common.zip.DizInfo;
+import org.drftpd.zipscript.master.announce.ReleaseTypes;
+import org.drftpd.zipscript.master.announce.TypeAwareBundle;
 import org.drftpd.zipscript.master.zip.event.ZipTransferEvent;
 import org.drftpd.zipscript.master.zip.vfs.ZipscriptVFSDataZip;
 
@@ -61,7 +63,7 @@ public class ZipAnnouncer extends AbstractAnnouncer {
 
     public void initialise(AnnounceConfig config, ResourceBundle bundle) {
         _config = config;
-        _bundle = bundle;
+        _bundle = TypeAwareBundle.wrap(bundle);
 
         // Subscribe to events
         AnnotationProcessor.process(this);
@@ -77,7 +79,7 @@ public class ZipAnnouncer extends AbstractAnnouncer {
     }
 
     public void setResourceBundle(ResourceBundle bundle) {
-        _bundle = bundle;
+        _bundle = TypeAwareBundle.wrap(bundle);
     }
 
     @EventSubscriber
@@ -89,7 +91,12 @@ public class ZipAnnouncer extends AbstractAnnouncer {
 
     @EventSubscriber
     public void onZipTransferEvent(ZipTransferEvent zipEvent) {
-        outputZipSTOR(zipEvent);
+        ReleaseTypes.apply(_bundle, zipEvent.getDirectory(), zipEvent.getTransferFile().getName());
+        try {
+            outputZipSTOR(zipEvent);
+        } finally {
+            TypeAwareBundle.clearTypes();
+        }
     }
 
     private void outputZipSTOR(ZipTransferEvent zipEvent) {

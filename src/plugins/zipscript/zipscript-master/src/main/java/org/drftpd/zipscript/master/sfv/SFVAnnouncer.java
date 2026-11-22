@@ -43,6 +43,8 @@ import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.master.vfs.InodeHandle;
 import org.drftpd.zipscript.common.sfv.SFVInfo;
+import org.drftpd.zipscript.master.announce.ReleaseTypes;
+import org.drftpd.zipscript.master.announce.TypeAwareBundle;
 import org.drftpd.zipscript.common.sfv.SFVStatus;
 import org.drftpd.zipscript.master.sfv.event.SFVMemberTransferEvent;
 import org.drftpd.zipscript.master.sfv.vfs.ZipscriptVFSDataSFV;
@@ -71,7 +73,7 @@ public class SFVAnnouncer extends AbstractAnnouncer {
     public void initialise(AnnounceConfig config, ResourceBundle bundle) {
         _timer = new Timer();
         _config = config;
-        _bundle = bundle;
+        _bundle = TypeAwareBundle.wrap(bundle);
 
         // Subscribe to events
         AnnotationProcessor.process(this);
@@ -87,12 +89,17 @@ public class SFVAnnouncer extends AbstractAnnouncer {
     }
 
     public void setResourceBundle(ResourceBundle bundle) {
-        _bundle = bundle;
+        _bundle = TypeAwareBundle.wrap(bundle);
     }
 
     @EventSubscriber
     public void onSFVMemberTransferEvent(SFVMemberTransferEvent sfvEvent) {
-        outputSFVMemberSTOR(sfvEvent);
+        ReleaseTypes.apply(_bundle, sfvEvent.getDirectory(), sfvEvent.getTransferFile().getName());
+        try {
+            outputSFVMemberSTOR(sfvEvent);
+        } finally {
+            TypeAwareBundle.clearTypes();
+        }
     }
 
     private void outputSFVMemberSTOR(SFVMemberTransferEvent sfvEvent) {
