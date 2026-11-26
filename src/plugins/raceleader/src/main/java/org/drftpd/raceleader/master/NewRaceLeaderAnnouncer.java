@@ -70,7 +70,14 @@ public class NewRaceLeaderAnnouncer extends AbstractAnnouncer {
         _bundle = bundle;
     }
 
+    /**
+     * @return the user's primary group only (secondary groups are not matched by hideuser.groups),
+     * or an empty string if the user is unknown
+     */
     private static String groupOf(String username) {
+        if (username == null) {
+            return "";
+        }
         try {
             return GlobalContext.getGlobalContext().getUserManager().getUserByName(username).getGroup().toString();
         } catch (NoSuchUserException | UserFileException e) {

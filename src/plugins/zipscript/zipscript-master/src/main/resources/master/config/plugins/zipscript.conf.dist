@@ -112,6 +112,7 @@ hideuser.enabled=false
 
 # Members of these groups are shown as the placeholder instead of their name,
 # and the groups themselves are shown as the group placeholder in the group stats.
+# Only the user's primary group is matched, not secondary groups.
 # Space or comma separated, not case sensitive.
 hideuser.groups=
 
