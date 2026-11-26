@@ -1,0 +1,2 @@
+traffic.dual.up=${color}15${bold}DUALING:${bold}${coloroff} 'UP : ${color}15${nickname}${coloroff}' - '${color}15${path}/${file}${coloroff}' - '${color}15${speed}${coloroff}' (${action})
+traffic.dual.dn=${color}15${bold}DUALING:${bold}${coloroff} 'DN : ${color}15${nickname}${coloroff}' - '${color}15${path}/${file}${coloroff}' - '${color}15${speed}${coloroff}' (${action})

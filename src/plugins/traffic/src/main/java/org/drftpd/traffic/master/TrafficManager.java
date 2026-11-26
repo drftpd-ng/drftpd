@@ -31,8 +31,15 @@ import org.drftpd.master.event.ReloadEvent;
 import org.reflections.Reflections;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author CyBeR
@@ -45,6 +52,15 @@ public class TrafficManager implements PluginInterface {
     private CaseInsensitiveHashMap<String, Class<? extends TrafficType>> _typesMap;
 
     private ArrayList<TrafficType> _traffictypes;
+
+    /** Opt-in "dual" rules (same user, several transfers in the same release). Empty unless configured. */
+    private volatile List<DualRule> _dualRules = new ArrayList<>();
+
+    private final Map<String, Long> _dualLastFired = new HashMap<>();
+
+    private ScheduledExecutorService _dualScheduler;
+
+    private static final long DUAL_SCAN_INTERVAL_SECONDS = 5;
 
     public static TrafficManager getTrafficManager() {
         for (PluginInterface plugin : GlobalContext.getGlobalContext().getPlugins()) {
@@ -66,6 +82,8 @@ public class TrafficManager implements PluginInterface {
     public void stopPlugin(String reason) {
         AnnotationProcessor.unprocess(this);
         _traffictypes = new ArrayList<>();
+        _dualRules = new ArrayList<>();
+        stopDualScanner();
     }
 
     @EventSubscriber
@@ -114,21 +132,103 @@ public class TrafficManager implements PluginInterface {
     public void loadConf() {
         initTypes();
         _traffictypes = new ArrayList<>();
+        List<DualRule> dualRules = new ArrayList<>();
         Properties props = ConfigLoader.loadPluginConfig("traffic.conf");
         int count = 1;
         String type;
         while ((type = PropertyHelper.getProperty(props, count + ".type", null)) != null) {
             logger.debug("Checking for [{}]", count + ".type");
+            if (type.trim().equalsIgnoreCase("dual")) {
+                DualRule rule = loadDualRule(count, props);
+                if (rule != null) {
+                    dualRules.add(rule);
+                }
+                count++;
+                continue;
+            }
             TrafficType trafficType = getTrafficType(count, type, props);
             if (trafficType != null) {
                 _traffictypes.add(trafficType);
             }
             count++;
         }
+        _dualRules = dualRules;
+        synchronized (_dualLastFired) {
+            _dualLastFired.clear();
+        }
+        stopDualScanner();
+        if (!dualRules.isEmpty()) {
+            startDualScanner();
+        }
         logger.info("Succesfully processed [{}] config statements", count);
         logger.info("Registered traffic types:");
         for (TrafficType tt : getTrafficTypes()) {
             logger.info("- {}", tt.getName());
+        }
+    }
+
+    /*
+     * Builds a dual rule: x.action (default/kick/ban) selects the existing type used to act.
+     * The action type is only wrapped, never registered, so it can not affect normal transfers.
+     * The event type is prefixed with "dual-" so the dual announcer (and not the slow-transfer one) announces it.
+     */
+    private DualRule loadDualRule(int count, Properties props) {
+        String action = PropertyHelper.getProperty(props, count + ".action", "default").trim().toLowerCase();
+        try {
+            Class<? extends TrafficType> clazz = _typesMap.get(action);
+            if (clazz == null) {
+                throw new RuntimeException("Unknown " + count + ".action=" + action + " - Skipping Config");
+            }
+            TrafficType delegate = clazz.getConstructor(Properties.class, int.class, String.class)
+                    .newInstance(props, count, "dual-" + action);
+            return new DualRule(props, count, delegate);
+        } catch (Exception e) {
+            Throwable cause = e.getCause() != null ? e.getCause() : e;
+            logger.error("Unable to load Dual rule {}: {}", count, cause.getMessage());
+            return null;
+        }
+    }
+
+    private synchronized void startDualScanner() {
+        _dualScheduler = Executors.newSingleThreadScheduledExecutor(r -> {
+            Thread t = new Thread(r, "TrafficManager dual scanner");
+            t.setDaemon(true);
+            return t;
+        });
+        _dualScheduler.scheduleWithFixedDelay(this::scanDual, DUAL_SCAN_INTERVAL_SECONDS,
+                DUAL_SCAN_INTERVAL_SECONDS, TimeUnit.SECONDS);
+        logger.info("Dual transfer detection enabled with {} rule(s)", _dualRules.size());
+    }
+
+    private synchronized void stopDualScanner() {
+        if (_dualScheduler != null) {
+            _dualScheduler.shutdownNow();
+            _dualScheduler = null;
+        }
+    }
+
+    private void scanDual() {
+        try {
+            List<DualRule> rules = _dualRules;
+            if (rules.isEmpty()) {
+                return;
+            }
+            List<DualCheck.Sample> samples = DualRule.collect();
+            Set<String> handled = new HashSet<>();
+            long now = System.currentTimeMillis();
+            synchronized (_dualLastFired) {
+                long maxCooldownMs = 0;
+                for (DualRule rule : rules) {
+                    maxCooldownMs = Math.max(maxCooldownMs, rule.getCooldownMs());
+                }
+                DualRule.purgeExpired(_dualLastFired, now, maxCooldownMs);
+                for (DualRule rule : rules) {
+                    rule.run(samples, handled, _dualLastFired, now);
+                }
+            }
+        } catch (Throwable t) {
+            // never let the scheduled task die
+            logger.error("Error while scanning for dual transfers", t);
         }
     }
 

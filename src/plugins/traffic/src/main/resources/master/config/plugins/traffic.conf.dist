@@ -37,5 +37,39 @@
 # x.bantime = Time in seconds to ban user (Default 300).                                           #
 # x.kickall = Kick all connections or just current (True/False) (Default true).                    #
 #                                                                                                  #
+# - Dual (opt-in, only active when a x.type=Dual entry exists below):                              #
+#                                                                                                  #
+# Detects a user running several simultaneous transfers of the SAME release directory, each        #
+# faster than x.minspeed (dualing). Uploads and downloads are counted separately. The action       #
+# is applied to the most recently started transfer, once per user/release per x.cooldown.          #
+# The "release" is the parent directory of the transferred file: CD1 and CD2 (or release and its   #
+# Sample dir) are different releases and are counted separately.                                   #
+# Dual entries never limit speed and never affect the other types (they are not first-match).      #
+# A Dual entry is skipped (and logged) if minspeed is 0, perms is empty or neither up/dn is set.   #
+#                                                                                                  #
+# x.action = default (announce only), kick or ban (same extra keys as those types).                #
+# x.limit = Simultaneous transfers that trigger (Default 2, minimum 2).                            #
+# x.cooldown = Seconds before the same user/release can be actioned again (Default 60).            #
+# x.takecredits = Credits to take in KB on detection (Default 0 = none).                           #
+# x.perms = Who it applies to; '!' entries first exempt users/groups ('!=staff *').                #
+# x.exclude = Regex of paths (sections) that are exempt.                                           #
+#                                                                                                  #
+# Example below the box (uncomment to enable).                                                     #
+#                                                                                                  #
 ####################################################################################################
 
+
+# Dual example (off by default): kick a user (except staff) who uploads 2+ files of the same release
+# at once, each above 500 KB/s, in /MP3 (not in /MP3/PRE). Use x.action=default to only announce.
+#1.type=Dual
+#1.name=NoDualing
+#1.action=kick
+#1.reason=Dualing is not allowed
+#1.minspeed=500
+#1.up=true
+#1.dn=false
+#1.limit=2
+#1.cooldown=60
+#1.perms=!=staff *
+#1.include=/MP3/.*
+#1.exclude=/MP3/PRE/.*
