@@ -89,7 +89,8 @@ public class BlowfishECB extends Blowfish {
 
     public DecryptedText decryptPayload(String textToDecrypt) throws Exception {
         // Every 8 byte block is 12 characters, a line cut by the server keeps
-        // its complete blocks like FiSH does
+        // its complete blocks like FiSH does. A cut on a 12 character boundary
+        // leaves whole blocks and is not detected.
         if (textToDecrypt.length() < 12) {
             throw new IllegalArgumentException("ECB payload too short");
         }

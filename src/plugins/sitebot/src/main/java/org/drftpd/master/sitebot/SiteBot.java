@@ -1475,7 +1475,8 @@ public class SiteBot implements ReplyConstants, Runnable {
             }
         }
         // Check if the message is a command we should respond to, a cut line could
-        // run a command with missing arguments
+        // run a command with missing arguments. Cut detection is best effort (a cut on
+        // a block boundary is not seen), so this usually, not always, stops such a command.
         if (message.startsWith(_config.getCommandTrigger())) {
             if (cut) {
                 logger.debug("Not running command from {} in {}, the encrypted line was cut", sender, channel);
@@ -1535,7 +1536,8 @@ public class SiteBot implements ReplyConstants, Runnable {
             }
         }
         // Check if the message is a command we should respond to, a cut line could
-        // run a command with missing arguments
+        // run a command with missing arguments. Cut detection is best effort (a cut on
+        // a block boundary is not seen), so this usually, not always, stops such a command.
         if (message.startsWith(_config.getCommandTrigger())) {
             if (cut) {
                 logger.debug("Not running command from {}, the encrypted line was cut", sender);

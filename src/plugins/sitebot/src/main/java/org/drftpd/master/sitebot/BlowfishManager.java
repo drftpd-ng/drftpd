@@ -117,7 +117,8 @@ class BlowfishManager {
 
     /**
      * Same as {@link #decrypt(String)}, but also tells whether the line was cut
-     * and only part of it could be decrypted.
+     * and only part of it could be decrypted. This is best effort, a cut on a block
+     * boundary is not detected, see {@link org.drftpd.master.sitebot.blowfish.DecryptedText}.
      *
      * @param toDecrypt the line as received
      * @return the decrypted text, or null if the line is not encrypted, could not be

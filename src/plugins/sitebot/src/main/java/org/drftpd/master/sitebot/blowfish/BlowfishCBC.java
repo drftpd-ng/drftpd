@@ -74,6 +74,8 @@ public class BlowfishCBC extends Blowfish {
     public DecryptedText decryptPayload(String textToDecrypt) throws Exception {
         //1- decrypt with BASE64 decoder. A line cut by the server can end in the
         //   middle of a base64 group, drop what cannot be decoded like FiSH does.
+        //   A cut at the end of a block (for example after 32 characters) leaves whole
+        //   blocks and is not detected.
         String base64 = textToDecrypt;
         while (base64.endsWith("=")) {
             base64 = base64.substring(0, base64.length() - 1);

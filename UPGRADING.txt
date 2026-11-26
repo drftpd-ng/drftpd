@@ -67,7 +67,10 @@ The sitebot now handles blowfish lines the way FiSH 10 does:
   without the prefix is stored as ECB, as before. Note that ECB keys from the userfile are only
   used when blowfish.dh1080.ecb=true; otherwise a DH1080 exchange is started instead.
 - A line cut by the IRC server is decrypted up to its last complete block and passed to the
-  listeners, but it is never run as a command, since its arguments may be cut short.
+  listeners. A cut line is usually detected and then not run as a command, since its arguments
+  may be cut short. Detection is best effort: a cut that falls exactly at the end of an
+  encrypted block (every 12 characters in ECB, every 10 or 11 characters in CBC) decodes
+  cleanly and is not detected.
 - Text after the first space of an encrypted line (for example a timestamp added by a BNC) is
   not encrypted and is now dropped.
 - Lines that cannot be decrypted are ignored and logged; the bot no longer treats the text

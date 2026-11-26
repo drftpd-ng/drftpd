@@ -21,7 +21,10 @@ package org.drftpd.master.sitebot.blowfish;
  * Text of a decrypted line
  *
  * @param text the decrypted text
- * @param cut  true if the encrypted line was cut and only its complete blocks were decrypted
+ * @param cut  true if the encrypted line was found to be cut and only its complete blocks were
+ *             decrypted. Best effort: a line cut exactly at the end of an 8 byte block (every
+ *             12 characters in ECB, every 10 or 11 base64 characters in CBC, for example 32)
+ *             decodes cleanly and is not flagged, so a cut line is usually, not always, detected
  */
 public record DecryptedText(String text, boolean cut) {
 }
