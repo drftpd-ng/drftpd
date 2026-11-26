@@ -20,6 +20,7 @@ report, for example `DrFTPD 4.0.12-beta3 (87d6ba0)`. A build from a source tarba
 3. Commit (for example `Release 4.0.12`).
 4. Tag with exactly the version, **without a leading `v`** (`4.0.12`, `4.0.12-beta3`), and push the tag:
    `git tag 4.0.12 && git push origin 4.0.12`
+   The Docker workflow builds the images for that tag, and stops with an error if the tag is not exactly `<revision>`.
 5. Set `<revision>` back to the next `-SNAPSHOT` (for example `4.0.13-SNAPSHOT`) and commit.
 
 ## Building another version without editing the pom

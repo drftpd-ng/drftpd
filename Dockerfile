@@ -15,9 +15,7 @@ RUN set -ux \
     && cd /drftpd-source \
     && mvn clean \
     && mvn validate \
-    && mvn install \
-    && git rev-parse --short HEAD > runtime/master/HEAD.version \
-    && git rev-parse --short HEAD > runtime/slave/HEAD.version
+    && mvn install
 
 
 # build master image
