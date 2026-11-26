@@ -187,9 +187,10 @@ public class SiteBotConfig {
         _localBindHost = cfg.getProperty("bind.host");
         _botName = cfg.getProperty("bot.name");
         _commandsMax = Integer.parseInt(cfg.getProperty("commands.max", "5").trim());
-        if (cfg.getProperty("commands.full").equalsIgnoreCase("block")) {
+        String commandsFull = cfg.getProperty("commands.full", "queue").trim();
+        if (commandsFull.equalsIgnoreCase("block")) {
             _commandsBlock = true;
-        } else if (cfg.getProperty("commands.full").equalsIgnoreCase("queue")) {
+        } else if (commandsFull.equalsIgnoreCase("queue")) {
             _commandsQueue = true;
         }
         _maxLineLength = Integer.parseInt(cfg.getProperty("line.length.max", "512"));
