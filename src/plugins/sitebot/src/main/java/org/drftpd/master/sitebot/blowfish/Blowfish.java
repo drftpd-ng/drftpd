@@ -76,10 +76,10 @@ public abstract class Blowfish {
      *
      * @param payload the encrypted text without the "+OK " / "mcps " prefix
      *                (and without the "*" CBC marker)
-     * @return String the decrypted string
+     * @return the decrypted text, flagged when the line was cut
      * @throws Exception if any error occurred
      */
-    public abstract String decryptPayload(String payload) throws Exception;
+    public abstract DecryptedText decryptPayload(String payload) throws Exception;
 
     /**
      * Encrypt the string

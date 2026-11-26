@@ -30,6 +30,7 @@ import org.drftpd.master.commands.CommandRequestInterface;
 import org.drftpd.master.commands.CommandResponseInterface;
 import org.drftpd.master.event.ReloadEvent;
 import org.drftpd.master.exceptions.FatalException;
+import org.drftpd.master.sitebot.blowfish.DecryptedText;
 import org.drftpd.master.sitebot.config.AnnounceConfig;
 import org.drftpd.master.sitebot.config.ChannelConfig;
 import org.drftpd.master.sitebot.config.ServerConfig;
@@ -1448,6 +1449,7 @@ public class SiteBot implements ReplyConstants, Runnable {
      * @param message  The actual message sent to the channel.
      */
     protected void onMessage(String channel, String sender, String login, String hostname, String message) {
+        boolean cut = false;
         if (_config.getBlowfishEnabled()) {
             if (message.startsWith("+OK ") || message.startsWith("mcps ")) {
                 BlowfishManager chanCipher = _ciphers.get(channel);
@@ -1457,10 +1459,12 @@ public class SiteBot implements ReplyConstants, Runnable {
                     return;
                 }
                 logger.debug("Encrypted message: {}", message);
-                message = chanCipher.decrypt(message);
-                if (message == null) {
+                DecryptedText decrypted = chanCipher.decryptLine(message);
+                if (decrypted == null) {
                     return;
                 }
+                message = decrypted.text();
+                cut = decrypted.cut();
                 logger.debug("Decrypted message: {}", message);
             } else {
                 // means we got an unencrypted line from a chan that should be encrypted
@@ -1470,9 +1474,14 @@ public class SiteBot implements ReplyConstants, Runnable {
                 return;
             }
         }
-        // Check if the message is a command we should respond to
+        // Check if the message is a command we should respond to, a cut line could
+        // run a command with missing arguments
         if (message.startsWith(_config.getCommandTrigger())) {
-            handleCommand(channel, sender, sender + "!" + login + "@" + hostname, message, true);
+            if (cut) {
+                logger.debug("Not running command from {} in {}, the encrypted line was cut", sender, channel);
+            } else {
+                handleCommand(channel, sender, sender + "!" + login + "@" + hostname, message, true);
+            }
         }
 
         sendtoListener(channel, sender, sender + "!" + login + "@" + hostname, message);
@@ -1490,6 +1499,7 @@ public class SiteBot implements ReplyConstants, Runnable {
      * @param message  The actual message.
      */
     protected void onPrivateMessage(String sender, String login, String hostname, String message) {
+        boolean cut = false;
         if (_config.getBlowfishEnabled()) {
             if (message.startsWith("+OK ") || message.startsWith("mcps ")) {
                 BlowfishManager cipher = getUserDetails(sender, sender + "!" + login + "@" + hostname).getBlowCipher();
@@ -1502,10 +1512,12 @@ public class SiteBot implements ReplyConstants, Runnable {
                      */
                     return;
                 }
-                message = cipher.decrypt(message);
-                if (message == null) {
+                DecryptedText decrypted = cipher.decryptLine(message);
+                if (decrypted == null) {
                     return;
                 }
+                message = decrypted.text();
+                cut = decrypted.cut();
             } else {
                 if (_users.containsKey(sender)) {
                     StringBuilder reply = new StringBuilder("Use site command ");
@@ -1522,9 +1534,14 @@ public class SiteBot implements ReplyConstants, Runnable {
                 return;
             }
         }
-        // Check if the message is a command we should respond to
+        // Check if the message is a command we should respond to, a cut line could
+        // run a command with missing arguments
         if (message.startsWith(_config.getCommandTrigger())) {
-            handleCommand(null, sender, sender + "!" + login + "@" + hostname, message, false);
+            if (cut) {
+                logger.debug("Not running command from {}, the encrypted line was cut", sender);
+            } else {
+                handleCommand(null, sender, sender + "!" + login + "@" + hostname, message, false);
+            }
         }
 
         sendtoListener(null, sender, sender + "!" + login + "@" + hostname, message);

@@ -22,6 +22,7 @@ import org.apache.logging.log4j.Logger;
 import org.drftpd.master.sitebot.blowfish.Blowfish;
 import org.drftpd.master.sitebot.blowfish.BlowfishCBC;
 import org.drftpd.master.sitebot.blowfish.BlowfishECB;
+import org.drftpd.master.sitebot.blowfish.DecryptedText;
 
 class BlowfishManager {
 
@@ -110,6 +111,19 @@ class BlowfishManager {
      * decrypted or must be ignored
      */
     String decrypt(String toDecrypt) {
+        DecryptedText decrypted = decryptLine(toDecrypt);
+        return decrypted == null ? null : decrypted.text();
+    }
+
+    /**
+     * Same as {@link #decrypt(String)}, but also tells whether the line was cut
+     * and only part of it could be decrypted.
+     *
+     * @param toDecrypt the line as received
+     * @return the decrypted text, or null if the line is not encrypted, could not be
+     * decrypted or must be ignored
+     */
+    DecryptedText decryptLine(String toDecrypt) {
         String payload;
         if (toDecrypt.startsWith(PREFIX_OK)) {
             payload = toDecrypt.substring(PREFIX_OK.length());

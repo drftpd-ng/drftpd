@@ -71,7 +71,7 @@ public class BlowfishCBC extends Blowfish {
         super(key, "Blowfish/CBC/NoPadding");
     }
 
-    public String decryptPayload(String textToDecrypt) throws Exception {
+    public DecryptedText decryptPayload(String textToDecrypt) throws Exception {
         //1- decrypt with BASE64 decoder. A line cut by the server can end in the
         //   middle of a base64 group, drop what cannot be decoded like FiSH does.
         String base64 = textToDecrypt;
@@ -105,7 +105,7 @@ public class BlowfishCBC extends Blowfish {
         byte[] lDecoded = cipher.doFinal(base64Decoded);
 
         //4- Delete the first 8 byte (IV) and stop at the padding
-        return decodeText(untilFirstZero(lDecoded, 8), cut);
+        return new DecryptedText(decodeText(untilFirstZero(lDecoded, 8), cut), cut);
     }
 
     public String encrypt(String rawString) throws Exception {

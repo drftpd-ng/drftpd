@@ -19,6 +19,7 @@ package org.drftpd.master.sitebot;
 
 import org.drftpd.master.sitebot.blowfish.BlowfishCBC;
 import org.drftpd.master.sitebot.blowfish.BlowfishECB;
+import org.drftpd.master.sitebot.blowfish.DecryptedText;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 
@@ -237,6 +238,21 @@ public class BlowfishTest  {
         for (String mode : new String[]{"ECB", "CBC"}) {
             BlowfishManager manager = new BlowfishManager("cl\u00e9", mode);
             assertEquals(text, manager.decrypt(manager.encrypt(text)), mode);
+        }
+    }
+
+    @Test
+    public void testCutLineIsFlagged() {
+        String text = "!request some.release.name-GROUP";
+        for (String mode : new String[]{"ECB", "CBC"}) {
+            BlowfishManager manager = new BlowfishManager("drftpd", mode);
+            String line = manager.encrypt(text);
+            DecryptedText whole = manager.decryptLine(line);
+            assertEquals(text, whole.text(), mode);
+            assertFalse(whole.cut(), mode);
+            DecryptedText cut = manager.decryptLine(line.substring(0, line.length() - 7));
+            assertTrue(cut.cut(), mode);
+            assertTrue(text.startsWith(cut.text()) && cut.text().length() < text.length(), mode + ": " + cut.text());
         }
     }
 }

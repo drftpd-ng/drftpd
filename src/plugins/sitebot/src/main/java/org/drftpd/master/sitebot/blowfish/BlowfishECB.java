@@ -87,7 +87,7 @@ public class BlowfishECB extends Blowfish {
         return REncrypt;
     }
 
-    public String decryptPayload(String textToDecrypt) throws Exception {
+    public DecryptedText decryptPayload(String textToDecrypt) throws Exception {
         // Every 8 byte block is 12 characters, a line cut by the server keeps
         // its complete blocks like FiSH does
         if (textToDecrypt.length() < 12) {
@@ -112,7 +112,7 @@ public class BlowfishECB extends Blowfish {
         byte[] decrypted = cipher.doFinal(Again);
 
         // Stop at the padding
-        return decodeText(untilFirstZero(decrypted, 0), cut);
+        return new DecryptedText(decodeText(untilFirstZero(decrypted, 0), cut), cut);
     }
 
     /**
