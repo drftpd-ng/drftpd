@@ -162,7 +162,9 @@ public class MediaInfoPostHook {
         try {
             mediaInfo = mediaData.getMediaInfo();
         } catch (IOException | NoAvailableSlaveException | SlaveUnavailableException e) {
-            logger.warn("MediaInfo lookup failed: {}", e.getMessage(), e);
+            // Routine when a slave is offline, so the stack trace is only logged at debug level
+            logger.warn("MediaInfo lookup failed: {}", e.getMessage());
+            logger.debug("MediaInfo lookup failed", e);
             return;
         }
 

@@ -97,7 +97,9 @@ public class NukeTask extends TimerTask {
             nukeUser = GlobalContext.getGlobalContext().getUserManager().
                     getUserByNameUnchecked(AutoNukeSettings.getSettings().getNukeUser());
         } catch (NoSuchUserException | UserFileException nsue) {
-            logger.error("Cannot get nuke user: {}", nsue.getMessage(), nsue);
+            // Checked on every run, so the stack trace is only logged at debug level
+            logger.error("Cannot get nuke user: {}", nsue.getMessage());
+            logger.debug("Cannot get nuke user", nsue);
             return;
         }
 
