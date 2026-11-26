@@ -113,6 +113,9 @@ stor.flacinfo.enabled=true
 # Note: perms.conf can already deny uploads by path/name ("upload /*.url !*" or
 # "uploadex (?i)\.(url|lnk)$ !*"), but it only answers with a generic permission denied and has no
 # per-section replacement list.
+# Note: the nocheck.dirs option (directories where the zipscript checks are skipped) does not apply to
+# this hook; use the per-directory overrides below to exempt a directory.
+# Changes are picked up on SITE RELOAD. Invalid globs are skipped and logged as a warning.
 # Default: [] (disabled)
 #banned.filenames=*.url,*.lnk,*.scr,*.bat,*.cmd,*.exe,*.pif,thumbs.db,desktop.ini,.*
 

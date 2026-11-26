@@ -17,18 +17,38 @@
  */
 package org.drftpd.zipscript.master.sfv.banned;
 
+import org.bushe.swing.event.annotation.AnnotationProcessor;
+import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.common.extensibility.CommandHook;
 import org.drftpd.common.extensibility.HookType;
 import org.drftpd.common.util.ConfigLoader;
 import org.drftpd.master.commands.CommandRequest;
 import org.drftpd.master.commands.CommandRequestInterface;
 import org.drftpd.master.commands.CommandResponse;
+import org.drftpd.master.event.ReloadEvent;
 import org.drftpd.master.vfs.FileHandle;
 
 /**
  * Refuses STOR of files whose name matches {@code banned.filenames} in zipscript.conf (off when empty).
  */
 public class ZipscriptBannedFilenamesPreHook {
+
+    // parsed once and again on SITE RELOAD, so STOR does not read zipscript.conf every time
+    private volatile BannedFilenames _banned;
+
+    public ZipscriptBannedFilenamesPreHook() {
+        AnnotationProcessor.process(this);
+        loadConf();
+    }
+
+    @EventSubscriber
+    public void onReloadEvent(ReloadEvent event) {
+        loadConf();
+    }
+
+    private void loadConf() {
+        _banned = BannedFilenames.fromProperties(ConfigLoader.loadPluginConfig("zipscript.conf"));
+    }
 
     // runs after the sfv pre check (priority 10): pre hooks all run and the last denial sets the reply,
     // so this keeps the clearer "file name is not allowed" message for banned names
@@ -37,7 +57,7 @@ public class ZipscriptBannedFilenamesPreHook {
         if (!request.hasArgument()) {
             return request;
         }
-        BannedFilenames banned = BannedFilenames.fromProperties(ConfigLoader.loadPluginConfig("zipscript.conf"));
+        BannedFilenames banned = _banned;
         if (banned.isEmpty()) {
             return request;
         }

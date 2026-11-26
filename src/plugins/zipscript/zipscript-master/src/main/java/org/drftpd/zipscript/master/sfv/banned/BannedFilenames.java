@@ -17,6 +17,8 @@
  */
 package org.drftpd.zipscript.master.sfv.banned;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.drftpd.common.util.GlobPattern;
 
 import java.util.ArrayList;
@@ -36,6 +38,8 @@ import java.util.regex.PatternSyntaxException;
  */
 public final class BannedFilenames {
 
+    private static final Logger logger = LogManager.getLogger(BannedFilenames.class);
+
     private static final int FLAGS = Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
 
     private final List<Pattern> _global;
@@ -50,7 +54,7 @@ public final class BannedFilenames {
     }
 
     /**
-     * Parse a comma separated list of globs. Blank entries are ignored and invalid ones are skipped.
+     * Parse a comma separated list of globs. Blank entries are ignored and invalid ones are skipped (with a warning naming the glob).
      */
     static List<Pattern> parsePatterns(String list) {
         List<Pattern> result = new ArrayList<>();
@@ -65,7 +69,8 @@ public final class BannedFilenames {
             try {
                 result.add(GlobPattern.compile(glob, FLAGS));
             } catch (PatternSyntaxException e) {
-                // invalid pattern, ignore it rather than breaking uploads
+                // ignore it rather than breaking uploads, but make the typo visible
+                logger.warn("Ignoring invalid glob '{}' in banned.filenames: {}", glob, e.getDescription());
             }
         }
         return result;
@@ -88,7 +93,8 @@ public final class BannedFilenames {
                 overrides.add(new DirOverride(GlobPattern.compile(path.trim(), FLAGS),
                         parsePatterns(cfg.getProperty("banned.filenames.override." + i + ".patterns", ""))));
             } catch (PatternSyntaxException e) {
-                // invalid path glob, ignore this override
+                logger.warn("Ignoring banned.filenames.override.{} with invalid path glob '{}': {}",
+                        i, path.trim(), e.getDescription());
             }
         }
         return new BannedFilenames(global, overrides);
