@@ -94,7 +94,7 @@
                 </Delete>
             </DefaultRolloverStrategy>
         </RollingFile>
-        <RollingFile name="commands" fileName="${baseDir}/commands.log" filePattern="${baseDir}/$${date:yyyy-MM}/index-%d{yyyy-MM-dd}.log.gz">
+        <RollingFile name="commands" fileName="${baseDir}/commands.log" filePattern="${baseDir}/$${date:yyyy-MM}/commands-%d{yyyy-MM-dd}.log.gz">
             <PatternLayout pattern="%p %d{ISO8601} [%t] %c %x - %m%n" />
             <CronTriggeringPolicy schedule="0 0 0 * * ?" />
             <DefaultRolloverStrategy>
@@ -104,7 +104,7 @@
                 </Delete>
             </DefaultRolloverStrategy>
         </RollingFile>
-        <RollingFile name="vfs" fileName="${baseDir}/vfs.log" filePattern="${baseDir}/$${date:yyyy-MM}/index-%d{yyyy-MM-dd}.log.gz">
+        <RollingFile name="vfs" fileName="${baseDir}/vfs.log" filePattern="${baseDir}/$${date:yyyy-MM}/vfs-%d{yyyy-MM-dd}.log.gz">
             <PatternLayout pattern="%p %d{ISO8601} [%t] %c %x - %m%n" />
             <CronTriggeringPolicy schedule="0 0 0 * * ?" />
             <DefaultRolloverStrategy>
@@ -114,7 +114,7 @@
                 </Delete>
             </DefaultRolloverStrategy>
         </RollingFile>
-        <RollingFile name="events" fileName="${baseDir}/events.log" filePattern="${baseDir}/$${date:yyyy-MM}/index-%d{yyyy-MM-dd}.log.gz">
+        <RollingFile name="events" fileName="${baseDir}/events.log" filePattern="${baseDir}/$${date:yyyy-MM}/events-%d{yyyy-MM-dd}.log.gz">
             <PatternLayout pattern="%p %d{ISO8601} [%t] %c %x - %m%n" />
             <CronTriggeringPolicy schedule="0 0 0 * * ?" />
             <DefaultRolloverStrategy>
