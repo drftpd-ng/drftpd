@@ -99,11 +99,10 @@ public class SiteBot implements ReplyConstants, Runnable {
     // A HashMap of BlowfishManager objects for channels we are aware of
     private final CaseInsensitiveHashMap<String, BlowfishManager> _ciphers = new CaseInsensitiveHashMap<>();
     /*
-     * A HashMap of DH1080 objects for users, this is used to store a
-     * temporary object when initiating a DH1080 request whilst we wait
-     * for the response
+     * DH1080 exchanges started by the bot, kept whilst we wait for the
+     * response. Used from the IRC input thread and from command threads.
      */
-    private final CaseInsensitiveHashMap<String, DH1080> _dh1080 = new CaseInsensitiveHashMap<>();
+    private final DH1080Exchanges _dh1080 = new DH1080Exchanges();
     // Command Manager to use for executing commands
     private HashMap<String, Properties> _cmds;
     private CommandManagerInterface _commandManager;
@@ -1572,42 +1571,22 @@ public class SiteBot implements ReplyConstants, Runnable {
             logger.debug("DH1080 is disabled, not handling notice");
             return;
         }
+        DH1080.Message message = DH1080.parseMessage(notice);
+        if (message == null) {
+            logger.warn("Received malformed or unknown DH1080 message from {}: {}", sourceNick, notice);
+            return;
+        }
         DH1080 exchange;
-        // default blowfish on CBC
-        String blowfishMode = BlowfishManager.CBC;
-        String exchangeKey;
+        String exchangeKey = message.publicKey();
+        // The peer's mode token decides the key mode, see DH1080.negotiateMode
+        String blowfishMode = DH1080.negotiateMode(message.modeToken(), _config.getDH1080CBCEnabled(),
+                _config.getDH1080ECBEnabled());
 
-        if (notice.startsWith("DH1080_INIT")) {
-            if (notice.length() <= 12) {
-                logger.warn("Received malformed DH1080_INIT: {}", notice);
-                return;
-            }
-            // We have more data to process
-            StringTokenizer st = new StringTokenizer(notice.trim().substring(12));
-            exchangeKey = st.nextToken().trim();
-            if (st.hasMoreTokens()) {
-                String modeRequested = st.nextToken();
-                if (modeRequested.equalsIgnoreCase(BlowfishManager.ECB)) {
-                    if (_config.getDH1080ECBEnabled()) {
-                        blowfishMode = BlowfishManager.ECB;
-                    } else {
-                        logger.warn("Ignoring ECB DH1080 exchange as it is disabled");
-                        return;
-                    }
-                } else if (modeRequested.equalsIgnoreCase(BlowfishManager.CBC)) {
-                    if (_config.getDH1080CBCEnabled()) {
-                        blowfishMode = BlowfishManager.CBC;
-                    } else {
-                        logger.warn("Ignoring CBC DH1080 exchange as it is disabled");
-                        return;
-                    }
-                } else {
-                    logger.error("Unknown DH1080_INIT mode requested: {}", modeRequested);
-                    return;
-                }
-            }
-            if (st.hasMoreTokens()) {
-                logger.warn("Received malformed DH1080_INIT: {}", notice);
+        if (message.command().equals(DH1080.INIT)) {
+            if (blowfishMode == null) {
+                logger.warn("Refusing {} from {}: mode [{}] is unknown or disabled (blowfish.dh1080.cbc={}, blowfish.dh1080.ecb={})",
+                        DH1080.INIT, sourceNick, message.modeToken() == null ? "none, ECB" : message.modeToken(),
+                        _config.getDH1080CBCEnabled(), _config.getDH1080ECBEnabled());
                 return;
             }
             exchange = new DH1080();
@@ -1615,31 +1594,33 @@ public class SiteBot implements ReplyConstants, Runnable {
                 logger.warn("Received malformed public key");
                 return;
             }
-            // Send our public key back to the sender
-            sendNotice(sourceNick, "DH1080_FINISH " + exchange.getPublicKey() + " " + blowfishMode);
-        } else if (notice.startsWith("DH1080_FINISH")) {
-            if (notice.length() <= 14) {
-                logger.warn("Received malformed DH1080_FINISH: {}", notice);
-                return;
-            }
-            StringTokenizer st = new StringTokenizer(notice.trim().substring(14));
-            if (st.hasMoreTokens()) {
-                logger.warn("Received malformed DH1080_FINISH: {}", notice);
-                return;
-            }
-            exchangeKey = st.nextToken().trim();
-            exchange = _dh1080.get(sourceNick);
-            // For security reasons remove the DH1080 object from the map as we no longer
-            // need it
-            _dh1080.remove(sourceNick);
+            // The key from their exchange replaces ours: drop the exchange we may have started,
+            // otherwise its reply (if they still send one) would store a different key
+            _dh1080.cancel(sourceNick);
+            // Send our public key back to the sender, with " CBC" only for a CBC key as FiSH 10 does
+            sendNotice(sourceNick, DH1080.FINISH + " " + exchange.getPublicKey() + DH1080.modeSuffix(blowfishMode));
         } else {
-            logger.warn("Received unknown DH1080 command: {}", notice);
-            return;
-        }
-        if (exchange == null || exchangeKey.length() == 0) {
-            // Somehow we got a response to a DH1080 session we didn't initiate, ignore it
-            logger.error("DH1080 exchange object is not set which should not be possible, suspect bug...");
-            return;
+            // DH1080_FINISH, the reply to an exchange we initiated
+            if (blowfishMode == null) {
+                // The peer has already set a key in the mode it answered with, we cannot use it.
+                // Older clients that ignore " CBC" answer this way to every DH1080_INIT, so the
+                // refused exchange is kept until it times out: no new DH1080_INIT before then.
+                if (_dh1080.refuse(sourceNick)) {
+                    logger.warn("Refusing {} from {}: peer answered with mode [{}] which is unknown or disabled (blowfish.dh1080.cbc={}, blowfish.dh1080.ecb={}), no new exchange for {} seconds",
+                            DH1080.FINISH, sourceNick, message.modeToken() == null ? "none, ECB" : message.modeToken(),
+                            _config.getDH1080CBCEnabled(), _config.getDH1080ECBEnabled(),
+                            DH1080Exchanges.TIMEOUT_MILLIS / 1000);
+                } else {
+                    logger.warn("Ignoring DH1080_FINISH from {} as no key exchange with them is in progress (or it timed out)", sourceNick);
+                }
+                return;
+            }
+            // For security reasons the DH1080 object is removed as we no longer need it
+            exchange = _dh1080.finish(sourceNick);
+            if (exchange == null) {
+                logger.warn("Ignoring DH1080_FINISH from {} as no key exchange with them is in progress (or it timed out)", sourceNick);
+                return;
+            }
         }
         String secretKey = exchange.getSharedSecret(exchangeKey);
         if (secretKey == null) {
@@ -3122,10 +3103,26 @@ public class SiteBot implements ReplyConstants, Runnable {
 
     protected void initiateDH1080(String nick) {
         if (_config.getDH1080Enabled()) {
-            DH1080 exchange = new DH1080();
-            sendNotice(nick, "DH1080_INIT " + exchange.getPublicKey());
-            // Store the DH1080 object for use when we get their reply
-            _dh1080.put(nick, exchange);
+            // Ask for CBC when allowed (FiSH 10 default), otherwise send no token which means ECB.
+            // The mode actually used is the one the peer answers with in DH1080_FINISH.
+            String mode;
+            if (_config.getDH1080CBCEnabled()) {
+                mode = BlowfishManager.CBC;
+            } else if (_config.getDH1080ECBEnabled()) {
+                mode = BlowfishManager.ECB;
+            } else {
+                logger.warn("Not starting a DH1080 exchange with {}: both blowfish.dh1080.cbc and blowfish.dh1080.ecb are disabled", nick);
+                return;
+            }
+            // Store the DH1080 object for use when we get their reply. This is called for every
+            // message from a user without a usable key, so only one exchange runs at a time.
+            DH1080 exchange = _dh1080.start(nick);
+            if (exchange == null) {
+                logger.debug("DH1080 exchange with {} already in progress (or refused less than {} seconds ago), not starting another one",
+                        nick, DH1080Exchanges.TIMEOUT_MILLIS / 1000);
+                return;
+            }
+            sendNotice(nick, DH1080.INIT + " " + exchange.getPublicKey() + DH1080.modeSuffix(mode));
         }
     }
 

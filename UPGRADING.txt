@@ -38,3 +38,22 @@ DrFTPD loads X.conf when it exists and falls back to X.conf.dist otherwise.
   defines the command twice, and the master stops at startup with "already mapped". Remove the
   duplicate definition from your own X.conf to fix it.
 - If you never customised a command file, delete your X.conf so the shipped X.conf.dist is used.
+
+### SiteBot DH1080 key exchange
+
+The DH1080 key exchange now follows FiSH 10 (mIRC) for the blowfish mode, see the
+blowfish.dh1080.* comments in irc.conf.dist.
+
+- A DH1080_INIT without a mode token (older FiSH, mircryption, FiSH 10 with dh1080_cbc=0)
+  asks for an ECB key and is now refused unless blowfish.dh1080.ecb=true. Before, the bot
+  answered it but used a CBC key while the client used ECB, so messages did not decrypt.
+  Set blowfish.dh1080.ecb=true if your users have such clients.
+- The bot answers a CBC exchange with "DH1080_FINISH <key> CBC" (upper case) and an ECB
+  exchange with no mode token, as FiSH 10 does.
+- Key exchanges started by the bot now complete. The bot starts one when a user writes to
+  it without a usable key, which includes a key set with SITE SETBLOWFISH in a mode that is
+  disabled in irc.conf (for example an ECB key while blowfish.dh1080.ecb=false). Such a key
+  is then replaced by a DH1080 CBC key, both in the bot and in the user's FiSH client.
+- A client that ignores " CBC" (older fish.py or fishlim versions) answers the bot's
+  DH1080_INIT without a mode token. With blowfish.dh1080.ecb=false the bot refuses that
+  reply with one WARN and starts no new exchange with that nick for 60 seconds.

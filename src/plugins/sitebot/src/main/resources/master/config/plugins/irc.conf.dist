@@ -158,6 +158,10 @@ blowfish.dh1080.enable=true
 
 # We support 2 blowfish modes for DH1080 interaction, but they can be enabled/disabled if required
 # CBC is more secure than ECB
+# The mode follows FiSH 10: a DH1080 message ending in "CBC" sets a CBC key, a
+#  message without a mode (older FiSH, or FiSH 10 with dh1080_cbc=0) sets an
+#  ECB key. An exchange asking for a disabled mode is refused and logged.
+# The bot asks for CBC when it starts an exchange and blowfish.dh1080.cbc=true.
 # Default: [true]
 blowfish.dh1080.cbc=true
 # Default: [false]

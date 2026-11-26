@@ -50,6 +50,83 @@ public class DH1080 {
 
     private static final int KEY_BYTE_LENGTH = 135;
 
+    public static final String INIT = "DH1080_INIT";
+
+    public static final String FINISH = "DH1080_FINISH";
+
+    private static final String CBC_COMMAND_SUFFIX = "_cbc";
+
+    /**
+     * A parsed DH1080_INIT or DH1080_FINISH notice.
+     *
+     * @param command   {@link #INIT} or {@link #FINISH}
+     * @param publicKey the peer's public key (not validated yet)
+     * @param modeToken the optional blowfish mode token following the key, null when absent
+     */
+    public record Message(String command, String publicKey, String modeToken) {
+    }
+
+    /**
+     * Splits a DH1080 notice of the form {@code DH1080_INIT|DH1080_FINISH <public key> [mode]}.
+     * Surrounding and repeated whitespace is ignored. The {@code DH1080_INIT_cbc} and
+     * {@code DH1080_FINISH_cbc} forms (any case) are read as the plain command with a CBC token.
+     *
+     * @return the parsed message, or null if the notice is not a well formed DH1080 message
+     */
+    public static Message parseMessage(String notice) {
+        if (notice == null) {
+            return null;
+        }
+        String[] parts = notice.trim().split("\\s+");
+        if (parts.length < 2 || parts.length > 3) {
+            return null;
+        }
+        String modeToken = parts.length == 3 ? parts[2] : null;
+        String command = parts[0];
+        if (command.equalsIgnoreCase(INIT + CBC_COMMAND_SUFFIX) || command.equalsIgnoreCase(FINISH + CBC_COMMAND_SUFFIX)) {
+            // Some clients put the mode in the command name (DH1080_INIT_cbc), treat it as a CBC token
+            if (modeToken != null && !modeToken.equalsIgnoreCase(BlowfishManager.CBC)) {
+                return null;
+            }
+            command = command.substring(0, command.length() - CBC_COMMAND_SUFFIX.length());
+            modeToken = "CBC";
+        }
+        if (!command.equals(INIT) && !command.equals(FINISH)) {
+            return null;
+        }
+        return new Message(command, parts[1], modeToken);
+    }
+
+    /**
+     * Picks the blowfish mode for a DH1080 exchange from the peer's mode token, following
+     * FiSH 10 semantics: a "CBC" token means a CBC key, no token means an ECB key (older
+     * FiSH versions never send a token, FiSH 10 omits it when dh1080_cbc=0). An explicit
+     * "ECB" token is accepted as ECB too.
+     *
+     * @param modeToken  the token following the public key, or null when absent
+     * @param cbcEnabled whether blowfish.dh1080.cbc is enabled
+     * @param ecbEnabled whether blowfish.dh1080.ecb is enabled
+     * @return {@link BlowfishManager#CBC} or {@link BlowfishManager#ECB}, or null if the
+     * requested mode is unknown or disabled and the exchange must be refused
+     */
+    public static String negotiateMode(String modeToken, boolean cbcEnabled, boolean ecbEnabled) {
+        if (modeToken == null || modeToken.equalsIgnoreCase(BlowfishManager.ECB)) {
+            return ecbEnabled ? BlowfishManager.ECB : null;
+        }
+        if (modeToken.equalsIgnoreCase(BlowfishManager.CBC)) {
+            return cbcEnabled ? BlowfishManager.CBC : null;
+        }
+        return null;
+    }
+
+    /**
+     * @return the mode token to append to a DH1080 notice for the given blowfish mode:
+     * " CBC" for CBC and nothing for ECB, as FiSH 10 does
+     */
+    public static String modeSuffix(String blowfishMode) {
+        return BlowfishManager.CBC.equalsIgnoreCase(blowfishMode) ? " CBC" : "";
+    }
+
     static {
         Arrays.fill(IA, -1);
         for (int i = 0; i < CA.length; i++) {
@@ -84,9 +161,13 @@ public class DH1080 {
      * not be used for anything else.
      */
     public static byte[] decodeB64(String input) {
-        // We check here if the incoming key is actually valid according to our MIME (CA / IA)
+        if (input == null) {
+            return new byte[0];
+        }
+        // We check here if the incoming key is actually valid according to our MIME (CA / IA).
+        // Characters outside the table (e.g. non Latin-1 text received over IRC) are invalid too.
         List<Character> invalidChars = new ArrayList<>();
-        IntStream.range(0, input.length()).filter(i -> IA[input.charAt(i)] == -1).forEach(i -> invalidChars.add(input.charAt(i)));
+        IntStream.range(0, input.length()).filter(i -> input.charAt(i) >= IA.length || IA[input.charAt(i)] == -1).forEach(i -> invalidChars.add(input.charAt(i)));
         if (invalidChars.size() > 0) {
             logger.error("String input is not valid DH1080 Base64 MIME, found invalid characters: '{}'", Arrays.toString(invalidChars.toArray()));
             return new byte[0];
