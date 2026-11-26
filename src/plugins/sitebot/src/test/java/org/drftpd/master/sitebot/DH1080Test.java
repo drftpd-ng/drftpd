@@ -62,6 +62,27 @@ public class DH1080Test {
     }
 
     @Test
+    public void testDH1080AgreeOnSecret() {
+        DH1080 dh1 = new DH1080();
+        DH1080 dh2 = new DH1080();
+        String secret1 = dh1.getSharedSecret(dh2.getPublicKey());
+        String secret2 = dh2.getSharedSecret(dh1.getPublicKey());
+        assertNotNull(secret1);
+        assertEquals(secret1, secret2);
+    }
+
+    @Test
+    public void testDecodeB64InvalidInput() {
+        assertEquals(0, DH1080.decodeB64(null).length);
+        assertEquals(0, DH1080.decodeB64("").length);
+        assertEquals(0, DH1080.decodeB64("AAAA=").length);
+        // Characters above 0xFF must not overflow the lookup table
+        assertEquals(0, DH1080.decodeB64("AAA€").length);
+        assertEquals(0, DH1080.decodeB64("中文").length);
+        assertNull(new DH1080().getSharedSecret("€" + correctKeys[0].substring(1)));
+    }
+
+    @Test
     public void testDH1080CorrectKeys() {
         DH1080 testDH = new DH1080();
         for (String key : correctKeys) {
