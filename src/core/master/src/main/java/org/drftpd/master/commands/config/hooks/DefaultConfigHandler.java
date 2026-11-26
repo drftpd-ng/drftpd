@@ -54,11 +54,12 @@ public class DefaultConfigHandler extends ConfigHandler {
         String pattern = st.nextToken();
         String messageFile = "config/themes/text/" + st.nextToken();
 
-        MessagePathPermission perm = null;
+        MessagePathPermission perm;
         try {
             perm = new MessagePathPermission(pattern, messageFile, Permission.makeUsers(st));
         } catch (IOException e) {
-            logger.error("Unable to read {} directive ignored", messageFile);
+            logger.warn("Unable to read {}, msgpath directive ignored", messageFile);
+            return;
         }
 
         KeyedMap<Key<?>, Object> map = GlobalContext.getConfig().getKeyedMap();
