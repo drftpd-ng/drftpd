@@ -39,12 +39,19 @@ import java.util.ResourceBundle;
 /**
  * Announces files rejected or removed by the zipscript (bad CRC, 0 byte, not in the sfv).
  * Announce type "store.bad", only announced when configured in irc.announce.conf.
+ * A file refused as not in the sfv is announced at most once per {@link #NOT_IN_SFV_COOLDOWN_MILLIS}, so a
+ * client retrying the same upload does not flood the channel.
  */
 public class BadFileAnnouncer extends AbstractAnnouncer {
 
     public static final String ANNOUNCE_TYPE = "store.bad";
 
+    /** Minimum time between two NOT_IN_SFV announces of the same file. */
+    static final long NOT_IN_SFV_COOLDOWN_MILLIS = 60_000L;
+
     private static final Logger logger = LogManager.getLogger(BadFileAnnouncer.class);
+
+    private final BadFileCooldown _notInSfvCooldown = new BadFileCooldown(NOT_IN_SFV_COOLDOWN_MILLIS);
 
     private AnnounceConfig _config;
 
@@ -73,6 +80,10 @@ public class BadFileAnnouncer extends AbstractAnnouncer {
         DirectoryHandle dir = event.getDirectory();
         AnnounceWriter writer = _config.getPathWriter(ANNOUNCE_TYPE, dir);
         if (writer == null) {
+            return;
+        }
+        if (event.getReason() == BadFileReason.NOT_IN_SFV
+                && !_notInSfvCooldown.tryAnnounce(dir.getPath() + "/" + event.getFileName(), System.currentTimeMillis())) {
             return;
         }
         Object group = "";

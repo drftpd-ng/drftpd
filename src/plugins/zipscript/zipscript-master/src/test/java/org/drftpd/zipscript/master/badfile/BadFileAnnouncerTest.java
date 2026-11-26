@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -74,5 +75,29 @@ class BadFileAnnouncerTest {
         assertEquals("OTHER", env.get("reason"));
         assertEquals("banned genre", env.get("detail"));
         assertEquals("store.bad", BadFileAnnouncer.ANNOUNCE_TYPE);
+    }
+
+    @Test
+    void cooldownSuppressesRepeatsOfTheSameFile() {
+        BadFileCooldown c = new BadFileCooldown(60_000L);
+        assertTrue(c.tryAnnounce("/TV/Rel/a.rar", 1_000L));
+        assertFalse(c.tryAnnounce("/TV/Rel/a.rar", 30_000L));
+        // another file or directory is independent
+        assertTrue(c.tryAnnounce("/TV/Rel/b.rar", 30_000L));
+        assertTrue(c.tryAnnounce("/TV/Other/a.rar", 30_000L));
+        // a suppressed attempt does not extend the cooldown
+        assertTrue(c.tryAnnounce("/TV/Rel/a.rar", 61_000L));
+        assertFalse(c.tryAnnounce("/TV/Rel/a.rar", 62_000L));
+    }
+
+    @Test
+    void cooldownTableIsBounded() {
+        BadFileCooldown c = new BadFileCooldown(Long.MAX_VALUE / 2);
+        for (int i = 0; i < 5000; i++) {
+            assertTrue(c.tryAnnounce("/d/f" + i, i));
+        }
+        // the oldest entries were forgotten, the newest are still cooling down
+        assertTrue(c.tryAnnounce("/d/f0", 5000L));
+        assertFalse(c.tryAnnounce("/d/f4999", 5001L));
     }
 }
