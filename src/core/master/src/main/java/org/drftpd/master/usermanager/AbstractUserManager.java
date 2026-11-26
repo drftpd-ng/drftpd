@@ -84,7 +84,7 @@ public abstract class AbstractUserManager implements UserManager {
         user.getKeyedMap().setObject(UserManagement.TAGLINE, "drftpd");
         user.getKeyedMap().setObject(UserManagement.BANTIME, new Date());
         // user.getKeyedMap().setObject(Nuke.NUKED,0);
-        // user.getKeyedMap().setObject(Nuke.NUKEDBYTES,0L);
+        // user.getKeyedMap().setObject(Nuke.NUKEDBYTES,new Long(0));
 
         try {
             user.addIPMask("*@127.0.0.1");
