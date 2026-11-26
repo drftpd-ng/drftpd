@@ -1051,6 +1051,17 @@ help Rename a user.
 help.specific ${command} <old_username> <new_username>
 }
 
+SITE RESET {
+plugin org.drftpd.master.commands.usermanagement
+class UserManagementHandler
+method doSITE_RESET
+perms =siteop
+help Reset the transfer stats of a user or group.
+help.specific ${command} <day|week|month|all> <user|=group>
+help.specific Zeroes uploaded/downloaded bytes, files and time of that period.
+help.specific all also resets the all-time stats. Credits and ratio are not changed.
+}
+
 SITE RULES {
 plugin org.drftpd.master.commands.textoutput
 class Textoutput
