@@ -42,6 +42,8 @@
 # Detects a user running several simultaneous transfers of the SAME release directory, each        #
 # faster than x.minspeed (dualing). Uploads and downloads are counted separately. The action       #
 # is applied to the most recently started transfer, once per user/release per x.cooldown.          #
+# The "release" is the parent directory of the transferred file: CD1 and CD2 (or release and its   #
+# Sample dir) are different releases and are counted separately.                                   #
 # Dual entries never limit speed and never affect the other types (they are not first-match).      #
 # A Dual entry is skipped (and logged) if minspeed is 0, perms is empty or neither up/dn is set.   #
 #                                                                                                  #

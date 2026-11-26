@@ -72,6 +72,20 @@ class DualRule {
         }
     }
 
+    /** Cooldown of this rule in milliseconds. */
+    long getCooldownMs() {
+        return _cooldownMs;
+    }
+
+    /**
+     * Drops cooldown entries that can no longer suppress an action.
+     *
+     * @param maxCooldownMs the longest cooldown of all rules
+     */
+    static void purgeExpired(Map<String, Long> lastFired, long now, long maxCooldownMs) {
+        lastFired.values().removeIf(t -> now - t >= maxCooldownMs);
+    }
+
     /** True if this rule applies to the given user/directory (permissions, include, exclude). */
     private boolean applies(User user, String release) {
         return user != null && _action.checkInclude(release) && !_action.checkExclude(release)

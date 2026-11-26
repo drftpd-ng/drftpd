@@ -217,7 +217,11 @@ public class TrafficManager implements PluginInterface {
             Set<String> handled = new HashSet<>();
             long now = System.currentTimeMillis();
             synchronized (_dualLastFired) {
-                _dualLastFired.values().removeIf(t -> now - t > 3600_000L);
+                long maxCooldownMs = 0;
+                for (DualRule rule : rules) {
+                    maxCooldownMs = Math.max(maxCooldownMs, rule.getCooldownMs());
+                }
+                DualRule.purgeExpired(_dualLastFired, now, maxCooldownMs);
                 for (DualRule rule : rules) {
                     rule.run(samples, handled, _dualLastFired, now);
                 }
