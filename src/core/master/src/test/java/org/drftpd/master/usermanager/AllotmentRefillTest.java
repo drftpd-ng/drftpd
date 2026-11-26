@@ -47,7 +47,7 @@ public class AllotmentRefillTest {
 
     @Test
     public void monthlyKeyIsSeparateFromWeekly() {
-        assertEquals("mthly_allotment", UserManagement.MTHLYALLOTMENT.getKey());
-        assertNotEquals(UserManagement.WKLYALLOTMENT, UserManagement.MTHLYALLOTMENT);
+        assertEquals("monthly_allotment", UserManagement.MONTHLYALLOTMENT.getKey());
+        assertNotEquals(UserManagement.WKLYALLOTMENT, UserManagement.MONTHLYALLOTMENT);
     }
 }

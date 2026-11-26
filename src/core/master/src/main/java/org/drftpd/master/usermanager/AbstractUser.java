@@ -279,7 +279,7 @@ public abstract class AbstractUser extends User implements Commitable {
         super.resetMonth(resetDate);
         super.resetDay(resetDate);
         super.resetHour(resetDate);
-        setCredits(creditsAfterAllotment(getCredits(), getKeyedMap().getObjectLong(UserManagement.MTHLYALLOTMENT)));
+        setCredits(creditsAfterAllotment(getCredits(), getKeyedMap().getObjectLong(UserManagement.MONTHLYALLOTMENT)));
         logger.info("Reset monthly stats for {}", getName());
     }
 
@@ -310,7 +310,7 @@ public abstract class AbstractUser extends User implements Commitable {
         super.resetDay(resetDate);
         super.resetHour(resetDate);
         // TimeManager runs resetYear() instead of resetMonth() on January 1st, so the monthly allotment is refilled here too
-        setCredits(creditsAfterAllotment(getCredits(), getKeyedMap().getObjectLong(UserManagement.MTHLYALLOTMENT)));
+        setCredits(creditsAfterAllotment(getCredits(), getKeyedMap().getObjectLong(UserManagement.MONTHLYALLOTMENT)));
         logger.info("Reset Yearly stats for {}", getName());
     }
 

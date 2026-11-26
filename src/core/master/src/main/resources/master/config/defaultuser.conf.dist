@@ -31,8 +31,10 @@
 # wkly_allotment=0
 
 # Monthly allotment: credits are replaced with this value at the monthly reset (0 = disabled)
+# The refill needs the master to be running at the month boundary, or the startup catch-up
+# (processTimeEventsSinceDate) to cover it; there is no other trigger.
 # Default: 0
-# mthly_allotment=0
+# monthly_allotment=0
 
 # Credits
 # Default: 0b

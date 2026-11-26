@@ -178,8 +178,8 @@ public class GroupManagementHandler extends CommandInterface {
      * "#,###" The first number is the section number (0=default section), the
      * second is the number of kilobytes to give. (user's credits are replaced,
      * not added to, with this value) Only one section at a time is supported,
-     * mthly_allotment Same as wkly_allotment, but refilled once a month at the
-     * monthly reset. Syntax: site change user mthly_allotment &lt;bytes&gt;
+     * monthly_allotment Same as wkly_allotment, but refilled once a month at the
+     * monthly reset. Syntax: site change user monthly_allotment &lt;bytes&gt;
      * (0 = off),
      * homedir This will change the user's homedir. NOTE: This command is
      * disabled by default. To enable it, add "min_homedir /site" to your config
