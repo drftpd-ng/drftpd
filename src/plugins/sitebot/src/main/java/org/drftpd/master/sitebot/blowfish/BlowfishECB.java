@@ -235,12 +235,12 @@ public class BlowfishECB extends Blowfish {
 
             for (int i = 0; i < 6; i++) {
                 builder.append(B64.charAt(right & 0x3F));
-                right = right >> 6;
+                right = right >>> 6;
             }
 
             for (int i = 0; i < 6; i++) {
                 builder.append(B64.charAt(left & 0x3F));
-                left = left >> 6;
+                left = left >>> 6;
             }
         }
         return builder.toString();

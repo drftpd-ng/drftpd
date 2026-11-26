@@ -196,6 +196,41 @@ public class BlowfishTest  {
         assertEquals(List.of("hello", "world"), OutputWriter.splitUtf8("hello world", 8));
     }
 
+    /*
+     * Vectors computed outside Java with pycryptodome, following
+     * fish_10/src/blowfish.cpp (ECB) and blowfish_cbc.cpp (CBC, IV 01..08).
+     */
+    private static final String FISH_ECB_ASCII = "+OK FVU1G0UPghf.Ci8u/.qQFyB.lflgm/IqULz1";
+    private static final String FISH_ECB_UTF8 = "+OK UXYCK0Jl3Ji0Unhep/QQlkh.";
+    private static final String FISH_CBC_ASCII = "+OK *iwXpQeVhnQkEmgQnp/xbqR4YZzEYjJD0ARMRGJHwZEQ=";
+    private static final String FISH_CBC_UTF8 = "+OK *xInM77wtBi0d2vaD/SJPaR/bSkxMWN3t";
+    private static final String UTF8_TEXT = "caf\u00e9 \u00fcber \ud83d\ude00";
+
+    @Test
+    public void testFishEcbVectors() {
+        BlowfishManager ecb = new BlowfishManager("drftpd", "ECB");
+        assertEquals(FISH_ECB_ASCII, ecb.encrypt("Hello from FiSH 10"));
+        assertEquals("Hello from FiSH 10", ecb.decrypt(FISH_ECB_ASCII));
+        BlowfishManager ecbUtf8 = new BlowfishManager("cl\u00e9", "ECB");
+        assertEquals(FISH_ECB_UTF8, ecbUtf8.encrypt(UTF8_TEXT));
+        assertEquals(UTF8_TEXT, ecbUtf8.decrypt(FISH_ECB_UTF8));
+    }
+
+    @Test
+    public void testFishCbcVectors() {
+        assertEquals("Hello from FiSH 10", new BlowfishManager("drftpd", "CBC").decrypt(FISH_CBC_ASCII));
+        assertEquals(UTF8_TEXT, new BlowfishManager("cl\u00e9", "CBC").decrypt(FISH_CBC_UTF8));
+        // auto-detect: an ECB key still reads a FiSH CBC line
+        assertEquals("Hello from FiSH 10", new BlowfishManager("drftpd", "ECB").decrypt(FISH_CBC_ASCII));
+    }
+
+    @Test
+    public void testLatin1Fallback() {
+        // a legacy client sending ISO-8859-1 "caf\u00e9" (0xE9 alone is not valid UTF-8)
+        BlowfishManager ecb = new BlowfishManager("drftpd", "ECB");
+        assertEquals("caf\u00e9", ecb.decrypt("+OK H4uV.0JJ2B4/"));
+    }
+
     @Test
     public void testUtf8RoundTrip() {
         String text = "caf\u00e9 \u00fcber na\u00efve \ud83d\ude00 \u4e2d\u6587";
