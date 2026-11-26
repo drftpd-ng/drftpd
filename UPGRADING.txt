@@ -38,3 +38,18 @@ DrFTPD loads X.conf when it exists and falls back to X.conf.dist otherwise.
   defines the command twice, and the master stops at startup with "already mapped". Remove the
   duplicate definition from your own X.conf to fix it.
 - If you never customised a command file, delete your X.conf so the shipped X.conf.dist is used.
+
+### Log4j 2 master configuration (after 4.0.12)
+
+If you use your own copy of config/log4j2-master.xml (the build copies it to runtime/master/config
+and may not overwrite an edited one), merge these changes into it:
+
+- The commands, vfs and events appenders now archive to commands-, vfs- and events-<date>.log.gz
+  instead of index-<date>.log.gz. They all used the same file name, so their archives overwrote each
+  other. (Old archives were still cleaned up, by the index appender's */index-*.log.gz delete rule.)
+- The logger names for imdb, tvmaze and indexmanager now use the real package names
+  (org.drftpd.imdb.master, org.drftpd.tvmaze.master, org.drftpd.master.commands.indexmanager),
+  and the unused org.drftpd.master.network.BaseFtpConnection.service logger is removed.
+- The org.drftpd.master.commands.usermanagement logger is now at level info, so user and group
+  changes are written to sysop.log. This also covers its sub-packages, so messages from
+  IpSecurityManager and ExpiredUserManager now go to sysop.log too.
