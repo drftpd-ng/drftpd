@@ -48,6 +48,8 @@ import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.zipscript.common.sfv.SFVInfo;
 import org.drftpd.zipscript.common.sfv.SFVStatus;
 import org.drftpd.zipscript.master.sfv.SFVTools;
+import org.drftpd.zipscript.master.badfile.BadFileEvent;
+import org.drftpd.zipscript.master.badfile.BadFileReason;
 import org.drftpd.zipscript.master.sfv.event.SFVMemberTransferEvent;
 import org.drftpd.zipscript.master.sfv.vfs.ZipscriptVFSDataSFV;
 
@@ -189,6 +191,7 @@ public class ZipscriptPostHook extends SFVTools {
                         // then it should be deleted.
                         logger.debug("0Byte File, Deleting...");
                         response.addComment("0Byte File, Deleting...");
+                        publishBadFile(request, transferFile, BadFileReason.ZERO_BYTE, "");
                         transferFile.deleteUnchecked();
                     } else
                         // The file has checksum = 0, although the size is != 0,
@@ -201,6 +204,8 @@ public class ZipscriptPostHook extends SFVTools {
                             Checksum.formatChecksum(sfvChecksum));
                     response.addComment(" deleting file");
                     response.setMessage("Checksum mismatch, deleting file");
+                    publishBadFile(request, transferFile, BadFileReason.BAD_CRC,
+                            "SLAVE: " + Checksum.formatChecksum(checksum) + " SFV: " + Checksum.formatChecksum(sfvChecksum));
                     transferFile.deleteUnchecked();
                 }
             } catch (NoAvailableSlaveException | SlaveUnavailableException e) {
@@ -218,6 +223,14 @@ public class ZipscriptPostHook extends SFVTools {
             // An .sfv was uploaded: files uploaded before it were never checked against it
             checkFilesUploadedBeforeSFV(transferFile, response);
         }
+    }
+
+    /**
+     * Announce a file that is about to be deleted by the zipscript, see {@link BadFileEvent}.
+     */
+    private void publishBadFile(CommandRequest request, FileHandle file, BadFileReason reason, String detail) {
+        GlobalContext.getEventService().publishAsync(
+                new BadFileEvent(request.getUser(), file.getParent(), file.getName(), reason, detail));
     }
 
     /**
@@ -252,6 +265,9 @@ public class ZipscriptPostHook extends SFVTools {
                     // The uploader got credits and stats for this file when it was uploaded, take them back
                     GlobalContext.getEventService().publish(new UploadRevokedEvent(dir, file.getName(),
                             file.getUsername(), file.getSize(), file.getXfertime(), file.lastModified()));
+                    GlobalContext.getEventService().publishAsync(new BadFileEvent(file.getUsername(), dir,
+                            file.getName(), BadFileReason.BAD_CRC,
+                            "SLAVE: " + slaveChecksum + " SFV: " + expectedChecksum));
                     file.deleteUnchecked();
                 } catch (FileNotFoundException e) {
                     // Already deleted, nothing to do
