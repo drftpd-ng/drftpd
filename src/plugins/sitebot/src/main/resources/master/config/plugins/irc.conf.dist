@@ -163,6 +163,14 @@ blowfish.dh1080.cbc=true
 # Default: [false]
 blowfish.dh1080.ecb=false
 
+# Lines starting with "+OK *" are always decrypted as CBC and lines starting with
+#  "+OK " (or "mcps ") without the "*" as ECB, using the same key, like FiSH does.
+#  An ECB line is accepted for a key configured as CBC only when this is enabled
+#  (FiSH users who set the key without the "cbc:" prefix send ECB). Replies always
+#  use the configured mode.
+# Default: [false]
+blowfish.ecb.fallback=false
+
 # Take action against users who send unencrypted text to channels or to the
 # bot in private message when blowfish is enabled.
 # Default: [false]

@@ -45,8 +45,8 @@ import java.util.Base64;
  * Use "encrypt" with the text to encrypt
  * -> The function will encrypt and return the text with +OK * at the beginning"
  * <p>
- * Use "decrypt" with the text to decrypt
- * -> The text must include the +OK * at the front"
+ * Use "decryptPayload" with the text to decrypt
+ * -> The text must not include the +OK * at the front"
  * <p>
  * To Use Key > 16 char, you must update two jar files in your jre or jdk.
  * Java Cryptography Extension (JCE) Unlimited Strength Jurisdiction Policy Files 8
@@ -70,14 +70,7 @@ public class BlowfishCBC extends Blowfish {
         super(key, "Blowfish/CBC/NoPadding");
     }
 
-    public String decrypt(String textToDecrypt) throws Exception {
-        if (textToDecrypt.startsWith(CBC_PREFIX)) {
-            textToDecrypt = textToDecrypt.substring(CBC_PREFIX.length());
-        } else {
-            //Not correct encrypted string, return the source string
-            return textToDecrypt;
-        }
-
+    public String decryptPayload(String textToDecrypt) throws Exception {
         //1- decrypt with BASE64 decoder
         byte[] base64Decoded = Base64.getDecoder().decode(textToDecrypt);
 

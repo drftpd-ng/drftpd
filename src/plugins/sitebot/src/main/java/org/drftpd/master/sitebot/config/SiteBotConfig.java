@@ -35,6 +35,8 @@ public class SiteBotConfig {
 
     private boolean _blowfishEnabled;
 
+    private boolean _blowfishEcbFallback;
+
     private boolean _blowfishPunish;
 
     private String _blowfishPunishAction;
@@ -178,6 +180,7 @@ public class SiteBotConfig {
         _channelAutoJoin = cfg.getProperty("channel.autojoin").equalsIgnoreCase("true");
         _charset = cfg.getProperty("charset");
         _blowfishEnabled = cfg.getProperty("blowfish.enable").equalsIgnoreCase("true");
+        _blowfishEcbFallback = cfg.getProperty("blowfish.ecb.fallback", "false").equalsIgnoreCase("true");
         _dh1080Enabled = cfg.getProperty("blowfish.dh1080.enable").equalsIgnoreCase("true");
         _dh1080EcbEnabled = cfg.getProperty("blowfish.dh1080.ecb").equalsIgnoreCase("true");
         _dh1080CbcEnabled = cfg.getProperty("blowfish.dh1080.cbc").equalsIgnoreCase("true");
@@ -201,6 +204,10 @@ public class SiteBotConfig {
 
     public boolean getBlowfishEnabled() {
         return _blowfishEnabled;
+    }
+
+    public boolean getBlowfishEcbFallback() {
+        return _blowfishEcbFallback;
     }
 
     public boolean getBlowfishPunish() {

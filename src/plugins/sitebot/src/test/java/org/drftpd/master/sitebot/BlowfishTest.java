@@ -19,7 +19,11 @@ package org.drftpd.master.sitebot;
 
 import org.junit.jupiter.api.RepeatedTest;
 
+import org.junit.jupiter.api.Test;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class BlowfishTest  {
 
@@ -39,5 +43,37 @@ public class BlowfishTest  {
         String encrypt = ecb.encrypt(text);
         String decrypt = ecb.decrypt(encrypt);
         assertEquals(decrypt, text);
+    }
+
+    @Test
+    public void testEcbKeyDecryptsCbcLine() {
+        BlowfishManager cbc = new BlowfishManager("drftpd", "CBC");
+        BlowfishManager ecb = new BlowfishManager("drftpd", "ECB");
+        String line = cbc.encrypt("hello from a cbc client");
+        assertTrue(line.startsWith("+OK *"));
+        assertEquals("hello from a cbc client", ecb.decrypt(line));
+    }
+
+    @Test
+    public void testCbcKeyIgnoresEcbLineByDefault() {
+        String line = new BlowfishManager("drftpd", "ECB").encrypt("hello from an ecb client");
+        assertNull(new BlowfishManager("drftpd", "CBC").decrypt(line));
+    }
+
+    @Test
+    public void testCbcKeyAcceptsEcbLineWithFallback() {
+        String line = new BlowfishManager("drftpd", "ECB").encrypt("hello from an ecb client");
+        assertEquals("hello from an ecb client", new BlowfishManager("drftpd", "CBC", true).decrypt(line));
+    }
+
+    @Test
+    public void testMcpsPrefix() {
+        BlowfishManager ecb = new BlowfishManager("drftpd", "ECB");
+        BlowfishManager cbc = new BlowfishManager("drftpd", "CBC");
+        String ecbLine = "mcps " + ecb.encrypt("mcps ecb").substring(4);
+        String cbcLine = "mcps " + cbc.encrypt("mcps cbc").substring(4);
+        assertEquals("mcps ecb", ecb.decrypt(ecbLine));
+        assertEquals("mcps cbc", ecb.decrypt(cbcLine));
+        assertEquals("mcps cbc", cbc.decrypt(cbcLine));
     }
 }

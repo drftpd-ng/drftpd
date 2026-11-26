@@ -30,33 +30,75 @@ class BlowfishManager {
     private static final Logger logger = LogManager.getLogger(Blowfish.class);
     private static final String ENCRYPTION_ERROR_MESSAGE = "An error occurred in encryption process. Check your logs";
     private static final String DECRYPTION_ERROR_MESSAGE = "An error occurred in decryption process. Check your logs";
-    private final Blowfish blowfish;
+    private static final String PREFIX_OK = "+OK ";
+    private static final String PREFIX_MCPS = "mcps ";
+    private static final String CBC_MARKER = "*";
+    private final BlowfishECB _ecb;
+    private final BlowfishCBC _cbc;
+    private final boolean _cbcMode;
+    private final boolean _ecbFallback;
 
     /*
      * Constructor of BlowfishManager class Key param
      */
     BlowfishManager(String key, String mode) {
-        if (CBC.equals(mode.toLowerCase())) {
-            blowfish = new BlowfishCBC(key);
-        } else {
-            blowfish = new BlowfishECB(key);
-        }
+        this(key, mode, false);
+    }
+
+    /**
+     * @param key         the blowfish key
+     * @param mode        the configured mode, used for outgoing lines
+     * @param ecbFallback accept incoming ECB lines when the configured mode is CBC
+     */
+    BlowfishManager(String key, String mode, boolean ecbFallback) {
+        _cbcMode = CBC.equals(mode.toLowerCase());
+        _ecbFallback = ecbFallback;
+        _ecb = new BlowfishECB(key);
+        _cbc = new BlowfishCBC(key);
+    }
+
+    boolean isCBC() {
+        return _cbcMode;
     }
 
     /* encrypt function	 */
     String encrypt(String toEncrypt) {
         try {
-            return blowfish.encrypt(toEncrypt);
+            return _cbcMode ? _cbc.encrypt(toEncrypt) : _ecb.encrypt(toEncrypt);
         } catch (Exception e) {
             logger.error("Error encrypting", e);
             return ENCRYPTION_ERROR_MESSAGE;
         }
     }
 
-    /* decrypt function */
+    /**
+     * Decrypt a line the way FiSH does: "+OK *" (or "mcps *") is CBC, "+OK " or
+     * "mcps " without the "*" is ECB, both with the same key, whatever the
+     * configured mode is. ECB lines on a CBC key are only accepted when the
+     * fallback is enabled.
+     *
+     * @param toDecrypt the line as received
+     * @return the decrypted text, or null if the line must be ignored
+     */
     String decrypt(String toDecrypt) {
+        String payload;
+        if (toDecrypt.startsWith(PREFIX_OK)) {
+            payload = toDecrypt.substring(PREFIX_OK.length());
+        } else if (toDecrypt.startsWith(PREFIX_MCPS)) {
+            payload = toDecrypt.substring(PREFIX_MCPS.length());
+        } else {
+            //Not correct encrypted string, return the source string
+            return toDecrypt;
+        }
         try {
-            return blowfish.decrypt(toDecrypt);
+            if (payload.startsWith(CBC_MARKER)) {
+                return _cbc.decryptPayload(payload.substring(CBC_MARKER.length()));
+            }
+            if (_cbcMode && !_ecbFallback) {
+                logger.debug("Ignoring ECB encrypted line for a CBC key (blowfish.ecb.fallback is disabled)");
+                return null;
+            }
+            return _ecb.decryptPayload(payload);
         } catch (Exception e) {
             logger.error("Error decrypting", e);
             return DECRYPTION_ERROR_MESSAGE;

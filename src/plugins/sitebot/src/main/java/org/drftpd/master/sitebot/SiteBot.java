@@ -1216,7 +1216,7 @@ public class SiteBot implements ReplyConstants, Runnable {
                             chan.getName());
                     break;
                 }
-                cipher = new BlowfishManager(chan.getBlowKey(), chan.getBlowMode());
+                cipher = new BlowfishManager(chan.getBlowKey(), chan.getBlowMode(), _config.getBlowfishEcbFallback());
                 _ciphers.put(chan.getName(), cipher);
             }
             _writers.put(chan.getName(), new OutputWriter(this, chan.getName(), cipher));
@@ -1458,6 +1458,9 @@ public class SiteBot implements ReplyConstants, Runnable {
                 }
                 logger.debug("Encrypted message: {}", message);
                 message = chanCipher.decrypt(message);
+                if (message == null) {
+                    return;
+                }
                 logger.debug("Decrypted message: {}", message);
             } else {
                 // means we got an unencrypted line from a chan that should be encrypted
@@ -1500,6 +1503,9 @@ public class SiteBot implements ReplyConstants, Runnable {
                     return;
                 }
                 message = cipher.decrypt(message);
+                if (message == null) {
+                    return;
+                }
             } else {
                 if (_users.containsKey(sender)) {
                     StringBuilder reply = new StringBuilder("Use site command ");
@@ -2433,7 +2439,7 @@ public class SiteBot implements ReplyConstants, Runnable {
                     BlowfishManager cipher = null;
                     joinChannel(chan);
                     if (_config.getBlowfishEnabled()) {
-                        cipher = new BlowfishManager(chan.getBlowKey(), chan.getBlowMode());
+                        cipher = new BlowfishManager(chan.getBlowKey(), chan.getBlowMode(), _config.getBlowfishEcbFallback());
                         _ciphers.put(chan.getName(), cipher);
                     }
                     _writers.put(chan.getName(), new OutputWriter(this, chan.getName(), cipher));

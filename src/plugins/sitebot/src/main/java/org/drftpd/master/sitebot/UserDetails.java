@@ -87,7 +87,7 @@ public class UserDetails {
     }
 
     protected void setBlowCipher(String blowKey, String blowMode) {
-        _cipher = new BlowfishManager(blowKey, blowMode);
+        _cipher = new BlowfishManager(blowKey, blowMode, _bot.getConfig().getBlowfishEcbFallback());
         _blowKey = blowKey;
         _blowMode = blowMode;
         // If we don't know who the user is then try to find them first
