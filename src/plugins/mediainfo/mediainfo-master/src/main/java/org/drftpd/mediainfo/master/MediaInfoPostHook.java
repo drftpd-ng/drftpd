@@ -162,7 +162,7 @@ public class MediaInfoPostHook {
         try {
             mediaInfo = mediaData.getMediaInfo();
         } catch (IOException | NoAvailableSlaveException | SlaveUnavailableException e) {
-            logger.warn(e.getMessage());
+            logger.warn("MediaInfo lookup failed: {}", e.getMessage(), e);
             return;
         }
 

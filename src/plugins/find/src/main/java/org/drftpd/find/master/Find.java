@@ -251,7 +251,7 @@ public class Find extends CommandInterface {
         try {
             inodes = ie.advancedFind(settings.getDirectoryHandle(), params, "doFIND");
         } catch (IndexException e) {
-            logger.error(e.getMessage());
+            logger.error("Find failed: {}", e.getMessage(), e);
             return new CommandResponse(550, e.getMessage());
         } catch (IllegalArgumentException e) {
             logger.info(e.getMessage());
