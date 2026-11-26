@@ -126,7 +126,7 @@
         </RollingFile>
     </Appenders>
     <Loggers>
-        <Logger name="org.drftpd.master.commands.usermanagement" level="warn" additivity="false">
+        <Logger name="org.drftpd.master.commands.usermanagement" level="info" additivity="false">
             <AppenderRef ref="sysop" />
         </Logger>
         <Logger name="org.drftpd.master.slavemanagement.RemoteSlave" level="warn" additivity="false">
