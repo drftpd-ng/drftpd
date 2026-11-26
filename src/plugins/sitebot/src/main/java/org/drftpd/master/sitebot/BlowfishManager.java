@@ -28,8 +28,6 @@ class BlowfishManager {
     static final String CBC = "cbc";
     static final String ECB = "ecb";
     private static final Logger logger = LogManager.getLogger(Blowfish.class);
-    private static final String ENCRYPTION_ERROR_MESSAGE = "An error occurred in encryption process. Check your logs";
-    private static final String DECRYPTION_ERROR_MESSAGE = "An error occurred in decryption process. Check your logs";
     private static final String PREFIX_OK = "+OK ";
     private static final String PREFIX_MCPS = "mcps ";
     private static final String CBC_MARKER = "*";
@@ -61,13 +59,18 @@ class BlowfishManager {
         return _cbcMode;
     }
 
-    /* encrypt function	 */
+    /**
+     * Encrypt a line with the configured mode
+     *
+     * @param toEncrypt the text to encrypt
+     * @return the encrypted line, or null if encryption failed and nothing must be sent
+     */
     String encrypt(String toEncrypt) {
         try {
             return _cbcMode ? _cbc.encrypt(toEncrypt) : _ecb.encrypt(toEncrypt);
         } catch (Exception e) {
             logger.error("Error encrypting", e);
-            return ENCRYPTION_ERROR_MESSAGE;
+            return null;
         }
     }
 
@@ -78,7 +81,8 @@ class BlowfishManager {
      * fallback is enabled.
      *
      * @param toDecrypt the line as received
-     * @return the decrypted text, or null if the line must be ignored
+     * @return the decrypted text, or null if the line is not encrypted, could not be
+     * decrypted or must be ignored
      */
     String decrypt(String toDecrypt) {
         String payload;
@@ -87,8 +91,7 @@ class BlowfishManager {
         } else if (toDecrypt.startsWith(PREFIX_MCPS)) {
             payload = toDecrypt.substring(PREFIX_MCPS.length());
         } else {
-            //Not correct encrypted string, return the source string
-            return toDecrypt;
+            return null;
         }
         // Text after the first space is not encrypted (timestamps added by a BNC);
         // FiSH does not decrypt it either, the bot drops it
@@ -107,8 +110,9 @@ class BlowfishManager {
             }
             return _ecb.decryptPayload(payload);
         } catch (Exception e) {
-            logger.error("Error decrypting", e);
-            return DECRYPTION_ERROR_MESSAGE;
+            logger.warn("Could not decrypt line: {}", e.getMessage());
+            logger.debug("Decryption error", e);
+            return null;
         }
     }
 }

@@ -131,4 +131,22 @@ public class BlowfishTest  {
         assertThrows(IllegalArgumentException.class, () -> cbc.decryptPayload("AAAAAAAAAAA="));
         assertThrows(IllegalArgumentException.class, () -> cbc.decryptPayload("not!base64#at all"));
     }
+
+    @Test
+    public void testDecryptFailureGivesNull() {
+        BlowfishManager ecb = new BlowfishManager("drftpd", "ECB");
+        BlowfishManager cbc = new BlowfishManager("drftpd", "CBC", true);
+        assertNull(ecb.decrypt("+OK abc!efghijkl"));
+        assertNull(ecb.decrypt("+OK short"));
+        assertNull(cbc.decrypt("+OK *not!base64"));
+        assertNull(cbc.decrypt("+OK *AAAA"));
+        assertNull(cbc.decrypt("plain text"));
+    }
+
+    @Test
+    public void testEncryptFailureGivesNull() {
+        // Blowfish keys are limited to 56 bytes
+        BlowfishManager tooLong = new BlowfishManager("x".repeat(60), "CBC");
+        assertNull(tooLong.encrypt("hello"));
+    }
 }

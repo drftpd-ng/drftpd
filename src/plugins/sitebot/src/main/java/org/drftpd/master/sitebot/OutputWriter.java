@@ -59,7 +59,11 @@ public class OutputWriter {
                 // they could've initiated the command using blowfish in a channel. If
                 // this is the case just skip the output to them.
                 if (_cipher != null) {
-                    _bot.sendMessage(_output, _cipher.encrypt(line));
+                    String encrypted = _cipher.encrypt(line);
+                    // Never fall back to plain text, the error is already logged
+                    if (encrypted != null) {
+                        _bot.sendMessage(_output, encrypted);
+                    }
                 }
             } else {
                 _bot.sendMessage(_output, line);
