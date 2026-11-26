@@ -54,6 +54,11 @@
 # x.multiplier=1 (soft part only, "remove" removes the slave from warn on).                        #
 # Slaves without a limit are not touched. The sitebot announces warn/limit                         #
 # (announce type "slavequota"). Counters are the slave month stats.                                #
+# At the hard limit the slave is removed from every chain using this filter, downloads included,   #
+# so a file held only by that slave cannot be downloaded until the next month.                     #
+# In practice the warn-zone penalty acts like removal: it is the raw bytes over warn times the     #
+# multiplier, which outweighs every other filter.                                                  #
+# The usage levels are kept in memory, so the warn/limit announces repeat after a master restart.  #
 ####################################################################################################
 
 ## Default Config (suggested for ultimate bandwidth usage).

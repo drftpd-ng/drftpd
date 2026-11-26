@@ -131,6 +131,25 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
         _commandMonitor = new Object();
     }
 
+    /**
+     * TimeManager runs only resetMonth() on the 1st of a month and only resetYear() on 1 January, so each of them
+     * has to cover the shorter periods too (like AbstractUser does), or those counters carry over.
+     */
+    @Override
+    public void resetMonth(Date resetDate) {
+        super.resetMonth(resetDate);
+        super.resetDay(resetDate);
+        super.resetHour(resetDate);
+    }
+
+    @Override
+    public void resetYear(Date resetDate) {
+        super.resetYear(resetDate);
+        super.resetMonth(resetDate);
+        super.resetDay(resetDate);
+        super.resetHour(resetDate);
+    }
+
     public static Hashtable<String, RemoteSlave> rslavesToHashtable(Collection<RemoteSlave> rslaves) {
         Hashtable<String, RemoteSlave> map = new Hashtable<>(rslaves.size());
 
