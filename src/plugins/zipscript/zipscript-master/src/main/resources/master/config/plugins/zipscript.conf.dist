@@ -71,6 +71,23 @@ sfvdeny.subdir.include=.*(?i)(cd[1-9]|dvd[1-9]|dis(c|k)[1-9]).*
 # List of sections/dirs to exclude when searching for deny sfv upload (regex).
 sfvdeny.subdir.exclude=.*(?i)(SPEEDTEST|REQUESTS|STAFF|PRE).*
 
+# Deny the upload of a second .nfo in a directory that already has one.
+# Default: [false]
+nfo.deny.second=false
+
+# Deny the upload of an .nfo in a directory that already contains .zip files
+# (zip releases). An .nfo uploaded before the first .zip is not affected.
+# Default: [false]
+nfo.deny.zipdir=false
+
+# Directories where the zipscript checks are skipped entirely: uploads are not
+# denied by the sfv/nfo checks and are not checked against the sfv or for
+# zip integrity. Space separated globs matched against the directory path
+# (with a trailing slash, case-insensitive), e.g. /REQUESTS/* /PRE/*/Sample/
+# An invalid glob is skipped and logged as a warning.
+# Default: [] (check everywhere)
+nocheck.dirs=
+
 # Check integrity of .zip files on upload.
 # Default: [true]
 stor.zip.integrity.check.enabled=true

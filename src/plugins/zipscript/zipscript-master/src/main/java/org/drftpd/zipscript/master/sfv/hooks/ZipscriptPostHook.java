@@ -48,6 +48,7 @@ import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.zipscript.common.sfv.SFVInfo;
 import org.drftpd.zipscript.common.sfv.SFVStatus;
 import org.drftpd.zipscript.master.sfv.SFVTools;
+import org.drftpd.zipscript.master.sfv.ZipscriptStrictness;
 import org.drftpd.zipscript.master.sfv.event.SFVMemberTransferEvent;
 import org.drftpd.zipscript.master.sfv.vfs.ZipscriptVFSDataSFV;
 
@@ -83,6 +84,12 @@ public class ZipscriptPostHook extends SFVTools {
             transferFile = response.getObject(DataConnectionHandler.TRANSFER_FILE);
         } catch (KeyNotFoundException e) {
             // We don't have a file, we shouldn't have ended up here but return anyway
+            return;
+        }
+
+        if (ZipscriptStrictness.isNoCheckDir(ConfigLoader.loadPluginConfig("zipscript.conf"),
+                transferFile.getParent().getPath())) {
+            // nocheck.dirs: no zipscript checks in this directory
             return;
         }
 
@@ -142,6 +149,12 @@ public class ZipscriptPostHook extends SFVTools {
         }
         if (!transferFile.exists()) {
             // No point checking the file as it has already been deleted (i.e. an abort)
+            return;
+        }
+
+        if (ZipscriptStrictness.isNoCheckDir(ConfigLoader.loadPluginConfig("zipscript.conf"),
+                transferFile.getParent().getPath())) {
+            // nocheck.dirs: no zipscript checks in this directory
             return;
         }
 
