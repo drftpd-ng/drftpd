@@ -83,6 +83,42 @@ public class DH1080Test {
     }
 
     @Test
+    public void testParseMessage() {
+        String key = correctKeys[0];
+        DH1080.Message m = DH1080.parseMessage("DH1080_INIT " + key + " CBC");
+        assertEquals(DH1080.INIT, m.command());
+        assertEquals(key, m.publicKey());
+        assertEquals("CBC", m.modeToken());
+
+        m = DH1080.parseMessage("DH1080_INIT " + key);
+        assertEquals(key, m.publicKey());
+        assertNull(m.modeToken());
+
+        m = DH1080.parseMessage("DH1080_FINISH " + key);
+        assertEquals(DH1080.FINISH, m.command());
+        assertEquals(key, m.publicKey());
+        assertNull(m.modeToken());
+
+        m = DH1080.parseMessage("  DH1080_FINISH   " + key + "   CBC  ");
+        assertEquals(DH1080.FINISH, m.command());
+        assertEquals(key, m.publicKey());
+        assertEquals("CBC", m.modeToken());
+    }
+
+    @Test
+    public void testParseMalformedMessage() {
+        assertNull(DH1080.parseMessage(null));
+        assertNull(DH1080.parseMessage(""));
+        assertNull(DH1080.parseMessage("DH1080_INIT"));
+        assertNull(DH1080.parseMessage("DH1080_INIT  "));
+        assertNull(DH1080.parseMessage("DH1080_FINISH"));
+        assertNull(DH1080.parseMessage("DH1080_FINISH  "));
+        assertNull(DH1080.parseMessage("DH1080_FINISH " + correctKeys[0] + " CBC extra"));
+        assertNull(DH1080.parseMessage("DH1080_INITX " + correctKeys[0]));
+        assertNull(DH1080.parseMessage("DH1080_FOO " + correctKeys[0]));
+    }
+
+    @Test
     public void testDH1080CorrectKeys() {
         DH1080 testDH = new DH1080();
         for (String key : correctKeys) {

@@ -50,6 +50,40 @@ public class DH1080 {
 
     private static final int KEY_BYTE_LENGTH = 135;
 
+    public static final String INIT = "DH1080_INIT";
+
+    public static final String FINISH = "DH1080_FINISH";
+
+    /**
+     * A parsed DH1080_INIT or DH1080_FINISH notice.
+     *
+     * @param command   {@link #INIT} or {@link #FINISH}
+     * @param publicKey the peer's public key (not validated yet)
+     * @param modeToken the optional blowfish mode token following the key, null when absent
+     */
+    public record Message(String command, String publicKey, String modeToken) {
+    }
+
+    /**
+     * Splits a DH1080 notice of the form {@code DH1080_INIT|DH1080_FINISH <public key> [mode]}.
+     * Surrounding and repeated whitespace is ignored.
+     *
+     * @return the parsed message, or null if the notice is not a well formed DH1080 message
+     */
+    public static Message parseMessage(String notice) {
+        if (notice == null) {
+            return null;
+        }
+        String[] parts = notice.trim().split("\\s+");
+        if (parts.length < 2 || parts.length > 3) {
+            return null;
+        }
+        if (!parts[0].equals(INIT) && !parts[0].equals(FINISH)) {
+            return null;
+        }
+        return new Message(parts[0], parts[1], parts.length == 3 ? parts[2] : null);
+    }
+
     static {
         Arrays.fill(IA, -1);
         for (int i = 0; i < CA.length; i++) {
