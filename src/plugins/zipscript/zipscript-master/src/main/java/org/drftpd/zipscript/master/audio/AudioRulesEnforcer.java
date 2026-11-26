@@ -40,21 +40,24 @@ public final class AudioRulesEnforcer {
     }
 
     /**
-     * Only the first audio file of a release (the only one of its type in its directory) is
-     * checked. A rejected release is removed as a whole, or only warned about.
+     * Loads the audio rules that apply to an uploaded audio file. Returns null (nothing to check) if
+     * the rules of its section are disabled, or if the file is not the only one of its type in its
+     * directory.
+     * <p>
+     * Only the first audio file of a release is checked: the count is taken when the upload
+     * finishes, so two files of the same release finishing at the same moment both see a count of
+     * 2 and neither is checked, and a bad file uploaded after the first one is not checked either.
      *
      * @param extension extension (with dot, lowercase) of the audio files, e.g. ".mp3"
-     * @return true if the release was deleted
      */
-    public static boolean enforce(CommandResponse response, FileHandle file, String extension,
-                                  String genre, String year, int bitrateKbps, boolean vbr) {
+    public static AudioRules rulesFor(FileHandle file, String extension) {
         try {
             DirectoryHandle dir = file.getParent();
             SectionInterface section = GlobalContext.getGlobalContext().getSectionManager().lookup(dir);
             Properties cfg = ConfigLoader.loadPluginConfig("zipscript.conf");
             AudioRules rules = AudioRules.load(cfg, section.getName());
             if (rules == null) {
-                return false;
+                return null;
             }
             int count = 0;
             for (FileHandle f : dir.getFilesUnchecked()) {
@@ -62,9 +65,24 @@ public final class AudioRulesEnforcer {
                     count++;
                 }
             }
-            if (count != 1) {
-                return false;
-            }
+            return count == 1 ? rules : null;
+        } catch (FileNotFoundException e) {
+            logger.debug("Audio rules: {} is gone, skipping", file.getPath());
+            return null;
+        }
+    }
+
+    /**
+     * Applies the rules returned by {@link #rulesFor} to the tag values of the file. A rejected
+     * release is removed as a whole, or only warned about.
+     *
+     * @return true if the release was deleted
+     */
+    public static boolean enforce(CommandResponse response, FileHandle file, AudioRules rules,
+                                  String genre, String year, int bitrateKbps, boolean vbr) {
+        try {
+            DirectoryHandle dir = file.getParent();
+            SectionInterface section = GlobalContext.getGlobalContext().getSectionManager().lookup(dir);
             List<String> reasons = rules.evaluate(genre, year, bitrateKbps, vbr);
             if (reasons.isEmpty()) {
                 return false;
@@ -76,7 +94,12 @@ public final class AudioRulesEnforcer {
                     reason, delete ? "deleting release " + releasePath : "warning only");
             if (delete) {
                 response.addComment("Audio rules: " + reason + ". Release rejected and removed.");
-                new DirectoryHandle(releasePath).deleteUnchecked();
+                try {
+                    new DirectoryHandle(releasePath).deleteUnchecked();
+                } catch (RuntimeException e) {
+                    logger.warn("Audio rules: unable to delete release {}", releasePath, e);
+                    return false;
+                }
                 return true;
             }
             response.addComment("Audio rules: " + reason

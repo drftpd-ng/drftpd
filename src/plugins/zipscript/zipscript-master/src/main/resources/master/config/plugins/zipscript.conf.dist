@@ -110,6 +110,11 @@ stor.flacinfo.enabled=true
 # file of a release is checked. Lists are comma separated, matching is case
 # insensitive. A file without a tag value never matches an allowed.* list.
 #
+# Limitation: the check only runs for the upload that leaves exactly one file of
+# its type (.mp3 or .flac) in the directory. Two files of a release uploaded at
+# the same time both see a count of 2 and are not checked, and a bad file
+# uploaded after the first one is not checked either.
+#
 # Enable the rules for the section.
 # SECTION.audio.enabled=true
 #

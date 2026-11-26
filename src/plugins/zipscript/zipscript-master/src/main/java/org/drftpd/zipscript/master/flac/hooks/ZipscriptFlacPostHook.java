@@ -35,8 +35,8 @@ import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.master.vfs.InodeHandle;
 import org.drftpd.zipscript.common.flac.FlacInfo;
 import org.drftpd.zipscript.common.flac.VorbisTag;
+import org.drftpd.zipscript.master.audio.AudioRules;
 import org.drftpd.zipscript.master.audio.AudioRulesEnforcer;
-import org.drftpd.zipscript.common.flac.VorbisTag;
 import org.drftpd.zipscript.master.flac.vfs.ZipscriptVFSDataFlac;
 
 import java.io.FileNotFoundException;
@@ -127,10 +127,14 @@ public class ZipscriptFlacPostHook {
      * @return true if the release was removed
      */
     private boolean rejectedByAudioRules(CommandResponse response, FileHandle transferFile) {
+        AudioRules rules = AudioRulesEnforcer.rulesFor(transferFile, ".flac");
+        if (rules == null) {
+            return false;
+        }
         try {
             FlacInfo info = new ZipscriptVFSDataFlac(transferFile).getFlacInfo();
             VorbisTag tag = info.getVorbisTag();
-            return AudioRulesEnforcer.enforce(response, transferFile, ".flac",
+            return AudioRulesEnforcer.enforce(response, transferFile, rules,
                     tag == null ? null : tag.getGenre(), tag == null ? null : tag.getYear(), 0, false);
         } catch (IOException | NoAvailableSlaveException e) {
             logger.debug("Unable to check audio rules for {}: {}", transferFile.getPath(), e.getMessage());

@@ -35,6 +35,7 @@ import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.master.vfs.InodeHandle;
 import org.drftpd.zipscript.common.mp3.ID3Tag;
 import org.drftpd.zipscript.common.mp3.MP3Info;
+import org.drftpd.zipscript.master.audio.AudioRules;
 import org.drftpd.zipscript.master.audio.AudioRulesEnforcer;
 import org.drftpd.zipscript.master.mp3.vfs.ZipscriptVFSDataMP3;
 
@@ -128,10 +129,14 @@ public class ZipscriptMP3PostHook {
      * @return true if the release was removed
      */
     private boolean rejectedByAudioRules(CommandResponse response, FileHandle transferFile) {
+        AudioRules rules = AudioRulesEnforcer.rulesFor(transferFile, ".mp3");
+        if (rules == null) {
+            return false;
+        }
         try {
             MP3Info info = new ZipscriptVFSDataMP3(transferFile).getMP3Info();
             ID3Tag id3 = info.getID3Tag();
-            return AudioRulesEnforcer.enforce(response, transferFile, ".mp3",
+            return AudioRulesEnforcer.enforce(response, transferFile, rules,
                     id3 == null ? null : id3.getGenre(), id3 == null ? null : id3.getYear(),
                     info.getBitrate() / 1000, "VBR".equals(info.getEncodingtype()));
         } catch (IOException | NoAvailableSlaveException e) {
