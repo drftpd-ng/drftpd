@@ -28,11 +28,18 @@ import java.util.function.LongSupplier;
  * (and younger than {@link #TIMEOUT_MILLIS}) is ignored, otherwise the peer's reply to
  * the first DH1080_INIT would be combined with the private key of the second one.
  * Exchanges older than the timeout are dropped. Safe for use from several threads.
+ * <p>
+ * An exchange whose reply was refused (see {@link #refuse}) stays as a marker until the
+ * timeout, so a peer that keeps answering in a refused mode gets at most one
+ * DH1080_INIT per {@link #TIMEOUT_MILLIS}.
  */
 public class DH1080Exchanges {
 
     public static final long TIMEOUT_MILLIS = 60_000L;
 
+    /**
+     * @param exchange the exchange, or null once its reply was refused
+     */
     private record Pending(DH1080 exchange, long startedMillis) {
     }
 
@@ -79,13 +86,54 @@ public class DH1080Exchanges {
     /**
      * Removes and returns the pending exchange with the given nick.
      *
-     * @return the exchange, or null if none is pending or it has expired
+     * @return the exchange, or null if none is pending, it has expired or its reply was refused
      */
     public DH1080 finish(String nick) {
-        Pending pending = _pending.remove(key(nick));
-        if (pending == null || isExpired(pending, _clock.getAsLong())) {
+        long now = _clock.getAsLong();
+        DH1080[] taken = {null};
+        _pending.computeIfPresent(key(nick), (k, p) -> {
+            if (isExpired(p, now)) {
+                return null;
+            }
+            if (p.exchange() == null) {
+                // Refused, keep the marker until the timeout
+                return p;
+            }
+            taken[0] = p.exchange();
             return null;
-        }
-        return pending.exchange();
+        });
+        return taken[0];
+    }
+
+    /**
+     * Drops the pending exchange with the given nick, used when they start an exchange
+     * themselves: its key replaces ours, and a later reply to our DH1080_INIT must not
+     * overwrite it.
+     */
+    public void cancel(String nick) {
+        _pending.remove(key(nick));
+    }
+
+    /**
+     * Marks the pending exchange with the given nick as refused: its private key is dropped,
+     * but no new exchange is started with this nick until the original one times out.
+     *
+     * @return true if a pending exchange was refused, false if none was pending, it has
+     * expired or it was already refused
+     */
+    public boolean refuse(String nick) {
+        long now = _clock.getAsLong();
+        boolean[] refused = {false};
+        _pending.computeIfPresent(key(nick), (k, p) -> {
+            if (isExpired(p, now)) {
+                return null;
+            }
+            if (p.exchange() == null) {
+                return p;
+            }
+            refused[0] = true;
+            return new Pending(null, p.startedMillis());
+        });
+        return refused[0];
     }
 }

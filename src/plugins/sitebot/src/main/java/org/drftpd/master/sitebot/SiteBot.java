@@ -1594,21 +1594,31 @@ public class SiteBot implements ReplyConstants, Runnable {
                 logger.warn("Received malformed public key");
                 return;
             }
+            // The key from their exchange replaces ours: drop the exchange we may have started,
+            // otherwise its reply (if they still send one) would store a different key
+            _dh1080.cancel(sourceNick);
             // Send our public key back to the sender, with " CBC" only for a CBC key as FiSH 10 does
             sendNotice(sourceNick, DH1080.FINISH + " " + exchange.getPublicKey() + DH1080.modeSuffix(blowfishMode));
         } else {
             // DH1080_FINISH, the reply to an exchange we initiated
+            if (blowfishMode == null) {
+                // The peer has already set a key in the mode it answered with, we cannot use it.
+                // Older clients that ignore " CBC" answer this way to every DH1080_INIT, so the
+                // refused exchange is kept until it times out: no new DH1080_INIT before then.
+                if (_dh1080.refuse(sourceNick)) {
+                    logger.warn("Refusing {} from {}: peer answered with mode [{}] which is unknown or disabled (blowfish.dh1080.cbc={}, blowfish.dh1080.ecb={}), no new exchange for {} seconds",
+                            DH1080.FINISH, sourceNick, message.modeToken() == null ? "none, ECB" : message.modeToken(),
+                            _config.getDH1080CBCEnabled(), _config.getDH1080ECBEnabled(),
+                            DH1080Exchanges.TIMEOUT_MILLIS / 1000);
+                } else {
+                    logger.warn("Ignoring DH1080_FINISH from {} as no key exchange with them is in progress (or it timed out)", sourceNick);
+                }
+                return;
+            }
             // For security reasons the DH1080 object is removed as we no longer need it
             exchange = _dh1080.finish(sourceNick);
             if (exchange == null) {
                 logger.warn("Ignoring DH1080_FINISH from {} as no key exchange with them is in progress (or it timed out)", sourceNick);
-                return;
-            }
-            if (blowfishMode == null) {
-                // The peer has already set a key in the mode it answered with, we cannot use it
-                logger.warn("Refusing {} from {}: peer answered with mode [{}] which is unknown or disabled (blowfish.dh1080.cbc={}, blowfish.dh1080.ecb={})",
-                        DH1080.FINISH, sourceNick, message.modeToken() == null ? "none, ECB" : message.modeToken(),
-                        _config.getDH1080CBCEnabled(), _config.getDH1080ECBEnabled());
                 return;
             }
         }
@@ -3108,7 +3118,8 @@ public class SiteBot implements ReplyConstants, Runnable {
             // message from a user without a usable key, so only one exchange runs at a time.
             DH1080 exchange = _dh1080.start(nick);
             if (exchange == null) {
-                logger.debug("DH1080 exchange with {} already in progress, not starting another one", nick);
+                logger.debug("DH1080 exchange with {} already in progress (or refused less than {} seconds ago), not starting another one",
+                        nick, DH1080Exchanges.TIMEOUT_MILLIS / 1000);
                 return;
             }
             sendNotice(nick, DH1080.INIT + " " + exchange.getPublicKey() + DH1080.modeSuffix(mode));

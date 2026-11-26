@@ -54,3 +54,6 @@ blowfish.dh1080.* comments in irc.conf.dist.
   it without a usable key, which includes a key set with SITE SETBLOWFISH in a mode that is
   disabled in irc.conf (for example an ECB key while blowfish.dh1080.ecb=false). Such a key
   is then replaced by a DH1080 CBC key, both in the bot and in the user's FiSH client.
+- A client that ignores " CBC" (older fish.py or fishlim versions) answers the bot's
+  DH1080_INIT without a mode token. With blowfish.dh1080.ecb=false the bot refuses that
+  reply with one WARN and starts no new exchange with that nick for 60 seconds.
