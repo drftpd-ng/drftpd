@@ -23,6 +23,7 @@ import org.drftpd.common.dynamicdata.Key;
 import org.drftpd.common.io.PermissionDeniedException;
 import org.drftpd.common.util.Bytes;
 import org.drftpd.master.GlobalContext;
+import org.drftpd.master.util.LegacyDateTimeFormatter;
 import org.drftpd.master.commands.*;
 import org.drftpd.master.event.DirectoryFtpEvent;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
@@ -33,8 +34,8 @@ import org.drftpd.master.vfs.*;
 import org.drftpd.slave.exceptions.FileExistsException;
 
 import java.io.FileNotFoundException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.util.StringTokenizer;
 
 
@@ -56,7 +57,7 @@ public class Dir extends CommandInterface {
     public static final Key<Long> LASTMODIFIED = new Key<>(Dir.class, "lastModified");
     public static final Key<Boolean> WIPE_RECURSIVE = new Key<>(Dir.class, "wipe_recursive");
     public static final Key<String> WIPE_PATH = new Key<>(Dir.class, "wipe_path");
-    private static final SimpleDateFormat DATE_FMT = new SimpleDateFormat(
+    private static final DateTimeFormatter DATE_FMT = LegacyDateTimeFormatter.ofPattern(
             "yyyyMMddHHmmss.SSS");
     private static final Logger logger = LogManager.getLogger(Dir.class);
 
@@ -217,10 +218,8 @@ public class Dir extends CommandInterface {
         }
 
         try {
-            synchronized (DATE_FMT) {
-                return new CommandResponse(213,
-                        DATE_FMT.format(new Date(reqFile.lastModified())));
-            }
+            return new CommandResponse(213,
+                    DATE_FMT.format(Instant.ofEpochMilli(reqFile.lastModified())));
         } catch (FileNotFoundException e) {
             return new CommandResponse(550, e.getMessage());
         }

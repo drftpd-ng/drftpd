@@ -30,14 +30,18 @@ import org.drftpd.master.commands.*;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.network.*;
 import org.drftpd.master.slavemanagement.RemoteSlave;
+import org.drftpd.master.util.LegacyDateTimeFormatter;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.vfs.*;
 import org.reflections.Reflections;
 
 import java.io.*;
 import java.net.Socket;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 /**
@@ -48,23 +52,20 @@ public class ListHandler extends CommandInterface {
 
     private static final Logger logger = LogManager.getLogger(ListHandler.class);
 
-    private static final DateFormat AFTER_SIX = new SimpleDateFormat(" yyyy");
+    private static final DateTimeFormatter AFTER_SIX = LegacyDateTimeFormatter.ofPattern(" yyyy");
 
-    private static final DateFormat BEFORE_SIX = new SimpleDateFormat("HH:mm");
+    private static final DateTimeFormatter BEFORE_SIX = LegacyDateTimeFormatter.ofPattern("HH:mm");
 
-    private static final DateFormat FULL = new SimpleDateFormat("HH:mm:ss yyyy");
+    private static final DateTimeFormatter FULL = LegacyDateTimeFormatter.ofPattern("HH:mm:ss yyyy");
 
     private static final String[] MONTHS = {"Jan", "Feb", "Mar", "Apr", "May",
             "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 
-    private static final SimpleDateFormat MLSTTIME = new SimpleDateFormat("yyyyMMddHHmmss.SSS");
+    private static final DateTimeFormatter MLSTTIME = LegacyDateTimeFormatter.ofPattern("yyyyMMddHHmmss.SSS",
+            Locale.getDefault(Locale.Category.FORMAT), ZoneOffset.UTC);
     private static final String NEWLINE = "\r\n";
     private static final String DELIM = " ";
     private static final String PADDING = "          ";
-
-    static {
-        MLSTTIME.setTimeZone(TimeZone.getTimeZone("GMT"));
-    }
 
     private final ArrayList<AddListElementsInterface> _listAddons = new ArrayList<>();
 
@@ -357,9 +358,7 @@ public class ListHandler extends CommandInterface {
                     }
 
                     line.append("size=" + inode.getSize() + ";");
-                    synchronized (MLSTTIME) {
-                        line.append("modify=" + MLSTTIME.format(new Date(inode.lastModified())) + ";");
-                    }
+                    line.append("modify=" + MLSTTIME.format(Instant.ofEpochMilli(inode.lastModified())) + ";");
 
                     line.append("unix.owner=" + inode.getUsername() + ";");
                     line.append("unix.group=" + inode.getGroup() + ";");
@@ -465,19 +464,19 @@ public class ListHandler extends CommandInterface {
     }
 
     protected String getUnixDate(long date, boolean fulldate) {
-        Date date1 = new Date(date);
-        long dateTime = date1.getTime();
+        Instant instant = Instant.ofEpochMilli(date);
+        long dateTime = date;
 
         if (dateTime < 0) {
             return "------------";
         }
 
-        Calendar cal = new GregorianCalendar();
-        cal.setTime(date1);
+        // the day and month use the time zone that is the default right now
+        ZonedDateTime zdt = instant.atZone(ZoneId.systemDefault());
 
-        String firstPart = MONTHS[cal.get(Calendar.MONTH)] + ' ';
+        String firstPart = MONTHS[zdt.getMonthValue() - 1] + ' ';
 
-        String dateStr = String.valueOf(cal.get(Calendar.DATE));
+        String dateStr = String.valueOf(zdt.getDayOfMonth());
 
         if (dateStr.length() == 1) {
             dateStr = ' ' + dateStr;
@@ -488,17 +487,11 @@ public class ListHandler extends CommandInterface {
         long nowTime = System.currentTimeMillis();
 
         if (fulldate) {
-            synchronized (FULL) {
-                return firstPart + FULL.format(date1);
-            }
+            return firstPart + FULL.format(instant);
         } else if (Math.abs(nowTime - dateTime) > (183L * 24L * 60L * 60L * 1000L)) {
-            synchronized (AFTER_SIX) {
-                return firstPart + AFTER_SIX.format(date1);
-            }
+            return firstPart + AFTER_SIX.format(instant);
         } else {
-            synchronized (BEFORE_SIX) {
-                return firstPart + BEFORE_SIX.format(date1);
-            }
+            return firstPart + BEFORE_SIX.format(instant);
         }
     }
 

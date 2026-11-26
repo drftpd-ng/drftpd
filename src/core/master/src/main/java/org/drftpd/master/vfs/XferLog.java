@@ -23,10 +23,11 @@ import org.drftpd.master.event.Event;
 import org.drftpd.master.event.FtpListener;
 import org.drftpd.master.event.TransferEvent;
 import org.drftpd.master.exceptions.FatalException;
+import org.drftpd.master.util.LegacyDateTimeFormatter;
 
 import java.io.*;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
 
@@ -56,7 +57,7 @@ public class XferLog extends FtpListener {
      * Mon Aug 11 14:03:31 2003 33 hostname 15000000 /path/to/file b _ i r user group 1 user
      * Mon Aug 11 14:03:44 2003 13 hostname 15000000 /path/to/file b _ i r user group 0 *
      */
-    public static final SimpleDateFormat DATE_FMT = new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy", Locale.ENGLISH);
+    public static final DateTimeFormatter DATE_FMT = LegacyDateTimeFormatter.ofPattern("EEE MMM d HH:mm:ss yyyy", Locale.ENGLISH);
     private static final Logger logger = LogManager.getLogger(XferLog.class);
     private final PrintStream _out;
 
@@ -103,7 +104,7 @@ public class XferLog extends FtpListener {
         // all transfers are noted as complete
         char completed = 'c';
         try {
-            _out.println(DATE_FMT.format(new Date(event.getTime())) + " " +
+            _out.println(DATE_FMT.format(Instant.ofEpochMilli(event.getTime())) + " " +
                     (event.getTransferFile().getXfertime() / 1000) + " " +
                     event.getPeer().getHostName() + " " +
                     event.getTransferFile().getSize() + " " +

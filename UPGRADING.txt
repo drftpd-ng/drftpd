@@ -38,3 +38,9 @@ DrFTPD loads X.conf when it exists and falls back to X.conf.dist otherwise.
   defines the command twice, and the master stops at startup with "already mapped". Remove the
   duplicate definition from your own X.conf to fix it.
 - If you never customised a command file, delete your X.conf so the shipped X.conf.dist is used.
+
+### XferLog.DATE_FMT type change
+
+The public field XferLog.DATE_FMT changed type from SimpleDateFormat to DateTimeFormatter.
+Third-party plugins that use it must adapt (for example format with DATE_FMT.format(temporal)
+instead of DATE_FMT.format(date)).
