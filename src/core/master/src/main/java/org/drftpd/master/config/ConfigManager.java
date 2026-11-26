@@ -24,6 +24,7 @@ import org.drftpd.common.dynamicdata.KeyedMap;
 import org.drftpd.common.util.ConfigLoader;
 import org.drftpd.common.util.PortRange;
 import org.drftpd.common.util.SSLConfigParser;
+import org.drftpd.common.util.Version;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.permissions.ExtendedPermissions;
 import org.drftpd.master.permissions.PathPermission;
@@ -213,7 +214,7 @@ public class ConfigManager implements ConfigInterface {
                  */
 
                 switch (drct) {
-                    case "login_prompt" -> _loginPrompt = line.substring("login_prompt".length()).trim();
+                    case "login_prompt" -> _loginPrompt = Version.expandPlaceholder(line.substring("login_prompt".length()).trim());
                     case "max_users" -> {
                         _maxUsersTotal = Integer.parseInt(st.nextToken());
                         _maxUsersExempt = Integer.parseInt(st.nextToken());

@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.drftpd</groupId>
         <artifactId>drftpd</artifactId>
-        <version>4.0.12-SNAPSHOT</version>
+        <version>${revision}</version>
         <relativePath>../../</relativePath>
     </parent>
 
@@ -88,13 +88,13 @@
                             <target>
                                 <copy todir="${maven.multiModuleProjectDirectory}/runtime/master/build" flatten="true"
                                       overwrite="true" verbose="true" failonerror="true">
-                                    <fileset dir="${project.basedir}" includes="**/target/*-master-*.jar"/>
-                                    <fileset dir="${project.basedir}" includes="**/target/*-common-*.jar"/>
+                                    <fileset dir="${project.basedir}" includes="**/target/*-master-${project.version}.jar"/>
+                                    <fileset dir="${project.basedir}" includes="**/target/*-common-${project.version}.jar"/>
                                 </copy>
                                 <copy todir="${maven.multiModuleProjectDirectory}/runtime/slave/build" flatten="true"
                                       overwrite="true" verbose="true" failonerror="true">
-                                    <fileset dir="${project.basedir}" includes="**/target/*-slave-*.jar"/>
-                                    <fileset dir="${project.basedir}" includes="**/target/*-common-*.jar"/>
+                                    <fileset dir="${project.basedir}" includes="**/target/*-slave-${project.version}.jar"/>
+                                    <fileset dir="${project.basedir}" includes="**/target/*-common-${project.version}.jar"/>
                                 </copy>
                             </target>
                         </configuration>
