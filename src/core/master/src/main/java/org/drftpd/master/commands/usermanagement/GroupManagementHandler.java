@@ -642,6 +642,9 @@ public class GroupManagementHandler extends CommandInterface {
         }
 
         Group g = session.getGroupNull(st.nextToken());
+        if (g == null) {
+            return new CommandResponse(500, "Group does not exist");
+        }
         String oldGroup = g.getName();
         String newGroup = st.nextToken();
         Group g2 = session.getGroupNull(newGroup);

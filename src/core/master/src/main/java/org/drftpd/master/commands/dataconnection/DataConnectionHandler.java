@@ -723,6 +723,13 @@ public class DataConnectionHandler extends CommandInterface {
                 return StandardCommandManager.genericResponse("RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS");
             }
 
+            // PASV after a PRET for something else (e.g. LIST) leaves no transfer file to work with
+            if (ts.isPasv() && ts.isPreTransfer()
+                    && ((isStor && !ts.isPASVUpload()) || (isRetr && !ts.isPASVDownload()))) {
+                // reset(); already done in finally block
+                return StandardCommandManager.genericResponse("RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS");
+            }
+
             // argument check
             if (!request.hasArgument()) {
                 // reset(); already done in finally block
