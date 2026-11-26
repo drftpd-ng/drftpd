@@ -111,7 +111,7 @@ public class SiteBotConfig {
 
     private void readProperties(Properties cfg) {
         X509TrustManager trustManager = new BlindTrustManager();
-        if (cfg.getProperty("ssl.strictTrust").equalsIgnoreCase("true")) {
+        if (cfg.getProperty("ssl.strictTrust", "false").trim().equalsIgnoreCase("true")) {
             trustManager = new PartialTrustManager(cfg.getProperty("ssl.keystore.password"));
         }
         for (int i = 1; ; i++) {
@@ -119,9 +119,9 @@ public class SiteBotConfig {
             if (hostName == null) {
                 break;
             }
-            int port = Integer.parseInt(cfg.getProperty("server." + i + ".port"));
+            int port = Integer.parseInt(requireProperty(cfg, "server." + i + ".port").trim());
             String password = cfg.getProperty("server." + i + ".password");
-            boolean ssl = cfg.getProperty("server." + i + ".use_ssl").equalsIgnoreCase("true");
+            boolean ssl = cfg.getProperty("server." + i + ".use_ssl", "true").trim().equalsIgnoreCase("true");
             String saslUsername = cfg.getProperty("server." + i + ".sasl.username", "").trim();
             String saslPassword = cfg.getProperty("server." + i + ".sasl.password", "");
             boolean saslRequired = cfg.getProperty("server." + i + ".sasl.required", "false").trim().equalsIgnoreCase("true");
@@ -130,9 +130,9 @@ public class SiteBotConfig {
             _servers.add(new ServerConfig(hostName, port, password, ssl, trustManager,
                     saslUsername, saslPassword, saslRequired, saslAllowPlaintext, saslAllowInsecureTls));
         }
-        _connectDelay = Long.parseLong(cfg.getProperty("connect.delay")) * 1000;
-        _messageDelay = Long.parseLong(cfg.getProperty("message.sendDelay"));
-        _autoNick = cfg.getProperty("nick.auto").equalsIgnoreCase("true");
+        _connectDelay = Long.parseLong(cfg.getProperty("connect.delay", "30").trim()) * 1000;
+        _messageDelay = Long.parseLong(cfg.getProperty("message.sendDelay", "300").trim());
+        _autoNick = cfg.getProperty("nick.auto", "true").trim().equalsIgnoreCase("true");
         _name = cfg.getProperty("name");
         _nick = cfg.getProperty("nick");
         _user = cfg.getProperty("user");
@@ -144,16 +144,16 @@ public class SiteBotConfig {
             }
             _connectCommands.add(connectCommand);
         }
-        _nickservEnabled = cfg.getProperty("services.nickserv.enable").equalsIgnoreCase("true");
-        _nickservJoinGroup = cfg.getProperty("services.nickserv.register.joingroup").equalsIgnoreCase("true");
+        _nickservEnabled = cfg.getProperty("services.nickserv.enable", "false").trim().equalsIgnoreCase("true");
+        _nickservJoinGroup = cfg.getProperty("services.nickserv.register.joingroup", "false").trim().equalsIgnoreCase("true");
         _nickservRegEmail = cfg.getProperty("services.nickserv.register.email");
-        _nickservRegNew = cfg.getProperty("services.nickserv.register.new").equalsIgnoreCase("true");
+        _nickservRegNew = cfg.getProperty("services.nickserv.register.new", "false").trim().equalsIgnoreCase("true");
         _nickservRegNick = cfg.getProperty("services.nickserv.register.nick");
         _nickservRegPassword = cfg.getProperty("services.nickserv.register.password");
 
         _delayAfterNickserv = Long.parseLong(cfg.getProperty("services.nickserv.delayafter", "0"));
 
-        _chanservEnabled = cfg.getProperty("services.chanserv.enable").equalsIgnoreCase("true");
+        _chanservEnabled = cfg.getProperty("services.chanserv.enable", "false").trim().equalsIgnoreCase("true");
         for (int i = 1; ; i++) {
             String chanservInvite = cfg.getProperty("services.chanserv.invite." + i);
             if (chanservInvite == null) {
@@ -175,24 +175,33 @@ public class SiteBotConfig {
             _channels.add(new ChannelConfig(chanName, blowKey, blowMode, chanKey, chanPerms));
         }
         _commandTrigger = cfg.getProperty("command.trigger");
-        _channelAutoJoin = cfg.getProperty("channel.autojoin").equalsIgnoreCase("true");
+        _channelAutoJoin = cfg.getProperty("channel.autojoin", "true").trim().equalsIgnoreCase("true");
         _charset = cfg.getProperty("charset");
-        _blowfishEnabled = cfg.getProperty("blowfish.enable").equalsIgnoreCase("true");
-        _dh1080Enabled = cfg.getProperty("blowfish.dh1080.enable").equalsIgnoreCase("true");
-        _dh1080EcbEnabled = cfg.getProperty("blowfish.dh1080.ecb").equalsIgnoreCase("true");
-        _dh1080CbcEnabled = cfg.getProperty("blowfish.dh1080.cbc").equalsIgnoreCase("true");
-        _blowfishPunish = cfg.getProperty("blowfish.unencrypted.punish").equalsIgnoreCase("true");
+        _blowfishEnabled = cfg.getProperty("blowfish.enable", "true").trim().equalsIgnoreCase("true");
+        _dh1080Enabled = cfg.getProperty("blowfish.dh1080.enable", "true").trim().equalsIgnoreCase("true");
+        _dh1080EcbEnabled = cfg.getProperty("blowfish.dh1080.ecb", "false").trim().equalsIgnoreCase("true");
+        _dh1080CbcEnabled = cfg.getProperty("blowfish.dh1080.cbc", "true").trim().equalsIgnoreCase("true");
+        _blowfishPunish = cfg.getProperty("blowfish.unencrypted.punish", "false").trim().equalsIgnoreCase("true");
         _blowfishPunishAction = cfg.getProperty("blowfish.unencrypted.action");
         _blowfishPunishReason = cfg.getProperty("blowfish.unencrypted.reason");
         _localBindHost = cfg.getProperty("bind.host");
         _botName = cfg.getProperty("bot.name");
-        _commandsMax = Integer.parseInt(cfg.getProperty("commands.max"));
-        if (cfg.getProperty("commands.full").equalsIgnoreCase("block")) {
+        _commandsMax = Integer.parseInt(cfg.getProperty("commands.max", "5").trim());
+        String commandsFull = cfg.getProperty("commands.full", "queue").trim();
+        if (commandsFull.equalsIgnoreCase("block")) {
             _commandsBlock = true;
-        } else if (cfg.getProperty("commands.full").equalsIgnoreCase("queue")) {
+        } else if (commandsFull.equalsIgnoreCase("queue")) {
             _commandsQueue = true;
         }
         _maxLineLength = Integer.parseInt(cfg.getProperty("line.length.max", "512"));
+    }
+
+    private static String requireProperty(Properties cfg, String key) {
+        String value = cfg.getProperty(key);
+        if (value == null) {
+            throw new IllegalArgumentException("Missing required key \"" + key + "\" in irc.conf");
+        }
+        return value;
     }
 
     public boolean getAutoNick() {

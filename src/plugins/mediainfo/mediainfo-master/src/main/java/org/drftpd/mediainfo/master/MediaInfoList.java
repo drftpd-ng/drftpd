@@ -70,7 +70,7 @@ public class MediaInfoList implements AddListElementsInterface {
             }
         }
         _mediaBarEnabled = cfg.getProperty("mediabar.enabled", "true").equalsIgnoreCase("true");
-        _mediaBarIsDir = cfg.getProperty("mediabar.directory").equalsIgnoreCase("true");
+        _mediaBarIsDir = cfg.getProperty("mediabar.directory", "true").trim().equalsIgnoreCase("true");
     }
 
     public ListElementsContainer addElements(DirectoryHandle dir, ListElementsContainer container) {
