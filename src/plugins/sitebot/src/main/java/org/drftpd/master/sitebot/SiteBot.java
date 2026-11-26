@@ -121,7 +121,7 @@ public class SiteBot implements ReplyConstants, Runnable {
     private String _nick = null;
     private String _ctcpVersion = "DrFTPD SiteBot ";
     private String _finger = "You ought to be arrested for fingering a bot!";
-    private String _hostMask = null;
+    private volatile String _hostMask = null;
     private boolean _isTerminated = false;
     private boolean _userDisconnected = false;
 
@@ -223,6 +223,27 @@ public class SiteBot implements ReplyConstants, Runnable {
      * every nick cannot keep the bot in a loop.
      */
     static final int MAX_AUTONICK_TRIES = 50;
+
+    /**
+     * Returns our host mask after a 396 reply ("<nick> <host> :is now your displayed host",
+     * some servers send "<user>@<host>"), or null if the reply or the current mask cannot be read.
+     */
+    static String hostMaskAfterHostHidden(String hostMask, String response) {
+        if (hostMask == null || response == null) {
+            return null;
+        }
+        String[] parts = response.split(" ");
+        int at = hostMask.indexOf('@');
+        if (parts.length < 2 || parts[1].isEmpty() || parts[1].startsWith(":") || at < 0) {
+            return null;
+        }
+        String host = parts[1];
+        if (host.contains("@")) {
+            int bang = hostMask.indexOf('!');
+            return bang < 0 ? null : hostMask.substring(0, bang + 1) + host;
+        }
+        return hostMask.substring(0, at + 1) + host;
+    }
 
     /**
      * Returns the nick the server says is in use, from a 433 reply
@@ -1338,6 +1359,14 @@ public class SiteBot implements ReplyConstants, Runnable {
             String channel = response.substring(response.indexOf(' ') + 1, response.indexOf(" :"));
             IrcUser[] users = this.getUsers(channel);
             this.onUserList(channel, users);
+        } else if (code == RPL_HOSTHIDDEN) {
+            // Our displayed host changed (for example a cloak set after identifying), the
+            // output writers size their lines from our host mask
+            String hostMask = hostMaskAfterHostHidden(getHostMask(), response);
+            if (hostMask != null) {
+                logger.debug("Our host mask is now {}", hostMask);
+                setHostMask(hostMask);
+            }
         } else if (code == RPL_BOUNCE) {
             int start = response.indexOf("PREFIX") + 7;
             // if this is not found, then the defaults set in the constructor are used

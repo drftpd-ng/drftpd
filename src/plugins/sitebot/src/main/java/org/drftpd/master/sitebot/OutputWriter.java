@@ -47,8 +47,6 @@ public class OutputWriter {
 
     private String _output;
 
-    private int _maxOutputLen;
-
     protected OutputWriter() {
         // Empty constructor for extending classes
     }
@@ -58,7 +56,6 @@ public class OutputWriter {
         _output = output;
         _cipher = cipher;
         _blowfishEnabled = _bot.getConfig().getBlowfishEnabled();
-        _maxOutputLen = getMaxLineLength();
     }
 
     public synchronized void sendMessage(String message) {
@@ -85,7 +82,6 @@ public class OutputWriter {
     public void reload() {
         _warnedSmallBudget = false;
         _blowfishEnabled = _bot.getConfig().getBlowfishEnabled();
-        _maxOutputLen = getMaxLineLength();
     }
 
     protected void updateCipher(BlowfishManager cipher) {
@@ -97,9 +93,11 @@ public class OutputWriter {
     }
 
     private List<String> splitLines(String message) {
-        int maxBytes = _maxOutputLen;
+        // Sized on every message, our host mask can change while connected (396 reply)
+        int maxOutputLen = getMaxLineLength();
+        int maxBytes = maxOutputLen;
         if (_blowfishEnabled && _cipher != null) {
-            maxBytes = _cipher.maxPlaintextBytes(_maxOutputLen);
+            maxBytes = _cipher.maxPlaintextBytes(maxOutputLen);
         }
         if (maxBytes < MIN_LINE_BYTES) {
             // line.length.max leaves (almost) no room, send small pieces the server
