@@ -26,6 +26,8 @@ import java.util.Map;
  * @author mog
  * @version $Id$
  */
+// Kept on Hashtable on purpose: Session and the user KeyedMaps are shared between threads and
+// incrementInt/incrementLong rely on the Hashtable monitor; subclasses and plugins see the Hashtable API.
 @SuppressWarnings("serial")
 public class KeyedMap<K extends Key<?>, V> extends Hashtable<K, V> {
     public KeyedMap() {
