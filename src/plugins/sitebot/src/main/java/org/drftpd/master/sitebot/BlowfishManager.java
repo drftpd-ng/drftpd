@@ -90,6 +90,13 @@ class BlowfishManager {
             //Not correct encrypted string, return the source string
             return toDecrypt;
         }
+        // Text after the first space is not encrypted (timestamps added by a BNC);
+        // FiSH does not decrypt it either, the bot drops it
+        int space = payload.indexOf(' ');
+        if (space >= 0) {
+            logger.debug("Ignoring unencrypted text after the encrypted line");
+            payload = payload.substring(0, space);
+        }
         try {
             if (payload.startsWith(CBC_MARKER)) {
                 return _cbc.decryptPayload(payload.substring(CBC_MARKER.length()));

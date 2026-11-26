@@ -32,6 +32,7 @@ import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
+import java.util.Arrays;
 import java.util.Base64;
 
 /**
@@ -71,27 +72,40 @@ public class BlowfishCBC extends Blowfish {
     }
 
     public String decryptPayload(String textToDecrypt) throws Exception {
-        //1- decrypt with BASE64 decoder
-        byte[] base64Decoded = Base64.getDecoder().decode(textToDecrypt);
+        //1- decrypt with BASE64 decoder. A line cut by the server can end in the
+        //   middle of a base64 group, drop what cannot be decoded like FiSH does.
+        String base64 = textToDecrypt;
+        while (base64.endsWith("=")) {
+            base64 = base64.substring(0, base64.length() - 1);
+        }
+        boolean cut = false;
+        if (base64.length() % 4 == 1) {
+            base64 = base64.substring(0, base64.length() - 1);
+            cut = true;
+        }
+        byte[] base64Decoded = Base64.getDecoder().decode(base64);
 
-        //2- decrypt the string
+        //2- keep whole blocks only
+        int extra = base64Decoded.length % 8;
+        if (extra != 0) {
+            base64Decoded = Arrays.copyOf(base64Decoded, base64Decoded.length - extra);
+            cut = true;
+        }
+        if (base64Decoded.length < 16) {
+            throw new IllegalArgumentException("CBC payload too short");
+        }
+        if (cut) {
+            logger.debug("CBC encrypted line was cut, decrypting the {} complete blocks", base64Decoded.length / 8);
+        }
+
+        //3- decrypt the string
         IvParameterSpec oIV = new IvParameterSpec(INIT_IV);
         Cipher cipher = initCipher();
         cipher.init(Cipher.DECRYPT_MODE, getSecretKeySpec(), oIV);
         byte[] lDecoded = cipher.doFinal(base64Decoded);
 
-        //3- Find the last 0x0 value in the decrypted string
-        int lFinalIndex = findLast0byte(lDecoded) - 8;
-        if (lFinalIndex <= 0) {
-            lFinalIndex = lDecoded.length - 8;
-        }
-
-        //4- Delete the first 8 byte (IV) and the 0x0 value
-        byte[] lFinalDecoded = new byte[lFinalIndex];
-        System.arraycopy(lDecoded, 8, lFinalDecoded, 0, lFinalIndex);
-
-        //5- Return the formatted String
-        return decodeText(lFinalDecoded);
+        //4- Delete the first 8 byte (IV) and stop at the padding
+        return decodeText(untilFirstZero(lDecoded, 8), cut);
     }
 
     public String encrypt(String rawString) throws Exception {
@@ -144,22 +158,5 @@ public class BlowfishCBC extends Blowfish {
             buff[i] = 0x0;
         }
         return buff;
-    }
-
-    /**
-     * Function that return the last index of 0x0 value in tab byte
-     *
-     * @param data the data to search
-     * @return int
-     */
-    private int findLast0byte(byte[] data) {
-        int lIndex = 0;
-        for (int i = 0; i < data.length; i++) {
-            if (i > 8 && data[i] == 0x0) {
-                lIndex = i;
-                break;
-            }
-        }
-        return lIndex;
     }
 }

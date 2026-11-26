@@ -86,6 +86,22 @@ public class BlowfishECB extends Blowfish {
     }
 
     public String decryptPayload(String textToDecrypt) throws Exception {
+        // Every 8 byte block is 12 characters, a line cut by the server keeps
+        // its complete blocks like FiSH does
+        if (textToDecrypt.length() < 12) {
+            throw new IllegalArgumentException("ECB payload too short");
+        }
+        int extra = textToDecrypt.length() % 12;
+        boolean cut = extra != 0;
+        if (cut) {
+            textToDecrypt = textToDecrypt.substring(0, textToDecrypt.length() - extra);
+            logger.debug("ECB encrypted line was cut, decrypting the {} complete blocks", textToDecrypt.length() / 12);
+        }
+        for (int i = 0; i < textToDecrypt.length(); i++) {
+            if (B64.indexOf(textToDecrypt.charAt(i)) < 0) {
+                throw new IllegalArgumentException("Invalid character in ECB payload");
+            }
+        }
         // B64 custom decrypt
         byte[] Again = B64ToByte(textToDecrypt);
         // Mode cypher in decrypt mode
@@ -93,15 +109,8 @@ public class BlowfishECB extends Blowfish {
         cipher.init(Cipher.DECRYPT_MODE, getSecretKeySpec());
         byte[] decrypted = cipher.doFinal(Again);
 
-        // Get exact length
-        int length = 0;
-        while (length < decrypted.length && decrypted[length] != 0x0) {
-            length++;
-        }
-        byte[] Final = new byte[length];
-        // Format & Limit the Result String
-        System.arraycopy(decrypted, 0, Final, 0, length);
-        return decodeText(Final);
+        // Stop at the padding
+        return decodeText(untilFirstZero(decrypted, 0), cut);
     }
 
     /**
