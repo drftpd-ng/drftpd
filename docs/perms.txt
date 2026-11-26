@@ -33,6 +33,14 @@ download	/site/*			!-viewer *
 
 # which users will be hidden from 'site who' while they are in which paths
 hideinwho	/private/pre/directory*	!=siteop *
+
+# who is exempt from the ban on downloading files of a release that is not complete yet
+# (zipscript; no line = no restriction, !* = nobody is exempt)
+downloadinc	/site/*			=siteop -uploader
+
+# who is exempt from the ban on deleting or wiping files inside a release that is complete
+# (zipscript; no line = no restriction, !* = nobody is exempt)
+deletecomplete	/site/*			=siteop
 ----------------------------------------------------
 
 ex. The following denys users the ability to make a directory in the root directory.
