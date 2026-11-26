@@ -247,7 +247,7 @@ public class SpeedTestHandler extends AbstractHandler {
                     // we execute parallel processes in the same time, so we need to divide by the concurrency
                     totalTime += time / threadList.size();
                 } catch (InterruptedException e) {
-                    logger.error(e.getMessage());
+                    logger.error("Speedtest failed: {}", e.getMessage(), e);
                     close(executor);
                     return 0;
                 } catch (ExecutionException e) {
@@ -255,7 +255,7 @@ public class SpeedTestHandler extends AbstractHandler {
                         limitReached = true;
                         payload = StringUtils.repeat(_payload, i - 2);
                     } else {
-                        logger.error(e.getMessage());
+                        logger.error("Speedtest failed: {}", e.getMessage(), e);
                         close(executor);
                         return 0;
                     }
@@ -354,7 +354,7 @@ public class SpeedTestHandler extends AbstractHandler {
                     // we execute parallel processes in the same time, so we need to divide by the concurrency
                     totalTime += time / threadList.size();
                 } catch (InterruptedException | ExecutionException e) {
-                    logger.error(e.getMessage());
+                    logger.error("Speedtest failed: {}", e.getMessage(), e);
                     close(executor);
                     return 0;
                 }
