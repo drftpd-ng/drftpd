@@ -89,13 +89,18 @@ public class TimeManager {
      */
     public synchronized void processHour(Calendar now) {
         Calendar current = truncateToHour(now);
-        if (now.get(Calendar.MINUTE) != 0) {
-            logger.warn("Hourly reset is running late, time is {}, processing the reset for {}",
-                    now.getTime(), current.getTime());
-        }
         if (current.getTimeInMillis() <= _lastHourReset) {
             logger.debug("Reset for {} was already processed, skipping", current.getTime());
             return;
+        }
+        long hours = Math.round((current.getTimeInMillis() - _lastHourReset) / (double) HOUR);
+        if (hours > 1) {
+            // One summary for the whole catch-up instead of one line per missed hour
+            logger.warn("Hourly reset is catching up after a pause: processing {} hours, from {} to {}",
+                    hours, new Date(_lastHourReset + HOUR), current.getTime());
+        } else if (now.get(Calendar.MINUTE) != 0) {
+            logger.warn("Hourly reset is running late, time is {}, processing the reset for {}",
+                    now.getTime(), current.getTime());
         }
         Calendar hour = Calendar.getInstance();
         hour.setTimeInMillis(_lastHourReset);
