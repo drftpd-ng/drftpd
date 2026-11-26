@@ -113,6 +113,8 @@ stor.flacinfo.enabled=true
 halfway.min.files=4
 
 # Minimum size in MB of what has been uploaded to the release for a halfway announce, 0 = no limit.
+# This is the size of the whole directory, so every file in it counts (nfo, sample files and so on),
+# not just the files listed by the SFV (or .diz).
 # Default: [0]
 halfway.min.size=0
 
