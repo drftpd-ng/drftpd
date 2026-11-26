@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import java.util.Properties;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 class VersionTest {
 
@@ -76,6 +77,9 @@ class VersionTest {
 
     @Test
     void buildResourceIsFilteredAndConsistent() {
+        // Only meaningful in a Maven build (surefire sets basedir): an IDE that runs the test without
+        // resource filtering sees the raw ${...} placeholders in version.properties
+        assumeTrue(System.getProperty("basedir") != null, "not run by Maven, version.properties may not be filtered");
         // version.properties is filtered at build time: the real version must be resolved
         assertNotEquals("unknown", Version.getVersion());
         assertFalse(Version.getVersion().contains("${"));
