@@ -54,6 +54,8 @@ public class DH1080 {
 
     public static final String FINISH = "DH1080_FINISH";
 
+    private static final String CBC_COMMAND_SUFFIX = "_cbc";
+
     /**
      * A parsed DH1080_INIT or DH1080_FINISH notice.
      *
@@ -66,7 +68,8 @@ public class DH1080 {
 
     /**
      * Splits a DH1080 notice of the form {@code DH1080_INIT|DH1080_FINISH <public key> [mode]}.
-     * Surrounding and repeated whitespace is ignored.
+     * Surrounding and repeated whitespace is ignored. The {@code DH1080_INIT_cbc} and
+     * {@code DH1080_FINISH_cbc} forms (any case) are read as the plain command with a CBC token.
      *
      * @return the parsed message, or null if the notice is not a well formed DH1080 message
      */
@@ -78,10 +81,20 @@ public class DH1080 {
         if (parts.length < 2 || parts.length > 3) {
             return null;
         }
-        if (!parts[0].equals(INIT) && !parts[0].equals(FINISH)) {
+        String modeToken = parts.length == 3 ? parts[2] : null;
+        String command = parts[0];
+        if (command.equalsIgnoreCase(INIT + CBC_COMMAND_SUFFIX) || command.equalsIgnoreCase(FINISH + CBC_COMMAND_SUFFIX)) {
+            // Some clients put the mode in the command name (DH1080_INIT_cbc), treat it as a CBC token
+            if (modeToken != null && !modeToken.equalsIgnoreCase(BlowfishManager.CBC)) {
+                return null;
+            }
+            command = command.substring(0, command.length() - CBC_COMMAND_SUFFIX.length());
+            modeToken = "CBC";
+        }
+        if (!command.equals(INIT) && !command.equals(FINISH)) {
             return null;
         }
-        return new Message(parts[0], parts[1], parts.length == 3 ? parts[2] : null);
+        return new Message(command, parts[1], modeToken);
     }
 
     /**

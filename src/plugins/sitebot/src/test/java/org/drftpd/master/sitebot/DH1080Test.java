@@ -106,6 +106,24 @@ public class DH1080Test {
     }
 
     @Test
+    public void testParseCbcCommandSuffix() {
+        String key = correctKeys[0];
+        DH1080.Message m = DH1080.parseMessage("DH1080_INIT_cbc " + key);
+        assertEquals(DH1080.INIT, m.command());
+        assertEquals(key, m.publicKey());
+        assertEquals("CBC", m.modeToken());
+
+        m = DH1080.parseMessage("DH1080_FINISH_CBC " + key + " CBC");
+        assertEquals(DH1080.FINISH, m.command());
+        assertEquals("CBC", m.modeToken());
+
+        // Contradictory or incomplete
+        assertNull(DH1080.parseMessage("DH1080_INIT_cbc " + key + " ECB"));
+        assertNull(DH1080.parseMessage("DH1080_INIT_cbc"));
+        assertNull(DH1080.parseMessage("DH1080_INIT_ecb " + key));
+    }
+
+    @Test
     public void testParseMalformedMessage() {
         assertNull(DH1080.parseMessage(null));
         assertNull(DH1080.parseMessage(""));
