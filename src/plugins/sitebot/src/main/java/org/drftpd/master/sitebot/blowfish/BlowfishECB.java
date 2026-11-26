@@ -69,7 +69,9 @@ public class BlowfishECB extends Blowfish {
 
         byte[] BEncrypt = textToEncrypt.getBytes(StandardCharsets.UTF_8);
         int encryptSize = BEncrypt.length;
-        int Limit = 8 - (BEncrypt.length % 8);
+        // Pad to a whole block like FiSH, without adding a block when the text
+        // already fills the last one
+        int Limit = encryptSize == 0 ? 8 : (8 - (encryptSize % 8)) % 8;
         byte[] buff = new byte[encryptSize + Limit];
 
         System.arraycopy(BEncrypt, 0, buff, 0, encryptSize);

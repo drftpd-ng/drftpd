@@ -17,13 +17,16 @@
  */
 package org.drftpd.master.sitebot;
 
-import org.junit.jupiter.api.RepeatedTest;
-
 import org.drftpd.master.sitebot.blowfish.BlowfishCBC;
 import org.drftpd.master.sitebot.blowfish.BlowfishECB;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -108,7 +111,7 @@ public class BlowfishTest  {
     public void testCutInsideMultibyteCharacter() {
         BlowfishManager ecb = new BlowfishManager("drftpd", "ECB");
         // 7 ASCII bytes then a 2 byte character across the block boundary
-        String text = "abcdefgéxyz";
+        String text = "abcdefg\u00e9xyz";
         String line = ecb.encrypt(text);
         assertEquals(text, ecb.decrypt(line));
         assertEquals("abcdefg", ecb.decrypt(line.substring(0, line.length() - 1)));
@@ -148,5 +151,57 @@ public class BlowfishTest  {
         // Blowfish keys are limited to 56 bytes
         BlowfishManager tooLong = new BlowfishManager("x".repeat(60), "CBC");
         assertNull(tooLong.encrypt("hello"));
+    }
+
+    @Test
+    public void testEcbFullBlockGetsNoExtraBlock() {
+        BlowfishManager ecb = new BlowfishManager("drftpd", "ECB");
+        assertEquals(4 + 12, ecb.encrypt("12345678").length());
+        assertEquals(4 + 24, ecb.encrypt("123456789").length());
+        assertEquals("", ecb.decrypt(ecb.encrypt("")));
+    }
+
+    @Test
+    public void testPlaintextBudgetFitsTheLine() {
+        for (String mode : new String[]{"ECB", "CBC"}) {
+            BlowfishManager manager = new BlowfishManager("drftpd", mode);
+            for (int budget = 0; budget <= 450; budget++) {
+                int max = manager.maxPlaintextBytes(budget);
+                if (max == 0) {
+                    continue;
+                }
+                String fits = "x".repeat(max);
+                assertTrue(manager.encrypt(fits).length() <= budget, mode + " " + budget);
+                assertTrue(manager.encrypt(fits + "x").length() > budget, mode + " " + budget + " not tight");
+            }
+        }
+    }
+
+    @Test
+    public void testSplitOnUtf8Bytes() {
+        String text = "\u00e9t\u00e9 \u00fcber \ud83d\ude00\ud83d\ude00 caf\u00e9 na\u00efve " + "\u00e9".repeat(40);
+        for (int max = 4; max <= 30; max++) {
+            List<String> lines = OutputWriter.splitUtf8(text, max);
+            StringBuilder joined = new StringBuilder();
+            for (String line : lines) {
+                assertTrue(line.getBytes(StandardCharsets.UTF_8).length <= max, max + ": " + line);
+                assertFalse(line.isEmpty(), "empty line at " + max);
+                // no broken surrogate pair
+                assertFalse(Character.isHighSurrogate(line.charAt(line.length() - 1)), max + ": " + line);
+                joined.append(line);
+            }
+            assertEquals(text.replace(" ", ""), joined.toString().replace(" ", ""));
+        }
+        assertEquals(List.of("short"), OutputWriter.splitUtf8("short", 100));
+        assertEquals(List.of("hello", "world"), OutputWriter.splitUtf8("hello world", 8));
+    }
+
+    @Test
+    public void testUtf8RoundTrip() {
+        String text = "caf\u00e9 \u00fcber na\u00efve \ud83d\ude00 \u4e2d\u6587";
+        for (String mode : new String[]{"ECB", "CBC"}) {
+            BlowfishManager manager = new BlowfishManager("cl\u00e9", mode);
+            assertEquals(text, manager.decrypt(manager.encrypt(text)), mode);
+        }
     }
 }

@@ -60,6 +60,31 @@ class BlowfishManager {
     }
 
     /**
+     * Largest number of plaintext bytes whose encrypted line fits in the given
+     * number of characters, for the configured mode.
+     * CBC: "+OK *" + standard base64 of an 8 byte random block and the text padded to 8 bytes.
+     * ECB: "+OK " + 12 characters for each 8 byte block of the padded text.
+     *
+     * @param lineBudget the room available for the encrypted line
+     * @return the plaintext budget in bytes, 0 if nothing fits
+     */
+    int maxPlaintextBytes(int lineBudget) {
+        if (_cbcMode) {
+            int chars = lineBudget - PREFIX_OK.length() - CBC_MARKER.length();
+            if (chars <= 0) {
+                return 0;
+            }
+            int blocks = ((chars / 4) * 3) / 8;
+            return Math.max(0, (blocks - 1) * 8);
+        }
+        int chars = lineBudget - PREFIX_OK.length();
+        if (chars <= 0) {
+            return 0;
+        }
+        return (chars / 12) * 8;
+    }
+
+    /**
      * Encrypt a line with the configured mode
      *
      * @param toEncrypt the text to encrypt
