@@ -47,7 +47,7 @@ public class SiteBotWrapper implements PluginInterface {
         }
 
         // Bail if config we are not activated
-        if(!cfg.getProperty("activated").equalsIgnoreCase("true")) {
+        if(!cfg.getProperty("activated", "false").trim().equalsIgnoreCase("true")) {
             logger.info("SiteBot is not enabled in configuration, skipping initialization");
             return;
         }
@@ -56,8 +56,8 @@ public class SiteBotWrapper implements PluginInterface {
         _bots.add(new SiteBot(""));
 
         // Handle the case were we need to create more than 1 bot
-        if (cfg.getProperty("bot.multiple.enable").equalsIgnoreCase("true")) {
-            StringTokenizer st = new StringTokenizer(cfg.getProperty("bot.multiple.directories"));
+        if (cfg.getProperty("bot.multiple.enable", "false").trim().equalsIgnoreCase("true")) {
+            StringTokenizer st = new StringTokenizer(cfg.getProperty("bot.multiple.directories", ""));
             while (st.hasMoreTokens()) {
                 _bots.add(new SiteBot(st.nextToken()));
             }
