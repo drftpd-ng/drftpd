@@ -187,6 +187,8 @@ blowfish.unencrypted.reason=Unencrypted text is not permitted
 #  many channels as desired can be added here. You can set a blowfish key
 #  for each channel, as well as a channel key and any other channel modes
 #  you would like the bot to set on joining.
+#  The blowkey can also be written FiSH style as cbc:<key>, the prefix is removed
+#  and the channel uses CBC whatever blowmode says.
 channel.1=#drftpd-test
 channel.1.perms=*
 channel.1.blowkey=drftpd

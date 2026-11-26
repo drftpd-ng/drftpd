@@ -17,6 +17,8 @@
  */
 package org.drftpd.master.sitebot.config;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.drftpd.master.network.BlindTrustManager;
 import org.drftpd.master.sitebot.PartialTrustManager;
 
@@ -30,6 +32,8 @@ import java.util.Properties;
  * @version $Id$
  */
 public class SiteBotConfig {
+
+    private static final Logger logger = LogManager.getLogger(SiteBotConfig.class);
 
     private boolean _autoNick;
 
@@ -174,6 +178,15 @@ public class SiteBotConfig {
             String chanPerms = cfg.getProperty("channel." + i + ".perms");
             String blowKey = cfg.getProperty("channel." + i + ".blowkey");
             String blowMode = cfg.getProperty("channel." + i + ".blowmode", "cbc");
+            // A key written FiSH style as cbc:<key> is a CBC key, the prefix is not part of it
+            if (blowKey != null && blowKey.regionMatches(true, 0, "cbc:", 0, 4)) {
+                blowKey = blowKey.substring(4);
+                if (!blowMode.equalsIgnoreCase("cbc")) {
+                    logger.warn("channel.{}.blowkey starts with cbc:, using CBC instead of blowmode {} for {}",
+                            i, blowMode, chanName);
+                    blowMode = "cbc";
+                }
+            }
             _channels.add(new ChannelConfig(chanName, blowKey, blowMode, chanKey, chanPerms));
         }
         _commandTrigger = cfg.getProperty("command.trigger");
