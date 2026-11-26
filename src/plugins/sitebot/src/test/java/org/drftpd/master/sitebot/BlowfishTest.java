@@ -230,6 +230,11 @@ public class BlowfishTest  {
         // a legacy client sending ISO-8859-1 "caf\u00e9" (0xE9 alone is not valid UTF-8)
         BlowfishManager ecb = new BlowfishManager("drftpd", "ECB");
         assertEquals("caf\u00e9", ecb.decrypt("+OK H4uV.0JJ2B4/"));
+        // ISO-8859-1 "\u00e9t\u00e9 caf\u00e9xyz", cut after the first block: the last
+        // legacy byte is kept, it is not taken for a broken UTF-8 character
+        String legacy = "+OK 9YfW80Rq6a21lzcs0.lAJ5..";
+        assertEquals("\u00e9t\u00e9 caf\u00e9xyz", ecb.decrypt(legacy));
+        assertEquals("\u00e9t\u00e9 caf\u00e9", ecb.decrypt(legacy.substring(0, legacy.length() - 1)));
     }
 
     @Test

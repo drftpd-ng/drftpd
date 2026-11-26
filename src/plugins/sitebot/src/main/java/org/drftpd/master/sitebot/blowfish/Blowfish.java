@@ -101,9 +101,16 @@ public abstract class Blowfish {
      * @return String the decoded text
      */
     static String decodeText(byte[] data, boolean cut) {
-        if (cut) {
-            data = dropIncompleteUtf8Tail(data);
+        String text = decodeUtf8(data);
+        if (text == null && cut) {
+            // Only drop a broken last character if the rest is UTF-8, a legacy
+            // ISO-8859-1 line keeps its last byte
+            text = decodeUtf8(dropIncompleteUtf8Tail(data));
         }
+        return text != null ? text : new String(data, StandardCharsets.ISO_8859_1);
+    }
+
+    private static String decodeUtf8(byte[] data) {
         try {
             return StandardCharsets.UTF_8.newDecoder()
                     .onMalformedInput(CodingErrorAction.REPORT)
@@ -111,7 +118,7 @@ public abstract class Blowfish {
                     .decode(ByteBuffer.wrap(data))
                     .toString();
         } catch (CharacterCodingException e) {
-            return new String(data, StandardCharsets.ISO_8859_1);
+            return null;
         }
     }
 
