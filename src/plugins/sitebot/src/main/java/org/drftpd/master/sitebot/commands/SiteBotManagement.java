@@ -44,6 +44,8 @@ public class SiteBotManagement extends CommandInterface {
 
     private static final Logger logger = LogManager.getLogger(SiteBotManagement.class);
 
+    private static final String CBC_KEY_PREFIX = "cbc:";
+
     private ResourceBundle _bundle;
 
     public void initialize(String method, String pluginName, StandardCommandManager cManager) {
@@ -162,7 +164,15 @@ public class SiteBotManagement extends CommandInterface {
             return new CommandResponse(500, "SiteBot could not be found or failed to load");
         }
 
-        String blowKey = st.nextToken();
+        // Like FiSH, a key starting with "cbc:" is a CBC key, anything else is ECB
+        String[] parsedKey = parseBlowKey(st.nextToken());
+        String blowKey = parsedKey[0];
+        boolean cbc = parsedKey[1] != null;
+        if (blowKey.isEmpty()) {
+            return new CommandResponse(500, "Blowfish key is empty");
+        }
+        // ECB keys are stored without a mode, as before
+        String storedKey = cbc ? blowKey + "|" + parsedKey[1] : blowKey;
         User user = session.getUserNull(request.getUser());
 
         String userKeysString = "";
@@ -179,7 +189,7 @@ public class SiteBotManagement extends CommandInterface {
             if (userKeys[i].startsWith(bot.getBotName()+"|")) {
                 userKey.append(bot.getBotName());
                 userKey.append("|");
-                userKey.append(blowKey);
+                userKey.append(storedKey);
                 foundOld = true;
             } else {
                 userKey.append(userKeys[i]);
@@ -197,12 +207,44 @@ public class SiteBotManagement extends CommandInterface {
             }
             userKey.append(bot.getBotName());
             userKey.append("|");
-            userKey.append(blowKey);
+            userKey.append(storedKey);
         }
         // Store the new blowfish key data for the user
         user.getKeyedMap().setObject(UserDetails.BLOWKEY, userKey.toString());
         user.commit();
-        return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
+        CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
+        if (cbc) {
+            response.addComment("Stored a CBC blowfish key for " + bot.getBotName()
+                    + ", set it as cbc:<key> in FiSH");
+        } else {
+            response.addComment("Stored an ECB blowfish key for " + bot.getBotName()
+                    + ", FiSH 10 users should set cbc:<key> here and in FiSH to use CBC");
+            if (!bot.getConfig().getDH1080ECBEnabled()) {
+                // UserDetails only loads ECB keys when blowfish.dh1080.ecb=true
+                if (bot.getConfig().getDH1080Enabled()) {
+                    response.addComment("This key will be replaced by a DH1080 key exchange unless"
+                            + " blowfish.dh1080.ecb=true, use cbc:<key> to keep your own key");
+                } else {
+                    response.addComment("This key will not be used unless blowfish.dh1080.ecb=true,"
+                            + " use cbc:<key> instead");
+                }
+            }
+        }
+        return response;
+    }
+
+    /**
+     * Split a key given to SITE SETBLOWFISH into the key and its mode. Like FiSH, a
+     * leading "cbc:" (any case) marks a CBC key, anything else is an ECB key.
+     *
+     * @param argument the key as typed by the user
+     * @return {key, "cbc"} for a CBC key, {key, null} for an ECB key
+     */
+    public static String[] parseBlowKey(String argument) {
+        if (argument.regionMatches(true, 0, CBC_KEY_PREFIX, 0, CBC_KEY_PREFIX.length())) {
+            return new String[]{argument.substring(CBC_KEY_PREFIX.length()), "cbc"};
+        }
+        return new String[]{argument, null};
     }
 
     public CommandResponse doSITE_IRC(CommandRequest request) throws ImproperUsageException {

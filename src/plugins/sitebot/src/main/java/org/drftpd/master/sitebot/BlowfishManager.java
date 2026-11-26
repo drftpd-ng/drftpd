@@ -22,44 +22,137 @@ import org.apache.logging.log4j.Logger;
 import org.drftpd.master.sitebot.blowfish.Blowfish;
 import org.drftpd.master.sitebot.blowfish.BlowfishCBC;
 import org.drftpd.master.sitebot.blowfish.BlowfishECB;
+import org.drftpd.master.sitebot.blowfish.DecryptedText;
 
 class BlowfishManager {
 
     static final String CBC = "cbc";
     static final String ECB = "ecb";
     private static final Logger logger = LogManager.getLogger(Blowfish.class);
-    private static final String ENCRYPTION_ERROR_MESSAGE = "An error occurred in encryption process. Check your logs";
-    private static final String DECRYPTION_ERROR_MESSAGE = "An error occurred in decryption process. Check your logs";
-    private final Blowfish blowfish;
+    private static final String PREFIX_OK = "+OK ";
+    private static final String PREFIX_MCPS = "mcps ";
+    private static final String CBC_MARKER = "*";
+    private final BlowfishECB _ecb;
+    private final BlowfishCBC _cbc;
+    private final boolean _cbcMode;
+    private final boolean _ecbFallback;
 
     /*
      * Constructor of BlowfishManager class Key param
      */
     BlowfishManager(String key, String mode) {
-        if (CBC.equals(mode.toLowerCase())) {
-            blowfish = new BlowfishCBC(key);
-        } else {
-            blowfish = new BlowfishECB(key);
-        }
+        this(key, mode, false);
     }
 
-    /* encrypt function	 */
+    /**
+     * @param key         the blowfish key
+     * @param mode        the configured mode, used for outgoing lines
+     * @param ecbFallback accept incoming ECB lines when the configured mode is CBC
+     */
+    BlowfishManager(String key, String mode, boolean ecbFallback) {
+        _cbcMode = CBC.equals(mode.toLowerCase());
+        _ecbFallback = ecbFallback;
+        _ecb = new BlowfishECB(key);
+        _cbc = new BlowfishCBC(key);
+    }
+
+    boolean isCBC() {
+        return _cbcMode;
+    }
+
+    /**
+     * Largest number of plaintext bytes whose encrypted line fits in the given
+     * number of characters, for the configured mode.
+     * CBC: "+OK *" + standard base64 of an 8 byte random block and the text padded to 8 bytes.
+     * ECB: "+OK " + 12 characters for each 8 byte block of the padded text.
+     *
+     * @param lineBudget the room available for the encrypted line
+     * @return the plaintext budget in bytes, 0 if nothing fits
+     */
+    int maxPlaintextBytes(int lineBudget) {
+        if (_cbcMode) {
+            int chars = lineBudget - PREFIX_OK.length() - CBC_MARKER.length();
+            if (chars <= 0) {
+                return 0;
+            }
+            int blocks = ((chars / 4) * 3) / 8;
+            return Math.max(0, (blocks - 1) * 8);
+        }
+        int chars = lineBudget - PREFIX_OK.length();
+        if (chars <= 0) {
+            return 0;
+        }
+        return (chars / 12) * 8;
+    }
+
+    /**
+     * Encrypt a line with the configured mode
+     *
+     * @param toEncrypt the text to encrypt
+     * @return the encrypted line, or null if encryption failed and nothing must be sent
+     */
     String encrypt(String toEncrypt) {
         try {
-            return blowfish.encrypt(toEncrypt);
+            return _cbcMode ? _cbc.encrypt(toEncrypt) : _ecb.encrypt(toEncrypt);
         } catch (Exception e) {
             logger.error("Error encrypting", e);
-            return ENCRYPTION_ERROR_MESSAGE;
+            return null;
         }
     }
 
-    /* decrypt function */
+    /**
+     * Decrypt a line the way FiSH does: "+OK *" (or "mcps *") is CBC, "+OK " or
+     * "mcps " without the "*" is ECB, both with the same key, whatever the
+     * configured mode is. ECB lines on a CBC key are only accepted when the
+     * fallback is enabled.
+     *
+     * @param toDecrypt the line as received
+     * @return the decrypted text, or null if the line is not encrypted, could not be
+     * decrypted or must be ignored
+     */
     String decrypt(String toDecrypt) {
+        DecryptedText decrypted = decryptLine(toDecrypt);
+        return decrypted == null ? null : decrypted.text();
+    }
+
+    /**
+     * Same as {@link #decrypt(String)}, but also tells whether the line was cut
+     * and only part of it could be decrypted. This is best effort, a cut on a block
+     * boundary is not detected, see {@link org.drftpd.master.sitebot.blowfish.DecryptedText}.
+     *
+     * @param toDecrypt the line as received
+     * @return the decrypted text, or null if the line is not encrypted, could not be
+     * decrypted or must be ignored
+     */
+    DecryptedText decryptLine(String toDecrypt) {
+        String payload;
+        if (toDecrypt.startsWith(PREFIX_OK)) {
+            payload = toDecrypt.substring(PREFIX_OK.length());
+        } else if (toDecrypt.startsWith(PREFIX_MCPS)) {
+            payload = toDecrypt.substring(PREFIX_MCPS.length());
+        } else {
+            return null;
+        }
+        // Text after the first space is not encrypted (timestamps added by a BNC);
+        // FiSH does not decrypt it either, the bot drops it
+        int space = payload.indexOf(' ');
+        if (space >= 0) {
+            logger.debug("Ignoring unencrypted text after the encrypted line");
+            payload = payload.substring(0, space);
+        }
         try {
-            return blowfish.decrypt(toDecrypt);
+            if (payload.startsWith(CBC_MARKER)) {
+                return _cbc.decryptPayload(payload.substring(CBC_MARKER.length()));
+            }
+            if (_cbcMode && !_ecbFallback) {
+                logger.debug("Ignoring ECB encrypted line for a CBC key (blowfish.ecb.fallback is disabled)");
+                return null;
+            }
+            return _ecb.decryptPayload(payload);
         } catch (Exception e) {
-            logger.error("Error decrypting", e);
-            return DECRYPTION_ERROR_MESSAGE;
+            logger.warn("Could not decrypt line: {}", e.getMessage());
+            logger.debug("Decryption error", e);
+            return null;
         }
     }
 }

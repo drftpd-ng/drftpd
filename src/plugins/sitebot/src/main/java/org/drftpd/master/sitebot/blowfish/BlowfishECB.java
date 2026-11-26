@@ -33,6 +33,7 @@ package org.drftpd.master.sitebot.blowfish;
 
 import javax.crypto.Cipher;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Blowfish ECB
@@ -43,7 +44,7 @@ import java.io.UnsupportedEncodingException;
 public class BlowfishECB extends Blowfish {
 
     /**
-     * Default charset for encoding
+     * Charset used to move raw bytes through the custom base64 decoder
      */
     private static final String ENCODED_CHARSET = "ISO_8859_1";
 
@@ -57,11 +58,6 @@ public class BlowfishECB extends Blowfish {
      */
     private static final String ECB_STANDARD_PREFIX = "+OK ";
 
-    /**
-     * ECB MCPS prefix
-     */
-    private static final String ECB_MCPS_PREFIX = "mcps ";
-
     public BlowfishECB(String key) {
         super(key, "Blowfish/ECB/NoPadding");
     }
@@ -71,9 +67,11 @@ public class BlowfishECB extends Blowfish {
         Cipher cipher = initCipher();
         cipher.init(Cipher.ENCRYPT_MODE, getSecretKeySpec());
 
-        byte[] BEncrypt = textToEncrypt.getBytes();
+        byte[] BEncrypt = textToEncrypt.getBytes(StandardCharsets.UTF_8);
         int encryptSize = BEncrypt.length;
-        int Limit = 8 - (BEncrypt.length % 8);
+        // Pad to a whole block like FiSH, without adding a block when the text
+        // already fills the last one
+        int Limit = encryptSize == 0 ? 8 : (8 - (encryptSize % 8)) % 8;
         byte[] buff = new byte[encryptSize + Limit];
 
         System.arraycopy(BEncrypt, 0, buff, 0, encryptSize);
@@ -89,16 +87,24 @@ public class BlowfishECB extends Blowfish {
         return REncrypt;
     }
 
-    public String decrypt(String textToDecrypt) throws Exception {
-        if (textToDecrypt.startsWith(ECB_STANDARD_PREFIX)) {
-            textToDecrypt = textToDecrypt.substring(ECB_STANDARD_PREFIX.length());
-        } else if (textToDecrypt.startsWith(ECB_MCPS_PREFIX)) {
-            textToDecrypt = textToDecrypt.substring(ECB_MCPS_PREFIX.length());
-        } else {
-            //Not correct encrypted string, return the source string
-            return textToDecrypt;
+    public DecryptedText decryptPayload(String textToDecrypt) throws Exception {
+        // Every 8 byte block is 12 characters, a line cut by the server keeps
+        // its complete blocks like FiSH does. A cut on a 12 character boundary
+        // leaves whole blocks and is not detected.
+        if (textToDecrypt.length() < 12) {
+            throw new IllegalArgumentException("ECB payload too short");
         }
-
+        int extra = textToDecrypt.length() % 12;
+        boolean cut = extra != 0;
+        if (cut) {
+            textToDecrypt = textToDecrypt.substring(0, textToDecrypt.length() - extra);
+            logger.debug("ECB encrypted line was cut, decrypting the {} complete blocks", textToDecrypt.length() / 12);
+        }
+        for (int i = 0; i < textToDecrypt.length(); i++) {
+            if (B64.indexOf(textToDecrypt.charAt(i)) < 0) {
+                throw new IllegalArgumentException("Invalid character in ECB payload");
+            }
+        }
         // B64 custom decrypt
         byte[] Again = B64ToByte(textToDecrypt);
         // Mode cypher in decrypt mode
@@ -106,16 +112,8 @@ public class BlowfishECB extends Blowfish {
         cipher.init(Cipher.DECRYPT_MODE, getSecretKeySpec());
         byte[] decrypted = cipher.doFinal(Again);
 
-        // Get exact length
-        int length = 0;
-        while (length < decrypted.length && decrypted[length] != 0x0) {
-            length++;
-        }
-        byte[] Final = new byte[length];
-        // Format & Limit the Result String
-        System.arraycopy(decrypted, 0, Final, 0, length);
-        //Force again the encoding result string
-        return new String(Final, ENCODED_CHARSET);
+        // Stop at the padding
+        return new DecryptedText(decodeText(untilFirstZero(decrypted, 0), cut), cut);
     }
 
     /**
@@ -238,12 +236,12 @@ public class BlowfishECB extends Blowfish {
 
             for (int i = 0; i < 6; i++) {
                 builder.append(B64.charAt(right & 0x3F));
-                right = right >> 6;
+                right = right >>> 6;
             }
 
             for (int i = 0; i < 6; i++) {
                 builder.append(B64.charAt(left & 0x3F));
-                left = left >> 6;
+                left = left >>> 6;
             }
         }
         return builder.toString();
