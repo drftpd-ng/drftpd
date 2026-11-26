@@ -220,7 +220,14 @@ public class SiteBotManagement extends CommandInterface {
             response.addComment("Stored an ECB blowfish key for " + bot.getBotName()
                     + ", FiSH 10 users should set cbc:<key> here and in FiSH to use CBC");
             if (!bot.getConfig().getDH1080ECBEnabled()) {
-                response.addComment("This bot does not use ECB keys (blowfish.dh1080.ecb=false), use cbc:<key>");
+                // UserDetails only loads ECB keys when blowfish.dh1080.ecb=true
+                if (bot.getConfig().getDH1080Enabled()) {
+                    response.addComment("This key will be replaced by a DH1080 key exchange unless"
+                            + " blowfish.dh1080.ecb=true, use cbc:<key> to keep your own key");
+                } else {
+                    response.addComment("This key will not be used unless blowfish.dh1080.ecb=true,"
+                            + " use cbc:<key> instead");
+                }
             }
         }
         return response;
