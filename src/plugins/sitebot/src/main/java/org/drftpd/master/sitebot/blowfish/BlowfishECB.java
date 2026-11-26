@@ -33,6 +33,7 @@ package org.drftpd.master.sitebot.blowfish;
 
 import javax.crypto.Cipher;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Blowfish ECB
@@ -43,7 +44,7 @@ import java.io.UnsupportedEncodingException;
 public class BlowfishECB extends Blowfish {
 
     /**
-     * Default charset for encoding
+     * Charset used to move raw bytes through the custom base64 decoder
      */
     private static final String ENCODED_CHARSET = "ISO_8859_1";
 
@@ -71,7 +72,7 @@ public class BlowfishECB extends Blowfish {
         Cipher cipher = initCipher();
         cipher.init(Cipher.ENCRYPT_MODE, getSecretKeySpec());
 
-        byte[] BEncrypt = textToEncrypt.getBytes();
+        byte[] BEncrypt = textToEncrypt.getBytes(StandardCharsets.UTF_8);
         int encryptSize = BEncrypt.length;
         int Limit = 8 - (BEncrypt.length % 8);
         byte[] buff = new byte[encryptSize + Limit];
@@ -114,8 +115,7 @@ public class BlowfishECB extends Blowfish {
         byte[] Final = new byte[length];
         // Format & Limit the Result String
         System.arraycopy(decrypted, 0, Final, 0, length);
-        //Force again the encoding result string
-        return new String(Final, ENCODED_CHARSET);
+        return decodeText(Final);
     }
 
     /**

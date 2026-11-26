@@ -38,3 +38,17 @@ DrFTPD loads X.conf when it exists and falls back to X.conf.dist otherwise.
   defines the command twice, and the master stops at startup with "already mapped". Remove the
   duplicate definition from your own X.conf to fix it.
 - If you never customised a command file, delete your X.conf so the shipped X.conf.dist is used.
+
+### SiteBot blowfish text encoding
+
+The sitebot now encrypts and decrypts blowfish text as UTF-8, like FiSH 10 and modern mIRC.
+Incoming lines that are not valid UTF-8 are still read as ISO-8859-1 (legacy clients).
+
+- Accented letters and other non-ASCII text sent to or by the bot now show correctly instead of
+  as mojibake. Before, outgoing text used the JVM default charset (often windows-1252 on Windows)
+  and incoming text was always read as ISO-8859-1.
+- Blowfish keys are now turned into bytes as UTF-8 instead of the JVM default charset. ASCII keys
+  are not affected. A key with non-ASCII characters now gives the same bytes FiSH uses (blow.ini is
+  UTF-8 in modern mIRC); on a JVM whose default charset was not UTF-8 such a key used to give
+  different bytes, so a client that "worked" with it before may need its key set again.
+  irc.conf is read as ISO-8859-1, so write a non-ASCII channel key there with \uXXXX escapes.

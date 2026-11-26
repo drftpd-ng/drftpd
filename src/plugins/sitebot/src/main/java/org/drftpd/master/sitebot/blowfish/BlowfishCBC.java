@@ -30,6 +30,7 @@ package org.drftpd.master.sitebot.blowfish;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
+import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.util.Base64;
 
@@ -56,10 +57,6 @@ import java.util.Base64;
  */
 public class BlowfishCBC extends Blowfish {
 
-    /**
-     * Default charset for encoding
-     */
-    private static final String ENCODED_CHARSET = "ISO_8859_1";
     /**
      * CBC irc prefix
      */
@@ -101,12 +98,12 @@ public class BlowfishCBC extends Blowfish {
         System.arraycopy(lDecoded, 8, lFinalDecoded, 0, lFinalIndex);
 
         //5- Return the formatted String
-        return new String(lFinalDecoded, ENCODED_CHARSET);
+        return decodeText(lFinalDecoded);
     }
 
     public String encrypt(String rawString) throws Exception {
         //1- Correct the padding
-        byte[] rawStringBytes = rawString.getBytes();
+        byte[] rawStringBytes = rawString.getBytes(StandardCharsets.UTF_8);
         byte[] lToDecrypt = rawStringBytes.length % 8 != 0 ? correctPadding(rawStringBytes) : rawStringBytes;
 
         //2- Load the vector (IV) in front of the string

@@ -35,6 +35,10 @@ package org.drftpd.master.sitebot.blowfish;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
+import java.nio.ByteBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.CodingErrorAction;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Blowfish abstract class
@@ -57,7 +61,8 @@ public abstract class Blowfish {
      * @param mode the blowfish encryption mode
      */
     protected Blowfish(String key, String mode) {
-        secretKeySpec = new SecretKeySpec(key.getBytes(), "Blowfish");
+        // FiSH uses the key bytes as stored in blow.ini, which modern mIRC writes as UTF-8
+        secretKeySpec = new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), "Blowfish");
         this.mode = mode;
     }
 
@@ -78,6 +83,26 @@ public abstract class Blowfish {
      * @throws Exception if any error occurred
      */
     public abstract String encrypt(String rawString) throws Exception;
+
+    /**
+     * Turn decrypted bytes into text. FiSH and mIRC send UTF-8, but older clients
+     * may still send legacy 8-bit text, so fall back to ISO-8859-1 when the bytes
+     * are not valid UTF-8.
+     *
+     * @param data the decrypted plaintext bytes (without padding)
+     * @return String the decoded text
+     */
+    static String decodeText(byte[] data) {
+        try {
+            return StandardCharsets.UTF_8.newDecoder()
+                    .onMalformedInput(CodingErrorAction.REPORT)
+                    .onUnmappableCharacter(CodingErrorAction.REPORT)
+                    .decode(ByteBuffer.wrap(data))
+                    .toString();
+        } catch (CharacterCodingException e) {
+            return new String(data, StandardCharsets.ISO_8859_1);
+        }
+    }
 
     /**
      * secretKeySpec getter
