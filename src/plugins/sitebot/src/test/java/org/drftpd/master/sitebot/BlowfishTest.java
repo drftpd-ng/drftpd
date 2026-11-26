@@ -195,6 +195,12 @@ public class BlowfishTest  {
         }
         assertEquals(List.of("short"), OutputWriter.splitUtf8("short", 100));
         assertEquals(List.of("hello", "world"), OutputWriter.splitUtf8("hello world", 8));
+        // a tiny or negative budget still splits, one character at least per line
+        for (int max : new int[]{-5, 0, 1, 3}) {
+            for (String line : OutputWriter.splitUtf8(text, max)) {
+                assertTrue(line.getBytes(StandardCharsets.UTF_8).length <= 4, max + ": " + line);
+            }
+        }
     }
 
     /*

@@ -17,6 +17,9 @@
  */
 package org.drftpd.master.sitebot;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +29,15 @@ import java.util.List;
  * @version $Id$
  */
 public class OutputWriter {
+
+    private static final Logger logger = LogManager.getLogger(OutputWriter.class);
+
+    /**
+     * Smallest piece of text per line: one blowfish block, which also holds any character
+     */
+    private static final int MIN_LINE_BYTES = 8;
+
+    private boolean _warnedSmallBudget;
 
     private BlowfishManager _cipher;
 
@@ -71,6 +83,7 @@ public class OutputWriter {
     }
 
     public void reload() {
+        _warnedSmallBudget = false;
         _blowfishEnabled = _bot.getConfig().getBlowfishEnabled();
         _maxOutputLen = getMaxLineLength();
     }
@@ -87,6 +100,16 @@ public class OutputWriter {
         int maxBytes = _maxOutputLen;
         if (_blowfishEnabled && _cipher != null) {
             maxBytes = _cipher.maxPlaintextBytes(_maxOutputLen);
+        }
+        if (maxBytes < MIN_LINE_BYTES) {
+            // line.length.max leaves (almost) no room, send small pieces the server
+            // may cut rather than the whole message as one line
+            if (!_warnedSmallBudget) {
+                logger.warn("line.length.max is too small to send to {}, sending {} bytes per line",
+                        _output, MIN_LINE_BYTES);
+                _warnedSmallBudget = true;
+            }
+            maxBytes = MIN_LINE_BYTES;
         }
         return splitUtf8(message, maxBytes);
     }
@@ -106,11 +129,8 @@ public class OutputWriter {
      */
     static List<String> splitUtf8(String message, int maxBytes) {
         List<String> lines = new ArrayList<>();
-        // Too small to hold any character, send as is
-        if (maxBytes < 4) {
-            lines.add(message);
-            return lines;
-        }
+        // Always room for one character
+        maxBytes = Math.max(maxBytes, 4);
         String rest = message;
         while (utf8Length(rest) > maxBytes) {
             // Longest prefix that fits
