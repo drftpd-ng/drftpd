@@ -56,9 +56,9 @@ public class AutoFreeSpaceSettings {
 
         // Quickly set the ones that are single:
         _onlyAnnounce = p.getProperty("announce.only", "false").equalsIgnoreCase("true");
-        _minFreeSpace = Bytes.parseBytes(p.getProperty("keepFree"));
-        _cycleTime = Long.parseLong(p.getProperty("cycleTime")) * 60000L;
-        _maxIterations = Integer.parseInt(p.getProperty("max.iterations"));
+        _minFreeSpace = Bytes.parseBytes(p.getProperty("keepFree", "100GB").trim());
+        _cycleTime = Long.parseLong(p.getProperty("cycleTime", "1440").trim()) * 60000L;
+        _maxIterations = Integer.parseInt(p.getProperty("max.iterations", "5").trim());
 
         // Handle operating mode
         String mode = p.getProperty("mode", MODE_DISABLED);
