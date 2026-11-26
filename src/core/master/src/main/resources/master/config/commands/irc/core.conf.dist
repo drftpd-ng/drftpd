@@ -187,7 +187,7 @@ perms =gadmin =siteop
 help Change parameters for a user.
 help.specific ${command} <username> <field> <value>
 help.specific Valid fields: group, created, ratio, idle_time, credits, tagline
-help.specific num_logins # [opt perIP], comment, wkly_allotment, max_sim #dn #up
+help.specific num_logins # [opt perIP], comment, wkly_allotment, monthly_allotment, max_sim #dn #up
 help.specific homedir <path|none> (user and group placeholders are expanded at login)
 help.specific homedir is NOT a chroot: the user can still CWD / and go anywhere perms.conf allows
 input all
@@ -225,7 +225,7 @@ perms =gadmin =siteop
 help Change parameters for a user.
 help.specific ${command} <username> <field> <value>
 help.specific Valid fields: group, created, ratio, idle_time, credits, tagline
-help.specific num_logins # [opt perIP], comment, wkly_allotment, max_sim #dn #up
+help.specific num_logins # [opt perIP], comment, wkly_allotment, monthly_allotment, max_sim #dn #up
 help.specific homedir <path|none> (user and group placeholders are expanded at login)
 help.specific homedir is NOT a chroot: the user can still CWD / and go anywhere perms.conf allows
 input all

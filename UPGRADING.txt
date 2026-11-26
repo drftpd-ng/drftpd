@@ -38,3 +38,10 @@ DrFTPD loads X.conf when it exists and falls back to X.conf.dist otherwise.
   defines the command twice, and the master stops at startup with "already mapped". Remove the
   duplicate definition from your own X.conf to fix it.
 - If you never customised a command file, delete your X.conf so the shipped X.conf.dist is used.
+
+### Monthly allotment (monthly_allotment)
+
+Users can have a `monthly_allotment` (SITE CHANGE <user|=group|*> monthly_allotment <bytes>, 0 = off). At the
+monthly reset their credits are replaced with it. The refill only happens when the master is running at the
+month boundary, or when the startup catch-up (processTimeEventsSinceDate) covers it. Users created before this
+key existed read as 0 (off).
