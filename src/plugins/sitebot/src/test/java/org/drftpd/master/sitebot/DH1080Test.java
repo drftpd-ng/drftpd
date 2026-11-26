@@ -119,6 +119,34 @@ public class DH1080Test {
     }
 
     @Test
+    public void testNegotiateMode() {
+        // CBC token (FiSH 10 default)
+        assertEquals(BlowfishManager.CBC, DH1080.negotiateMode("CBC", true, false));
+        assertEquals(BlowfishManager.CBC, DH1080.negotiateMode("cbc", true, true));
+        assertNull(DH1080.negotiateMode("CBC", false, true));
+        // No token (older FiSH, or FiSH 10 with dh1080_cbc=0) means ECB
+        assertEquals(BlowfishManager.ECB, DH1080.negotiateMode(null, true, true));
+        assertNull(DH1080.negotiateMode(null, true, false));
+        // Explicit ECB token
+        assertEquals(BlowfishManager.ECB, DH1080.negotiateMode("ECB", false, true));
+        assertNull(DH1080.negotiateMode("ECB", true, false));
+        // Unknown token
+        assertNull(DH1080.negotiateMode("XYZ", true, true));
+    }
+
+    @Test
+    public void testModeSuffix() {
+        assertEquals(" CBC", DH1080.modeSuffix(BlowfishManager.CBC));
+        assertEquals("", DH1080.modeSuffix(BlowfishManager.ECB));
+        // What we send must be understood by our own parser and give back the same mode
+        String key = new DH1080().getPublicKey();
+        DH1080.Message m = DH1080.parseMessage(DH1080.FINISH + " " + key + DH1080.modeSuffix(BlowfishManager.CBC));
+        assertEquals(BlowfishManager.CBC, DH1080.negotiateMode(m.modeToken(), true, false));
+        m = DH1080.parseMessage(DH1080.FINISH + " " + key + DH1080.modeSuffix(BlowfishManager.ECB));
+        assertEquals(BlowfishManager.ECB, DH1080.negotiateMode(m.modeToken(), false, true));
+    }
+
+    @Test
     public void testDH1080CorrectKeys() {
         DH1080 testDH = new DH1080();
         for (String key : correctKeys) {

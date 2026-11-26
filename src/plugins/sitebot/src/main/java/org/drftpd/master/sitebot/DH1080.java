@@ -84,6 +84,36 @@ public class DH1080 {
         return new Message(parts[0], parts[1], parts.length == 3 ? parts[2] : null);
     }
 
+    /**
+     * Picks the blowfish mode for a DH1080 exchange from the peer's mode token, following
+     * FiSH 10 semantics: a "CBC" token means a CBC key, no token means an ECB key (older
+     * FiSH versions never send a token, FiSH 10 omits it when dh1080_cbc=0). An explicit
+     * "ECB" token is accepted as ECB too.
+     *
+     * @param modeToken  the token following the public key, or null when absent
+     * @param cbcEnabled whether blowfish.dh1080.cbc is enabled
+     * @param ecbEnabled whether blowfish.dh1080.ecb is enabled
+     * @return {@link BlowfishManager#CBC} or {@link BlowfishManager#ECB}, or null if the
+     * requested mode is unknown or disabled and the exchange must be refused
+     */
+    public static String negotiateMode(String modeToken, boolean cbcEnabled, boolean ecbEnabled) {
+        if (modeToken == null || modeToken.equalsIgnoreCase(BlowfishManager.ECB)) {
+            return ecbEnabled ? BlowfishManager.ECB : null;
+        }
+        if (modeToken.equalsIgnoreCase(BlowfishManager.CBC)) {
+            return cbcEnabled ? BlowfishManager.CBC : null;
+        }
+        return null;
+    }
+
+    /**
+     * @return the mode token to append to a DH1080 notice for the given blowfish mode:
+     * " CBC" for CBC and nothing for ECB, as FiSH 10 does
+     */
+    public static String modeSuffix(String blowfishMode) {
+        return BlowfishManager.CBC.equalsIgnoreCase(blowfishMode) ? " CBC" : "";
+    }
+
     static {
         Arrays.fill(IA, -1);
         for (int i = 0; i < CA.length; i++) {
