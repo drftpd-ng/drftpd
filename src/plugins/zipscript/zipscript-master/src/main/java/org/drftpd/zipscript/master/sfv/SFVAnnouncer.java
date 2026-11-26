@@ -44,6 +44,7 @@ import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.master.vfs.InodeHandle;
 import org.drftpd.zipscript.common.sfv.SFVInfo;
 import org.drftpd.zipscript.common.sfv.SFVStatus;
+import org.drftpd.zipscript.master.AnnounceThresholds;
 import org.drftpd.zipscript.master.sfv.event.SFVMemberTransferEvent;
 import org.drftpd.zipscript.master.sfv.vfs.ZipscriptVFSDataSFV;
 
@@ -151,9 +152,10 @@ public class SFVAnnouncer extends AbstractAnnouncer {
                 dir.getPluginMetaData(SFV_HALFWAY);
             } catch (KeyNotFoundException e) {
                 // This is fine, HALFWAY not announced yet
-                int halfway = (int) Math.floor((double) sfvEvent.getSFVInfo().getSize() / 2);
-                if ((sfvEvent.getSFVInfo().getSize() >= 4) &&
-                        (sfvStatus.getMissing() <= halfway)) {
+                int halfway = AnnounceThresholds.halfwayMissing(sfvEvent.getSFVInfo().getSize());
+                if ((sfvStatus.getMissing() <= halfway) &&
+                        AnnounceThresholds.load().halfwayAllowed(sfvEvent.getSFVInfo().getSize(), dir.getSize(),
+                                () -> countRacers(dir, sfvEvent))) {
                     dir.addPluginMetaData(SFV_HALFWAY, true);
                     AnnounceWriter writer = _config.getPathWriter("store.halfway", dir);
                     if (writer != null) {
@@ -213,6 +215,11 @@ public class SFVAnnouncer extends AbstractAnnouncer {
                         Collection<UploaderPosition> racers = RankUtils.userSort(SFVTools.getSFVFiles(dir, sfvEvent.getSFVData()),
                                 "bytes", "high");
                         Collection<GroupPosition> groups = RankUtils.topFileGroup(SFVTools.getSFVFiles(dir, sfvEvent.getSFVData()));
+
+                        if (!AnnounceThresholds.load().completeAllowed(racers::size)) {
+                            // announce.norace=false and only one user uploaded this release
+                            return;
+                        }
 
                         fillEnvSection(env, sfvEvent, writer, false);
 
@@ -334,6 +341,15 @@ public class SFVAnnouncer extends AbstractAnnouncer {
         } catch (IOException e) {
             // SFV not readable
             logger.warn("Unable to read SFV in {}, skipping race announce", dir.getPath(), e);
+        }
+    }
+
+    private int countRacers(DirectoryHandle dir, SFVMemberTransferEvent sfvEvent) {
+        try {
+            return RankUtils.userSort(SFVTools.getSFVFiles(dir, sfvEvent.getSFVData()), "bytes", "high").size();
+        } catch (IOException | NoAvailableSlaveException | SlaveUnavailableException e) {
+            logger.debug("Unable to count racers in {}", dir.getPath(), e);
+            return 0;
         }
     }
 
