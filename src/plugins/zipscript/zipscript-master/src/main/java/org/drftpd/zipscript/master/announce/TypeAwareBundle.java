@@ -17,9 +17,14 @@
  */
 package org.drftpd.zipscript.master.announce;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.ResourceBundle;
 
 /**
@@ -29,6 +34,10 @@ import java.util.ResourceBundle;
  * like the wrapped bundle, so themes that define no per-type keys are unaffected.
  */
 public class TypeAwareBundle extends ResourceBundle {
+
+    private static final Logger logger = LoggerFactory.getLogger(TypeAwareBundle.class);
+
+    private static final Set<String> WARNED = ConcurrentHashMap.newKeySet();
 
     private static final ThreadLocal<List<String>> TYPES = new ThreadLocal<>();
 
@@ -44,6 +53,21 @@ public class TypeAwareBundle extends ResourceBundle {
             return bundle;
         }
         return new TypeAwareBundle(bundle);
+    }
+
+    /**
+     * True if the theme has the key. If not (e.g. a theme written before the key existed), one
+     * warning is logged per key and the caller should skip the announce instead of sending the key.
+     */
+    public static boolean hasThemeKey(ResourceBundle bundle, String key) {
+        if (bundle != null && bundle.containsKey(key)) {
+            return true;
+        }
+        if (WARNED.add(key)) {
+            logger.warn("Theme key {} is missing from the announcer theme, skipping this announce. "
+                    + "Copy it from the matching .theme.default file to enable it.", key);
+        }
+        return false;
     }
 
     /** Sets the type chain used by lookups on the calling thread; null or empty clears it. */

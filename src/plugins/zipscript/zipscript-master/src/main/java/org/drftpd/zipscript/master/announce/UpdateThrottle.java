@@ -80,6 +80,19 @@ public class UpdateThrottle {
      * @return true if an UPDATE should be announced now (and the baseline is advanced)
      */
     public synchronized boolean shouldAnnounce(Settings settings, String key, int present, int total, long now) {
+        if (!isDue(settings, key, present, total, now)) {
+            return false;
+        }
+        markAnnounced(key, present, total, now);
+        return true;
+    }
+
+    /**
+     * Like {@link #shouldAnnounce} but leaves the baseline alone, so the caller can first check that
+     * the announce can really be sent and then call {@link #markAnnounced}. If files were deleted so
+     * that fewer are present than at the last baseline, the baseline is reset to what is present.
+     */
+    public synchronized boolean isDue(Settings settings, String key, int present, int total, long now) {
         if (!settings.isEnabled() || total <= 0) {
             return false;
         }
@@ -96,19 +109,30 @@ public class UpdateThrottle {
         }
         state._touched = now;
         int percent = (int) ((present * 100L) / total);
+        if (present < state._lastFiles || percent < state._lastPercent) {
+            // files were deleted mid-race, do not wait for the count to catch up
+            state._lastFiles = Math.min(state._lastFiles, present);
+            state._lastPercent = Math.min(state._lastPercent, percent);
+            return false;
+        }
         boolean due = (settings._files > 0 && present - state._lastFiles >= settings._files)
                 || (settings._percent > 0 && percent - state._lastPercent >= settings._percent);
         if (!due) {
             return false;
         }
-        if (state._lastTime != 0 && now - state._lastTime < settings._intervalMillis) {
-            // throttled, keep the baseline so the next file after the interval triggers it
-            return false;
+        // throttled: keep the baseline so the next file after the interval triggers it
+        return state._lastTime == 0 || now - state._lastTime >= settings._intervalMillis;
+    }
+
+    /** Moves the baseline of the release to the current position, after an UPDATE was announced. */
+    public synchronized void markAnnounced(String key, int present, int total, long now) {
+        State state = _states.get(key);
+        if (state == null || total <= 0) {
+            return;
         }
         state._lastFiles = present;
-        state._lastPercent = percent;
+        state._lastPercent = (int) ((present * 100L) / total);
         state._lastTime = now;
-        return true;
     }
 
     /** Drops the bookkeeping of the least recently touched release when too many are tracked. */

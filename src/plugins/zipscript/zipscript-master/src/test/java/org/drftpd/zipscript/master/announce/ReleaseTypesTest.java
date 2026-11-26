@@ -108,4 +108,12 @@ public class ReleaseTypesTest {
         assertTrue(((TypeAwareBundle) b).hasKeySuffix(".mp3.cbr", ".mp3.vbr"));
         assertFalse(((TypeAwareBundle) b).hasKeySuffix(".mp3.cbr"));
     }
+
+    @Test
+    void hasThemeKeyReportsMissingKeys() {
+        ResourceBundle b = bundle();
+        assertTrue(TypeAwareBundle.hasThemeKey(b, "sfv.store.race"));
+        assertFalse(TypeAwareBundle.hasThemeKey(b, "sfv.store.update"));
+        assertFalse(TypeAwareBundle.hasThemeKey(null, "sfv.store.update"));
+    }
 }

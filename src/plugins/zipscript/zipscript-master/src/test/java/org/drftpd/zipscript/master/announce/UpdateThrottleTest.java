@@ -99,4 +99,27 @@ public class UpdateThrottleTest {
         assertTrue(t.shouldAnnounce(st, "/a", 1, 10, 1003));
         assertFalse(t.shouldAnnounce(st, "/x", 1, 0, 1004));
     }
+
+    @Test
+    void isDueDoesNotMoveBaselineUntilMarked() {
+        UpdateThrottle t = new UpdateThrottle();
+        UpdateThrottle.Settings st = s(5, 0, 0);
+        assertTrue(t.isDue(st, "/r", 5, 20, 1000));
+        // announce could not be sent: the update is still due on the next file
+        assertTrue(t.isDue(st, "/r", 6, 20, 1001));
+        t.markAnnounced("/r", 6, 20, 1001);
+        assertFalse(t.isDue(st, "/r", 7, 20, 1002));
+        assertTrue(t.isDue(st, "/r", 11, 20, 1003));
+    }
+
+    @Test
+    void baselineFollowsDeletes() {
+        UpdateThrottle t = new UpdateThrottle();
+        UpdateThrottle.Settings st = s(5, 0, 0);
+        assertTrue(t.shouldAnnounce(st, "/r", 10, 40, 1000));
+        // 6 files deleted: baseline drops to what is present, next 5 files fire again
+        assertFalse(t.shouldAnnounce(st, "/r", 4, 40, 1001));
+        assertFalse(t.shouldAnnounce(st, "/r", 8, 40, 1002));
+        assertTrue(t.shouldAnnounce(st, "/r", 9, 40, 1003));
+    }
 }
