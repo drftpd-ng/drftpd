@@ -46,6 +46,7 @@ public class TimeManagerTest {
 
     @BeforeEach
     void setUp() {
+        _lastReset = Calendar.ERA;
         _tm = new TimeManager(Calendar.getInstance());
         _tm.addTimeEvent(new TimeTester());
         _tm.addTimeEvent(new TimeTesterAdder());
@@ -111,6 +112,98 @@ public class TimeManagerTest {
         assertEquals(7, _weeksReset);
         assertEquals(54, _daysReset);
         assertEquals(1313, _hoursReset);
+    }
+
+    private static Calendar nextMidnightPlus(int minutes) {
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DAY_OF_MONTH, 1);
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, minutes);
+        cal.set(Calendar.SECOND, 30);
+        cal.set(Calendar.MILLISECOND, 0);
+        return cal;
+    }
+
+    /** A TimeManager whose last processed hour is the one just before the next midnight. */
+    private TimeManager newTmBeforeMidnight() {
+        Calendar cal = nextMidnightPlus(0);
+        cal.add(Calendar.HOUR, -1);
+        TimeManager tm = new TimeManager((Calendar) cal.clone());
+        // the constructor rolled forward the clone only, last processed hour is cal's hour
+        tm.addTimeEvent(new TimeTester());
+        tm.addTimeEvent(new TimeTesterAdder());
+        return tm;
+    }
+
+    @Test
+    public void testLateRunStillResets() {
+        _lastReset = Calendar.ERA;
+        newTmBeforeMidnight().processHour(nextMidnightPlus(3));
+        // midnight is a day (or month/year) reset, never only an hour reset
+        assertNotEquals(Calendar.HOUR, _lastReset);
+        assertNotEquals(Calendar.ERA, _lastReset);
+        assertEquals(1, _hoursReset);
+    }
+
+    @Test
+    public void testRunAtEndOfFirstHourStillResets() {
+        _lastReset = Calendar.ERA;
+        newTmBeforeMidnight().processHour(nextMidnightPlus(59));
+        assertNotEquals(Calendar.HOUR, _lastReset);
+        assertNotEquals(Calendar.ERA, _lastReset);
+        assertEquals(1, _hoursReset);
+    }
+
+    @Test
+    public void testRunAtMinuteZeroResets() {
+        _lastReset = Calendar.ERA;
+        newTmBeforeMidnight().processHour(nextMidnightPlus(0));
+        assertNotEquals(Calendar.HOUR, _lastReset);
+        assertNotEquals(Calendar.ERA, _lastReset);
+        assertEquals(1, _hoursReset);
+    }
+
+    @Test
+    public void testSameHourIsNotResetTwice() {
+        TimeManager tm = newTmBeforeMidnight();
+        tm.processHour(nextMidnightPlus(0));
+        tm.processHour(nextMidnightPlus(3));
+        tm.processHour(nextMidnightPlus(40));
+        assertEquals(1, _hoursReset);
+    }
+
+    @Test
+    public void testMissedHoursAreCaughtUp() {
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.HOUR, 3);
+        TimeManager tm = new TimeManager(Calendar.getInstance());
+        tm.addTimeEvent(new TimeTesterAdder());
+        tm.processHour(cal);
+        assertEquals(3, _hoursReset);
+    }
+
+    @Test
+    public void testFailingListenerDoesNotStopOthers() {
+        TimeManager tm = newTmBeforeMidnight();
+        tm.addTimeEvent(new TimeEventInterface() {
+            public void resetDay(Date d) { throw new IllegalStateException("boom"); }
+            public void resetWeek(Date d) { throw new IllegalStateException("boom"); }
+            public void resetMonth(Date d) { throw new IllegalStateException("boom"); }
+            public void resetYear(Date d) { throw new IllegalStateException("boom"); }
+            public void resetHour(Date d) { throw new IllegalStateException("boom"); }
+        });
+        tm.addTimeEvent(new TimeTesterAdder());
+        Calendar cal = nextMidnightPlus(3);
+        assertDoesNotThrow(() -> tm.processHour(cal));
+        // both adders (one registered before and one after the failing listener) ran
+        assertEquals(2, _hoursReset);
+        assertNotEquals(Calendar.ERA, _lastReset);
+        // the timer task itself must never throw, whatever happens inside
+        assertDoesNotThrow(() -> {
+            java.lang.reflect.Field f = TimeManager.class.getDeclaredField("_processHour");
+            f.setAccessible(true);
+            ((java.util.TimerTask) f.get(tm)).run();
+        });
     }
 
     public class TimeTester implements TimeEventInterface {
