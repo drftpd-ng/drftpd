@@ -46,6 +46,7 @@ import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.zipscript.common.zip.DizInfo;
 import org.drftpd.zipscript.common.zip.DizStatus;
+import org.drftpd.zipscript.master.RaceNameMasker;
 import org.drftpd.zipscript.master.zip.ZipTools;
 import org.drftpd.zipscript.master.zip.event.ZipTransferEvent;
 import org.drftpd.zipscript.master.zip.vfs.ZipscriptVFSDataZip;
@@ -268,6 +269,9 @@ public class ZipscriptZipPostHook extends ZipTools {
                     "bytes", "high");
             Collection<GroupPosition> groups = RankUtils.topFileGroup(getZipFiles(dir));
 
+            RaceNameMasker masker = RaceNameMasker.load();
+            String maskSection = RaceNameMasker.sectionOf(dir);
+
             String racerline = _bundle.getString("cwd.racers.body");
             String groupline = _bundle.getString("cwd.groups.body");
 
@@ -297,8 +301,8 @@ public class ZipscriptZipPostHook extends ZipTools {
 
                 Map<String, Object> raceenv = new HashMap<>();
                 raceenv.put("speed", Bytes.formatBytes(stat.getXferspeed()) + "/s");
-                raceenv.put("user", stat.getUsername());
-                raceenv.put("group", raceuser.getGroup());
+                raceenv.put("user", masker.user(stat.getUsername(), String.valueOf(raceuser.getGroup()), maskSection));
+                raceenv.put("group", masker.groupOf(stat.getUsername(), String.valueOf(raceuser.getGroup()), maskSection));
                 raceenv.put("files", "" + stat.getFiles());
                 raceenv.put("bytes", Bytes.formatBytes(stat.getBytes()));
                 raceenv.put("position", String.valueOf(position));
@@ -319,7 +323,7 @@ public class ZipscriptZipPostHook extends ZipTools {
 
             for (GroupPosition stat : groups) {
                 Map<String, Object> raceenv = new HashMap<>();
-                raceenv.put("group", stat.getGroupname());
+                raceenv.put("group", masker.group(stat.getGroupname(), maskSection));
                 raceenv.put("position", String.valueOf(position));
                 raceenv.put("bytes", Bytes.formatBytes(stat.getBytes()));
                 raceenv.put("files", Integer.toString(stat.getFiles()));
