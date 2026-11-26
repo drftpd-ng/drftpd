@@ -83,7 +83,8 @@ nfo.deny.zipdir=false
 # Directories where the zipscript checks are skipped entirely: uploads are not
 # denied by the sfv/nfo checks and are not checked against the sfv or for
 # zip integrity. Space separated globs matched against the directory path
-# (with a trailing slash), e.g. /REQUESTS/* /PRE/*/Sample/
+# (with a trailing slash, case-insensitive), e.g. /REQUESTS/* /PRE/*/Sample/
+# An invalid glob is skipped and logged as a warning.
 # Default: [] (check everywhere)
 nocheck.dirs=
 

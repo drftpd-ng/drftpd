@@ -17,11 +17,16 @@
  */
 package org.drftpd.zipscript.master.sfv;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.drftpd.common.util.GlobPattern;
 
 import java.util.Collection;
 import java.util.Properties;
+import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 /**
@@ -29,6 +34,12 @@ import java.util.regex.PatternSyntaxException;
  * Kept free of VFS access so the decisions can be unit tested.
  */
 public final class ZipscriptStrictness {
+
+    private static final Logger logger = LogManager.getLogger(ZipscriptStrictness.class);
+
+    // bad globs already reported, so a typo is logged once and not on every upload (bounded)
+    private static final Set<String> _warnedGlobs = ConcurrentHashMap.newKeySet();
+    private static final int MAX_WARNED = 100;
 
     private ZipscriptStrictness() {
     }
@@ -73,7 +84,8 @@ public final class ZipscriptStrictness {
     }
 
     /**
-     * Decides if the zipscript checks are skipped for a directory ("nocheck.dirs").
+     * Decides if the zipscript checks are skipped for a directory ("nocheck.dirs"). Globs are matched
+     * case-insensitively, like the nfo.* checks.
      *
      * @param cfg     zipscript.conf
      * @param dirPath path of the directory, with or without a trailing slash
@@ -87,12 +99,16 @@ public final class ZipscriptStrictness {
         String path = dirPath.endsWith("/") ? dirPath : dirPath + "/";
         StringTokenizer st = new StringTokenizer(globs);
         while (st.hasMoreTokens()) {
+            String glob = st.nextToken();
             try {
-                if (GlobPattern.compile(st.nextToken()).matcher(path).matches()) {
+                if (GlobPattern.compile(glob, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE).matcher(path).matches()) {
                     return true;
                 }
             } catch (PatternSyntaxException e) {
-                // bad glob, ignore it
+                // bad glob, ignore it but report it once
+                if (_warnedGlobs.size() < MAX_WARNED && _warnedGlobs.add(glob)) {
+                    logger.warn("Ignoring invalid glob '{}' in nocheck.dirs: {}", glob, e.getDescription());
+                }
             }
         }
         return false;

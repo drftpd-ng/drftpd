@@ -98,6 +98,13 @@ public class ZipscriptStrictnessTest {
     }
 
     @Test
+    void noCheckDirsAreCaseInsensitive() {
+        Properties c = cfg("nocheck.dirs", "/Requests/*");
+        assertTrue(ZipscriptStrictness.isNoCheckDir(c, "/REQUESTS/Rel"));
+        assertTrue(ZipscriptStrictness.isNoCheckDir(c, "/requests/rel/"));
+    }
+
+    @Test
     void noCheckDirsIgnoreBadGlob() {
         Properties c = cfg("nocheck.dirs", "[ /MP3/*");
         assertTrue(ZipscriptStrictness.isNoCheckDir(c, "/MP3/Rel"));
