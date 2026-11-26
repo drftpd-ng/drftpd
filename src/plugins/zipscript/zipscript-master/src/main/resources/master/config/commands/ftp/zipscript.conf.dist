@@ -4,12 +4,16 @@ class ZipscriptCommands
 method doSITE_RESCAN
 perms *
 help SFV scans the files in the current directory or a specific directory requested.
-help.specific ${command} [-r] [noforce] [nodelete] [nodelete0byte] [quiet] [file/path]
+help.specific ${command} [-r] [noforce] [nodelete] [nodelete0byte] [quiet] [quick] [markbad] [makesfv] [file/path]
 help.specific The -r option recursively scans all directories below the current directory as well.
 help.specific The noforce option makes the slave recalculate the checksums.
 help.specific The nodelete option removes bad files rather than just reporting them.
 help.specific The nodelete0byte option removes any files listed in the SFV which exist but are 0 byte.
 help.specific The quiet option only prints output for files which aren't good.
+help.specific The quick option only checks files whose CRC is not known yet, files with a known CRC matching the SFV are skipped. Implies noforce. It trusts the cached CRC, so it cannot detect corruption of a file on disk (use a normal rescan for that).
+help.specific The markbad option renames files failing the SFV check to <name>.bad instead of deleting them (overrides the default delete, never overwrites an existing file).
+help.specific The makesfv option creates <dirname>.sfv from the CRCs of the files in directories which contain no .sfv at all (not used when rescanning a single file). It also runs in Sample, Proof and zip-only directories, and an SFV generated in a directory of zips makes the release use the SFV announcements.
 help.specific Specifying a file or path will rescan the requested file or directory instead of the current directory.
 help.specific If the file or path does not start with '/' it will be relative to your current directory
+help.specific A relative file literally named quick, markbad or makesfv is read as an option; give it as ./name or with its full path instead.
 }

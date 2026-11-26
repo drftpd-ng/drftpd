@@ -38,3 +38,9 @@ DrFTPD loads X.conf when it exists and falls back to X.conf.dist otherwise.
   defines the command twice, and the master stops at startup with "already mapped". Remove the
   duplicate definition from your own X.conf to fix it.
 - If you never customised a command file, delete your X.conf so the shipped X.conf.dist is used.
+
+### SITE RESCAN makesfv needs updated slaves
+
+The makesfv option of SITE RESCAN uses a new writeSfv command in the zipscript protocol. A slave
+that was not updated answers it with an error, and the master reports "Unable to create". Update
+the slaves together with the master if you want to use makesfv. The other options do not need it.
