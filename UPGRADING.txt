@@ -39,7 +39,7 @@ DrFTPD loads X.conf when it exists and falls back to X.conf.dist otherwise.
   duplicate definition from your own X.conf to fix it.
 - If you never customised a command file, delete your X.conf so the shipped X.conf.dist is used.
 
-### SiteBot blowfish text encoding
+### SiteBot blowfish and FiSH 10
 
 The sitebot now encrypts and decrypts blowfish text as UTF-8, like FiSH 10 and modern mIRC.
 Incoming lines that are not valid UTF-8 are still read as ISO-8859-1 (legacy clients).
@@ -52,3 +52,28 @@ Incoming lines that are not valid UTF-8 are still read as ISO-8859-1 (legacy cli
   UTF-8 in modern mIRC); on a JVM whose default charset was not UTF-8 such a key used to give
   different bytes, so a client that "worked" with it before may need its key set again.
   irc.conf is read as ISO-8859-1, so write a non-ASCII channel key there with \uXXXX escapes.
+
+The sitebot now handles blowfish lines the way FiSH 10 does:
+
+- The mode is taken from each incoming line: "+OK *" (or "mcps *") is CBC, "+OK " or "mcps "
+  without the "*" is ECB, with the same key. A channel or user key set to ECB now also accepts
+  CBC lines. Replies still use the configured mode.
+- New irc.conf option blowfish.ecb.fallback, default false: when false, ECB lines sent for a key
+  configured as CBC are still ignored, as before. Set it to true to accept them like FiSH does
+  (users who set the key in FiSH without the cbc: prefix send ECB).
+- channel.N.blowkey can be written FiSH style as cbc:<key>: the prefix is removed and the channel
+  uses CBC, whatever channel.N.blowmode says (a warning is logged if it said ecb).
+- SITE SETBLOWFISH / SETKEY accept a cbc: prefix (any case) and store the key as CBC. A key
+  without the prefix is stored as ECB, as before. Note that ECB keys from the userfile are only
+  used when blowfish.dh1080.ecb=true; otherwise a DH1080 exchange is started instead.
+- A line cut by the IRC server is decrypted up to its last complete block and passed to the
+  listeners, but it is never run as a command, since its arguments may be cut short.
+- Text after the first space of an encrypted line (for example a timestamp added by a BNC) is
+  not encrypted and is now dropped.
+- Lines that cannot be decrypted are ignored and logged; the bot no longer treats the text
+  "An error occurred in decryption process" as user input, and no longer sends "An error
+  occurred in encryption process" unencrypted to the channel when encryption fails.
+- ECB output no longer adds a whole block of zero bytes when the text already fills its last
+  block, and its base64 now matches FiSH exactly. FiSH reads both old and new output.
+- Long replies are split to fit line.length.max in bytes for the mode in use, so CBC lines can
+  be longer than before and non-ASCII text no longer goes over the limit.
