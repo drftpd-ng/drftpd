@@ -17,19 +17,40 @@
  */
 package org.drftpd.master.commands.config.hooks;
 
+import org.drftpd.common.dynamicdata.Key;
+import org.drftpd.common.dynamicdata.KeyedMap;
+import org.drftpd.master.permissions.MessagePathPermission;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.StringTokenizer;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class DefaultConfigHandlerTest {
 
+    private static StringTokenizer missingFileDirective() {
+        return new StringTokenizer("/* no-such-file-for-test.txt *");
+    }
+
     @Test
-    public void missingMessageFileIsIgnored() {
-        // The file does not exist, the directive must be dropped instead of adding a null entry
-        StringTokenizer st = new StringTokenizer("/* no-such-file-for-test.txt *");
-        // returns before touching the GlobalContext when the file cannot be read
-        assertDoesNotThrow(() -> new DefaultConfigHandler().handleMsgPath("msgpath", st));
+    public void missingMessageFileAddsNoList() {
+        KeyedMap<Key<?>, Object> map = new KeyedMap<>();
+        new DefaultConfigHandler().handleMsgPath(missingFileDirective(), map);
+        // the directive is dropped: not even an empty list is created for it
+        assertNull(map.getObject(DefaultConfigHandler.MSGPATH, null));
+    }
+
+    @Test
+    public void missingMessageFileAddsNoNullEntry() {
+        KeyedMap<Key<?>, Object> map = new KeyedMap<>();
+        ArrayList<MessagePathPermission> list = new ArrayList<>();
+        map.setObject(DefaultConfigHandler.MSGPATH, list);
+        new DefaultConfigHandler().handleMsgPath(missingFileDirective(), map);
+        // an earlier msgpath directive already created the list: nothing, in particular no null, is added to it
+        assertSame(list, map.getObject(DefaultConfigHandler.MSGPATH, null));
+        assertTrue(list.isEmpty());
     }
 }

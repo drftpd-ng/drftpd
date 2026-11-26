@@ -51,6 +51,11 @@ public class DefaultConfigHandler extends ConfigHandler {
     }
 
     public void handleMsgPath(String directive, StringTokenizer st) {
+        handleMsgPath(st, GlobalContext.getConfig().getKeyedMap());
+    }
+
+    /** Adds the directive to the msgpath list kept in {@code map}, or nothing when its message file can't be read. */
+    void handleMsgPath(StringTokenizer st, KeyedMap<Key<?>, Object> map) {
         String pattern = st.nextToken();
         String messageFile = "config/themes/text/" + st.nextToken();
 
@@ -62,7 +67,6 @@ public class DefaultConfigHandler extends ConfigHandler {
             return;
         }
 
-        KeyedMap<Key<?>, Object> map = GlobalContext.getConfig().getKeyedMap();
         ArrayList<MessagePathPermission> list = map.getObject(MSGPATH, null);
         if (list == null) { // in case that's the first directive that's being loaded
             list = new ArrayList<>();
