@@ -99,11 +99,10 @@ public class SiteBot implements ReplyConstants, Runnable {
     // A HashMap of BlowfishManager objects for channels we are aware of
     private final CaseInsensitiveHashMap<String, BlowfishManager> _ciphers = new CaseInsensitiveHashMap<>();
     /*
-     * A HashMap of DH1080 objects for users, this is used to store a
-     * temporary object when initiating a DH1080 request whilst we wait
-     * for the response
+     * DH1080 exchanges started by the bot, kept whilst we wait for the
+     * response. Used from the IRC input thread and from command threads.
      */
-    private final CaseInsensitiveHashMap<String, DH1080> _dh1080 = new CaseInsensitiveHashMap<>();
+    private final DH1080Exchanges _dh1080 = new DH1080Exchanges();
     // Command Manager to use for executing commands
     private HashMap<String, Properties> _cmds;
     private CommandManagerInterface _commandManager;
@@ -1599,12 +1598,10 @@ public class SiteBot implements ReplyConstants, Runnable {
             sendNotice(sourceNick, DH1080.FINISH + " " + exchange.getPublicKey() + DH1080.modeSuffix(blowfishMode));
         } else {
             // DH1080_FINISH, the reply to an exchange we initiated
-            exchange = _dh1080.get(sourceNick);
-            // For security reasons remove the DH1080 object from the map as we no longer
-            // need it (keys are stored lower case by CaseInsensitiveHashMap.put)
-            _dh1080.remove(sourceNick.toLowerCase());
+            // For security reasons the DH1080 object is removed as we no longer need it
+            exchange = _dh1080.finish(sourceNick);
             if (exchange == null) {
-                logger.warn("Ignoring DH1080_FINISH from {} as no key exchange with them is in progress", sourceNick);
+                logger.warn("Ignoring DH1080_FINISH from {} as no key exchange with them is in progress (or it timed out)", sourceNick);
                 return;
             }
             if (blowfishMode == null) {
@@ -3107,9 +3104,13 @@ public class SiteBot implements ReplyConstants, Runnable {
                 logger.warn("Not starting a DH1080 exchange with {}: both blowfish.dh1080.cbc and blowfish.dh1080.ecb are disabled", nick);
                 return;
             }
-            DH1080 exchange = new DH1080();
-            // Store the DH1080 object for use when we get their reply
-            _dh1080.put(nick, exchange);
+            // Store the DH1080 object for use when we get their reply. This is called for every
+            // message from a user without a usable key, so only one exchange runs at a time.
+            DH1080 exchange = _dh1080.start(nick);
+            if (exchange == null) {
+                logger.debug("DH1080 exchange with {} already in progress, not starting another one", nick);
+                return;
+            }
             sendNotice(nick, DH1080.INIT + " " + exchange.getPublicKey() + DH1080.modeSuffix(mode));
         }
     }
