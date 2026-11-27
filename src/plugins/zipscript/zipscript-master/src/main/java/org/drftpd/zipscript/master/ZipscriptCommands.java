@@ -20,6 +20,7 @@ package org.drftpd.zipscript.master;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
+import org.drftpd.common.exceptions.RemoteIOException;
 import org.drftpd.master.commands.*;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.exceptions.SlaveUnavailableException;
@@ -27,14 +28,22 @@ import org.drftpd.master.network.BaseFtpConnection;
 import org.drftpd.master.network.Checksum;
 import org.drftpd.master.network.Session;
 import org.drftpd.master.usermanager.User;
+import org.drftpd.master.GlobalContext;
+import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.master.vfs.*;
+import org.drftpd.slave.exceptions.FileExistsException;
+import org.drftpd.zipscript.common.sfv.AsyncResponseSFVInfo;
 import org.drftpd.zipscript.common.sfv.SFVInfo;
+import org.drftpd.zipscript.master.sfv.RescanOptions;
+import org.drftpd.zipscript.master.sfv.SFVGenerator;
+import org.drftpd.zipscript.master.sfv.ZipscriptIssuer;
 import org.drftpd.zipscript.master.sfv.vfs.ZipscriptVFSDataSFV;
 import org.drftpd.zipscript.master.zip.RescanPostProcessDirInterface;
 import org.reflections.Reflections;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -73,49 +82,32 @@ public class ZipscriptCommands extends CommandInterface {
         Session session = request.getSession();
         User user = session.getUserNull(request.getUser());
 
-        String fileOrPath = null;
-        boolean recursive = false;
-        boolean forceRescan = true;
-        boolean deleteBad = true;
-        boolean deleteZeroByte = true;
-        boolean quiet = false;
+        RescanOptions options = RescanOptions.parse(request.getArgument());
+        boolean recursive = options.recursive;
+        boolean forceRescan = options.force;
+        boolean deleteBad = options.deleteBad;
+        boolean deleteZeroByte = options.deleteZeroByte;
+        boolean quiet = options.quiet;
+        boolean quick = options.quick;
+        boolean markBad = options.markBad;
+        boolean makeSfv = options.makeSfv;
         boolean singleFile = false;
 
-        StringTokenizer args = new StringTokenizer(request.getArgument());
-        while (args.hasMoreTokens()) {
-            String arg = args.nextToken();
-            if (arg.equalsIgnoreCase("-r")) {
-                recursive = true;
-            } else if (arg.equalsIgnoreCase("noforce")) {
-                forceRescan = false;
-            } else if (arg.equalsIgnoreCase("nodelete")) {
-                deleteBad = false;
-            } else if (arg.equalsIgnoreCase("nodelete0byte")) {
-                deleteZeroByte = false;
-            } else if (arg.equalsIgnoreCase("quiet")) {
-                quiet = true;
+        String fileOrPath = options.fileOrPath;
+        if (fileOrPath != null && !fileOrPath.startsWith(VirtualFileSystem.separator)) {
+            if (session instanceof BaseFtpConnection) {
+                fileOrPath = ((BaseFtpConnection) session).getCurrentDirectory().getPath() + VirtualFileSystem.separator + fileOrPath;
             } else {
-                if (fileOrPath != null) {
-                    throw new ImproperUsageException();
-                }
-                if (arg.startsWith(VirtualFileSystem.separator)) {
-                    fileOrPath = arg;
-                } else {
-                    if (session instanceof BaseFtpConnection) {
-                        fileOrPath = ((BaseFtpConnection) session).getCurrentDirectory().getPath() + VirtualFileSystem.separator + arg;
-                    } else {
-                        throw new ImproperUsageException();
-                    }
-                }
+                throw new ImproperUsageException();
             }
         }
 
-        if (!deleteBad && !deleteZeroByte) {
+        if (!deleteBad && !deleteZeroByte && !markBad) {
             logger.debug("Disabling forceRescan option as delete bad and zerobyte is not enabled");
             forceRescan = false;
         }
-        logger.debug("Rescan options -> recursive: {}, force: {}, deleteBad: {}, deleteZeroByte: {}, quiet: {}, FileOrPath: {}",
-                recursive, forceRescan, deleteBad, deleteZeroByte, quiet, fileOrPath);
+        logger.debug("Rescan options -> recursive: {}, force: {}, deleteBad: {}, deleteZeroByte: {}, quiet: {}, quick: {}, markBad: {}, makeSfv: {}, FileOrPath: {}",
+                recursive, forceRescan, deleteBad, deleteZeroByte, quiet, quick, markBad, makeSfv, fileOrPath);
 
         CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 
@@ -169,8 +161,13 @@ public class ZipscriptCommands extends CommandInterface {
                 } else {
                     long fileChecksum;
                     try {
+                        if (isQuickVerified(workingFile, sfvChecksum, quick)) {
+                            session.printOutput(200, workingFile.getName() + "(skipped, known CRC matches SFV)");
+                            doRescanPostProcess(request, workingDir, quiet);
+                            return response;
+                        }
                         fileChecksum = getFileCheckSum(workingFile, forceRescan);
-                        String status = checkSingleFile(session, workingFile.getName(), workingFile, sfvChecksum, fileChecksum, deleteZeroByte, deleteBad, quiet);
+                        String status = checkSingleFile(session, workingFile.getName(), workingFile, sfvChecksum, fileChecksum, deleteZeroByte, deleteBad, markBad, quiet);
                         if (status != null && !status.equals("")) {
                             session.printOutput(200, workingFile.getName() + "(" + status + ")" +
                                     " SFV: " + Checksum.formatChecksum(sfvChecksum) +
@@ -212,6 +209,9 @@ public class ZipscriptCommands extends CommandInterface {
                 }
                 if (workingSFV == null) {
                     logger.warn("Unable to get SFVInfo from: {}", workingDir.getPath());
+                    if (makeSfv) {
+                        createMissingSFV(session, user, workingDir, forceRescan);
+                    }
                     continue;
                 }
 
@@ -237,6 +237,9 @@ public class ZipscriptCommands extends CommandInterface {
 
                     long fileChecksum;
                     try {
+                        if (isQuickVerified(file, sfvChecksum, quick)) {
+                            continue;
+                        }
                         fileChecksum = getFileCheckSum(file, forceRescan);
                     } catch (FileNotFoundException e) {
                         session.printOutput(200, "SFV: " + Checksum.formatChecksum(sfvChecksum) + " SLAVE: " + sfvEntryName + " MISSING");
@@ -246,7 +249,7 @@ public class ZipscriptCommands extends CommandInterface {
                         continue;
                     }
 
-                    String status = checkSingleFile(session, sfvEntryName, file, sfvChecksum, fileChecksum, deleteZeroByte, deleteBad, quiet);
+                    String status = checkSingleFile(session, sfvEntryName, file, sfvChecksum, fileChecksum, deleteZeroByte, deleteBad, markBad, quiet);
                     if (status != null && !status.equals("")) {
                         session.printOutput(200, file.getName() + "(" + status + ")" +
                                 " SFV: " + Checksum.formatChecksum(sfvChecksum) +
@@ -263,12 +266,23 @@ public class ZipscriptCommands extends CommandInterface {
         return response;
     }
 
+    /**
+     * Quick mode: a file whose CRC is already known and matches the SFV is considered verified.
+     */
+    private boolean isQuickVerified(FileHandle file, long sfvChecksum, boolean quick) throws FileNotFoundException {
+        if (!quick) {
+            return false;
+        }
+        long cached = file.getCheckSumCached();
+        return cached != 0L && cached == sfvChecksum;
+    }
+
     private long getFileCheckSum(FileHandle file, boolean forceRescan) throws FileNotFoundException, NoAvailableSlaveException {
         return forceRescan ? file.getCheckSumFromSlave() : file.getCheckSum();
     }
 
     private String checkSingleFile(Session session, String sfvEntryName, FileHandle file, long sfvChecksum, long fileChecksum,
-                                   boolean deleteZeroByte, boolean deleteBad, boolean quiet) {
+                                   boolean deleteZeroByte, boolean deleteBad, boolean markBad, boolean quiet) {
         long fileSize;
         String status = "";
         try {
@@ -298,7 +312,9 @@ public class ZipscriptCommands extends CommandInterface {
             }
         } else {
             status = "FAILED - checksum mismatch";
-            if (deleteBad) {
+            if (markBad) {
+                status += markFileBad(file);
+            } else if (deleteBad) {
                 try {
                     file.deleteUnchecked();
                 } catch (FileNotFoundException e) {
@@ -308,6 +324,88 @@ public class ZipscriptCommands extends CommandInterface {
             }
         }
         return status;
+    }
+
+    /**
+     * Renames a file to name.bad, never overwriting an existing file.
+     *
+     * @return text to append to the status line
+     */
+    private String markFileBad(FileHandle file) {
+        String badName = file.getName() + RescanOptions.BAD_SUFFIX;
+        try {
+            FileHandle badFile = new FileHandle(file.getParent().getPath() + VirtualFileSystem.separator + badName);
+            if (badFile.exists()) {
+                return " - not marked, " + badName + " already exists";
+            }
+            file.renameToUnchecked(badFile);
+            return " - renamed to " + badName;
+        } catch (FileNotFoundException e) {
+            // File already gone, all is good
+            logger.debug("Tried to rename {}, but file was already gone", file.getName(), e);
+        } catch (FileExistsException e) {
+            return " - not marked, " + badName + " already exists";
+        }
+        return "";
+    }
+
+    /**
+     * Creates <dirname>.sfv from the CRCs of the files in a directory which has no .sfv file at all.
+     */
+    private void createMissingSFV(Session session, User user, DirectoryHandle dir, boolean forceRescan) {
+        if (dir.isRoot()) {
+            return;
+        }
+        String sfvName = dir.getName() + ".sfv";
+        try {
+            Map<String, Long> entries = new HashMap<>();
+            FileHandle source = null;
+            for (FileHandle file : dir.getFilesUnchecked()) {
+                String name = file.getName();
+                if (name.toLowerCase().endsWith(".sfv")) {
+                    // There is an sfv, just not a readable one, leave it alone
+                    return;
+                }
+                if (file.isUploading() || file.getSize() == 0L || !SFVGenerator.isListable(name)) {
+                    continue;
+                }
+                long crc;
+                try {
+                    crc = getFileCheckSum(file, forceRescan);
+                } catch (NoAvailableSlaveException e) {
+                    session.printOutput(200, "Not creating " + sfvName + ", " + name + " OFFLINE");
+                    return;
+                }
+                if (crc == 0L) {
+                    session.printOutput(200, "Not creating " + sfvName + ", failed to checksum " + name);
+                    return;
+                }
+                entries.put(name, crc);
+                if (source == null) {
+                    source = file;
+                }
+            }
+            if (source == null) {
+                return;
+            }
+            String content = SFVGenerator.generate(entries);
+            ZipscriptIssuer issuer = (ZipscriptIssuer) GlobalContext.getGlobalContext().getSlaveManager()
+                    .getProtocolCentral().getIssuerForClass(ZipscriptIssuer.class);
+            RemoteSlave rslave = source.getASlaveForFunction();
+            String sfvPath = dir.getPath() + VirtualFileSystem.separator + sfvName;
+            String index = issuer.issueWriteSFVToSlave(rslave, sfvPath, content);
+            SFVInfo written = ((AsyncResponseSFVInfo) rslave.fetchResponse(index)).getSFV();
+
+            FileHandle sfvFile = dir.createFileUnchecked(sfvName, user.getName(), user.getGroup().getName(), rslave);
+            sfvFile.setSize(content.getBytes(StandardCharsets.UTF_8).length);
+            sfvFile.setCheckSum(written.getChecksum());
+            sfvFile.setXfertime(1);
+            session.printOutput(200, "Created " + sfvName + " with " + entries.size() + " entries in: " + dir.getPath());
+        } catch (FileNotFoundException | NoAvailableSlaveException | SlaveUnavailableException | RemoteIOException
+                 | FileExistsException e) {
+            logger.warn("Unable to create {} in {}", sfvName, dir.getPath(), e);
+            session.printOutput(200, "Unable to create " + sfvName + ": " + e.getMessage());
+        }
     }
 
     private SFVInfo getSFVInfo(DirectoryHandle dirHandle) throws NoAvailableSlaveException, SlaveUnavailableException {

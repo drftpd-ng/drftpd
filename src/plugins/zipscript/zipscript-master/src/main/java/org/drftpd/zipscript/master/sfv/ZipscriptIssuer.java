@@ -32,6 +32,17 @@ public class ZipscriptIssuer extends AbstractIssuer {
         return "ZipscriptProtocol";
     }
 
+    /**
+     * Asks the slave to create an SFV file, the response is the {@code SFVInfo} of the new file.
+     */
+    public String issueWriteSFVToSlave(RemoteSlave rslave, String path, String content) throws SlaveUnavailableException {
+        String index = rslave.fetchIndex();
+        AsyncCommandArgument ac = new AsyncCommandArgument(index, "writeSfv", new String[]{path, content});
+        rslave.sendCommand(ac);
+
+        return index;
+    }
+
     public String issueSFVFileToSlave(RemoteSlave rslave, String path) throws SlaveUnavailableException {
         String index = rslave.fetchIndex();
         AsyncCommandArgument ac = new AsyncCommandArgument(index, "sfvFile", path);
