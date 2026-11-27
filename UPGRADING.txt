@@ -55,3 +55,10 @@ login_prompt line in perms.conf.dist uses ${version} instead of a hard-coded ver
 If you kept your own perms.conf, its login_prompt still shows the old text (for example
 "DrFTPD 4.0.12-git"). Replace the version in that line with ${version} so it always shows the
 running version, for example "DrFTPD 4.0.12 (87d6ba0)".
+
+### Monthly allotment (monthly_allotment)
+
+Users can have a `monthly_allotment` (SITE CHANGE <user|=group|*> monthly_allotment <bytes>, 0 = off). At the
+monthly reset their credits are replaced with it. The refill only happens when the master is running at the
+month boundary, or when the startup catch-up (processTimeEventsSinceDate) covers it. Users created before this
+key existed read as 0 (off).
