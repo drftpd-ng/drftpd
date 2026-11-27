@@ -86,7 +86,7 @@ public class Search extends CommandInterface {
         try {
             inodes = ie.advancedFind(GlobalContext.getGlobalContext().getRoot(), params, "doSEARCH");
         } catch (IndexException e) {
-            logger.error(e.getMessage());
+            logger.error("Search failed: {}", e.getMessage(), e);
             return new CommandResponse(550, e.getMessage());
         } catch (IllegalArgumentException e) {
             logger.info(e.getMessage());

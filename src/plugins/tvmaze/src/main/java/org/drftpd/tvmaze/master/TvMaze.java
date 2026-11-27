@@ -211,7 +211,7 @@ public class TvMaze extends CommandInterface {
             }
         } catch (Exception e) {
             // Failed to get user, log and continue
-            logger.warn(e.getMessage());
+            logger.warn("Failed to get user: {}", e.getMessage(), e);
         }
         if (request.getSession().isAborted()) {
             return;
@@ -269,7 +269,7 @@ public class TvMaze extends CommandInterface {
             // No inode to remove tvmaze info from
         } catch (Exception e) {
             // Failed to get user, log and continue
-            logger.warn(e.getMessage());
+            logger.warn("Failed to get user: {}", e.getMessage(), e);
         }
         try {
             for (DirectoryHandle subdir : dir.getDirectories(request.getUserObject())) {
