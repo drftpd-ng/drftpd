@@ -27,8 +27,11 @@ import org.drftpd.master.sitebot.AbstractAnnouncer;
 import org.drftpd.master.sitebot.AnnounceWriter;
 import org.drftpd.master.sitebot.SiteBot;
 import org.drftpd.master.sitebot.config.AnnounceConfig;
+import org.drftpd.master.usermanager.NoSuchUserException;
+import org.drftpd.master.usermanager.UserFileException;
 import org.drftpd.master.util.ReplacerUtils;
 import org.drftpd.raceleader.master.event.NewRaceLeaderEvent;
+import org.drftpd.zipscript.master.RaceNameMasker;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -67,6 +70,21 @@ public class NewRaceLeaderAnnouncer extends AbstractAnnouncer {
         _bundle = bundle;
     }
 
+    /**
+     * @return the user's primary group only (secondary groups are not matched by hideuser.groups),
+     * or an empty string if the user is unknown
+     */
+    private static String groupOf(String username) {
+        if (username == null) {
+            return "";
+        }
+        try {
+            return GlobalContext.getGlobalContext().getUserManager().getUserByName(username).getGroup().toString();
+        } catch (NoSuchUserException | UserFileException e) {
+            return "";
+        }
+    }
+
     @EventSubscriber
     public void onNewRaceLeaderEvent(NewRaceLeaderEvent event) {
         Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
@@ -78,8 +96,10 @@ public class NewRaceLeaderAnnouncer extends AbstractAnnouncer {
 
             env.put("path", event.getDirectory().getPath());
             env.put("filesleft", event.getFiles());
-            env.put("leaduser", event.getUser());
-            env.put("prevuser", event.getPrevUser());
+            RaceNameMasker masker = RaceNameMasker.load();
+            String maskSection = RaceNameMasker.sectionOf(event.getDirectory());
+            env.put("leaduser", masker.user(event.getUser(), groupOf(event.getUser()), maskSection));
+            env.put("prevuser", masker.user(event.getPrevUser(), groupOf(event.getPrevUser()), maskSection));
 
             env.put("size", Bytes.formatBytes(event.getUploaderPosition().getBytes()));
             env.put("files", event.getUploaderPosition().getFiles());
