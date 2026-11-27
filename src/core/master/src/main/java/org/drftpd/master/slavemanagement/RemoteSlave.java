@@ -400,7 +400,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 
         long skipAgeCutoff = 0L;
 
-        String remergeMode = GlobalContext.getConfig().getMainProperties().getProperty("partial.remerge.mode");
+        String remergeMode = getPartialRemergeMode();
         _remergeChecksums = GlobalContext.getConfig().getMainProperties().
                 getProperty("enableremergechecksums", "false").equalsIgnoreCase("true");
         boolean partialRemerge = false;
@@ -552,10 +552,26 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
         return ret;
     }
 
+    /**
+     * @return the configured partial.remerge.mode, or null if the key is absent from master.conf
+     * (callers treat null as "off", the value shipped in master.conf.dist).
+     */
+    private static String getPartialRemergeMode() {
+        String mode = GlobalContext.getConfig().getMainProperties().getProperty("partial.remerge.mode");
+        return mode == null ? null : mode.trim();
+    }
+
+    /**
+     * Null-safe: an absent partial.remerge.mode means "off", not instant.
+     */
+    static boolean isInstantRemerge(String remergeMode) {
+        return "instant".equalsIgnoreCase(remergeMode);
+    }
+
     protected void makeAvailableAfterRemerge() {
         _initRemergeCompleted = true;
         setProperty("lastConnect", Long.toString(System.currentTimeMillis()));
-        if (GlobalContext.getConfig().getMainProperties().getProperty("partial.remerge.mode").equalsIgnoreCase("instant")) {
+        if (isInstantRemerge(getPartialRemergeMode())) {
             setRemerging(false);
             GlobalContext.getEventService().publishAsync(new SlaveEvent("MSGSLAVE", "Remerge queueprocess finished", this));
         } else {

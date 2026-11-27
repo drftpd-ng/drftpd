@@ -147,7 +147,7 @@ public class ZipscriptList extends SFVTools implements AddListElementsInterface 
                     }
 
                     try {
-                        boolean statusBarIsDir = cfg.getProperty("statusbar.directory").equalsIgnoreCase("true");
+                        boolean statusBarIsDir = cfg.getProperty("statusbar.directory", "true").trim().equalsIgnoreCase("true");
                         container.getElements().add(
                                 new LightRemoteInode(statusDirName, "drftpd", "drftpd", statusBarIsDir, dir.lastModified(), 0L));
                     } catch (FileNotFoundException e) {
