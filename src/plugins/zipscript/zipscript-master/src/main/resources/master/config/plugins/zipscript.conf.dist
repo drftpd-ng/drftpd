@@ -167,3 +167,33 @@ announce.norace=true
 #banned.filenames.override.1.patterns=*.url,*.lnk
 #banned.filenames.override.2.path=/REQUESTS/*
 #banned.filenames.override.2.patterns=
+
+# Audio rules per section (MP3, and FLAC for genre/year only). Off by default.
+# Replace SECTION by the section name as in sections.conf. Only the first audio
+# file of a release is checked. Lists are comma separated, matching is case
+# insensitive. A file without a tag value never matches an allowed.* list.
+#
+# Limitation: the check only runs for the upload that leaves exactly one file of
+# its type (.mp3 or .flac) in the directory. Two files of a release uploaded at
+# the same time both see a count of 2 and are not checked, and a bad file
+# uploaded after the first one is not checked either.
+#
+# Enable the rules for the section.
+# SECTION.audio.enabled=true
+#
+# warn   = only tell the uploader (the release is kept).
+# delete = remove the whole release directory (the directory directly below the
+#          section, never anything outside of it). Default: [warn]
+# SECTION.audio.action=warn
+#
+# Reject these genres.
+# SECTION.audio.banned.genres=Rap, Hip-Hop
+#
+# Reject every genre not in this list.
+# SECTION.audio.allowed.genres=Rock, Pop
+#
+# Allowed years or year ranges.
+# SECTION.audio.allowed.years=1990-1999, 2005
+#
+# Allowed CBR bitrates in kbit/s (VBR files are not checked, MP3 only).
+# SECTION.audio.allowed.bitrates=192, 256, 320
