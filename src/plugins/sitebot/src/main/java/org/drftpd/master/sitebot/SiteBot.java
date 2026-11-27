@@ -24,6 +24,7 @@ import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.common.misc.CaseInsensitiveConcurrentHashMap;
 import org.drftpd.common.misc.CaseInsensitiveHashMap;
 import org.drftpd.common.util.ConfigLoader;
+import org.drftpd.common.util.Version;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.commands.CommandManagerInterface;
 import org.drftpd.master.commands.CommandRequestInterface;
@@ -116,7 +117,7 @@ public class SiteBot implements ReplyConstants, Runnable {
     private List<ListenerInterface> _listeners = new ArrayList<>();
 
     // Default settings for the PircBot.
-    private final String _version = "4.0.12-git";
+    private final String _version = Version.getFullVersion();
     private String _nick = null;
     private String _ctcpVersion = "DrFTPD SiteBot ";
     private String _finger = "You ought to be arrested for fingering a bot!";

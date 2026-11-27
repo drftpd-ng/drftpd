@@ -29,6 +29,7 @@ import org.drftpd.common.network.SSLGetContext;
 import org.drftpd.common.slave.SystemInfo;
 import org.drftpd.common.util.PortRange;
 import org.drftpd.common.util.PropertyHelper;
+import org.drftpd.common.util.Version;
 import org.drftpd.master.commands.CommandManagerInterface;
 import org.drftpd.master.config.ConfigInterface;
 import org.drftpd.master.config.ConfigManager;
@@ -74,7 +75,7 @@ import static org.drftpd.common.util.ConfigLoader.configPath;
 
 public class GlobalContext {
 
-    public static final String VERSION = "DrFTPD 4.0.12-git";
+    public static final String VERSION = Version.getDisplay();
     private static final Logger logger = LogManager.getLogger(GlobalContext.class);
     protected static GlobalContext _gctx;
     private static final DirectoryHandle root = new DirectoryHandle(VirtualFileSystem.separator);

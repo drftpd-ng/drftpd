@@ -38,3 +38,14 @@ DrFTPD loads X.conf when it exists and falls back to X.conf.dist otherwise.
   defines the command twice, and the master stops at startup with "already mapped". Remove the
   duplicate definition from your own X.conf to fix it.
 - If you never customised a command file, delete your X.conf so the shipped X.conf.dist is used.
+
+### Login prompt and version (4.0.12 and later)
+
+The version now comes from the build (the root pom <revision> plus the git commit), and the
+login_prompt line in perms.conf.dist uses ${version} instead of a hard-coded version:
+
+    login_prompt ${version} https://github.com/drftpd-ng/drftpd
+
+If you kept your own perms.conf, its login_prompt still shows the old text (for example
+"DrFTPD 4.0.12-git"). Replace the version in that line with ${version} so it always shows the
+running version, for example "DrFTPD 4.0.12 (87d6ba0)".

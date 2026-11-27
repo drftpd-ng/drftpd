@@ -23,6 +23,19 @@ jobs:
         with:
           path: 'drftpd-source'
 
+      # The images are tagged with the git tag, but the code reports <revision> from the root pom.
+      # Refuse to publish when they differ (tag pushed without the version bump, see docs/RELEASING.md).
+      - name: Check the tag matches the version in pom.xml
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          revision=$(grep -m 1 -o '<revision>[^<]*</revision>' drftpd-source/pom.xml | sed -e 's/<[^>]*>//g')
+          if [ "$revision" != "$TAG" ]; then
+            echo "::error::Tag $TAG does not match <revision>$revision</revision> in pom.xml. Set <revision> to $TAG, commit, and tag that commit."
+            exit 1
+          fi
+          echo "Tag $TAG matches <revision> in pom.xml"
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3.11.1
 

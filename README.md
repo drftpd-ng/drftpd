@@ -74,6 +74,8 @@ Maven:
 
 Check generated runtime directory
 
+The version comes from `<revision>` in the root `pom.xml` (or `-Drevision=...`) and the git commit is added when building from a git checkout. See [docs/RELEASING.md](docs/RELEASING.md) for the release procedure.
+
 ### Master
 
 - Copy .dist files to .conf only if you change the settings from config and plugins folders (at least `master.conf`)
