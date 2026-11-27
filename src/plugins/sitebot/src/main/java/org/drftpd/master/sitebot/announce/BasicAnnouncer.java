@@ -67,7 +67,7 @@ public class BasicAnnouncer extends AbstractAnnouncer {
 
     public String[] getEventTypes() {
         return new String[]{"mkdir", "rmdir", "wipe", "addslave",
-                "delslave", "msgslave", "msgmaster", "invite"};
+                "delslave", "msgslave", "slavequota", "msgmaster", "invite"};
     }
 
     public void setResourceBundle(ResourceBundle bundle) {
@@ -108,6 +108,8 @@ public class BasicAnnouncer extends AbstractAnnouncer {
             }
             case "DELSLAVE" -> outputSimpleEvent(ReplacerUtils.jprintf("delslave", env, _bundle), "delslave");
             case "MSGSLAVE" -> outputSimpleEvent(ReplacerUtils.jprintf("msgslave", env, _bundle), "msgslave");
+            case "SLAVEQUOTAWARN" -> outputSimpleEvent(ReplacerUtils.jprintf("slavequota.warn", env, _bundle), "slavequota");
+            case "SLAVEQUOTALIMIT" -> outputSimpleEvent(ReplacerUtils.jprintf("slavequota.limit", env, _bundle), "slavequota");
         }
     }
 
