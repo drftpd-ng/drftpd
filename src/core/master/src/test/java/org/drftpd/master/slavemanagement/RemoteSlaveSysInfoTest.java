@@ -24,11 +24,16 @@ import org.drftpd.slave.network.AsyncResponseSystemInfo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -45,10 +50,18 @@ public class RemoteSlaveSysInfoTest {
         }
 
         volatile boolean _online = true;
+        volatile String _offlineReason;
 
         @Override
         public boolean isOnline() {
             return _online;
+        }
+
+        /** Records the reason instead of tearing down a connection (there is none). */
+        @Override
+        public void setOffline(String reason) {
+            _offlineReason = reason;
+            _online = false;
         }
     }
 
@@ -78,6 +91,34 @@ public class RemoteSlaveSysInfoTest {
     private void waitUntilSent(int count) throws InterruptedException {
         while (_sent.get() < count) {
             Thread.sleep(5);
+        }
+    }
+
+    /** Runs the task on the pool and records the thread that runs it, so the test can see when it blocks. */
+    private static <T> Future<T> submitTracked(ExecutorService pool, AtomicReference<Thread> runner,
+                                               Callable<T> task) {
+        return pool.submit(() -> {
+            runner.set(Thread.currentThread());
+            return task.call();
+        });
+    }
+
+    /**
+     * Waits (bounded) until the tracked thread is parked in a timed wait. The callers under test only park in
+     * {@code _commandMonitor.wait(50)} or in the shared future's timed {@code get}, both after they have read the
+     * connection generation, so a reconnect from now on is one they must notice.
+     */
+    private static void awaitTimedWaiting(AtomicReference<Thread> runner) throws InterruptedException {
+        long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(10);
+        while (true) {
+            Thread t = runner.get();
+            if (t != null && t.getState() == Thread.State.TIMED_WAITING) {
+                return;
+            }
+            if (System.nanoTime() > deadline) {
+                fail("caller did not start waiting within 10 seconds, state " + (t == null ? "not started" : t.getState()));
+            }
+            Thread.sleep(1);
         }
     }
 
@@ -270,5 +311,84 @@ public class RemoteSlaveSysInfoTest {
         _slave.resetIndexes();
         assertEquals(SystemInfoReply.Status.TIMEOUT, _slave.fetchSystemInfo(50, _sender).getStatus());
         assertEquals(2, _sent.get());
+    }
+
+    /** Takes every index from the pool and checks that each of the 256 is there exactly once. */
+    private Set<String> drainPool() throws SlaveUnavailableException {
+        Set<String> indexes = new HashSet<>();
+        for (int i = 0; i < 256; i++) {
+            assertTrue(indexes.add(_slave.fetchIndex()), "index handed out twice");
+        }
+        return indexes;
+    }
+
+    @Test
+    public void testReconnectWithinOneTickDoesNotAbandonIndexOfNewConnection() throws Exception {
+        ExecutorService pool = Executors.newCachedThreadPool();
+        try {
+            Future<SystemInfoReply> caller = pool.submit(() -> _slave.fetchSystemInfo(500, _sender));
+            waitUntilSent(1);
+            String stale = _lastIndex;
+            // the slave drops and comes back between two polls of the waiter: it never sees isOnline() == false
+            _slave.resetIndexes();
+            assertEquals(SystemInfoReply.Status.OFFLINE, caller.get(5, TimeUnit.SECONDS).getStatus());
+
+            // the rebuilt pool is intact and the index is usable again on the new connection: a reply to a
+            // command sent with it is delivered, not discarded as a late sysinfo reply
+            assertTrue(drainPool().contains(stale));
+            assertTrue(_slave.storeResponse(reply(stale)));
+        } finally {
+            pool.shutdownNow();
+        }
+    }
+
+    @Test
+    public void testReconnectWithinOneTickReleasesSharedCallersAndNextRequestGoesOut() throws Exception {
+        ExecutorService pool = Executors.newCachedThreadPool();
+        try {
+            // timeouts far above any scheduling delay: only the reconnect may end these waits
+            Future<SystemInfoReply> first = pool.submit(() -> _slave.fetchSystemInfo(30000, _sender));
+            waitUntilSent(1);
+            AtomicReference<Thread> secondThread = new AtomicReference<>();
+            Future<SystemInfoReply> second = submitTracked(pool, secondThread,
+                    () -> _slave.fetchSystemInfo(30000, _sender));
+            // the second caller has joined the request in flight (it parks in the shared future's get)
+            awaitTimedWaiting(secondThread);
+            _slave.resetIndexes();
+            assertEquals(SystemInfoReply.Status.OFFLINE, first.get(10, TimeUnit.SECONDS).getStatus());
+            assertEquals(SystemInfoReply.Status.OFFLINE, second.get(10, TimeUnit.SECONDS).getStatus());
+
+            // nothing is left pending: the next request is sent on the new connection and answered
+            Future<?> reader = startReader(pool, 2);
+            assertEquals(SystemInfoReply.Status.OK, _slave.fetchSystemInfo(5000, _sender).getStatus());
+            reader.get(5, TimeUnit.SECONDS);
+            assertEquals(2, _sent.get());
+        } finally {
+            pool.shutdownNow();
+        }
+    }
+
+    @Test
+    public void testFetchResponseReconnectWithinOneTick() throws Exception {
+        ExecutorService pool = Executors.newCachedThreadPool();
+        try {
+            String stale = _slave.fetchIndex();
+            AtomicReference<Thread> callerThread = new AtomicReference<>();
+            // without the generation check the caller would wait out this timeout and then put the slave
+            // offline; it is long enough that a slow runner cannot reach it before the reconnect below
+            Future<?> caller = submitTracked(pool, callerThread, () -> _slave.fetchResponse(stale, 5000));
+            // the caller is inside fetchResponse, parked in its 50 ms wait, and has read the generation
+            awaitTimedWaiting(callerThread);
+            _slave.resetIndexes();
+            ExecutionException e = assertThrows(ExecutionException.class, () -> caller.get(10, TimeUnit.SECONDS));
+            assertInstanceOf(SlaveUnavailableException.class, e.getCause());
+            // the new connection is not dropped because the old one's command timed out
+            assertNull(_slave._offlineReason);
+            assertTrue(_slave.isOnline());
+            // and the old index was not pushed into the rebuilt pool a second time
+            assertTrue(drainPool().contains(stale));
+        } finally {
+            pool.shutdownNow();
+        }
     }
 }

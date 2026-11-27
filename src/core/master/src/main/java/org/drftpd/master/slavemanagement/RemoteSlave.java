@@ -104,6 +104,11 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
     // Last successful sysinfo reply, reused for SYSINFO_CACHE_MILLIS. Guarded by _abandonedIndexes.
     private transient SystemInfoReply _sysInfoCache;
     private transient long _sysInfoCacheTime;
+    // Incremented each time the index pool is rebuilt for a new connection (see resetIndexes). A thread waiting for
+    // a reply compares it with the value it saw when it issued its request: if it changed, its index belongs to the
+    // previous connection and must not be abandoned, recycled or matched against the rebuilt pool. Only written
+    // while holding _abandonedIndexes.
+    private transient volatile long _connectionGeneration;
     private transient ObjectInputStream _sin;
     private transient Socket _socket;
     private transient ObjectOutputStream _sout;
@@ -622,6 +627,10 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 
     /** Rebuilds the pool of command indexes and forgets everything that was in flight. */
     void resetIndexes() {
+        synchronized (_abandonedIndexes) {
+            // before rebuilding anything: from now on every waiter of the previous connection leaves our indexes alone
+            _connectionGeneration++;
+        }
         if (_indexPool == null) {
             _indexPool = new LinkedBlockingDeque<>(256);
         } else {
@@ -818,6 +827,9 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
     /** Issues the request and waits for its reply. The caller holds the pending flag and completes the future. */
     private SystemInfoReply requestSystemInfo(long timeoutMillis, SysInfoSender sender) {
         String index;
+        // captured before the index is taken: if a reconnect happens at any point after this, the index may belong
+        // to either pool, so it is left alone
+        long generation = _connectionGeneration;
         try {
             index = sender.send();
         } catch (SlaveUnavailableException e) {
@@ -828,10 +840,10 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
             throw e;
         }
         long deadline = System.currentTimeMillis() + timeoutMillis;
-        while (isOnline() && !_indexWithCommands.containsKey(index)) {
+        while (isOnline() && _connectionGeneration == generation && !_indexWithCommands.containsKey(index)) {
             if (System.currentTimeMillis() >= deadline) {
                 synchronized (_abandonedIndexes) {
-                    if (!_indexWithCommands.containsKey(index)) {
+                    if (_connectionGeneration == generation && !_indexWithCommands.containsKey(index)) {
                         // the reader thread will recycle the index (and clear the pending flag) if the reply
                         // ever arrives
                         _abandonedIndexes.add(index);
@@ -855,13 +867,21 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
                 deadline = 0L;
             }
         }
-        AsyncResponse ar = _indexWithCommands.remove(index);
+        AsyncResponse ar = null;
+        synchronized (_abandonedIndexes) {
+            // a reconnect may have rebuilt the pool, which already holds this index again
+            if (_connectionGeneration == generation) {
+                ar = _indexWithCommands.remove(index);
+                if (ar != null) {
+                    _indexPool.push(index);
+                }
+            }
+        }
         if (ar == null) {
-            // went offline while waiting: the index pool is rebuilt on reconnect
+            // went offline (or reconnected) while waiting: the index pool is rebuilt on reconnect
             clearSysInfoPending();
             return SystemInfoReply.of(SystemInfoReply.Status.OFFLINE, null);
         }
-        _indexPool.push(index);
         SystemInfoReply reply = SystemInfoReply.fromResponse(ar);
         if (reply.getStatus() == SystemInfoReply.Status.ERROR && ar instanceof AsyncResponseException) {
             logger.warn("Slave {} failed to answer sysinfo", getName(), ((AsyncResponseException) ar).getThrowable());
@@ -889,7 +909,19 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
      * @return true if the reply was stored for a waiting caller, false if it was a discarded late reply
      */
     boolean storeResponse(AsyncResponse ar) {
+        return storeResponse(ar, _connectionGeneration);
+    }
+
+    /**
+     * @param generation the connection generation the reply was read on; a reply from a previous connection is
+     *                   dropped, its index is not part of the current pool
+     */
+    boolean storeResponse(AsyncResponse ar, long generation) {
         synchronized (_abandonedIndexes) {
+            if (_connectionGeneration != generation) {
+                logger.debug("Discarding reply {} read on a previous connection", ar.getIndex());
+                return false;
+            }
             if (_abandonedIndexes.remove(ar.getIndex())) {
                 // late reply for a request whose caller gave up waiting: recycle the index
                 logger.debug("Discarding late reply for abandoned index {}", ar.getIndex());
@@ -922,8 +954,10 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
         long total = System.currentTimeMillis();
         long lastUpdate = 0L;
         long reportIdle = 60000L;
+        // the index was issued on the connection of this generation; after a reconnect it belongs to the old pool
+        long generation = _connectionGeneration;
 
-        while (isOnline() && !_indexWithCommands.containsKey(index)) {
+        while (isOnline() && _connectionGeneration == generation && !_indexWithCommands.containsKey(index)) {
             // will wait a maximum of 50 milliseconds before waking up
             // Any longer and we risk slow exchange of commands between master and slave
             try {
@@ -939,7 +973,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
                 // Ignore interupt
             }
 
-            if ((wait != 0) && ((System.currentTimeMillis() - total) >= wait)) {
+            if ((wait != 0) && ((System.currentTimeMillis() - total) >= wait) && _connectionGeneration == generation) {
                 setOffline("Slave has taken too long while waiting for reply " + index);
             }
 
@@ -974,8 +1008,15 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
             throw new SlaveUnavailableException("Slave went offline while processing command");
         }
 
-        AsyncResponse rar = _indexWithCommands.remove(index);
-        _indexPool.push(index);
+        AsyncResponse rar;
+        synchronized (_abandonedIndexes) {
+            if (_connectionGeneration != generation) {
+                // reconnected while waiting: the rebuilt pool already holds this index, do not push it twice
+                throw new SlaveUnavailableException("Slave went offline while processing command");
+            }
+            rar = _indexWithCommands.remove(index);
+            _indexPool.push(index);
+        }
 
         if (rar instanceof AsyncResponseException) {
             Throwable t = ((AsyncResponseException) rar).getThrowable();
@@ -1054,9 +1095,11 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
     public void run() {
         logger.debug("Starting RemoteSlave for {}", getName());
 
+        // the generation of the connection this reader thread was started for
+        long generation = _connectionGeneration;
         try {
             String pingIndex = null;
-            while (isOnline()) {
+            while (isOnline() && _connectionGeneration == generation) {
                 AsyncResponse ar = null;
 
                 try {
@@ -1139,7 +1182,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
                         }
                     }
                     default -> {
-                        if (!storeResponse(ar)) {
+                        if (!storeResponse(ar, generation)) {
                             continue;
                         }
                         if (pingIndex != null && pingIndex.equals(ar.getIndex())) {
@@ -1204,25 +1247,31 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
         _lastRemergeCommandReceived = 0L;
         _remergeQueue.clear();
         _crcQueue.clear();
-        if (_sin != null) {
+        // Read each field once: setOffline can run on several threads at the same time (closing the socket makes
+        // the reader thread fail and call setOffline too), so another caller may null a field between a check
+        // and its use. Closing twice is harmless, a caller that comes after the fields were cleared skips this.
+        ObjectInputStream sin = _sin;
+        if (sin != null) {
             try {
-                _sin.close();
+                sin.close();
             } catch (IOException e) {
             }
             _sin = null;
         }
-        if (_sout != null) {
+        ObjectOutputStream sout = _sout;
+        if (sout != null) {
             try {
-                _sout.flush();
-                _sout.close();
+                sout.flush();
+                sout.close();
             } catch (IOException e) {
             }
             _sout = null;
         }
-        if (_socket != null) {
+        Socket socket = _socket;
+        if (socket != null) {
             setProperty("lastOnline", Long.toString(System.currentTimeMillis()));
             try {
-                _socket.close();
+                socket.close();
             } catch (IOException e) {
             }
             _socket = null;
