@@ -229,6 +229,7 @@ store.path.1.regex=true
 #trafficmanager.def.destination=public
 #trafficmanager.ban.destination=public
 #trafficmanager.kick.destination=public
+#trafficmanager.dual.destination=public
 #trialmanager.grouptop.destination=public
 #trialmanager.toptrial.destination=public
 

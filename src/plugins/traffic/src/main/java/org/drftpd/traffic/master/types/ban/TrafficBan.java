@@ -53,6 +53,17 @@ public class TrafficBan extends TrafficType {
         _kickall = p.getProperty(confnum + ".kickall", "true").trim().equalsIgnoreCase("true");
     }
 
+    /*
+     * Gives the slave a moment to finish the delete before the connection is stopped.
+     */
+    private static void pauseAfterDelete() {
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
     @Override
     public void doAction(User user, FileHandle file, boolean isStor, long minspeed, long speed, long transfered, BaseFtpConnection conn, String slavename) {
         user.getKeyedMap().setObject(UserManagement.BANTIME, new Date(System.currentTimeMillis() + _bantime));
@@ -67,11 +78,7 @@ public class TrafficBan extends TrafficType {
                         connection.abortCommand();
                     }
                     if (doDelete(file)) {
-                        try {
-                            wait(1000);
-                        } catch (InterruptedException e) {
-
-                        }
+                        pauseAfterDelete();
                     }
                     connection.stop();
                 }
@@ -82,11 +89,7 @@ public class TrafficBan extends TrafficType {
                 conn.abortCommand();
             }
             if (doDelete(file)) {
-                try {
-                    wait(1000);
-                } catch (InterruptedException e) {
-
-                }
+                pauseAfterDelete();
             }
             conn.stop();
         }
