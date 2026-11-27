@@ -112,7 +112,7 @@ public class NukeBeans {
             int multiplier = 3;
             long nukedAmount = multiplier * size;
             String reason = "Testing";
-            Map<String, Long> nukees = new Hashtable<>();
+            Map<String, Long> nukees = new HashMap<>();
             nukees.put("test" + i, nukedAmount);
 
             // actual NukeEvent

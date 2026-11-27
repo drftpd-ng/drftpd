@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.drftpd</groupId>
         <artifactId>drftpd-mediainfo</artifactId>
-        <version>4.0.12-SNAPSHOT</version>
+        <version>${revision}</version>
         <relativePath>../</relativePath>
     </parent>
 
@@ -25,6 +25,12 @@
             <groupId>org.mp4parser</groupId>
             <artifactId>isoparser</artifactId>
             <version>1.9.56</version>
+        </dependency>
+        <dependency>
+            <!-- test only: route isoparser's SLF4J logging to log4j instead of the NOP fallback -->
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j2-impl</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

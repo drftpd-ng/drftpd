@@ -178,6 +178,9 @@ public class GroupManagementHandler extends CommandInterface {
      * "#,###" The first number is the section number (0=default section), the
      * second is the number of kilobytes to give. (user's credits are replaced,
      * not added to, with this value) Only one section at a time is supported,
+     * monthly_allotment Same as wkly_allotment, but refilled once a month at the
+     * monthly reset. Syntax: site change user monthly_allotment &lt;bytes&gt;
+     * (0 = off),
      * homedir This will change the user's homedir. NOTE: This command is
      * disabled by default. To enable it, add "min_homedir /site" to your config
      * file, where "/site" is the minimum directory that users can have, i.e.
@@ -642,6 +645,9 @@ public class GroupManagementHandler extends CommandInterface {
         }
 
         Group g = session.getGroupNull(st.nextToken());
+        if (g == null) {
+            return new CommandResponse(500, "Group does not exist");
+        }
         String oldGroup = g.getName();
         String newGroup = st.nextToken();
         Group g2 = session.getGroupNull(newGroup);

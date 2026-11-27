@@ -223,6 +223,7 @@ public class UserManagementHandler extends CommandInterface {
             String maxsimdn = cfg.getProperty("max_downloads", "2");
             String idletime = cfg.getProperty("idle_time", "300");
             String wklyallotment = cfg.getProperty("wkly_allotment", "0");
+            String monthlyallotment = cfg.getProperty("monthly_allotment", "0");
             String credits = cfg.getProperty("credits", "0b");
             String tagline = cfg.getProperty("tagline", "No tagline set.");
             String group = cfg.getProperty("group", "NoGroup");
@@ -243,6 +244,7 @@ public class UserManagementHandler extends CommandInterface {
             int idletimeVal = Integer.parseInt(idletime);
             long creditsVal = Bytes.parseBytes(credits);
             long wklyallotmentVal = Bytes.parseBytes(wklyallotment);
+            long monthlyallotmentVal = Bytes.parseBytes(monthlyallotment);
 
             // Refuse a password the configured hash can't store before the account is created and saved,
             // otherwise a failing setPassword() would leave a saved account without a password
@@ -271,6 +273,7 @@ public class UserManagementHandler extends CommandInterface {
             newUser.getKeyedMap().setObject(UserManagement.MAXSIMUP, maxsimupVal);
             newUser.getKeyedMap().setObject(UserManagement.MAXSIMDN, maxsimdnVal);
             newUser.getKeyedMap().setObject(UserManagement.WKLYALLOTMENT, wklyallotmentVal);
+            newUser.getKeyedMap().setObject(UserManagement.MONTHLYALLOTMENT, monthlyallotmentVal);
 
             newUser.setIdleTime(idletimeVal);
             newUser.setCredits(creditsVal);
@@ -342,6 +345,9 @@ public class UserManagementHandler extends CommandInterface {
      * "#,###" The first number is the section number (0=default section), the
      * second is the number of kilobytes to give. (user's credits are replaced,
      * not added to, with this value) Only one section at a time is supported,
+     * monthly_allotment Same as wkly_allotment, but refilled once a month at the
+     * monthly reset. Syntax: site change user monthly_allotment &lt;bytes&gt;
+     * (0 = off),
      * homedir This will change the user's homedir. NOTE: This command is
      * disabled by default. To enable it, add "min_homedir /site" to your config
      * file, where "/site" is the minimum directory that users can have, i.e.
@@ -703,6 +709,17 @@ public class UserManagementHandler extends CommandInterface {
                             UserManagement.WKLYALLOTMENT), weeklyAllotment);
                     userToChange.getKeyedMap().setObject(UserManagement.WKLYALLOTMENT,
                             weeklyAllotment);
+                    response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
+                }
+                case "monthly_allotment" -> {
+                    if (commandArguments.length != 1) {
+                        throw new ImproperUsageException();
+                    }
+                    long monthlyAllotment = Bytes.parseBytes(commandArguments[0]);
+                    logger.info("'{}' changed monthly_allotment for '{}' from '{}' to {}'", session.getUserNull(request.getUser()).getName(), userToChange.getName(), userToChange.getKeyedMap().getObjectLong(
+                            UserManagement.MONTHLYALLOTMENT), monthlyAllotment);
+                    userToChange.getKeyedMap().setObject(UserManagement.MONTHLYALLOTMENT,
+                            monthlyAllotment);
                     response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
                 }
                 case "tagline" -> {
@@ -1297,6 +1314,68 @@ public class UserManagementHandler extends CommandInterface {
         return response;
     }
 
+    /**
+     * USAGE: site reset &lt;day|week|month|all&gt; &lt;user|=group&gt;
+     * <p>
+     * Zeroes the transfer stats (uploaded/downloaded bytes, files and time) of the given period for a user, or for
+     * every member of a group. "all" resets the day, week and month stats and also the all-time stats. Credits,
+     * ratio and every other user setting are left alone.
+     */
+    public CommandResponse doSITE_RESET(CommandRequest request) throws ImproperUsageException {
+        if (!request.hasArgument()) {
+            throw new ImproperUsageException();
+        }
+
+        String[] args = request.getArgument().trim().split("\\s+");
+        if (args.length != 2) {
+            throw new ImproperUsageException();
+        }
+
+        StatsResetPeriod period = StatsResetPeriod.parse(args[0]);
+        if (period == null) {
+            return new CommandResponse(501, "Unknown period '" + args[0] + "', use day, week, month or all");
+        }
+
+        Session session = request.getSession();
+        UserManager userManager = GlobalContext.getGlobalContext().getUserManager();
+        String target = args[1];
+        Collection<User> users;
+
+        try {
+            if (target.startsWith("=")) {
+                String groupName = target.substring(1);
+                Group g = groupName.isEmpty() ? null : session.getGroupNull(groupName);
+                if (g == null) {
+                    return new CommandResponse(550, "Unknown group");
+                }
+                users = userManager.getAllUsersByGroup(g);
+            } else {
+                users = new ArrayList<>();
+                users.add(userManager.getUserByName(target));
+            }
+        } catch (NoSuchUserException e) {
+            return new CommandResponse(550, "User " + target + " not found");
+        } catch (UserFileException e) {
+            logger.error("Error loading user", e);
+            return new CommandResponse(550, "Error loading user: " + e.getMessage());
+        }
+
+        String admin = request.getUser();
+        CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
+        int done = 0;
+        for (User user : users) {
+            period.reset(user);
+            user.commit();
+            done++;
+            logger.info("'{}' reset {} stats for '{}'", admin, period.lowerName(), user.getName());
+        }
+
+        response.addComment("Reset " + period.lowerName() + " stats for " + done + " user" + (done == 1 ? "" : "s")
+                + " (" + target + ")"
+                + (period == StatsResetPeriod.ALL ? ", including all-time stats" : "") + ".");
+        return response;
+    }
+
     public CommandResponse doSITE_READD(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {
@@ -1715,7 +1794,15 @@ public class UserManagementHandler extends CommandInterface {
             // Not sure about this yet, just log the exception
             logger.warn("Bug?", e);
         }
-        return (ts.getTransfered() * 100) / size;
+        return calculateProgress(ts.getTransfered(), size);
+    }
+
+    static long calculateProgress(long transferred, long size) {
+        if (size <= 0) {
+            // nothing to transfer, so there is nothing left to wait for
+            return 100;
+        }
+        return (transferred * 100) / size;
     }
 
     public CommandResponse doSITE_SWHO(CommandRequest request) {

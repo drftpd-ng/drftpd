@@ -156,6 +156,7 @@ public interface ReplyConstants {
     int RPL_USERS = 393;
     int RPL_ENDOFUSERS = 394;
     int RPL_NOUSERS = 395;
+    int RPL_HOSTHIDDEN = 396;
 
 
     // Reserved Numerics.

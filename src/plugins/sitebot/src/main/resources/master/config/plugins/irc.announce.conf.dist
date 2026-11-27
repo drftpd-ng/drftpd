@@ -229,6 +229,7 @@ store.path.1.regex=true
 #trafficmanager.def.destination=public
 #trafficmanager.ban.destination=public
 #trafficmanager.kick.destination=public
+#trafficmanager.dual.destination=public
 #trialmanager.grouptop.destination=public
 #trialmanager.toptrial.destination=public
 
@@ -257,3 +258,11 @@ store.path.1.regex=true
 #  default channels, uncomment the next line and set them there.
 #autofreespace.destination=public
 
+
+# To announce files rejected or deleted by the zipscript (bad CRC, 0 byte, not in the sfv),
+#  uncomment the next lines and set where they will appear. Not announced unless configured here
+#  (or covered by a default.* entry). Messages are in badfile.announcer.theme.
+#store.bad.path.1=/path/subpath/*
+#store.bad.path.1.destination=public
+#store.bad.section.1=*
+#store.bad.section.1.destination=public

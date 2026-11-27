@@ -27,6 +27,9 @@ import org.drftpd.zipscript.common.sfv.AsyncResponseSFVInfo;
 import org.drftpd.zipscript.common.sfv.SFVInfo;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 
@@ -53,6 +56,34 @@ public class ZipscriptHandler extends AbstractHandler {
         } catch (IOException e) {
             return new AsyncResponseException(ac.getIndex(), e);
         }
+    }
+
+    public AsyncResponse handleWriteSfv(AsyncCommandArgument ac) {
+        try {
+            String[] args = ac.getArgsArray();
+            return new AsyncResponseSFVInfo(ac.getIndex(), writeSFVFile(getSlaveObject(), args[0], args[1]));
+        } catch (IOException e) {
+            return new AsyncResponseException(ac.getIndex(), e);
+        }
+    }
+
+    /**
+     * Creates a new SFV file (never overwrites) in a root holding the parent directory.
+     */
+    private SFVInfo writeSFVFile(Slave slave, String path, String content) throws IOException {
+        int split = path.lastIndexOf('/');
+        File dir = slave.getRoots().getFile(split <= 0 ? "/" : path.substring(0, split));
+        File file = new File(dir, path.substring(split + 1));
+        byte[] bytes = content.getBytes(StandardCharsets.UTF_8);
+        try (OutputStream out = Files.newOutputStream(file.toPath(), StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE)) {
+            out.write(bytes);
+        }
+        CRC32 checksum = new CRC32();
+        checksum.update(bytes);
+        SFVInfo sfvInfo = SFVInfo.importSFVInfoFromFile(new BufferedReader(new StringReader(content)));
+        sfvInfo.setSFVFileName(file.getName());
+        sfvInfo.setChecksum(checksum.getValue());
+        return sfvInfo;
     }
 
     private SFVInfo getSFVFile(Slave slave, String path) throws IOException {

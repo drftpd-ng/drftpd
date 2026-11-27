@@ -1,0 +1,7 @@
+## Announces for files rejected or removed by the zipscript. Announce type: store.bad (opt-in in irc.announce.conf)
+## Available tags: user, group, section, sectioncolor, path (the directory), file, reason, detail
+## detail is free text: the CRCs for a bad CRC, the rule that failed for zipscript.badfile.other
+zipscript.badfile.crc=${color}4${bold}BADCRC${bold}${coloroff} in ${color}${sectioncolor}${bold}${section}${bold}${coloroff}: -> ${bold}${path}${bold}/${bold}${file}${bold} by ${bold}${user}${bold}${color}14${bold}/${bold}${coloroff}${group} - checksum mismatch ${detail}, file deleted.
+zipscript.badfile.zero=${color}4${bold}0BYTE${bold}${coloroff} in ${color}${sectioncolor}${bold}${section}${bold}${coloroff}: -> ${bold}${path}${bold}/${bold}${file}${bold} by ${bold}${user}${bold}${color}14${bold}/${bold}${coloroff}${group} - zero byte file, deleted.
+zipscript.badfile.notinsfv=${color}4${bold}NOTINSFV${bold}${coloroff} in ${color}${sectioncolor}${bold}${section}${bold}${coloroff}: -> ${bold}${path}${bold}/${bold}${file}${bold} by ${bold}${user}${bold}${color}14${bold}/${bold}${coloroff}${group} - file is not in the sfv, upload refused.
+zipscript.badfile.other=${color}4${bold}BADFILE${bold}${coloroff} in ${color}${sectioncolor}${bold}${section}${bold}${coloroff}: -> ${bold}${path}${bold}/${bold}${file}${bold} by ${bold}${user}${bold}${color}14${bold}/${bold}${coloroff}${group} - ${detail}

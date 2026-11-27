@@ -41,7 +41,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Map;
 
 /**
@@ -82,8 +81,19 @@ public class NukeUtils {
         return 0L;
     }
 
+    /**
+     * Kept so that plugins compiled against the old signature still link.
+     *
+     * @deprecated use {@link #getNukeUsers(DirectoryHandle, Map)}
+     */
+    @Deprecated
     public static void getNukeUsers(DirectoryHandle nukeDir,
-                                    Hashtable<String, Long> nukees) throws FileNotFoundException {
+                                    java.util.Hashtable<String, Long> nukees) throws FileNotFoundException {
+        getNukeUsers(nukeDir, (Map<String, Long>) nukees);
+    }
+
+    public static void getNukeUsers(DirectoryHandle nukeDir,
+                                    Map<String, Long> nukees) throws FileNotFoundException {
         for (InodeHandle inode : nukeDir.getInodeHandlesUnchecked()) {
 
             try {
@@ -198,7 +208,7 @@ public class NukeUtils {
             GlobalContext.getGlobalContext().getSlaveManager().cancelTransfersInDirectory(nukeDir);
 
             //get nukees with string as key
-            Hashtable<String, Long> nukees = new Hashtable<>();
+            Map<String, Long> nukees = new HashMap<>();
 
             try {
                 getNukeUsers(nukeDir, nukees);

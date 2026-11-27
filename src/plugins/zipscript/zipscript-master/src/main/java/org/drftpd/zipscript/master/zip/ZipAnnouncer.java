@@ -21,6 +21,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
+import org.drftpd.common.dynamicdata.Key;
+import org.drftpd.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.common.util.Bytes;
 import org.drftpd.common.util.ConfigLoader;
 import org.drftpd.master.GlobalContext;
@@ -39,6 +41,11 @@ import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.master.vfs.InodeHandle;
 import org.drftpd.zipscript.common.zip.DizInfo;
+import org.drftpd.zipscript.master.AnnounceThresholds;
+import org.drftpd.zipscript.master.announce.ReleaseTypes;
+import org.drftpd.zipscript.master.announce.TypeAwareBundle;
+import org.drftpd.zipscript.master.announce.UpdateThrottle;
+import org.drftpd.zipscript.master.RaceNameMasker;
 import org.drftpd.zipscript.master.zip.event.ZipTransferEvent;
 import org.drftpd.zipscript.master.zip.vfs.ZipscriptVFSDataZip;
 
@@ -52,16 +59,20 @@ import java.util.*;
  */
 public class ZipAnnouncer extends AbstractAnnouncer {
 
+    /** Set once halfway has been announced for a release, so it is announced only once. */
+    public static final Key<Boolean> ZIP_HALFWAY = new Key<>(ZipAnnouncer.class, "zip_halfway");
     private static final Logger logger = LogManager.getLogger(ZipAnnouncer.class);
 
     private AnnounceConfig _config;
+
+    private final UpdateThrottle _updateThrottle = new UpdateThrottle();
 
     private ResourceBundle _bundle;
 
 
     public void initialise(AnnounceConfig config, ResourceBundle bundle) {
         _config = config;
-        _bundle = bundle;
+        _bundle = TypeAwareBundle.wrap(bundle);
 
         // Subscribe to events
         AnnotationProcessor.process(this);
@@ -72,12 +83,12 @@ public class ZipAnnouncer extends AbstractAnnouncer {
     }
 
     public String[] getEventTypes() {
-        String[] types = {"pre", "store.complete", "store.first", "store.halfway", "store.race"};
+        String[] types = {"pre", "store.complete", "store.first", "store.halfway", "store.race", "store.update"};
         return types;
     }
 
     public void setResourceBundle(ResourceBundle bundle) {
-        _bundle = bundle;
+        _bundle = TypeAwareBundle.wrap(bundle);
     }
 
     @EventSubscriber
@@ -89,19 +100,27 @@ public class ZipAnnouncer extends AbstractAnnouncer {
 
     @EventSubscriber
     public void onZipTransferEvent(ZipTransferEvent zipEvent) {
-        outputZipSTOR(zipEvent);
+        ReleaseTypes.apply(_bundle, zipEvent.getDirectory(), zipEvent.getTransferFile().getName());
+        try {
+            outputZipSTOR(zipEvent);
+            outputZipUpdate(zipEvent);
+        } finally {
+            TypeAwareBundle.clearTypes();
+        }
     }
 
     private void outputZipSTOR(ZipTransferEvent zipEvent) {
         Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
 
         DirectoryHandle dir = zipEvent.getDirectory();
+        RaceNameMasker masker = RaceNameMasker.load();
+        String maskSection = RaceNameMasker.sectionOf(dir);
 
         if (!zipEvent.getTransferFile().getName().toLowerCase().endsWith(".zip")) {
             return;
         }
 
-        int halfway = (int) Math.floor((double) zipEvent.getDizInfo().getTotal() / 2);
+        int halfway = AnnounceThresholds.halfwayMissing(zipEvent.getDizInfo().getTotal());
 
         try {
             String username = zipEvent.getUser().getName();
@@ -146,11 +165,17 @@ public class ZipAnnouncer extends AbstractAnnouncer {
 
             //COMPLETE
             if (zipEvent.getDizStatus().isFinished()) {
+                dir.removePluginMetaData(ZIP_HALFWAY);
                 AnnounceWriter writer = _config.getPathWriter("store.complete", dir);
                 if (writer != null) {
                     Collection<UploaderPosition> racers = RankUtils.userSort(ZipTools.getZipFiles(dir),
                             "bytes", "high");
                     Collection<GroupPosition> groups = RankUtils.topFileGroup(ZipTools.getZipFiles(dir));
+
+                    if (!AnnounceThresholds.load().completeAllowed(racers::size)) {
+                        // announce.norace=false and only one user uploaded this release
+                        return;
+                    }
 
                     fillEnvSection(env, zipEvent, writer, false);
 
@@ -199,8 +224,8 @@ public class ZipAnnouncer extends AbstractAnnouncer {
 
                         raceenv.put("speed",
                                 Bytes.formatBytes(stat.getXferspeed()) + "/s");
-                        raceenv.put("user", stat.getUsername());
-                        raceenv.put("group", raceuser.getGroup());
+                        raceenv.put("user", masker.user(stat.getUsername(), String.valueOf(raceuser.getGroup()), maskSection));
+                        raceenv.put("group", masker.groupOf(stat.getUsername(), String.valueOf(raceuser.getGroup()), maskSection));
                         raceenv.put("files", "" + stat.getFiles());
                         raceenv.put("size", Bytes.formatBytes(stat.getBytes()));
                         raceenv.put("position", String.valueOf(position));
@@ -245,7 +270,7 @@ public class ZipAnnouncer extends AbstractAnnouncer {
                     for (GroupPosition stat : groups) {
                         Map<String, Object> raceenv = new HashMap<>(env);
 
-                        raceenv.put("group", stat.getGroupname());
+                        raceenv.put("group", masker.group(stat.getGroupname(), maskSection));
                         raceenv.put("position", String.valueOf(position));
                         raceenv.put("size", Bytes.formatBytes(stat.getBytes()));
                         raceenv.put("files", Integer.toString(stat.getFiles()));
@@ -264,8 +289,10 @@ public class ZipAnnouncer extends AbstractAnnouncer {
                 }
 
                 //HALFWAY
-            } else if ((zipEvent.getDizInfo().getTotal() >= 4) &&
-                    (zipEvent.getDizStatus().getMissing() == halfway)) {
+            } else if ((zipEvent.getDizStatus().getMissing() <= halfway) && !halfwayAnnounced(dir) &&
+                    AnnounceThresholds.load().halfwayAllowed(zipEvent.getDizInfo().getTotal(), dir.getSize(),
+                            () -> countRacers(dir))) {
+                dir.addPluginMetaData(ZIP_HALFWAY, true);
                 AnnounceWriter writer = _config.getPathWriter("store.halfway", dir);
                 if (writer != null) {
                     Collection<UploaderPosition> uploaders = RankUtils.userSort(ZipTools.getZipFiles(dir),
@@ -290,8 +317,10 @@ public class ZipAnnouncer extends AbstractAnnouncer {
                     } catch (UserFileException e3) {
                         logger.warn("Error reading userfile for: {}", stat.getUsername(), e3);
                     }
-                    env.put("leaduser", leaduser != null ? leaduser.getName() : stat.getUsername());
-                    env.put("leadgroup", leaduser != null ? leaduser.getGroup() : "");
+                    String leadName = leaduser != null ? leaduser.getName() : stat.getUsername();
+                    String leadGroup = leaduser != null ? String.valueOf(leaduser.getGroup()) : "";
+                    env.put("leaduser", masker.user(leadName, leadGroup, maskSection));
+                    env.put("leadgroup", masker.groupOf(leadName, leadGroup, maskSection));
                     fillEnvSection(env, zipEvent, writer, false);
                     sayOutput(ReplacerUtils.jprintf("zip.store.halfway", env, _bundle), writer);
                 }
@@ -305,6 +334,73 @@ public class ZipAnnouncer extends AbstractAnnouncer {
         }
     }
 
+    private static boolean halfwayAnnounced(DirectoryHandle dir) throws FileNotFoundException {
+        try {
+            dir.getPluginMetaData(ZIP_HALFWAY);
+            return true;
+        } catch (KeyNotFoundException e) {
+            return false;
+        }
+    }
+
+    private void outputZipUpdate(ZipTransferEvent zipEvent) {
+        UpdateThrottle.Settings settings = UpdateThrottle.Settings.fromProperties(
+                ConfigLoader.loadPluginConfig("zipscript.conf"));
+        if (!settings.isEnabled()) {
+            return;
+        }
+        DirectoryHandle dir = zipEvent.getDirectory();
+        int total = zipEvent.getDizInfo().getTotal();
+        int present = total - zipEvent.getDizStatus().getMissing();
+        // FIRST covers the first file, COMPLETE the last one
+        if (!zipEvent.getTransferFile().getName().toLowerCase().endsWith(".zip") || present < 2 || total < 2) {
+            return;
+        }
+        AnnounceWriter writer = _config.getPathWriter("store.update", dir);
+        if (writer == null || !TypeAwareBundle.hasThemeKey(_bundle, "zip.store.update")
+                || !_updateThrottle.isDue(settings, dir.getPath(), present, total, System.currentTimeMillis())) {
+            return;
+        }
+        try {
+            Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
+            fillEnvSection(env, zipEvent, writer, true);
+            env.put("files", Integer.toString(total));
+            env.put("filesdone", Integer.toString(present));
+            env.put("filesleft", Integer.toString(zipEvent.getDizStatus().getMissing()));
+            env.put("percentdone", (present * 100) / total + "%");
+            env.put("racespeed", Bytes.formatBytes(ZipTools.getXferspeed(dir)) + "/s");
+
+            Collection<UploaderPosition> uploaders = RankUtils.userSort(
+                    ZipTools.getZipFiles(dir), "bytes", "high");
+            if (uploaders.isEmpty()) {
+                return;
+            }
+            UploaderPosition stat = uploaders.iterator().next();
+            env.put("leadspeed", Bytes.formatBytes(stat.getXferspeed()) + "/s");
+            env.put("leadfiles", Integer.toString(stat.getFiles()));
+            env.put("leadsize", Bytes.formatBytes(stat.getBytes()));
+            env.put("leadpercent", (stat.getFiles() * 100) / total + "%");
+            User leaduser = null;
+            try {
+                leaduser = GlobalContext.getGlobalContext().getUserManager().getUserByName(stat.getUsername());
+            } catch (NoSuchUserException | UserFileException e) {
+                logger.warn("Unable to look up race leader {}", stat.getUsername(), e);
+            }
+            String leadName = leaduser != null ? leaduser.getName() : stat.getUsername();
+            String leadGroup = leaduser != null ? String.valueOf(leaduser.getGroup()) : "";
+            RaceNameMasker masker = RaceNameMasker.load();
+            String maskSection = RaceNameMasker.sectionOf(dir);
+            env.put("leaduser", masker.user(leadName, leadGroup, maskSection));
+            env.put("leadgroup", masker.groupOf(leadName, leadGroup, maskSection));
+            _updateThrottle.markAnnounced(dir.getPath(), present, total, System.currentTimeMillis());
+            sayOutput(ReplacerUtils.jprintf("zip.store.update", env, _bundle), writer);
+        } catch (FileNotFoundException e) {
+            logger.debug(".zip in {} was deleted, skipping update announce", dir.getPath());
+        } catch (IOException e) {
+            logger.warn("Unable to read .diz info in {}, skipping update announce", dir.getPath(), e);
+        }
+    }
+
     private void outputDirectoryEvent(DirectoryFtpEvent direvent, String type) {
         AnnounceWriter writer = _config.getPathWriter(type, direvent.getDirectory());
         // Check we got a writer back, if it is null do nothing and ignore the event
@@ -315,11 +411,30 @@ public class ZipAnnouncer extends AbstractAnnouncer {
         }
     }
 
+    private int countRacers(DirectoryHandle dir) {
+        try {
+            return RankUtils.userSort(ZipTools.getZipFiles(dir), "bytes", "high").size();
+        } catch (IOException e) {
+            logger.debug("Unable to count racers in {}", dir.getPath(), e);
+            return 0;
+        }
+    }
+
     private void fillEnvSection(Map<String, Object> env,
                                 DirectoryFtpEvent direvent, AnnounceWriter writer, boolean isFile) {
         DirectoryHandle dir = direvent.getDirectory();
-        env.put("user", direvent.getUser().getName());
-        env.put("group", direvent.getUser().getGroup());
+        String uname = direvent.getUser().getName();
+        String ugroup = String.valueOf(direvent.getUser().getGroup());
+        if (direvent instanceof TransferEvent) {
+            // race output, user and group may be hidden
+            RaceNameMasker masker = RaceNameMasker.load();
+            String maskSection = RaceNameMasker.sectionOf(dir);
+            env.put("user", masker.user(uname, ugroup, maskSection));
+            env.put("group", masker.groupOf(uname, ugroup, maskSection));
+        } else {
+            env.put("user", uname);
+            env.put("group", ugroup);
+        }
         env.put("section", writer.getSectionName(dir));
         env.put("sectioncolor", GlobalContext.getGlobalContext().getSectionManager().lookup(dir).getColor());
         env.put("path", writer.getPath(dir));

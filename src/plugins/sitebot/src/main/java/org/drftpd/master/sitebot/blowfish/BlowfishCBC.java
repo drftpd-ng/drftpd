@@ -30,7 +30,9 @@ package org.drftpd.master.sitebot.blowfish;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
+import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
+import java.util.Arrays;
 import java.util.Base64;
 
 /**
@@ -44,8 +46,8 @@ import java.util.Base64;
  * Use "encrypt" with the text to encrypt
  * -> The function will encrypt and return the text with +OK * at the beginning"
  * <p>
- * Use "decrypt" with the text to decrypt
- * -> The text must include the +OK * at the front"
+ * Use "decryptPayload" with the text to decrypt
+ * -> The text must not include the +OK * at the front"
  * <p>
  * To Use Key > 16 char, you must update two jar files in your jre or jdk.
  * Java Cryptography Extension (JCE) Unlimited Strength Jurisdiction Policy Files 8
@@ -56,10 +58,6 @@ import java.util.Base64;
  */
 public class BlowfishCBC extends Blowfish {
 
-    /**
-     * Default charset for encoding
-     */
-    private static final String ENCODED_CHARSET = "ISO_8859_1";
     /**
      * CBC irc prefix
      */
@@ -73,40 +71,48 @@ public class BlowfishCBC extends Blowfish {
         super(key, "Blowfish/CBC/NoPadding");
     }
 
-    public String decrypt(String textToDecrypt) throws Exception {
-        if (textToDecrypt.startsWith(CBC_PREFIX)) {
-            textToDecrypt = textToDecrypt.substring(CBC_PREFIX.length());
-        } else {
-            //Not correct encrypted string, return the source string
-            return textToDecrypt;
+    public DecryptedText decryptPayload(String textToDecrypt) throws Exception {
+        //1- decrypt with BASE64 decoder. A line cut by the server can end in the
+        //   middle of a base64 group, drop what cannot be decoded like FiSH does.
+        //   A cut at the end of a block (for example after 32 characters) leaves whole
+        //   blocks and is not detected.
+        String base64 = textToDecrypt;
+        while (base64.endsWith("=")) {
+            base64 = base64.substring(0, base64.length() - 1);
+        }
+        boolean cut = false;
+        if (base64.length() % 4 == 1) {
+            base64 = base64.substring(0, base64.length() - 1);
+            cut = true;
+        }
+        byte[] base64Decoded = Base64.getDecoder().decode(base64);
+
+        //2- keep whole blocks only
+        int extra = base64Decoded.length % 8;
+        if (extra != 0) {
+            base64Decoded = Arrays.copyOf(base64Decoded, base64Decoded.length - extra);
+            cut = true;
+        }
+        if (base64Decoded.length < 16) {
+            throw new IllegalArgumentException("CBC payload too short");
+        }
+        if (cut) {
+            logger.debug("CBC encrypted line was cut, decrypting the {} complete blocks", base64Decoded.length / 8);
         }
 
-        //1- decrypt with BASE64 decoder
-        byte[] base64Decoded = Base64.getDecoder().decode(textToDecrypt);
-
-        //2- decrypt the string
+        //3- decrypt the string
         IvParameterSpec oIV = new IvParameterSpec(INIT_IV);
         Cipher cipher = initCipher();
         cipher.init(Cipher.DECRYPT_MODE, getSecretKeySpec(), oIV);
         byte[] lDecoded = cipher.doFinal(base64Decoded);
 
-        //3- Find the last 0x0 value in the decrypted string
-        int lFinalIndex = findLast0byte(lDecoded) - 8;
-        if (lFinalIndex <= 0) {
-            lFinalIndex = lDecoded.length - 8;
-        }
-
-        //4- Delete the first 8 byte (IV) and the 0x0 value
-        byte[] lFinalDecoded = new byte[lFinalIndex];
-        System.arraycopy(lDecoded, 8, lFinalDecoded, 0, lFinalIndex);
-
-        //5- Return the formatted String
-        return new String(lFinalDecoded, ENCODED_CHARSET);
+        //4- Delete the first 8 byte (IV) and stop at the padding
+        return new DecryptedText(decodeText(untilFirstZero(lDecoded, 8), cut), cut);
     }
 
     public String encrypt(String rawString) throws Exception {
         //1- Correct the padding
-        byte[] rawStringBytes = rawString.getBytes();
+        byte[] rawStringBytes = rawString.getBytes(StandardCharsets.UTF_8);
         byte[] lToDecrypt = rawStringBytes.length % 8 != 0 ? correctPadding(rawStringBytes) : rawStringBytes;
 
         //2- Load the vector (IV) in front of the string
@@ -154,22 +160,5 @@ public class BlowfishCBC extends Blowfish {
             buff[i] = 0x0;
         }
         return buff;
-    }
-
-    /**
-     * Function that return the last index of 0x0 value in tab byte
-     *
-     * @param data the data to search
-     * @return int
-     */
-    private int findLast0byte(byte[] data) {
-        int lIndex = 0;
-        for (int i = 0; i < data.length; i++) {
-            if (i > 8 && data[i] == 0x0) {
-                lIndex = i;
-                break;
-            }
-        }
-        return lIndex;
     }
 }

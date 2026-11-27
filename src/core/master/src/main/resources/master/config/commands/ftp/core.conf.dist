@@ -420,7 +420,7 @@ perms =gadmin =siteop
 help Change parameters for a user.
 help.specific ${command} <username> <field> <value>
 help.specific Valid fields: group, created, ratio, idle_time, credits, tagline
-help.specific num_logins # [opt perIP], comment, wkly_allotment, max_sim #dn #up
+help.specific num_logins # [opt perIP], comment, wkly_allotment, monthly_allotment, max_sim #dn #up
 help.specific homedir <path|none> (user and group placeholders are expanded at login)
 help.specific homedir is NOT a chroot: the user can still CWD / and go anywhere perms.conf allows
 }
@@ -452,7 +452,7 @@ perms =gadmin =siteop
 help Change parameters for a user.
 help.specific ${command} <username> <field> <value>
 help.specific Valid fields: group, created, ratio, idle_time, credits, tagline
-help.specific num_logins # [opt perIP], comment, wkly_allotment, max_sim #dn #up
+help.specific num_logins # [opt perIP], comment, wkly_allotment, monthly_allotment, max_sim #dn #up
 help.specific homedir <path|none> (user and group placeholders are expanded at login)
 help.specific homedir is NOT a chroot: the user can still CWD / and go anywhere perms.conf allows
 }
@@ -1049,6 +1049,17 @@ method doSITE_RENUSER
 perms =siteop
 help Rename a user.
 help.specific ${command} <old_username> <new_username>
+}
+
+SITE RESET {
+plugin org.drftpd.master.commands.usermanagement
+class UserManagementHandler
+method doSITE_RESET
+perms =siteop
+help Reset the transfer stats of a user or group.
+help.specific ${command} <day|week|month|all> <user|=group>
+help.specific Zeroes uploaded/downloaded bytes, files and time of that period.
+help.specific all also resets the all-time stats. Credits and ratio are not changed.
 }
 
 SITE RULES {

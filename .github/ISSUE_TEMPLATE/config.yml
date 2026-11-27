@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: IRC support
+    url: https://github.com/drftpd-ng/drftpd#support--bug-tracker
+    about: "Ask questions in #drftpd on EFnet (irc.efnet.org, port 6697 with TLS)."
+  - name: Wiki and documentation
+    url: https://github.com/drftpd-ng/drftpd/wiki
+    about: Read the DrFTPD documentation.

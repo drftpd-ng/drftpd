@@ -38,3 +38,115 @@ DrFTPD loads X.conf when it exists and falls back to X.conf.dist otherwise.
   defines the command twice, and the master stops at startup with "already mapped". Remove the
   duplicate definition from your own X.conf to fix it.
 - If you never customised a command file, delete your X.conf so the shipped X.conf.dist is used.
+- SITE RESET (reset the transfer stats of a user or group, siteops only) is a new entry in core.conf.dist.
+  If you have your own core.conf, copy the "SITE RESET" block from
+  src/core/master/src/main/resources/master/config/commands/ftp/core.conf.dist to your
+  config/commands/ftp/core.conf, and the "reset" block from
+  src/core/master/src/main/resources/master/config/commands/irc/core.conf.dist to your
+  config/commands/irc/core.conf. Without it the command is not available.
+
+### Login prompt and version (4.0.12 and later)
+
+The version now comes from the build (the root pom <revision> plus the git commit), and the
+login_prompt line in perms.conf.dist uses ${version} instead of a hard-coded version:
+
+    login_prompt ${version} https://github.com/drftpd-ng/drftpd
+
+If you kept your own perms.conf, its login_prompt still shows the old text (for example
+"DrFTPD 4.0.12-git"). Replace the version in that line with ${version} so it always shows the
+running version, for example "DrFTPD 4.0.12 (87d6ba0)".
+
+### Monthly allotment (monthly_allotment)
+
+Users can have a `monthly_allotment` (SITE CHANGE <user|=group|*> monthly_allotment <bytes>, 0 = off). At the
+monthly reset their credits are replaced with it. The refill only happens when the master is running at the
+month boundary, or when the startup catch-up (processTimeEventsSinceDate) covers it. Users created before this
+key existed read as 0 (off).
+
+### XferLog.DATE_FMT type change
+
+The public field XferLog.DATE_FMT changed type from SimpleDateFormat to DateTimeFormatter.
+Third-party plugins that use it must adapt (for example format with DATE_FMT.format(temporal)
+instead of DATE_FMT.format(date)).
+
+### Log4j 2 master configuration (after 4.0.12)
+
+If you use your own copy of config/log4j2-master.xml (the build copies it to runtime/master/config
+and may not overwrite an edited one), merge these changes into it:
+
+- The commands, vfs and events appenders now archive to commands-, vfs- and events-<date>.log.gz
+  instead of index-<date>.log.gz. They all used the same file name, so their archives overwrote each
+  other. (Old archives were still cleaned up, by the index appender's */index-*.log.gz delete rule.)
+- The logger names for imdb, tvmaze and indexmanager now use the real package names
+  (org.drftpd.imdb.master, org.drftpd.tvmaze.master, org.drftpd.master.commands.indexmanager),
+  and the unused org.drftpd.master.network.BaseFtpConnection.service logger is removed.
+- The org.drftpd.master.commands.usermanagement logger is now at level info, so user and group
+  changes are written to sysop.log. This also covers its sub-packages, so messages from
+  IpSecurityManager and ExpiredUserManager now go to sysop.log too.
+
+### SiteBot DH1080 key exchange
+
+The DH1080 key exchange now follows FiSH 10 (mIRC) for the blowfish mode, see the
+blowfish.dh1080.* comments in irc.conf.dist.
+
+- A DH1080_INIT without a mode token (older FiSH, mircryption, FiSH 10 with dh1080_cbc=0)
+  asks for an ECB key and is now refused unless blowfish.dh1080.ecb=true. Before, the bot
+  answered it but used a CBC key while the client used ECB, so messages did not decrypt.
+  Set blowfish.dh1080.ecb=true if your users have such clients.
+- The bot answers a CBC exchange with "DH1080_FINISH <key> CBC" (upper case) and an ECB
+  exchange with no mode token, as FiSH 10 does.
+- Key exchanges started by the bot now complete. The bot starts one when a user writes to
+  it without a usable key, which includes a key set with SITE SETBLOWFISH in a mode that is
+  disabled in irc.conf (for example an ECB key while blowfish.dh1080.ecb=false). Such a key
+  is then replaced by a DH1080 CBC key, both in the bot and in the user's FiSH client.
+- A client that ignores " CBC" (older fish.py or fishlim versions) answers the bot's
+  DH1080_INIT without a mode token. With blowfish.dh1080.ecb=false the bot refuses that
+  reply with one WARN and starts no new exchange with that nick for 60 seconds.
+
+### SiteBot blowfish and FiSH 10
+
+The sitebot now encrypts and decrypts blowfish text as UTF-8, like FiSH 10 and modern mIRC.
+Incoming lines that are not valid UTF-8 are still read as ISO-8859-1 (legacy clients).
+
+- Accented letters and other non-ASCII text sent to or by the bot now show correctly instead of
+  as mojibake. Before, outgoing text used the JVM default charset (often windows-1252 on Windows)
+  and incoming text was always read as ISO-8859-1.
+- Blowfish keys are now turned into bytes as UTF-8 instead of the JVM default charset. ASCII keys
+  are not affected. A key with non-ASCII characters now gives the same bytes FiSH uses (blow.ini is
+  UTF-8 in modern mIRC); on a JVM whose default charset was not UTF-8 such a key used to give
+  different bytes, so a client that "worked" with it before may need its key set again.
+  irc.conf is read as ISO-8859-1, so write a non-ASCII channel key there with \uXXXX escapes.
+
+The sitebot now handles blowfish lines the way FiSH 10 does:
+
+- The mode is taken from each incoming line: "+OK *" (or "mcps *") is CBC, "+OK " or "mcps "
+  without the "*" is ECB, with the same key. A channel or user key set to ECB now also accepts
+  CBC lines. Replies still use the configured mode.
+- New irc.conf option blowfish.ecb.fallback, default false: when false, ECB lines sent for a key
+  configured as CBC are still ignored, as before. Set it to true to accept them like FiSH does
+  (users who set the key in FiSH without the cbc: prefix send ECB).
+- channel.N.blowkey can be written FiSH style as cbc:<key>: the prefix is removed and the channel
+  uses CBC, whatever channel.N.blowmode says (a warning is logged if it said ecb).
+- SITE SETBLOWFISH / SETKEY accept a cbc: prefix (any case) and store the key as CBC. A key
+  without the prefix is stored as ECB, as before. Note that ECB keys from the userfile are only
+  used when blowfish.dh1080.ecb=true; otherwise a DH1080 exchange is started instead.
+- A line cut by the IRC server is decrypted up to its last complete block and passed to the
+  listeners. A cut line is usually detected and then not run as a command, since its arguments
+  may be cut short. Detection is best effort: a cut that falls exactly at the end of an
+  encrypted block (every 12 characters in ECB, every 10 or 11 characters in CBC) decodes
+  cleanly and is not detected.
+- Text after the first space of an encrypted line (for example a timestamp added by a BNC) is
+  not encrypted and is now dropped.
+- Lines that cannot be decrypted are ignored and logged; the bot no longer treats the text
+  "An error occurred in decryption process" as user input, and no longer sends "An error
+  occurred in encryption process" unencrypted to the channel when encryption fails.
+- ECB output no longer adds a whole block of zero bytes when the text already fills its last
+  block, and its base64 now matches FiSH exactly. FiSH reads both old and new output.
+- Long replies are split to fit line.length.max in bytes for the mode in use, so CBC lines can
+  be longer than before and non-ASCII text no longer goes over the limit.
+
+### SITE RESCAN makesfv needs updated slaves
+
+The makesfv option of SITE RESCAN uses a new writeSfv command in the zipscript protocol. A slave
+that was not updated answers it with an error, and the master reports "Unable to create". Update
+the slaves together with the master if you want to use makesfv. The other options do not need it.

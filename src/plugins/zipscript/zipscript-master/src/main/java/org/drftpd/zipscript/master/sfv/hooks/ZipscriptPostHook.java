@@ -47,7 +47,11 @@ import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.zipscript.common.sfv.SFVInfo;
 import org.drftpd.zipscript.common.sfv.SFVStatus;
+import org.drftpd.zipscript.master.RaceNameMasker;
 import org.drftpd.zipscript.master.sfv.SFVTools;
+import org.drftpd.zipscript.master.sfv.ZipscriptStrictness;
+import org.drftpd.zipscript.master.badfile.BadFileEvent;
+import org.drftpd.zipscript.master.badfile.BadFileReason;
 import org.drftpd.zipscript.master.sfv.event.SFVMemberTransferEvent;
 import org.drftpd.zipscript.master.sfv.vfs.ZipscriptVFSDataSFV;
 
@@ -83,6 +87,12 @@ public class ZipscriptPostHook extends SFVTools {
             transferFile = response.getObject(DataConnectionHandler.TRANSFER_FILE);
         } catch (KeyNotFoundException e) {
             // We don't have a file, we shouldn't have ended up here but return anyway
+            return;
+        }
+
+        if (ZipscriptStrictness.isNoCheckDir(ConfigLoader.loadPluginConfig("zipscript.conf"),
+                transferFile.getParent().getPath())) {
+            // nocheck.dirs: no zipscript checks in this directory
             return;
         }
 
@@ -145,6 +155,12 @@ public class ZipscriptPostHook extends SFVTools {
             return;
         }
 
+        if (ZipscriptStrictness.isNoCheckDir(ConfigLoader.loadPluginConfig("zipscript.conf"),
+                transferFile.getParent().getPath())) {
+            // nocheck.dirs: no zipscript checks in this directory
+            return;
+        }
+
         String transferFileName = transferFile.getName();
         long checksum = response.getObjectLong(DataConnectionHandler.CHECKSUM);
         logger.debug("Running zipscript on stored file {} with CRC of {}", transferFileName, Checksum.formatChecksum(checksum));
@@ -189,6 +205,7 @@ public class ZipscriptPostHook extends SFVTools {
                         // then it should be deleted.
                         logger.debug("0Byte File, Deleting...");
                         response.addComment("0Byte File, Deleting...");
+                        publishBadFile(request, transferFile, BadFileReason.ZERO_BYTE, "");
                         transferFile.deleteUnchecked();
                     } else
                         // The file has checksum = 0, although the size is != 0,
@@ -201,6 +218,8 @@ public class ZipscriptPostHook extends SFVTools {
                             Checksum.formatChecksum(sfvChecksum));
                     response.addComment(" deleting file");
                     response.setMessage("Checksum mismatch, deleting file");
+                    publishBadFile(request, transferFile, BadFileReason.BAD_CRC,
+                            "SLAVE: " + Checksum.formatChecksum(checksum) + " SFV: " + Checksum.formatChecksum(sfvChecksum));
                     transferFile.deleteUnchecked();
                 }
             } catch (NoAvailableSlaveException | SlaveUnavailableException e) {
@@ -218,6 +237,14 @@ public class ZipscriptPostHook extends SFVTools {
             // An .sfv was uploaded: files uploaded before it were never checked against it
             checkFilesUploadedBeforeSFV(transferFile, response);
         }
+    }
+
+    /**
+     * Announce a file that is about to be deleted by the zipscript, see {@link BadFileEvent}.
+     */
+    private void publishBadFile(CommandRequest request, FileHandle file, BadFileReason reason, String detail) {
+        GlobalContext.getEventService().publishAsync(
+                new BadFileEvent(request.getUser(), file.getParent(), file.getName(), reason, detail));
     }
 
     /**
@@ -252,6 +279,9 @@ public class ZipscriptPostHook extends SFVTools {
                     // The uploader got credits and stats for this file when it was uploaded, take them back
                     GlobalContext.getEventService().publish(new UploadRevokedEvent(dir, file.getName(),
                             file.getUsername(), file.getSize(), file.getXfertime(), file.lastModified()));
+                    GlobalContext.getEventService().publishAsync(new BadFileEvent(file.getUsername(), dir,
+                            file.getName(), BadFileReason.BAD_CRC,
+                            "SLAVE: " + slaveChecksum + " SFV: " + expectedChecksum));
                     file.deleteUnchecked();
                 } catch (FileNotFoundException e) {
                     // Already deleted, nothing to do
@@ -322,6 +352,9 @@ public class ZipscriptPostHook extends SFVTools {
                     "bytes", "high");
             Collection<GroupPosition> groups = RankUtils.topFileGroup(getSFVFiles(dir, sfvData));
 
+            RaceNameMasker masker = RaceNameMasker.load();
+            String maskSection = RaceNameMasker.sectionOf(dir);
+
             String racerline = _bundle.getString("cwd.racers.body");
             String groupline = _bundle.getString("cwd.groups.body");
 
@@ -353,8 +386,8 @@ public class ZipscriptPostHook extends SFVTools {
 
                 Map<String, Object> raceenv = new HashMap<>();
                 raceenv.put("speed", Bytes.formatBytes(stat.getXferspeed()) + "/s");
-                raceenv.put("user", stat.getUsername());
-                raceenv.put("group", raceuser.getGroup());
+                raceenv.put("user", masker.user(stat.getUsername(), String.valueOf(raceuser.getGroup()), maskSection));
+                raceenv.put("group", masker.groupOf(stat.getUsername(), String.valueOf(raceuser.getGroup()), maskSection));
                 raceenv.put("files", "" + stat.getFiles());
                 raceenv.put("bytes", Bytes.formatBytes(stat.getBytes()));
                 raceenv.put("position", String.valueOf(position));
@@ -375,7 +408,7 @@ public class ZipscriptPostHook extends SFVTools {
 
             for (GroupPosition stat : groups) {
                 Map<String, Object> raceenv = new HashMap<>();
-                raceenv.put("group", stat.getGroupname());
+                raceenv.put("group", masker.group(stat.getGroupname(), maskSection));
                 raceenv.put("position", String.valueOf(position));
                 raceenv.put("bytes", Bytes.formatBytes(stat.getBytes()));
                 raceenv.put("files", Integer.toString(stat.getFiles()));

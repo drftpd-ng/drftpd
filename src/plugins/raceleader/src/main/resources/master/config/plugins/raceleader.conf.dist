@@ -1,0 +1,18 @@
+###########################
+## New Race Leader Settings ##
+####################################################################################################
+
+# Minutes a release is remembered for new race leader announces.
+# After this time without the release finishing, the next upload starts tracking it again.
+# Read when the plugin starts, reload the plugin after changing it.
+# Default: [30]
+newleader.expire=30
+
+# Minimum number of files a user must be ahead of the previous leader to be announced as the new
+# leader. 0 = announce every change of leader.
+# Default: [0]
+newleader.files.ahead=0
+
+# Minimum size in MB the new leader must have uploaded to the release, 0 = no limit.
+# Default: [0]
+newleader.min.size=0

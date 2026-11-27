@@ -23,3 +23,4 @@ Sections used so far: Summary (Status, Addresses, Scope), Motivation, Background
 | [0003](0003-ftp-client-certificate-auth.md) | FTP client certificate authentication | [#136](https://github.com/drftpd-ng/drftpd/issues/136) | Draft |
 | [0004](0004-srrdb-plugin.md) | srrDB plugin (building SRR files for releases) | [#137](https://github.com/drftpd-ng/drftpd/issues/137) | Draft |
 | [0005](0005-sorted-symlink-views.md) | Sorted symlink views (genre, year, group, …) | [#67](https://github.com/drftpd-ng/drftpd/issues/67) | Draft |
+| [0006](0006-pzs-ng-parity.md) | Feature parity with pzs-ng (gap analysis) | [#67](https://github.com/drftpd-ng/drftpd/issues/67) (related) | Draft |

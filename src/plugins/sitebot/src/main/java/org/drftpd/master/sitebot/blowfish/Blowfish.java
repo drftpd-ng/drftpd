@@ -33,8 +33,16 @@
  */
 package org.drftpd.master.sitebot.blowfish;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
+import java.nio.ByteBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.CodingErrorAction;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 /**
  * Blowfish abstract class
@@ -43,6 +51,7 @@ import javax.crypto.spec.SecretKeySpec;
  */
 public abstract class Blowfish {
 
+    static final Logger logger = LogManager.getLogger(Blowfish.class);
 
     /**
      * secretKeySpec for crypto
@@ -57,18 +66,20 @@ public abstract class Blowfish {
      * @param mode the blowfish encryption mode
      */
     protected Blowfish(String key, String mode) {
-        secretKeySpec = new SecretKeySpec(key.getBytes(), "Blowfish");
+        // FiSH uses the key bytes as stored in blow.ini, which modern mIRC writes as UTF-8
+        secretKeySpec = new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), "Blowfish");
         this.mode = mode;
     }
 
     /**
-     * Decrypt the string
+     * Decrypt the payload of an encrypted line
      *
-     * @param encryptedString the string to decrypt
-     * @return String the decrypted string
+     * @param payload the encrypted text without the "+OK " / "mcps " prefix
+     *                (and without the "*" CBC marker)
+     * @return the decrypted text, usually flagged when the line was cut (see {@link DecryptedText})
      * @throws Exception if any error occurred
      */
-    public abstract String decrypt(String encryptedString) throws Exception;
+    public abstract DecryptedText decryptPayload(String payload) throws Exception;
 
     /**
      * Encrypt the string
@@ -78,6 +89,68 @@ public abstract class Blowfish {
      * @throws Exception if any error occurred
      */
     public abstract String encrypt(String rawString) throws Exception;
+
+    /**
+     * Turn decrypted bytes into text. FiSH and mIRC send UTF-8, but older clients
+     * may still send legacy 8-bit text, so fall back to ISO-8859-1 when the bytes
+     * are not valid UTF-8.
+     *
+     * @param data the decrypted plaintext bytes (without padding)
+     * @param cut  true if the line was cut, a multibyte UTF-8 character may then
+     *             have lost its last bytes and is dropped
+     * @return String the decoded text
+     */
+    static String decodeText(byte[] data, boolean cut) {
+        String text = decodeUtf8(data);
+        if (text == null && cut) {
+            // Only drop a broken last character if the rest is UTF-8, a legacy
+            // ISO-8859-1 line keeps its last byte
+            text = decodeUtf8(dropIncompleteUtf8Tail(data));
+        }
+        return text != null ? text : new String(data, StandardCharsets.ISO_8859_1);
+    }
+
+    private static String decodeUtf8(byte[] data) {
+        try {
+            return StandardCharsets.UTF_8.newDecoder()
+                    .onMalformedInput(CodingErrorAction.REPORT)
+                    .onUnmappableCharacter(CodingErrorAction.REPORT)
+                    .decode(ByteBuffer.wrap(data))
+                    .toString();
+        } catch (CharacterCodingException e) {
+            return null;
+        }
+    }
+
+    /**
+     * Remove a UTF-8 sequence that was started but not finished at the end of the data.
+     */
+    private static byte[] dropIncompleteUtf8Tail(byte[] data) {
+        for (int back = 1; back <= 3 && back <= data.length; back++) {
+            int b = data[data.length - back] & 0xFF;
+            if ((b & 0xC0) == 0x80) {
+                // continuation byte, keep looking for the lead byte
+                continue;
+            }
+            int needed = (b & 0xE0) == 0xC0 ? 2 : (b & 0xF0) == 0xE0 ? 3 : (b & 0xF8) == 0xF0 ? 4 : 1;
+            if (needed > back) {
+                return Arrays.copyOf(data, data.length - back);
+            }
+            break;
+        }
+        return data;
+    }
+
+    /**
+     * Plaintext up to the first 0x0 byte (the padding)
+     */
+    static byte[] untilFirstZero(byte[] data, int from) {
+        int end = from;
+        while (end < data.length && data[end] != 0x0) {
+            end++;
+        }
+        return Arrays.copyOfRange(data, from, end);
+    }
 
     /**
      * secretKeySpec getter

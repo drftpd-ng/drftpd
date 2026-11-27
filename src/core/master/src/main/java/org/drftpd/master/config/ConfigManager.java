@@ -24,6 +24,7 @@ import org.drftpd.common.dynamicdata.KeyedMap;
 import org.drftpd.common.util.ConfigLoader;
 import org.drftpd.common.util.PortRange;
 import org.drftpd.common.util.SSLConfigParser;
+import org.drftpd.common.util.Version;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.permissions.ExtendedPermissions;
 import org.drftpd.master.permissions.PathPermission;
@@ -41,6 +42,7 @@ import java.io.LineNumberReader;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Handles the loading of 'config/master.conf' and 'config/perms.conf'<br>
@@ -56,8 +58,8 @@ public class ConfigManager implements ConfigInterface {
     private static final File permsFile = ConfigLoader.loadConfigFile("perms.conf", false);
     private static final String masterConfigFile = "master.conf";
 
-    private static final Key<Hashtable<String, ArrayList<PathPermission>>> PATHPERMS = new Key<>(ConfigManager.class, "pathPerms");
-    private static final Key<Hashtable<String, Permission>> PERMS = new Key<>(ConfigManager.class, "perms");
+    private static final Key<Map<String, ArrayList<PathPermission>>> PATHPERMS = new Key<>(ConfigManager.class, "pathPerms");
+    private static final Key<Map<String, Permission>> PERMS = new Key<>(ConfigManager.class, "perms");
 
     private String hideInStats = "";
 
@@ -173,15 +175,15 @@ public class ConfigManager implements ConfigInterface {
     private void initializeKeyedMap() {
         _keyedMap = new KeyedMap<>();
 
-        _keyedMap.setObject(PATHPERMS, new Hashtable<>());
-        _keyedMap.setObject(PERMS, new Hashtable<>());
+        _keyedMap.setObject(PATHPERMS, new ConcurrentHashMap<>());
+        _keyedMap.setObject(PERMS, new ConcurrentHashMap<>());
     }
 
-    private Hashtable<String, ArrayList<PathPermission>> getPathPermsMap() {
+    private Map<String, ArrayList<PathPermission>> getPathPermsMap() {
         return _keyedMap.getObject(PATHPERMS, null);
     }
 
-    private Hashtable<String, Permission> getPermissionsMap() {
+    private Map<String, Permission> getPermissionsMap() {
         return _keyedMap.getObject(PERMS, null);
     }
 
@@ -213,7 +215,7 @@ public class ConfigManager implements ConfigInterface {
                  */
 
                 switch (drct) {
-                    case "login_prompt" -> _loginPrompt = line.substring("login_prompt".length()).trim();
+                    case "login_prompt" -> _loginPrompt = Version.expandPlaceholder(line.substring("login_prompt".length()).trim());
                     case "max_users" -> {
                         _maxUsersTotal = Integer.parseInt(st.nextToken());
                         _maxUsersExempt = Integer.parseInt(st.nextToken());

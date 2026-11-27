@@ -71,6 +71,23 @@ sfvdeny.subdir.include=.*(?i)(cd[1-9]|dvd[1-9]|dis(c|k)[1-9]).*
 # List of sections/dirs to exclude when searching for deny sfv upload (regex).
 sfvdeny.subdir.exclude=.*(?i)(SPEEDTEST|REQUESTS|STAFF|PRE).*
 
+# Deny the upload of a second .nfo in a directory that already has one.
+# Default: [false]
+nfo.deny.second=false
+
+# Deny the upload of an .nfo in a directory that already contains .zip files
+# (zip releases). An .nfo uploaded before the first .zip is not affected.
+# Default: [false]
+nfo.deny.zipdir=false
+
+# Directories where the zipscript checks are skipped entirely: uploads are not
+# denied by the sfv/nfo checks and are not checked against the sfv or for
+# zip integrity. Space separated globs matched against the directory path
+# (with a trailing slash, case-insensitive), e.g. /REQUESTS/* /PRE/*/Sample/
+# An invalid glob is skipped and logged as a warning.
+# Default: [] (check everywhere)
+nocheck.dirs=
+
 # Check integrity of .zip files on upload.
 # Default: [true]
 stor.zip.integrity.check.enabled=true
@@ -104,3 +121,127 @@ irc.zip.maxgroups=10
 cwd.flacinfo.enabled=true
 stor.flacinfo.enabled=true
 
+
+# Release rules ('downloadinc' and 'deletecomplete' in perms.conf)
+# These are configured in perms.conf, see the notes there. 'deletecomplete' protects what is INSIDE
+# a complete release (its files and subdirectories). The release directory itself is not blocked:
+# SITE WIPE /TV/Release on a whole complete release is still allowed, as it checks the parent
+# of the path you give it.
+
+# Race announce thresholds (SFV and zip releases)
+# The halfway announce is made once 50% of the files listed by the SFV (or .diz) are present
+# (rounded down: 7 files -> after 4 are in, 10 files -> after 5 are in).
+# Minimum number of files the SFV (or .diz) must list for a halfway announce.
+# Default: [4]
+halfway.min.files=4
+
+# Minimum size in MB of what has been uploaded to the release for a halfway announce, 0 = no limit.
+# This is the size of the whole directory, so every file in it counts (nfo, sample files and so on),
+# not just the files listed by the SFV (or .diz).
+# Default: [0]
+halfway.min.size=0
+
+# Announce halfway and complete for releases that only one user uploaded.
+# Set to false to only announce them for races (2 or more users).
+# Default: [true]
+announce.norace=true
+
+# Banned file names (opt-in, off while empty). Uploads (STOR) whose file name matches one of these
+# patterns are refused with "553 Requested action not taken. File name is not allowed on this site."
+# Comma separated globs (* ? [..], same syntax as perms.conf), matched case-insensitively against the
+# complete file name only (not the path). Unlike a shell, * also matches a leading dot, so ".*" bans
+# dotfiles. Spaces inside a pattern are literal, only commas separate patterns.
+# Note: perms.conf can already deny uploads by path/name ("upload /*.url !*" or
+# "uploadex (?i)\.(url|lnk)$ !*"), but it only answers with a generic permission denied and has no
+# per-section replacement list.
+# Note: the nocheck.dirs option (directories where the zipscript checks are skipped) does not apply to
+# this hook; use the per-directory overrides below to exempt a directory.
+# Changes are picked up on SITE RELOAD. Invalid globs are skipped and logged as a warning.
+# Default: [] (disabled)
+#banned.filenames=*.url,*.lnk,*.scr,*.bat,*.cmd,*.exe,*.pif,thumbs.db,desktop.ini,.*
+
+# Optional per-directory overrides, numbered from 1 without gaps. If the upload directory matches
+# .path (glob, case-insensitive, e.g. /PRE/* or /MP3/*), the .patterns list REPLACES banned.filenames
+# for that directory (an empty list bans nothing there). The first matching override wins.
+#banned.filenames.override.1.path=/PRE/*
+#banned.filenames.override.1.patterns=*.url,*.lnk
+#banned.filenames.override.2.path=/REQUESTS/*
+#banned.filenames.override.2.patterns=
+
+# Audio rules per section (MP3, and FLAC for genre/year only). Off by default.
+# Replace SECTION by the section name as in sections.conf. Only the first audio
+# file of a release is checked. Lists are comma separated, matching is case
+# insensitive. A file without a tag value never matches an allowed.* list.
+#
+# Limitation: the check only runs for the upload that leaves exactly one file of
+# its type (.mp3 or .flac) in the directory. Two files of a release uploaded at
+# the same time both see a count of 2 and are not checked, and a bad file
+# uploaded after the first one is not checked either.
+#
+# Enable the rules for the section.
+# SECTION.audio.enabled=true
+#
+# warn   = only tell the uploader (the release is kept).
+# delete = remove the whole release directory (the directory directly below the
+#          section, never anything outside of it). Default: [warn]
+# SECTION.audio.action=warn
+#
+# Reject these genres.
+# SECTION.audio.banned.genres=Rap, Hip-Hop
+#
+# Reject every genre not in this list.
+# SECTION.audio.allowed.genres=Rock, Pop
+#
+# Allowed years or year ranges.
+# SECTION.audio.allowed.years=1990-1999, 2005
+#
+# Allowed CBR bitrates in kbit/s (VBR files are not checked, MP3 only).
+# SECTION.audio.allowed.bitrates=192, 256, 320
+
+# Per-release-type announce themes (opt-in).
+# When true, the sfv.* and zip.* announce keys in the irc theme are first looked up with a
+#  release type suffix and fall back to the plain key when no such key exists, e.g.
+#  sfv.store.complete.mp3.vbr -> sfv.store.complete.mp3 -> sfv.store.complete.audio -> sfv.store.complete
+# Types: mp3.cbr, mp3.vbr, mp3, flac, audio, rar, video, zip
+#  (the type is taken from the file that was just uploaded; mp3.cbr/mp3.vbr come from the MP3 info)
+# With no suffixed keys in the theme, output is identical to leaving this off.
+# Default: [false]
+irc.themes.bytype=false
+
+# UPDATE announce during long races (opt-in, off by default).
+# An UPDATE line (announce type store.update, theme key sfv.store.update / zip.store.update) is
+#  announced when a release gets another N files (irc.update.files) and/or another N percent
+#  (irc.update.percent) closer to completion since the last UPDATE, but never more often than once
+#  per irc.update.interval seconds per release. Set a value to 0 to disable that trigger; with
+#  both at 0 no UPDATE is ever announced. The first file (FIRST) and the last (COMPLETE) are
+#  not announced as UPDATE.
+# Like other announce types it can be routed in irc.announce.conf (store.update.path.N / .section.N),
+#  otherwise it goes to the default channels.
+# Default: [0][0][60]
+irc.update.files=0
+irc.update.percent=0
+irc.update.interval=60
+
+# Hide user and group names in race output: the race, halfway, complete and
+# new race leader announces on IRC and the race stats shown on CWD and STOR.
+# Default: [false] (names are shown as they are)
+hideuser.enabled=false
+
+# Members of these groups are shown as the placeholder instead of their name,
+# and the groups themselves are shown as the group placeholder in the group stats.
+# Only the user's primary group is matched, not secondary groups.
+# Space or comma separated, not case sensitive.
+hideuser.groups=
+
+# These users are shown as the placeholder instead of their name (and so is the
+# group shown next to them).
+hideuser.users=
+
+# Only hide names for releases in these sections (section names, space or comma
+# separated). Leave empty to hide them in every section.
+hideuser.sections=
+
+# What a hidden user is shown as, and a hidden group (empty: same as the user placeholder).
+# Default: [Anonymous]
+hideuser.placeholder=Anonymous
+hideuser.group.placeholder=

@@ -47,6 +47,30 @@
 # x.linkname=(no-nfo)-${dirname}                                                                   #
 # x.addparentdir=^(?i)(((cd|dvd|dis[ck])[1-9])|sample|subs|rarfix)$                                #
 #                                                                                                  #
+# No Sample:                                                                                       #
+#                                                                                                  #
+# This will find all directories that contain files but no Sample subdirectory and place a link    #
+#  to said directory in /_NO_SAMPLE_. Opt-in: nothing happens without this entry.                  #
+# The link is added when files are uploaded to a directory and removed as soon as a Sample         #
+#  directory is created in it (or the directory is deleted/renamed, see x.deleteon).               #
+#  The link is only re-evaluated on the next upload or MKD in that directory: renaming a directory #
+#  to or from Sample does not update it until then.                                                #
+# Uploading into a Sample directory itself never creates a link for it.                            #
+# Use x.exclude to skip directories (CD1, Subs, ...) and x.sectionexclude to skip sections.        #
+#                                                                                                  #
+# x.samplename = (optional) Regex matched against the whole name of a subdirectory to decide       #
+#  whether it is a Sample directory. Default: (?i)sample                                           #
+#                                                                                                  #
+# x.type=NOSAMPLE                                                                                  #
+# x.dirname=/_NO_SAMPLE_                                                                           #
+# x.section=*                                                                                      #
+# x.exclude=^/(.*)/(?i)(((cd|dvd|dis[ck])[1-9])|sample|subs|rarfix)$                               #
+# x.sectionexclude=^(?i)(pre|staff|speedtests)$                                                    #
+# x.deleteon=*                                                                                     #
+# x.linkname=(no-sample)-${dirname}                                                                #
+# x.samplename=(?i)sample                                                                          #
+# x.addparentdir=^(?i)(((cd|dvd|dis[ck])[1-9])|sample|subs|rarfix)$                                #
+#                                                                                                  #
 # SFV Incomplete:                                                                                  #
 #                                                                                                  #
 # This will find all directories that are incomplete and not Excluded                              #
