@@ -954,6 +954,19 @@ input all
 output source
 }
 
+reset {
+plugin org.drftpd.master.commands.usermanagement
+class UserManagementHandler
+method doSITE_RESET
+perms =siteop
+help Reset the transfer stats of a user or group.
+help.specific ${command} <day|week|month|all> <user|=group>
+help.specific Zeroes uploaded/downloaded bytes, files and time of that period.
+help.specific all also resets the all-time stats. Credits and ratio are not changed.
+input all
+output source
+}
+
 rules {
 plugin org.drftpd.master.commands.textoutput
 class Textoutput
