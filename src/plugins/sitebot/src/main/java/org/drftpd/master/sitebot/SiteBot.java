@@ -31,6 +31,7 @@ import org.drftpd.master.commands.CommandRequestInterface;
 import org.drftpd.master.commands.CommandResponseInterface;
 import org.drftpd.master.event.ReloadEvent;
 import org.drftpd.master.exceptions.FatalException;
+import org.drftpd.master.sitebot.blowfish.DecryptedText;
 import org.drftpd.master.sitebot.config.AnnounceConfig;
 import org.drftpd.master.sitebot.config.ChannelConfig;
 import org.drftpd.master.sitebot.config.ServerConfig;
@@ -120,7 +121,7 @@ public class SiteBot implements ReplyConstants, Runnable {
     private String _nick = null;
     private String _ctcpVersion = "DrFTPD SiteBot ";
     private String _finger = "You ought to be arrested for fingering a bot!";
-    private String _hostMask = null;
+    private volatile String _hostMask = null;
     private boolean _isTerminated = false;
     private boolean _userDisconnected = false;
 
@@ -222,6 +223,27 @@ public class SiteBot implements ReplyConstants, Runnable {
      * every nick cannot keep the bot in a loop.
      */
     static final int MAX_AUTONICK_TRIES = 50;
+
+    /**
+     * Returns our host mask after a 396 reply ("<nick> <host> :is now your displayed host",
+     * some servers send "<user>@<host>"), or null if the reply or the current mask cannot be read.
+     */
+    static String hostMaskAfterHostHidden(String hostMask, String response) {
+        if (hostMask == null || response == null) {
+            return null;
+        }
+        String[] parts = response.split(" ");
+        int at = hostMask.indexOf('@');
+        if (parts.length < 2 || parts[1].isEmpty() || parts[1].startsWith(":") || at < 0) {
+            return null;
+        }
+        String host = parts[1];
+        if (host.contains("@")) {
+            int bang = hostMask.indexOf('!');
+            return bang < 0 ? null : hostMask.substring(0, bang + 1) + host;
+        }
+        return hostMask.substring(0, at + 1) + host;
+    }
 
     /**
      * Returns the nick the server says is in use, from a 433 reply
@@ -1216,7 +1238,7 @@ public class SiteBot implements ReplyConstants, Runnable {
                             chan.getName());
                     break;
                 }
-                cipher = new BlowfishManager(chan.getBlowKey(), chan.getBlowMode());
+                cipher = new BlowfishManager(chan.getBlowKey(), chan.getBlowMode(), _config.getBlowfishEcbFallback());
                 _ciphers.put(chan.getName(), cipher);
             }
             _writers.put(chan.getName(), new OutputWriter(this, chan.getName(), cipher));
@@ -1337,6 +1359,14 @@ public class SiteBot implements ReplyConstants, Runnable {
             String channel = response.substring(response.indexOf(' ') + 1, response.indexOf(" :"));
             IrcUser[] users = this.getUsers(channel);
             this.onUserList(channel, users);
+        } else if (code == RPL_HOSTHIDDEN) {
+            // Our displayed host changed (for example a cloak set after identifying), the
+            // output writers size their lines from our host mask
+            String hostMask = hostMaskAfterHostHidden(getHostMask(), response);
+            if (hostMask != null) {
+                logger.debug("Our host mask is now {}", hostMask);
+                setHostMask(hostMask);
+            }
         } else if (code == RPL_BOUNCE) {
             int start = response.indexOf("PREFIX") + 7;
             // if this is not found, then the defaults set in the constructor are used
@@ -1448,6 +1478,7 @@ public class SiteBot implements ReplyConstants, Runnable {
      * @param message  The actual message sent to the channel.
      */
     protected void onMessage(String channel, String sender, String login, String hostname, String message) {
+        boolean cut = false;
         if (_config.getBlowfishEnabled()) {
             if (message.startsWith("+OK ") || message.startsWith("mcps ")) {
                 BlowfishManager chanCipher = _ciphers.get(channel);
@@ -1457,7 +1488,12 @@ public class SiteBot implements ReplyConstants, Runnable {
                     return;
                 }
                 logger.debug("Encrypted message: {}", message);
-                message = chanCipher.decrypt(message);
+                DecryptedText decrypted = chanCipher.decryptLine(message);
+                if (decrypted == null) {
+                    return;
+                }
+                message = decrypted.text();
+                cut = decrypted.cut();
                 logger.debug("Decrypted message: {}", message);
             } else {
                 // means we got an unencrypted line from a chan that should be encrypted
@@ -1467,9 +1503,15 @@ public class SiteBot implements ReplyConstants, Runnable {
                 return;
             }
         }
-        // Check if the message is a command we should respond to
+        // Check if the message is a command we should respond to, a cut line could
+        // run a command with missing arguments. Cut detection is best effort (a cut on
+        // a block boundary is not seen), so this usually, not always, stops such a command.
         if (message.startsWith(_config.getCommandTrigger())) {
-            handleCommand(channel, sender, sender + "!" + login + "@" + hostname, message, true);
+            if (cut) {
+                logger.debug("Not running command from {} in {}, the encrypted line was cut", sender, channel);
+            } else {
+                handleCommand(channel, sender, sender + "!" + login + "@" + hostname, message, true);
+            }
         }
 
         sendtoListener(channel, sender, sender + "!" + login + "@" + hostname, message);
@@ -1487,6 +1529,7 @@ public class SiteBot implements ReplyConstants, Runnable {
      * @param message  The actual message.
      */
     protected void onPrivateMessage(String sender, String login, String hostname, String message) {
+        boolean cut = false;
         if (_config.getBlowfishEnabled()) {
             if (message.startsWith("+OK ") || message.startsWith("mcps ")) {
                 BlowfishManager cipher = getUserDetails(sender, sender + "!" + login + "@" + hostname).getBlowCipher();
@@ -1499,7 +1542,12 @@ public class SiteBot implements ReplyConstants, Runnable {
                      */
                     return;
                 }
-                message = cipher.decrypt(message);
+                DecryptedText decrypted = cipher.decryptLine(message);
+                if (decrypted == null) {
+                    return;
+                }
+                message = decrypted.text();
+                cut = decrypted.cut();
             } else {
                 if (_users.containsKey(sender)) {
                     StringBuilder reply = new StringBuilder("Use site command ");
@@ -1516,9 +1564,15 @@ public class SiteBot implements ReplyConstants, Runnable {
                 return;
             }
         }
-        // Check if the message is a command we should respond to
+        // Check if the message is a command we should respond to, a cut line could
+        // run a command with missing arguments. Cut detection is best effort (a cut on
+        // a block boundary is not seen), so this usually, not always, stops such a command.
         if (message.startsWith(_config.getCommandTrigger())) {
-            handleCommand(null, sender, sender + "!" + login + "@" + hostname, message, false);
+            if (cut) {
+                logger.debug("Not running command from {}, the encrypted line was cut", sender);
+            } else {
+                handleCommand(null, sender, sender + "!" + login + "@" + hostname, message, false);
+            }
         }
 
         sendtoListener(null, sender, sender + "!" + login + "@" + hostname, message);
@@ -2415,7 +2469,7 @@ public class SiteBot implements ReplyConstants, Runnable {
                     BlowfishManager cipher = null;
                     joinChannel(chan);
                     if (_config.getBlowfishEnabled()) {
-                        cipher = new BlowfishManager(chan.getBlowKey(), chan.getBlowMode());
+                        cipher = new BlowfishManager(chan.getBlowKey(), chan.getBlowMode(), _config.getBlowfishEcbFallback());
                         _ciphers.put(chan.getName(), cipher);
                     }
                     _writers.put(chan.getName(), new OutputWriter(this, chan.getName(), cipher));
