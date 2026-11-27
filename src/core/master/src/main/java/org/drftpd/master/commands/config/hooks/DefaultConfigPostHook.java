@@ -42,6 +42,9 @@ public class DefaultConfigPostHook {
             return;
         }
         for (MessagePathPermission perm : msgPath) {
+            if (perm == null) {
+                continue;
+            }
             if (perm.checkPath(response.getCurrentDirectory())) {
                 if (perm.check(request.getSession().getUserNull(request.getUser()))) {
                     for (String line : perm.getMessage()) {

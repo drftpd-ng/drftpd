@@ -1794,7 +1794,15 @@ public class UserManagementHandler extends CommandInterface {
             // Not sure about this yet, just log the exception
             logger.warn("Bug?", e);
         }
-        return (ts.getTransfered() * 100) / size;
+        return calculateProgress(ts.getTransfered(), size);
+    }
+
+    static long calculateProgress(long transferred, long size) {
+        if (size <= 0) {
+            // nothing to transfer, so there is nothing left to wait for
+            return 100;
+        }
+        return (transferred * 100) / size;
     }
 
     public CommandResponse doSITE_SWHO(CommandRequest request) {
