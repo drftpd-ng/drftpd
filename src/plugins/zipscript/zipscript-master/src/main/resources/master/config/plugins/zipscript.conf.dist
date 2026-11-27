@@ -104,3 +104,9 @@ irc.zip.maxgroups=10
 cwd.flacinfo.enabled=true
 stor.flacinfo.enabled=true
 
+
+# Release rules ('downloadinc' and 'deletecomplete' in perms.conf)
+# These are configured in perms.conf, see the notes there. 'deletecomplete' protects what is INSIDE
+# a complete release (its files and subdirectories). The release directory itself is not blocked:
+# SITE WIPE /TV/Release on a whole complete release is still allowed, as it checks the parent
+# of the path you give it.

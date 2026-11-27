@@ -152,6 +152,36 @@ pre	/pre/* =siteop
 #                                                                                                  #
 ####################################################################################################
 
+####################################################################################################
+#                                                                                                  #
+# Release completeness rules (zipscript plugin). Both are OFF unless you add a line.              #
+#                                                                                                  #
+# downloadinc    /PATH* <who is exempt>                                                            #
+#   Denies downloading (RETR) any file of a release that is NOT complete yet (anti-leech of races).#
+#                                                                                                  #
+# deletecomplete /PATH* <who is exempt>                                                            #
+#   Denies DELE and SITE WIPE of any file or directory INSIDE a release that is complete.          #
+#   (The release directory itself can still be wiped, only what is inside it is protected.)        #
+#                                                                                                  #
+# How it works:                                                                                    #
+#  - The first line whose path matches the directory holding the file wins. If no line matches,    #
+#    nothing changes. The users/groups on the line are the EXEMPT ones: they may still            #
+#    download/delete. Use !* for "nobody is exempt".                                               #
+#  - The release is the directory holding the .sfv. A release with only .zip files uses the zip    #
+#    DIZ file total. A file in a subdirectory without its own sfv (CD1, Sample...) belongs to the  #
+#    nearest parent directory (up to 2 levels up) holding an .sfv or .zip files.                   #
+#  - Complete = every file listed in the sfv (or the DIZ total) is present. If the state cannot    #
+#    be determined (no sfv, slave offline, unreadable sfv) the command is ALLOWED.                 #
+#  - They are checked on RETR, DELE and SITE WIPE only. Plugins that delete without permission     #
+#    checks (AutoFreeSpace, REQDELETE, SITE FIND -wipe...) are not affected.                       #
+#                                                                                                  #
+# EXAMPLES:                                                                                        #
+# downloadinc    /MP3/* =siteop -uploader                                                          #
+# deletecomplete /MP3/* =siteop                                                                    #
+# deletecomplete /ARCHIVE/* !*                                                                     #
+#                                                                                                  #
+####################################################################################################
+
 # The below directives allow you to manage
 #  who can FXP *from* and *to* this FTP.
 #deny_upfxp /PATH* =group -user
