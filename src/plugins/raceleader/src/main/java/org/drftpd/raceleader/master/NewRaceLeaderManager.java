@@ -47,7 +47,8 @@ import java.util.TimerTask;
 public class NewRaceLeaderManager implements PluginInterface {
     private static final Logger logger = LogManager.getLogger(NewRaceLeaderManager.class);
 
-    private static final long _delay = 1800000; // = 30 minutes
+    private long _delay = NewLeaderThresholds.DEFAULT_EXPIRE_MINUTES * 60_000L;
+    private NewLeaderThresholds _thresholds = NewLeaderThresholds.defaults();
 
     private ArrayList<NewRaceLeader> _newraceleader;
     private TimerTask _newraceleaderTimer;
@@ -68,6 +69,8 @@ public class NewRaceLeaderManager implements PluginInterface {
     public void startPlugin() {
         AnnotationProcessor.process(this);
         _newraceleader = new ArrayList<>();
+        _thresholds = NewLeaderThresholds.load();
+        _delay = _thresholds.getExpireMillis();
 
         _newraceleaderTimer = new TimerTask() {
             public void run() {
@@ -126,7 +129,7 @@ public class NewRaceLeaderManager implements PluginInterface {
             if (nrl.getDir().getPath().equals(file.getParent().getPath())) {
                 try {
                     if (racers.size() > 1) {
-                        nrl.check(file.getUsername(), missing, files, racers);
+                        nrl.check(file.getUsername(), missing, files, racers, _thresholds);
                     }
                     return;
                 } catch (FileNotFoundException e) {
