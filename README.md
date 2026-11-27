@@ -2,7 +2,7 @@
   <a href="http://drftpd.org/"><img src="https://github.com/drftpd-ng/drftpd-ng.github.io/blob/2611e3c1010b6c3c9185a542fb6075eb3c697128/docs/resources/logo.jpg" alt="DrFTPD"></a>
 </h1>
 <p align="center">
-  <a href="https://circleci.com/gh/drftpd-ng" alt="Build"><img src="https://circleci.com/gh/drftpd-ng/drftpd/tree/master.svg?style=shield" /></a>
+  <a href="https://github.com/drftpd-ng/drftpd/actions/workflows/maven-build-upload-dependency-graph-artifacts.yml" alt="Build"><img src="https://github.com/drftpd-ng/drftpd/actions/workflows/maven-build-upload-dependency-graph-artifacts.yml/badge.svg?branch=master" /></a>
   <a href="https://github.com/drftpd-ng/drftpd/wiki/Documentation" alt="Documentation"><img src="https://img.shields.io/badge/Documentation-RTFM-orange.svg" /></a>
 </p>
 
@@ -25,10 +25,10 @@ The master therefore uses very little bandwidth. FTP control connection, data co
 The master has a filelist that keeps track of which slaves have which files and information about those files. A file can exist on multiple slaves for redundancy and more bandwidth.
 
 When a slave is started, it gathers a filelist and sends the entire list to the master.
-The master merges this list with it's existing file list and makes sure that it's in-sync with it's existing file list by adding and removing files to it's own list.
+The master merges this list with its existing file list and makes sure that it's in sync with its existing file list by adding and removing files to its own list.
 Because the master doesn't have any files locally, modifications to the virtual filesystem cannot be done easily from outside of the DrFTPD application.
 
-Neither the master or the slaves need root privileges. The virtual filesystem contained on the master of which slaves files reside on is the authoritative source for information about the files.
+Neither the master nor the slaves need root privileges. The virtual filesystem contained on the master of which slaves files reside on is the authoritative source for information about the files.
 Items like lastModified, size, user, and group, are all kept on the master.
 The slave does however require exclusive write access to the storage area, otherwise it will become unsynced with the master filelist and errors can occur.
 
@@ -39,7 +39,7 @@ This is an advantage as it simplifies administration of the slaves.
 
 ### Requirements
 
-DrFTPD 4.x installation requires a number of steps before you can utilize the software to its full extend.
+DrFTPD 4.x installation requires a number of steps before you can utilize the software to its full extent.
 To give an overview of the installation process the different steps are listed below in this section.
 
 On the master you will need to:
@@ -116,6 +116,7 @@ Check generated runtime directory
 - Optional: Run `./genkey.sh` for Linux or `genkey.bat` for Windows (if you want to use SSL (Master & Slave))
 - Run `./master.sh` for Linux or `master.bat` for Windows
 - Connect to `127.0.0.1:2121` with `drftpd:drftpd`
+- Execute remote commands: `SITE ADDSLAVE SLAVENAME` and `SITE SLAVE SLAVENAME ADDMASK *@IP.MASK`
 - Optional: Create Master Service (`systemd`, `sc.exe` ...)
 
 ### Slave
@@ -124,6 +125,8 @@ Check generated runtime directory
 - Optional: Copy the `drftpd.key` from the master to the config directory
 - Run `./slave.sh` for Linux or `slave.bat` for Windows
 - Optional: Create Slave Service (`systemd`, `sc.exe` ...)
+
+Pre-releases (for example `4.0.12-beta2`) are listed on https://github.com/drftpd-ng/drftpd/releases.
 
 ### For dev (debug only)
 ## Git
