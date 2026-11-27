@@ -33,6 +33,7 @@ public interface CommandResponseInterface {
 
     void setCode(int code);
 
+    // Vector kept on purpose: public API shared with FtpReply/IrcReply (protected Vector field) and plugins.
     Vector<String> getComment();
 
     DirectoryHandle getCurrentDirectory();

@@ -95,7 +95,7 @@ public class RootCollection {
 
             String fullpath = rootFile.getAbsolutePath();
 
-            Hashtable<String, Object> usedMounts = new Hashtable<>();
+            Map<String, Object> usedMounts = new HashMap<>();
 
             for (File mount : mounts) {
 

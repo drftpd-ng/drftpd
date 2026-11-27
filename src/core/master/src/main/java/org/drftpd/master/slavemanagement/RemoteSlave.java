@@ -155,6 +155,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
         super.resetHour(resetDate);
     }
 
+    // Public API returning a Hashtable, kept as is for plugin compatibility.
     public static Hashtable<String, RemoteSlave> rslavesToHashtable(Collection<RemoteSlave> rslaves) {
         Hashtable<String, RemoteSlave> map = new Hashtable<>(rslaves.size());
 
