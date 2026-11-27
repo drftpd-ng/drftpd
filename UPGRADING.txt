@@ -62,3 +62,9 @@ Users can have a `monthly_allotment` (SITE CHANGE <user|=group|*> monthly_allotm
 monthly reset their credits are replaced with it. The refill only happens when the master is running at the
 month boundary, or when the startup catch-up (processTimeEventsSinceDate) covers it. Users created before this
 key existed read as 0 (off).
+
+### XferLog.DATE_FMT type change
+
+The public field XferLog.DATE_FMT changed type from SimpleDateFormat to DateTimeFormatter.
+Third-party plugins that use it must adapt (for example format with DATE_FMT.format(temporal)
+instead of DATE_FMT.format(date)).
