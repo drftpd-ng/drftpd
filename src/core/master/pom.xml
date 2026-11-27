@@ -126,7 +126,7 @@
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-crypto</artifactId>
-            <version>6.5.11</version>
+            <version>7.2.0</version>
         </dependency>
         <dependency>
             <!-- commons-logging API needed at runtime by spring-security-crypto; routes to log4j-api -->
