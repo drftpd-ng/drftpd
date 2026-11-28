@@ -46,4 +46,12 @@ public class RequestDataTest {
         data.setRequests(null);
         assertEquals(0, data.getRequestsSnapshot().size());
     }
+
+    @Test
+    public void requestsByUserIgnoresCase() {
+        RequestData data = sample();
+        assertEquals(2, data.getRequestsByUser("ALICE").size());
+        assertEquals(1, data.getRequestsByUser("bob").size());
+        assertEquals(0, data.getRequestsByUser("nobody").size());
+    }
 }
