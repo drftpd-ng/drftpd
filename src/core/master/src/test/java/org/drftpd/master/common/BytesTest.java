@@ -21,6 +21,7 @@ import org.drftpd.common.util.Bytes;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @author mog
@@ -183,5 +184,31 @@ public class BytesTest {
     @Test
     public void testParseByte() {
         assertEquals(123, Bytes.parseBytes("123"));
+    }
+
+    @Test
+    public void testParseTrimsAndAcceptsFractionsAndSign() {
+        assertEquals(1500000000L, Bytes.parseBytes(" 1.5G "));
+        assertEquals(-50 * Bytes.MEGA, Bytes.parseBytes("-50MB"));
+        assertEquals(Bytes.MEGA, Bytes.parseBytes("1m"));
+        assertEquals(Bytes.PETA, Bytes.parseBytes("1P"));
+    }
+
+    @Test
+    public void testParseRejectsInvalidInput() {
+        for (String bad : new String[]{"10x", "1.5.3G", "", "   ", "G", "B", "KB", "1e3", "NaN", "Infinity",
+                "0x10", "1IB", "1 0G", "--1G", "1GG", "1,5G"}) {
+            assertThrows(NumberFormatException.class, () -> Bytes.parseBytes(bad), "should reject '" + bad + "'");
+        }
+        assertThrows(NumberFormatException.class, () -> Bytes.parseBytes(null));
+    }
+
+    @Test
+    public void testParseRejectsOverflow() {
+        assertThrows(NumberFormatException.class, () -> Bytes.parseBytes("99999999999T"));
+        assertThrows(NumberFormatException.class, () -> Bytes.parseBytes("10E"));
+        assertThrows(NumberFormatException.class, () -> Bytes.parseBytes("-10E"));
+        assertThrows(NumberFormatException.class, () -> Bytes.parseBytes("99999999999999999999"));
+        assertEquals(9 * Bytes.PETA * 1000, Bytes.parseBytes("9E"));
     }
 }

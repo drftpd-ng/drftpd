@@ -51,7 +51,12 @@ public class MinfreespaceFilter extends Filter {
     public MinfreespaceFilter(int i, Properties p) {
         super(i, p);
         _multiplier = parseMultiplier(PropertyHelper.getProperty(p, i + ".multiplier"));
-        _minfreespace = Bytes.parseBytes(PropertyHelper.getProperty(p, i + ".minfreespace"));
+        String minfreespace = PropertyHelper.getProperty(p, i + ".minfreespace");
+        try {
+            _minfreespace = Bytes.parseBytes(minfreespace);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(i + ".minfreespace is not a valid size: " + minfreespace, e);
+        }
     }
 
     public void process(ScoreChart scorechart, User user, InetAddress source,

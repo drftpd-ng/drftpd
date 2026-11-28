@@ -46,7 +46,11 @@ public class MaxbandwidthFilter extends Filter {
             max = max.substring(0, slashIndex).trim();
         }
 
-        _maxBandwidth = Bytes.parseBytes(max);
+        try {
+            _maxBandwidth = Bytes.parseBytes(max);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(i + ".maxbandwidth is not a valid size: " + max, e);
+        }
     }
 
     public void process(ScoreChart scorechart, User user, InetAddress peer,
