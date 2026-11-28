@@ -17,6 +17,7 @@
  */
 package org.drftpd.jobs.master;
 
+import org.drftpd.master.cron.SafeTimerTask;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
@@ -274,8 +275,8 @@ public class JobManager implements PluginInterface {
         if (_sleepSeconds <= 0) {
             _sleepSeconds = 500;
         }
-        _runJob = new TimerTask() {
-            public void run() {
+        _runJob = new SafeTimerTask() {
+            protected void safeRun() {
                 if (_isStopped) {
                     return;
                 }

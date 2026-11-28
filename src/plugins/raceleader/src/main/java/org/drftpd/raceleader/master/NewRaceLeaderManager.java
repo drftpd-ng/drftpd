@@ -25,6 +25,7 @@
 
 package org.drftpd.raceleader.master;
 
+import org.drftpd.master.cron.SafeTimerTask;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
@@ -72,8 +73,8 @@ public class NewRaceLeaderManager implements PluginInterface {
         _thresholds = NewLeaderThresholds.load();
         _delay = _thresholds.getExpireMillis();
 
-        _newraceleaderTimer = new TimerTask() {
-            public void run() {
+        _newraceleaderTimer = new SafeTimerTask() {
+            protected void safeRun() {
                 cleanOldRaces();
             }
         };

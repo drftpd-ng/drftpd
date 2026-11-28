@@ -30,12 +30,12 @@ import org.drftpd.master.usermanager.User;
 import org.drftpd.master.usermanager.UserFileException;
 import org.drftpd.master.vfs.DirectoryHandle;
 
-import java.util.TimerTask;
+import org.drftpd.master.cron.SafeTimerTask;
 
 /**
  * @author phew
  */
-public class NukeFilterNukeTask extends TimerTask {
+public class NukeFilterNukeTask extends SafeTimerTask {
     private static final Logger logger = LogManager.getLogger(NukeFilterNukeTask.class);
 
     private final DirectoryHandle dir;
@@ -48,7 +48,7 @@ public class NukeFilterNukeTask extends TimerTask {
         nukex = nfni.getNukex();
     }
 
-    public void run() {
+    protected void safeRun() {
         if (dir.getName().startsWith("[NUKED]-")) {
             //do not try nuking a nuked directory
             return;

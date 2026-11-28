@@ -17,6 +17,7 @@
  */
 package org.drftpd.zipscript.master.sfv;
 
+import org.drftpd.master.cron.SafeTimerTask;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
@@ -213,8 +214,8 @@ public class SFVAnnouncer extends AbstractAnnouncer {
                 // This is fine, COMPLETE not announced yet
                 if (sfvStatus.isFinished()) {
                     dir.addPluginMetaData(SFV_COMPLETE, true);
-                    TimerTask removeAnnounceMetadata = new TimerTask() {
-                        public void run() {
+                    TimerTask removeAnnounceMetadata = new SafeTimerTask() {
+                        protected void safeRun() {
                             try {
                                 dir.removePluginMetaData(SFV_FIRST);
                                 dir.removePluginMetaData(SFV_HALFWAY);
