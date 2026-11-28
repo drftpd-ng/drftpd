@@ -55,50 +55,96 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class ConfigManager implements ConfigInterface {
     private static final Logger logger = LogManager.getLogger(ConfigManager.class);
-    private static final File permsFile = ConfigLoader.loadConfigFile("perms.conf", false);
+    private static final String permsFileName = "perms.conf";
     private static final String masterConfigFile = "master.conf";
 
     private static final Key<Map<String, ArrayList<PathPermission>>> PATHPERMS = new Key<>(ConfigManager.class, "pathPerms");
     private static final Key<Map<String, Permission>> PERMS = new Key<>(ConfigManager.class, "perms");
 
-    private String hideInStats = "";
+    /**
+     * The state being built by {@link #reload()} on the current thread. The handlers call back into this
+     * class while perms.conf is read, and those calls must land in the new state and not in the live one.
+     */
+    private static final ThreadLocal<State> BUILDING = new ThreadLocal<>();
 
-    private HashMap<String, ConfigContainer> _directivesMap;
-    private KeyedMap<Key<?>, Object> _keyedMap;
-    private Properties _mainCfg;
+    /**
+     * Everything that is derived from perms.conf and the config handlers. {@link #reload()} builds a complete
+     * new instance and then swaps it in at once, so a reader never sees a half loaded (or empty) configuration.
+     */
+    private static final class State {
+        private HashMap<String, ConfigContainer> directivesMap = new HashMap<>();
+        private final KeyedMap<Key<?>, Object> keyedMap = new KeyedMap<>();
+        private VFSPermissions vfsPerms;
+        private ArrayList<InetAddress> bouncerIps = new ArrayList<>();
+        private String hideInStats = "";
+        private String loginPrompt = GlobalContext.VERSION + " https://github.com/drftpd-ng/drftpd";
+        private String allowConnectionsDenyReason = "";
+        private String pasvAddr = null;
+        private PortRange portRange = new PortRange(0);
+        private boolean hideIps = true;
+        private int maxUsersTotal = 1;
+        private int maxUsersExempt = 0;
 
-    private VFSPermissions _vfsPerms;
+        private State() {
+            keyedMap.setObject(PATHPERMS, new ConcurrentHashMap<>());
+            keyedMap.setObject(PERMS, new ConcurrentHashMap<>());
+        }
+    }
 
-    private ArrayList<InetAddress> _bouncerIps;
-    private String _loginPrompt = GlobalContext.VERSION + " https://github.com/drftpd-ng/drftpd";
-    private String _allowConnectionsDenyReason = "";
-    private String _pasvAddr = null;
-    private PortRange _portRange = new PortRange(0);
-    private boolean _hideIps = true;
+    private volatile State _state;
+    private volatile Properties _mainCfg;
+    private volatile String[] _cipherSuites = null;
+    private volatile String[] _sslProtocols = null;
 
-    private int _maxUsersTotal = 1;
-    private int _maxUsersExempt = 0;
+    private State state() {
+        State building = BUILDING.get();
+        return building != null ? building : _state;
+    }
 
-    private String[] _cipherSuites = null;
-    private String[] _sslProtocols = null;
+    /**
+     * Resolves, on every call, the file to read: 'config/perms.conf' when it exists, otherwise
+     * 'config/perms.conf.dist'. Resolving it again on each reload picks up a perms.conf that was created or
+     * removed after startup.
+     */
+    File resolvePermsFile() {
+        return ConfigLoader.loadConfigFile(permsFileName, false);
+    }
+
+    Properties readMainProperties() {
+        return ConfigLoader.loadConfig(masterConfigFile);
+    }
 
     /**
      * Reload all VFSPermHandlers and ConfigHandlers.
-     * Also re-read the config files.
+     * Also re-read the config files, choosing again between perms.conf and perms.conf.dist.
+     * The new configuration is built completely before it replaces the current one, if it can not be
+     * read the current one stays active.
      */
-    public void reload() {
-        loadVFSPermissions();
-        loadConfigHandlers();
-        loadMainProperties();
-        parseCipherSuites();
-        parseSSLProtocols();
-        initializeKeyedMap();
-        _bouncerIps = new ArrayList<>();
-        readConf();
-    }
+    public synchronized void reload() {
+        Properties mainCfg = readMainProperties();
+        String[] cipherSuites = SSLConfigParser.parseCipherSuites(mainCfg);
+        String[] sslProtocols = SSLConfigParser.parseSSLProtocols(mainCfg);
 
-    private void loadVFSPermissions() {
-        _vfsPerms = new VFSPermissions();
+        State previous = _state;
+        State fresh = new State();
+        boolean readable;
+        BUILDING.set(fresh);
+        try {
+            fresh.vfsPerms = new VFSPermissions();
+            fresh.directivesMap = loadConfigHandlers(previous);
+            readable = readConf(fresh, resolvePermsFile());
+        } finally {
+            BUILDING.remove();
+        }
+
+        _mainCfg = mainCfg;
+        _cipherSuites = cipherSuites;
+        _sslProtocols = sslProtocols;
+        if (readable || previous == null) {
+            _state = fresh;
+        } else {
+            logger.warn("Keeping the previous permissions configuration");
+        }
     }
 
     /**
@@ -106,7 +152,7 @@ public class ConfigManager implements ConfigInterface {
      * @see VFSPermissions
      */
     public VFSPermissions getVFSPermissions() {
-        return _vfsPerms;
+        return state().vfsPerms;
     }
 
     /**
@@ -114,13 +160,15 @@ public class ConfigManager implements ConfigInterface {
      * For a better understanding see how does the 'msgpath' directive works.
      */
     public KeyedMap<Key<?>, Object> getKeyedMap() {
-        return _keyedMap;
+        return state().keyedMap;
     }
 
     /**
      * Load all connected handlers.
+     *
+     * @param previous the state to take the handlers from if they can not be loaded, may be null
      */
-    private void loadConfigHandlers() {
+    private HashMap<String, ConfigContainer> loadConfigHandlers(State previous) {
         HashMap<String, ConfigContainer> directivesMap = new HashMap<>();
 
         Set<Class<? extends ExtendedPermissions>> extendedPermissions = new Reflections("org.drftpd").getSubTypesOf(ExtendedPermissions.class);
@@ -142,49 +190,12 @@ public class ConfigManager implements ConfigInterface {
                     logger.debug("Added directive {} to our directives map", directive);
                 }
             }
-            // Finally set the map once we processed all of the classes
-            _directivesMap = directivesMap;
         } catch (Exception e) {
-            logger.error("Failed to load plugins for master extension point 'ExtendedPermissions. The map is left as is or empty", e);
+            logger.error("Failed to load plugins for master extension point 'ExtendedPermissions. The previous handlers are kept, or none if there were none", e);
+            directivesMap = previous != null ? previous.directivesMap : new HashMap<>();
         }
-        logger.debug("Loaded {} ExtendedPermissions classes", _directivesMap.size());
-    }
-
-    /**
-     * Reads 'master.conf' and save it in a Properties object.
-     *
-     * @see #getMainProperties()
-     */
-    private void loadMainProperties() {
-        _mainCfg = ConfigLoader.loadConfig(masterConfigFile);
-    }
-
-    private void parseCipherSuites() {
-        _cipherSuites = SSLConfigParser.parseCipherSuites(_mainCfg);
-    }
-
-    private void parseSSLProtocols() {
-        _sslProtocols = SSLConfigParser.parseSSLProtocols(_mainCfg);
-    }
-
-    /**
-     * Initializes the KeyedMap.
-     *
-     * @see #getKeyedMap()
-     */
-    private void initializeKeyedMap() {
-        _keyedMap = new KeyedMap<>();
-
-        _keyedMap.setObject(PATHPERMS, new ConcurrentHashMap<>());
-        _keyedMap.setObject(PERMS, new ConcurrentHashMap<>());
-    }
-
-    private Map<String, ArrayList<PathPermission>> getPathPermsMap() {
-        return _keyedMap.getObject(PATHPERMS, null);
-    }
-
-    private Map<String, Permission> getPermissionsMap() {
-        return _keyedMap.getObject(PERMS, null);
+        logger.debug("Loaded {} ExtendedPermissions classes", directivesMap.size());
+        return directivesMap;
     }
 
     /**
@@ -194,10 +205,20 @@ public class ConfigManager implements ConfigInterface {
         return _mainCfg;
     }
 
+    private Map<String, ArrayList<PathPermission>> getPathPermsMap() {
+        return getKeyedMap().getObject(PATHPERMS, null);
+    }
+
+    private Map<String, Permission> getPermissionsMap() {
+        return getKeyedMap().getObject(PERMS, null);
+    }
+
     /**
-     * Reads 'config/perms.conf' handling what can be handled, ignoring what's does not have an available handler.
+     * Reads the given perms file handling what can be handled, ignoring what's does not have an available handler.
+     *
+     * @return false if the file could not be read
      */
-    private void readConf() {
+    private boolean readConf(State s, File permsFile) {
         try (LineNumberReader in = new LineNumberReader(new FileReader(permsFile))) {
             String line;
 
@@ -215,38 +236,40 @@ public class ConfigManager implements ConfigInterface {
                  */
 
                 switch (drct) {
-                    case "login_prompt" -> _loginPrompt = Version.expandPlaceholder(line.substring("login_prompt".length()).trim());
+                    case "login_prompt" -> s.loginPrompt = Version.expandPlaceholder(line.substring("login_prompt".length()).trim());
                     case "max_users" -> {
-                        _maxUsersTotal = Integer.parseInt(st.nextToken());
-                        _maxUsersExempt = Integer.parseInt(st.nextToken());
+                        s.maxUsersTotal = Integer.parseInt(st.nextToken());
+                        s.maxUsersExempt = Integer.parseInt(st.nextToken());
                     }
-                    case "pasv_addr" -> _pasvAddr = st.nextToken();
+                    case "pasv_addr" -> s.pasvAddr = st.nextToken();
                     case "pasv_ports" -> {
                         String[] temp = st.nextToken().split("-");
-                        _portRange = new PortRange(Integer.parseInt(temp[0]), Integer.parseInt(temp[1]), 0);
+                        s.portRange = new PortRange(Integer.parseInt(temp[0]), Integer.parseInt(temp[1]), 0);
                     }
-                    case "hide_ips" -> _hideIps = st.nextToken().equalsIgnoreCase("true");
+                    case "hide_ips" -> s.hideIps = st.nextToken().equalsIgnoreCase("true");
                     case "allow_connections" ->
                             getPermissionsMap().put("allow_connections", new Permission(Permission.makeUsers(st)));
                     case "allow_connections_deny_reason" ->
-                            _allowConnectionsDenyReason = line.substring("allow_connections_deny_reason".length()).trim();
+                            s.allowConnectionsDenyReason = line.substring("allow_connections_deny_reason".length()).trim();
                     case "exempt" -> getPermissionsMap().put("exempt", new Permission(Permission.makeUsers(st)));
                     case "bouncer_ips" -> {
                         ArrayList<InetAddress> ips = new ArrayList<>();
                         while (st.hasMoreTokens()) {
                             ips.add(InetAddress.getByName(st.nextToken()));
                         }
-                        _bouncerIps = ips;
+                        s.bouncerIps = ips;
                     }
                     case "hideinstats" -> {
                         while (st.hasMoreTokens())
-                            hideInStats = hideInStats + st.nextToken() + " ";
+                            s.hideInStats = s.hideInStats + st.nextToken() + " ";
                     }
                     default -> handleLine(drct, st);
                 }
             }
+            return true;
         } catch (IOException e) {
             logger.info("Unable to parse {}", permsFile.getName(), e);
+            return false;
         }
     }
 
@@ -258,7 +281,7 @@ public class ConfigManager implements ConfigInterface {
             // could not be handled by VFSPermissions, let's try the other ones!
         }
 
-        ConfigContainer cc = _directivesMap.get(directive);
+        ConfigContainer cc = state().directivesMap.get(directive);
 
         if (cc == null) {
             logger.error("No handler found for '{}' ignoring line", directive);
@@ -305,7 +328,7 @@ public class ConfigManager implements ConfigInterface {
         boolean alreadyExists = getPermissionsMap().containsKey(directive);
 
         if (alreadyExists) {
-            logger.info("The directive '{}' is already on the permission map, check out your {}", directive, permsFile.getName());
+            logger.info("The directive '{}' is already on the permission map, check out your {}", directive, permsFileName);
             return;
         }
 
@@ -318,37 +341,38 @@ public class ConfigManager implements ConfigInterface {
     }
 
     public List<InetAddress> getBouncerIps() {
-        return _bouncerIps;
+        return state().bouncerIps;
     }
 
     public boolean getHideIps() {
-        return _hideIps;
+        return state().hideIps;
     }
 
     public String getLoginPrompt() {
-        return _loginPrompt;
+        return state().loginPrompt;
     }
 
     public String getAllowConnectionsDenyReason() {
-        return _allowConnectionsDenyReason;
+        return state().allowConnectionsDenyReason;
     }
 
     public int getMaxUsersExempt() {
-        return _maxUsersExempt;
+        return state().maxUsersExempt;
     }
 
     public int getMaxUsersTotal() {
-        return _maxUsersTotal;
+        return state().maxUsersTotal;
     }
 
     public String getPasvAddress() throws NullPointerException {
-        if (_pasvAddr == null)
+        String pasvAddr = state().pasvAddr;
+        if (pasvAddr == null)
             throw new NullPointerException("pasv_addr not configured");
-        return _pasvAddr;
+        return pasvAddr;
     }
 
     public PortRange getPortRange() {
-        return _portRange;
+        return state().portRange;
     }
 
     public boolean isLoginAllowed(User user) {
@@ -386,6 +410,6 @@ public class ConfigManager implements ConfigInterface {
     }
 
     public String getHideInStats() {
-        return hideInStats;
+        return state().hideInStats;
     }
 }
