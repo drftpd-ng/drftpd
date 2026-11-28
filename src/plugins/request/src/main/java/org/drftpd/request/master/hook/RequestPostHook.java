@@ -109,7 +109,13 @@ public class RequestPostHook {
             String from = request.getSession().getObject(RequestUserData.RENUSER_FROM);
             String to = request.getSession().getObject(RequestUserData.RENUSER_TO);
             DirectoryHandle requestDirHandle = new DirectoryHandle(RequestSettings.getSettings().getRequestPath());
-            RequestData reqData = requestDirHandle.getPluginMetaData(RequestData.REQUESTS);
+            RequestData reqData;
+            try {
+                reqData = requestDirHandle.getPluginMetaData(RequestData.REQUESTS);
+            } catch (KeyNotFoundException e) {
+                logger.debug("[doSITE_RENUSER::doPostRequestRenuser][Post-hook] No request data stored, nothing to rename");
+                return;
+            }
             int requestsUpdated = 0;
             for (RequestEntry reqEntry : reqData.getRequests()) {
                 if (reqEntry.getUser().equalsIgnoreCase(from)) {
@@ -165,19 +171,26 @@ public class RequestPostHook {
         String delUsername = st.nextToken();
         try {
             DirectoryHandle requestDirHandle = new DirectoryHandle(RequestSettings.getSettings().getRequestPath());
-            RequestData reqData = requestDirHandle.getPluginMetaData(RequestData.REQUESTS);
+            RequestData reqData;
+            try {
+                reqData = requestDirHandle.getPluginMetaData(RequestData.REQUESTS);
+            } catch (KeyNotFoundException e) {
+                // No request was ever made (or the data was never stored): nothing to clean up
+                logger.debug("[doSITE_DELUSER::doPostRequestDeluser][Post-hook] No request data stored, nothing to remove for {}", delUsername);
+                return;
+            }
             List<RequestEntry> deletedRequests = new ArrayList<>();
-            for (RequestEntry reqEntry : reqData.getRequests()) {
-                if (reqEntry.getUser().equalsIgnoreCase(delUsername)) {
-                    try {
-                        logger.debug("[doSITE_DELUSER::doPostRequestDeluser][Post-hook] Removing request {}", reqEntry.getDirectoryName());
-                        requestDirHandle.getDirectoryUnchecked(reqEntry.getDirectoryName()).deleteUnchecked();
-                        deletedRequests.add(reqEntry);
-                    } catch (FileNotFoundException e) {
-                        logger.error("Request {} exists in metadata, but not in VFS", reqEntry.getDirectoryName(), e);
-                    } catch (ObjectNotValidException e) {
-                        logger.error("Request {} exists in metadata, but has an error in VFS", reqEntry.getDirectoryName(), e);
-                    }
+            for (RequestEntry reqEntry : reqData.getRequestsByUser(delUsername)) {
+                try {
+                    logger.debug("[doSITE_DELUSER::doPostRequestDeluser][Post-hook] Removing request {}", reqEntry.getDirectoryName());
+                    requestDirHandle.getDirectoryUnchecked(reqEntry.getDirectoryName()).deleteUnchecked();
+                    deletedRequests.add(reqEntry);
+                } catch (FileNotFoundException e) {
+                    // Directory already gone: still drop the stale entry of the deleted user
+                    logger.warn("Request {} exists in metadata, but not in VFS, removing the entry", reqEntry.getDirectoryName());
+                    deletedRequests.add(reqEntry);
+                } catch (ObjectNotValidException e) {
+                    logger.error("Request {} exists in metadata, but has an error in VFS", reqEntry.getDirectoryName(), e);
                 }
             }
             logger.debug("[doSITE_DELUSER::doPostRequestDeluser][Post-hook] Deleted {} requests", deletedRequests.size());
@@ -189,10 +202,8 @@ public class RequestPostHook {
                 }
                 requestDirHandle.addPluginMetaData(RequestData.REQUESTS, reqData);
             }
-        } catch (KeyNotFoundException e) {
-            logger.error("[doSITE_DELUSER::doPostRequestDeluser][Post-hook] Something went wrong in the pre hook as the Object are not registered");
         } catch (FileNotFoundException e) {
-            logger.error("[doSITE_DELUSER::doPostRequestDeluser][Post-hook] Something went wrong While trying to fix user references or directory names");
+            logger.debug("[doSITE_DELUSER::doPostRequestDeluser][Post-hook] Request directory does not exist, nothing to remove");
         }
     }
 }

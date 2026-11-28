@@ -355,8 +355,15 @@ public class Request extends CommandInterface {
                 requests.delRequest(reqEntry);
                 storeRequestData(requestDir, requests);
             } catch (FileNotFoundException e) {
-                logger.error("Request {} exists in metadata, but not in VFS", reqEntry.getDirectoryName(), e);
-                return new CommandResponse(500, "Internal Server error occurred, stopping execution");
+                // The directory is gone (wiped by hand): drop the stale entry so the request can be removed
+                logger.warn("Request {} exists in metadata, but not in VFS, removing the entry", reqEntry.getDirectoryName());
+                requests.delRequest(reqEntry);
+                try {
+                    storeRequestData(requestDir, requests);
+                } catch (FileNotFoundException e2) {
+                    logger.error("Unable to update plugin metadata for request directory {}", requestDir.getName(), e2);
+                    return new CommandResponse(500, "Internal Server error occurred, stopping execution");
+                }
             } catch (ObjectNotValidException e) {
                 logger.error("Request {} exists in metadata, but has an error in VFS", reqEntry.getDirectoryName(), e);
                 return new CommandResponse(500, "Internal Server error occurred, stopping execution");
@@ -394,7 +401,8 @@ public class Request extends CommandInterface {
         logger.debug("Trying to fix request dirs in {}", requestDir.getName());
         CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
         List<String> dirNames = new ArrayList<>();
-        for (RequestEntry reqEntry : requests.getRequests()) {
+        // Iterate over a copy, requests of unknown users are removed from the list inside the loop
+        for (RequestEntry reqEntry : requests.getRequestsSnapshot()) {
             try {
                 requestDir.getDirectoryUnchecked(reqEntry.getDirectoryName());
             } catch (FileNotFoundException e) {

@@ -37,6 +37,26 @@ public class RequestData implements Serializable {
         return _requests;
     }
 
+    /**
+     * @return a copy of the request list, safe to iterate while requests are removed from this object
+     */
+    public List<RequestEntry> getRequestsSnapshot() {
+        return _requests == null ? new ArrayList<>() : new ArrayList<>(_requests);
+    }
+
+    /**
+     * @return the requests made by the given user (case-insensitive), as a new list
+     */
+    public List<RequestEntry> getRequestsByUser(String user) {
+        List<RequestEntry> result = new ArrayList<>();
+        for (RequestEntry entry : getRequestsSnapshot()) {
+            if (entry.getUser().equalsIgnoreCase(user)) {
+                result.add(entry);
+            }
+        }
+        return result;
+    }
+
     public void setRequests(List<RequestEntry> requests) {
         _requests = requests;
     }
