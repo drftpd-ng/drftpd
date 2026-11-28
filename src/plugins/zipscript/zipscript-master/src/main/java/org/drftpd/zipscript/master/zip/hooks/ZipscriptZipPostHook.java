@@ -75,7 +75,9 @@ public class ZipscriptZipPostHook extends ZipTools {
         _bundle = manager.getResourceBundle();
     }
 
-    @CommandHook(commands = "doSTOR", priority = 13, type = HookType.POST)
+    // Runs before the SFV post hook (priority 10), which publishes the transfer event for a zip that has
+    // an entry in the SFV: a zip removed by this check must be gone before any announce is made for it.
+    @CommandHook(commands = "doSTOR", priority = 9, type = HookType.POST)
     public void doZipscriptSTORZipPostCheck(CommandRequest request, CommandResponse response) {
         logger.debug("doZipscriptSTORZipPostCheck() called");
 
