@@ -37,6 +37,13 @@ public class RequestData implements Serializable {
         return _requests;
     }
 
+    /**
+     * @return a copy of the request list, safe to iterate while requests are removed from this object
+     */
+    public List<RequestEntry> getRequestsSnapshot() {
+        return _requests == null ? new ArrayList<>() : new ArrayList<>(_requests);
+    }
+
     public void setRequests(List<RequestEntry> requests) {
         _requests = requests;
     }

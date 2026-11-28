@@ -394,7 +394,8 @@ public class Request extends CommandInterface {
         logger.debug("Trying to fix request dirs in {}", requestDir.getName());
         CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
         List<String> dirNames = new ArrayList<>();
-        for (RequestEntry reqEntry : requests.getRequests()) {
+        // Iterate over a copy, requests of unknown users are removed from the list inside the loop
+        for (RequestEntry reqEntry : requests.getRequestsSnapshot()) {
             try {
                 requestDir.getDirectoryUnchecked(reqEntry.getDirectoryName());
             } catch (FileNotFoundException e) {
