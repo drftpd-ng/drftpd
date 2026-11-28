@@ -78,7 +78,7 @@ public class SpeedTestHandler extends AbstractHandler {
         try {
             readConf();
         } catch (Exception e) {
-            logger.error("Error loading config/plugins/speedtest.net.slave.conf :: {}", e.getMessage());
+            logger.error("Error loading config/plugins/speedtest.net.slave.conf :: {}", e.getMessage(), e);
         }
     }
 
@@ -170,6 +170,7 @@ public class SpeedTestHandler extends AbstractHandler {
             }
         } catch (Exception e) {
             logger.warn("Failed fetching speedtest.net servers from {} :: {}", url, e.getMessage());
+            logger.debug("Failed fetching speedtest.net servers from {}", url, e);
         }
         return new AsyncResponseSpeedTestServers(ac.getIndex(), json);
     }
@@ -330,7 +331,7 @@ public class SpeedTestHandler extends AbstractHandler {
             try {
                 downloadUrl = new URI(tmpURL);
             } catch (URISyntaxException e) {
-                logger.error("URI syntax error for {} :: {}", tmpURL, e.getMessage());
+                logger.error("URI syntax error for {} :: {}", tmpURL, e.getMessage(), e);
                 close(executor);
                 return 0;
             }

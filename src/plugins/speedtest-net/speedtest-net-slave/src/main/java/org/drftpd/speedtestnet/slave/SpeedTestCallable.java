@@ -105,7 +105,7 @@ public class SpeedTestCallable implements Callable<SpeedTestAnswer> {
                 logger.error("Called without httpget or httppost set...");
             }
         } catch (Exception e) {
-            logger.error("Received exception while being called. {}", e.getMessage());
+            logger.error("Received exception while being called. {}", e.getMessage(), e);
             throw new ExecutionException(e);
         } finally {
             try {

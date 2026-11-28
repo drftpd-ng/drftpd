@@ -74,11 +74,12 @@ public class SpeedTestUtils {
                 String data = HttpUtils.retrieveHttpAsString(url);
                 serverList.addAll(parseXML(data));
             } catch (UnsupportedEncodingException e) {
-                logger.warn("UnsupportedEncodingException parsing {} :: {}", url, e.getMessage());
+                logger.warn("UnsupportedEncodingException parsing {} :: {}", url, e.getMessage(), e);
             } catch (XMLStreamException e) {
-                logger.warn("XMLStreamException parsing {} :: {}", url, e.getMessage());
+                logger.warn("XMLStreamException parsing {} :: {}", url, e.getMessage(), e);
             } catch (Exception e) {
                 logger.warn("Failed to get data from {} :: {}", url, e.getMessage());
+                logger.debug("Failed to get data from {}", url, e);
             }
         }
         return serverList;
@@ -143,6 +144,7 @@ public class SpeedTestUtils {
             return servers;
         } catch (SlaveUnavailableException | RemoteIOException e) {
             logger.warn("Failed getting speedtest.net servers from slave {} :: {}", rslave.getName(), e.getMessage());
+            logger.debug("Failed getting speedtest.net servers from slave {}", rslave.getName(), e);
         } catch (Exception e) {
             logger.warn("Unexpected error getting speedtest.net servers from slave {}", rslave.getName(), e);
         }
@@ -204,7 +206,7 @@ public class SpeedTestUtils {
                 servers.add(server);
             }
         } catch (RuntimeException e) {
-            logger.warn("Unable to parse speedtest.net server list: {}", e.getMessage());
+            logger.warn("Unable to parse speedtest.net server list: {}", e.getMessage(), e);
             servers.clear();
         }
         return servers;
@@ -235,8 +237,9 @@ public class SpeedTestUtils {
             logger.debug("Trying to get location of offline slave, Please improve code to check for offline slaves to ensure proper error messages to requester");
         } catch (UnknownHostException e) {
             logger.warn("Caught an unexpected exception getting slave location: {}", e.getMessage());
+            logger.debug("Caught an unexpected exception getting slave location", e);
         } catch (Exception e) {
-            logger.error("Something went wrong getting slave location: {}", e.getMessage());
+            logger.error("Something went wrong getting slave location: {}", e.getMessage(), e);
         }
         return slaveLocation;
     }
