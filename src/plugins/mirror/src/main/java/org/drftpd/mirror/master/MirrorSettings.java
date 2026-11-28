@@ -25,6 +25,7 @@ import org.drftpd.master.GlobalContext;
 import org.drftpd.slave.exceptions.ObjectNotFoundException;
 
 import java.util.*;
+import java.util.function.Predicate;
 
 /**
  * @author lh
@@ -55,11 +56,37 @@ public class MirrorSettings {
         return ref;
     }
 
+    /**
+     * Test constructor: parses the given properties without touching the config files or the GlobalContext.
+     */
+    MirrorSettings(Properties cfg, Predicate<String> slaveExists) {
+        _configurations = new ArrayList<>();
+        _unmirrorExcludePaths = new ArrayList<>();
+        _unmirrorTime = 60L * 60000L;
+        reload(cfg, slaveExists);
+    }
+
     public void reload() {
         logger.debug("Loading configuration");
         Properties cfg = ConfigLoader.loadPluginConfig("mirror.conf");
+        reload(cfg, slaveName -> {
+            try {
+                GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(slaveName);
+                return true;
+            } catch (ObjectNotFoundException e) {
+                return false;
+            }
+        });
+    }
 
-        _unmirrorTime = Long.parseLong(cfg.getProperty("pre.unmirror.time", "60")) * 60000L;
+    void reload(Properties cfg, Predicate<String> slaveExists) {
+        String unmirrorTime = cfg.getProperty("pre.unmirror.time", "60").trim();
+        try {
+            _unmirrorTime = Long.parseLong(unmirrorTime) * 60000L;
+        } catch (NumberFormatException e) {
+            logger.warn("pre.unmirror.time [{}] is not an integer, using 60", unmirrorTime);
+            _unmirrorTime = 60L * 60000L;
+        }
 
         List<MirrorConfiguration> configurations = new ArrayList<>();
         List<String> unmirrorExcludePaths = new ArrayList<>();
@@ -68,27 +95,29 @@ public class MirrorSettings {
         String nbrOfMirrors;
 
         // Handle sections
-        while ((nbrOfMirrors = PropertyHelper.getProperty(cfg, id + ".nbrOfMirrors", null)) != null) {
+        // The entries are numbered without gaps: reading stops at the first id without nbrOfMirrors.
+        // A bad entry is skipped but the id must still advance, or the loop never ends.
+        for (; (nbrOfMirrors = PropertyHelper.getProperty(cfg, id + ".nbrOfMirrors", null)) != null; id++) {
             int nbrOfMirrorsInt;
             try {
-                nbrOfMirrorsInt = Integer.parseInt(nbrOfMirrors);
+                nbrOfMirrorsInt = Integer.parseInt(nbrOfMirrors.trim());
             } catch (NumberFormatException e) {
-                logger.error("{}.nbrOfMirrors is not an integer", id);
+                logger.warn("{}.nbrOfMirrors [{}] is not an integer, skipping this entry", id, nbrOfMirrors);
                 continue;
             }
             if (nbrOfMirrorsInt < 2) {
-                logger.error("Invalid setting for {}.nbrOfMirrors, must be greater than 2", id);
+                logger.warn("{}.nbrOfMirrors [{}] must be 2 or more, skipping this entry", id, nbrOfMirrorsInt);
                 continue;
             }
             int priority;
             try {
-                priority = Integer.parseInt(cfg.getProperty(id + ".priority", "3"));
+                priority = Integer.parseInt(cfg.getProperty(id + ".priority", "3").trim());
             } catch (NumberFormatException e) {
-                logger.error("{}.priority is not an integer", id);
+                logger.warn("{}.priority [{}] is not an integer, skipping this entry", id, cfg.getProperty(id + ".priority"));
                 continue;
             }
             if (priority < 1) {
-                logger.error("Invalid setting for {}.priority, must be greater than 0", id);
+                logger.warn("{}.priority [{}] must be 1 or more, skipping this entry", id, priority);
                 continue;
             }
 
@@ -113,10 +142,8 @@ public class MirrorSettings {
             if (cfg.getProperty(id + ".slaves") != null) {
                 slaves = Arrays.asList(cfg.getProperty(id + ".slaves").trim().split("\\s"));
                 for (String slaveName : slaves) {
-                    try {
-                        GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(slaveName);
-                    } catch(ObjectNotFoundException e) {
-                        logger.error("Slave with name [{}] does not exist, config error for id {}", slaveName, id, e);
+                    if (!slaveExists.test(slaveName)) {
+                        logger.error("Slave with name [{}] does not exist, config error for id {}", slaveName, id);
                     }
                 }
             }
@@ -126,10 +153,8 @@ public class MirrorSettings {
             if (cfg.getProperty(id + ".excludeSlaves") != null) {
                 excludeSlaves = Arrays.asList(cfg.getProperty(id + ".excludeSlaves").trim().split("\\s"));
                 for (String slaveName : excludeSlaves) {
-                    try {
-                        GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(slaveName);
-                    } catch(ObjectNotFoundException e) {
-                        logger.error("Slave with name [{}] does not exist, config error for id {}", slaveName, id, e);
+                    if (!slaveExists.test(slaveName)) {
+                        logger.error("Slave with name [{}] does not exist, config error for id {}", slaveName, id);
                     }
                 }
             }
@@ -139,8 +164,6 @@ public class MirrorSettings {
             if (unmirrorExclude != null) {
                 unmirrorExcludePaths.add(unmirrorExclude);
             }
-
-            id++;
         }
         _configurations = configurations;
         _unmirrorExcludePaths = unmirrorExcludePaths;

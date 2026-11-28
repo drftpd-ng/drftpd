@@ -9,20 +9,20 @@
 #                                                                                                  #
 # Configuration:                                                                                   #
 #                                                                                                  #
-# Number of slaves file should be mirrored on, must be a value > 2.                                #
-# x.nbrOfMirrors                                                                                   #
+# Number of slaves file should be mirrored on, must be 2 or more. Entries are numbered from 1      #
+# x.nbrOfMirrors (required, the entries stop at the first number without it)                       #
 #                                                                                                  #
 # Priority for job when added to the job queue.                                                    #
-# x.priority (optional)                                                                            #
+# x.priority (optional, default 3, must be 1 or more)                                              #
 #                                                                                                  #
 # Path this configuration applies to and all its subdirs                                           #
 #  matched against full path incl filename.                                                        #
 # Multiple path lines accepted.                                                                    #
-# x.path.y (regex)                                                                                 #
+# x.pathN (regex), N = 1, 2, 3, ... without gaps, e.g. 1.path1 and 1.path2                         #
 #                                                                                                  #
 # Exclude these paths.                                                                             #
 # Multiple path lines accepted.                                                                    #
-# x.excludePath.y (regex) (optional)                                                               #
+# x.excludePathN (regex) (optional), N = 1, 2, ..., e.g. 1.excludePath1                            #
 #                                                                                                  #
 # Valid slaves to mirror file on, else all is valid                                                #
 #  slave(s) file exist on are added automatically.                                                 #
@@ -35,9 +35,10 @@
 #                                                                                                  #
 # EXAMPLE:                                                                                         #
 # 1.nbrOfMirrors=2                                                                                 #
-# 1.path.1=/GROUPS/FIRSTGROUP/.*                                                                   #
-# 1.path.2=/GROUPS/SECONDGROUP/.*                                                                  #
-# 1.excludePath.1=(?i).*/(sample|cover)/.*                                                         #
+# 1.priority=3                                                                                     #
+# 1.path1=/GROUPS/FIRSTGROUP/.*                                                                    #
+# 1.path2=/GROUPS/SECONDGROUP/.*                                                                   #
+# 1.excludePath1=(?i).*/(sample|cover)/.*                                                          #
 # 1.excludeSlaves=SLAVE8 SLAVE9                                                                    #
 #                                                                                                  #
 ####################################################################################################
