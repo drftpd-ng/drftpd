@@ -189,10 +189,11 @@ announce.norace=true
 # Reject these genres.
 # SECTION.audio.banned.genres=Rap, Hip-Hop
 #
-# Reject every genre not in this list.
+# Reject every genre not in this list. A file without a genre (no tag, or an
+# unknown genre) is rejected too.
 # SECTION.audio.allowed.genres=Rock, Pop
 #
-# Allowed years or year ranges.
+# Allowed years or year ranges. A file without a year is rejected.
 # SECTION.audio.allowed.years=1990-1999, 2005
 #
 # Allowed CBR bitrates in kbit/s (VBR files are not checked, MP3 only).

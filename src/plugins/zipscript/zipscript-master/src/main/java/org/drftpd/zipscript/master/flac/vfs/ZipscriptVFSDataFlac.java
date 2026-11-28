@@ -46,6 +46,10 @@ public class ZipscriptVFSDataFlac {
 
     private final InodeHandle _inode;
 
+    // raw info of the file as fetched from the slave, kept even if it has no usable tag
+    private boolean _fetched;
+    private FlacInfo _rawInfo;
+
     public ZipscriptVFSDataFlac(InodeHandle inode) {
         _inode = inode;
     }
@@ -126,6 +130,8 @@ public class ZipscriptVFSDataFlac {
                     logger.debug("Trying to retrieve FLACINFO from slave {} for file {}", rslave, file);
                     String index = getFlacIssuer().issueFlacFileToSlave(rslave, file.getPath());
                     flacinfo = fetchFlacInfoFromIndex(rslave, index);
+                    _fetched = true;
+                    _rawInfo = flacinfo;
                 } catch (SlaveUnavailableException | RemoteIOException e) {
                     throw new IOException(e.getMessage(), e);
                 }
@@ -162,6 +168,41 @@ public class ZipscriptVFSDataFlac {
 
         // We should not end up here, but safety net just in case
         throw new FileNotFoundException("Unable to obtain info for FLAC file");
+    }
+
+    /**
+     * Like {@link #getFlacInfo()} for a file, but for a file without a usable tag (which
+     * getFlacInfo rejects) it returns the info of the directory when that has a usable one (the
+     * first track of the release decides), else the file's own info. The audio rules need this to
+     * treat such a file as having unknown values without failing a release for one untagged track.
+     *
+     * @return the info to check, null if the slave could not parse the file
+     */
+    public FlacInfo getFlacInfoForRules() throws IOException, NoAvailableSlaveException {
+        try {
+            return getFlacInfo();
+        } catch (FileNotFoundException e) {
+            if (!(_inode instanceof FileHandle) || !_fetched) {
+                throw e;
+            }
+            FlacInfo dirInfo = null;
+            try {
+                dirInfo = getInfoOf(((FileHandle) _inode).getParent());
+            } catch (KeyNotFoundException | FileNotFoundException ignore) {
+                // the directory has no info yet
+            }
+            return pickForRules(dirInfo, _rawInfo);
+        }
+    }
+
+    /** The usable info of the directory wins over the file's own, untagged one. */
+    static FlacInfo pickForRules(FlacInfo validDirInfo, FlacInfo fileInfo) {
+        return validDirInfo != null ? validDirInfo : fileInfo;
+    }
+
+    private FlacInfo getInfoOf(InodeHandle inode) throws FileNotFoundException, KeyNotFoundException {
+        FlacInfo info = getFlacInfoFromInode(inode);
+        return isFLACInfoValid(info) ? info : null;
     }
 
     private FlacInfo getFlacInfoFromInode(InodeHandle vfsInodeHandle) throws FileNotFoundException, KeyNotFoundException {

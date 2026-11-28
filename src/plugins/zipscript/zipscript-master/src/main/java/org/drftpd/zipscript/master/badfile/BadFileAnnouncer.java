@@ -31,6 +31,7 @@ import org.drftpd.master.usermanager.User;
 import org.drftpd.master.usermanager.UserFileException;
 import org.drftpd.master.util.ReplacerUtils;
 import org.drftpd.master.vfs.DirectoryHandle;
+import org.drftpd.zipscript.master.RaceNameMasker;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -94,7 +95,7 @@ public class BadFileAnnouncer extends AbstractAnnouncer {
             logger.debug("Unable to look up the group of {}", event.getUsername(), e);
         }
         Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
-        fillEnv(env, event, group, writer.getSectionName(dir),
+        fillEnv(env, event, group, RaceNameMasker.load(), RaceNameMasker.sectionOf(dir), writer.getSectionName(dir),
                 GlobalContext.getGlobalContext().getSectionManager().lookup(dir).getColor(),
                 dir.isRoot() ? "" : writer.getPath(dir));
         sayOutput(ReplacerUtils.jprintf(event.getReason().getThemeKey(), env, _bundle), writer);
@@ -102,11 +103,13 @@ public class BadFileAnnouncer extends AbstractAnnouncer {
 
     /**
      * Fills the theme variables: user, group, section, sectioncolor, path (directory), file, reason, detail.
+     * The user and group are masked as configured by hideuser.* in zipscript.conf.
      */
-    static void fillEnv(Map<String, Object> env, BadFileEvent event, Object group, String section,
-                        Object sectionColor, String path) {
-        env.put("user", event.getUsername());
-        env.put("group", group);
+    static void fillEnv(Map<String, Object> env, BadFileEvent event, Object group, RaceNameMasker masker,
+                        String maskSection, String section, Object sectionColor, String path) {
+        String groupName = group == null ? null : group.toString();
+        env.put("user", masker.user(event.getUsername(), groupName, maskSection));
+        env.put("group", masker.groupOf(event.getUsername(), groupName, maskSection));
         env.put("section", section);
         env.put("sectioncolor", sectionColor);
         env.put("path", path);

@@ -65,26 +65,33 @@ public class ThemeResourceBundle extends ResourceBundle {
         try {
             String configurationPath = configPath(_confDirectory);
             Path targetPath = new File(configurationPath).toPath();
-            Stream<Path> pathStream = Files.walk(targetPath);
-            List<Path> themeFiles = pathStream.filter(f -> f.getFileName().toString().endsWith(".theme.default"))
-                    .collect(Collectors.toList());
+            List<Path> themeFiles;
+            try (Stream<Path> pathStream = Files.walk(targetPath)) {
+                themeFiles = pathStream.filter(f -> f.getFileName().toString().endsWith(".theme.default"))
+                        .collect(Collectors.toList());
+            }
             for (Path themeFile : themeFiles) {
-                FileInputStream theme = new FileInputStream(themeFile.toFile());
-                ExtendedPropertyResourceBundle bundle = new ExtendedPropertyResourceBundle(theme);
+                ExtendedPropertyResourceBundle bundle;
+                try (FileInputStream theme = new FileInputStream(themeFile.toFile())) {
+                    bundle = new ExtendedPropertyResourceBundle(theme);
+                }
                 List<String> keys = IteratorUtils.toList(bundle.getKeys().asIterator());
-                try {
-                    String currentThemeFile = themeFile.getFileName().toString();
-                    String overrideThemeFileName = currentThemeFile.replace(".default", "");
-                    String overrideThemeFile = themeFile.getParent().toString() + "/" + overrideThemeFileName;
-
-                    FileInputStream child = new FileInputStream(new File(overrideThemeFile));
-                    ExtendedPropertyResourceBundle childBundle = new ExtendedPropertyResourceBundle(child);
-                    childBundle.setParent(bundle);
-                    combineBundles(themeFile, childBundle, keys);
-                } catch (FileNotFoundException e) {
+                String currentThemeFile = themeFile.getFileName().toString();
+                String overrideThemeFileName = currentThemeFile.replace(".default", "");
+                File overrideThemeFile = new File(themeFile.getParent().toString() + "/" + overrideThemeFileName);
+                if (!overrideThemeFile.exists()) {
                     // Nothing to do here, no override file available
                     combineBundles(themeFile, bundle, keys);
+                    continue;
                 }
+                ExtendedPropertyResourceBundle childBundle;
+                try (FileInputStream child = new FileInputStream(overrideThemeFile)) {
+                    childBundle = new ExtendedPropertyResourceBundle(child);
+                }
+                childBundle.setParent(bundle);
+                // The override can define keys the .default does not have (e.g. per-type variants)
+                List<String> allKeys = IteratorUtils.toList(childBundle.getKeys().asIterator());
+                combineBundles(themeFile, childBundle, allKeys);
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -111,7 +118,8 @@ public class ThemeResourceBundle extends ResourceBundle {
             logger.error("No theme file available for key {}", key);
             return "No theme available";
         }
-        return bundle.getBundle().handleGetObject(key);
+        // getObject, not handleGetObject: an override copy has to fall back to its .default parent
+        return bundle.getBundle().getObject(key);
     }
 
     @Override

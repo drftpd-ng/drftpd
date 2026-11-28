@@ -134,11 +134,13 @@ public class ZipscriptMP3PostHook {
             return false;
         }
         try {
-            MP3Info info = new ZipscriptVFSDataMP3(transferFile).getMP3Info();
-            ID3Tag id3 = info.getID3Tag();
+            // An untagged file (or one with an unknown genre) is checked too: its missing values
+            // never match an allowed.* list
+            MP3Info info = new ZipscriptVFSDataMP3(transferFile).getMP3InfoForRules();
+            ID3Tag id3 = info == null ? null : info.getID3Tag();
             return AudioRulesEnforcer.enforce(response, transferFile, rules,
                     id3 == null ? null : id3.getGenre(), id3 == null ? null : id3.getYear(),
-                    info.getBitrate() / 1000, "VBR".equals(info.getEncodingtype()));
+                    info == null ? 0 : info.getBitrate() / 1000, info != null && "VBR".equals(info.getEncodingtype()));
         } catch (IOException | NoAvailableSlaveException e) {
             logger.debug("Unable to check audio rules for {}: {}", transferFile.getPath(), e.getMessage());
             return false;

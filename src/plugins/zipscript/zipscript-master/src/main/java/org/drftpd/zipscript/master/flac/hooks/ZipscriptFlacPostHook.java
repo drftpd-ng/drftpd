@@ -132,8 +132,8 @@ public class ZipscriptFlacPostHook {
             return false;
         }
         try {
-            FlacInfo info = new ZipscriptVFSDataFlac(transferFile).getFlacInfo();
-            VorbisTag tag = info.getVorbisTag();
+            FlacInfo info = new ZipscriptVFSDataFlac(transferFile).getFlacInfoForRules();
+            VorbisTag tag = info == null ? null : info.getVorbisTag();
             return AudioRulesEnforcer.enforce(response, transferFile, rules,
                     tag == null ? null : tag.getGenre(), tag == null ? null : tag.getYear(), 0, false);
         } catch (IOException | NoAvailableSlaveException e) {
