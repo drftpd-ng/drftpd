@@ -23,6 +23,7 @@ import org.drftpd.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.common.exceptions.RemoteIOException;
 import org.drftpd.common.extensibility.CommandHook;
 import org.drftpd.common.extensibility.HookType;
+import org.drftpd.common.dynamicdata.Key;
 import org.drftpd.common.util.Bytes;
 import org.drftpd.common.util.ConfigLoader;
 import org.drftpd.master.GlobalContext;
@@ -69,6 +70,9 @@ public class ZipscriptZipPostHook extends ZipTools {
 
     private static final Logger logger = LogManager.getLogger(ZipscriptZipPostHook.class);
 
+    /** Set on the STOR response by the integrity check when the zip passed it. */
+    public static final Key<Boolean> ZIP_INTEGRITY_OK = new Key<>(ZipscriptZipPostHook.class, "zip_integrity_ok");
+
     private final ResourceBundle _bundle;
 
     public ZipscriptZipPostHook(CommandManagerInterface manager) {
@@ -112,24 +116,7 @@ public class ZipscriptZipPostHook extends ZipTools {
                         String index = ZipscriptVFSDataZip.getZipIssuer().issueZipCRCToSlave(rslave, transferFile.getPath());
                         if (getZipIntegrityFromIndex(rslave, index)) {
                             response.addComment("Zip integrity check OK");
-                            if (transferFile.exists()) {
-                                try {
-                                    BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
-                                    RemoteSlave transferSlave = response.getObject(DataConnectionHandler.TRANSFER_SLAVE);
-                                    InetAddress transferSlaveInetAddr = response.getObject(DataConnectionHandler.TRANSFER_SLAVE_INET_ADDRESS);
-                                    char transferType = response.getObject(DataConnectionHandler.TRANSFER_TYPE);
-                                    ZipscriptVFSDataZip zipData = new ZipscriptVFSDataZip(request.getCurrentDirectory());
-                                    GlobalContext.getEventService().publishAsync(new ZipTransferEvent(conn, "STOR",
-                                            transferFile, conn.getClientAddress(), transferSlave, transferSlaveInetAddr,
-                                            transferType, zipData, zipData.getDizInfo(), zipData.getDizStatus()));
-                                } catch (KeyNotFoundException e1) {
-                                    logger.warn("Unable to fire ZipTransferEvent for [{}]", transferFile, e1);
-                                    // one or more bits of information didn't get populated correctly, have to skip the event
-                                } catch (IOException e) {
-                                    logger.warn("Unable to fire ZipTransferEvent for [{}]", transferFile, e);
-                                    // Do nothing, from user perspective STOR has completed so no point informing them
-                                }
-                            }
+                            response.setObject(ZIP_INTEGRITY_OK, true);
                         } else {
                             response.addComment("Zip integrity check failed, deleting file");
                             try {
@@ -152,6 +139,37 @@ public class ZipscriptZipPostHook extends ZipTools {
             } catch (FileNotFoundException e) {
                 response.addComment("File has already been deleted, skipping zip integrity check");
             }
+        }
+    }
+
+    /**
+     * Announces a zip that passed the integrity check. This runs after the SFV post hook, which deletes a
+     * zip whose checksum does not match the SFV, so no event is published for a file that is gone.
+     */
+    @CommandHook(commands = "doSTOR", priority = 13, type = HookType.POST)
+    public void doZipscriptSTORZipEventHook(CommandRequest request, CommandResponse response) {
+        if (!response.getObject(ZIP_INTEGRITY_OK, false)) {
+            return;
+        }
+        try {
+            FileHandle transferFile = response.getObject(DataConnectionHandler.TRANSFER_FILE);
+            if (!transferFile.exists()) {
+                return;
+            }
+            BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
+            RemoteSlave transferSlave = response.getObject(DataConnectionHandler.TRANSFER_SLAVE);
+            InetAddress transferSlaveInetAddr = response.getObject(DataConnectionHandler.TRANSFER_SLAVE_INET_ADDRESS);
+            char transferType = response.getObject(DataConnectionHandler.TRANSFER_TYPE);
+            ZipscriptVFSDataZip zipData = new ZipscriptVFSDataZip(transferFile.getParent());
+            GlobalContext.getEventService().publishAsync(new ZipTransferEvent(conn, "STOR",
+                    transferFile, conn.getClientAddress(), transferSlave, transferSlaveInetAddr,
+                    transferType, zipData, zipData.getDizInfo(), zipData.getDizStatus()));
+        } catch (KeyNotFoundException e1) {
+            logger.warn("Unable to fire ZipTransferEvent", e1);
+            // one or more bits of information didn't get populated correctly, have to skip the event
+        } catch (IOException | NoAvailableSlaveException e) {
+            logger.warn("Unable to fire ZipTransferEvent", e);
+            // Do nothing, from user perspective STOR has completed so no point informing them
         }
     }
 

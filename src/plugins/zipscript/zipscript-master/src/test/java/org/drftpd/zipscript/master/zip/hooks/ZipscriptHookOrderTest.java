@@ -27,4 +27,12 @@ class ZipscriptHookOrderTest {
         int sfv = priority(ZipscriptPostHook.class, "doZipscriptSTORPostCheck");
         assertTrue(integrity < sfv, "integrity " + integrity + " must be below sfv " + sfv);
     }
+
+    @Test
+    void zipEventIsPublishedAfterSfvPostCheck() throws NoSuchMethodException {
+        // the SFV hook deletes a zip whose checksum does not match the SFV, no event may be published before
+        int event = priority(ZipscriptZipPostHook.class, "doZipscriptSTORZipEventHook");
+        int sfv = priority(ZipscriptPostHook.class, "doZipscriptSTORPostCheck");
+        assertTrue(event > sfv, "event " + event + " must be above sfv " + sfv);
+    }
 }
