@@ -197,10 +197,10 @@ public class DupeCheckHooks {
 
         } catch (IndexException e) {
             // Index Exception while searching
-            logger.error("While dupe checking we received an index error: {}", e.getMessage());
+            logger.error("While dupe checking we received an index error: {}", e.getMessage(), e);
         } catch (IllegalArgumentException e) {
             // Invalid Argument while searching
-            logger.error("While dupe checking we received a illegal argument error: {}", e.getMessage());
+            logger.error("While dupe checking we received a illegal argument error: {}", e.getMessage(), e);
         }
         return request;
     }

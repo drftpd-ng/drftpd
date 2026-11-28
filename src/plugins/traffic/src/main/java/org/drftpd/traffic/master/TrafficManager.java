@@ -184,7 +184,7 @@ public class TrafficManager implements PluginInterface {
             return new DualRule(props, count, delegate);
         } catch (Exception e) {
             Throwable cause = e.getCause() != null ? e.getCause() : e;
-            logger.error("Unable to load Dual rule {}: {}", count, cause.getMessage());
+            logger.error("Unable to load Dual rule {}: {}", count, cause.getMessage(), cause);
             return null;
         }
     }

@@ -340,7 +340,7 @@ public class Find extends CommandInterface {
         try {
             minAge = DupeUtils.parseMinAge(settings.getDupeMinAge());
         } catch (IllegalArgumentException e) {
-            logger.error("Invalid dupe.min.age in find.conf: {}", e.getMessage());
+            logger.error("Invalid dupe.min.age in find.conf: {}", e.getMessage(), e);
             return new CommandResponse(500, "Invalid find.conf: " + e.getMessage());
         }
         boolean observePrivPath = request.getProperties().getProperty("observe.privpath", "true").equalsIgnoreCase("true");

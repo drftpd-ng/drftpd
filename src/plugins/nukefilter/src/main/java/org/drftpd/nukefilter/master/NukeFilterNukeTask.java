@@ -64,6 +64,7 @@ public class NukeFilterNukeTask extends TimerTask {
                     NukeFilterManager.getNukeFilterManager().getNukeFilterSettings().getNuker());
         } catch (NoSuchUserException | UserFileException e) {
             logger.error("error loading nuker: {}", e.getMessage());
+            logger.debug("error loading nuker", e);
             return;
         }
 
@@ -71,7 +72,7 @@ public class NukeFilterNukeTask extends TimerTask {
         try {
             nd = NukeUtils.nuke(dir, nukex, reason, nuker);
         } catch (NukeException e) {
-            logger.error("error nuking: {}", e.getMessage());
+            logger.error("error nuking: {}", e.getMessage(), e);
             return;
         }
         NukeEvent nuke = new NukeEvent(nuker, "NUKE", nd);
