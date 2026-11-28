@@ -331,6 +331,7 @@ public class MoreStats extends CommandInterface {
             response.addComment(ConfigLoader.loadTextFile("traffic_header.txt"));
         } catch (IOException ioe) {
             logger.warn("Error reading traffic_header - {}", ioe.getMessage());
+            logger.debug("Error reading traffic_header", ioe);
         }
 
         addTrafficComment("Total Uploads", TotalUpAvrage, TotalUp, TotalFilesUp, response);
@@ -346,6 +347,7 @@ public class MoreStats extends CommandInterface {
             response.addComment(ConfigLoader.loadTextFile("traffic_footer.txt"));
         } catch (IOException ioe) {
             logger.warn("Error reading traffic_footer - {}", ioe.getMessage());
+            logger.debug("Error reading traffic_footer", ioe);
         }
 
         return response;

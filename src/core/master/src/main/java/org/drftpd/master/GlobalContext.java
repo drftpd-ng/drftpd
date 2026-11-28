@@ -432,6 +432,7 @@ public class GlobalContext {
             _sslContext = SSLGetContext.getSSLContext();
         } catch (IOException e) {
             logger.warn("Couldn't load SSLContext, SSL/TLS disabled - {}", e.getMessage());
+            logger.debug("Couldn't load SSLContext, SSL/TLS disabled", e);
         } catch (Exception e) {
             logger.warn("Couldn't load SSLContext, SSL/TLS disabled", e);
         }

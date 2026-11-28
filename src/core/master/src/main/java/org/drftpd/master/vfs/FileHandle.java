@@ -200,6 +200,7 @@ public class FileHandle extends InodeHandle implements FileHandleInterface {
                         // file itself is gone from the VFS, getInode() throws FileNotFoundException.
                         logger.warn("Slave {} reported {} as missing while getting its checksum: {}",
                                 rslave.getName(), getPath(), e.getMessage());
+                        logger.debug("Slave {} reported {} as missing", rslave.getName(), getPath(), e);
                         missingOn.add(rslave);
                         continue;
                     } catch (IOException e) {
