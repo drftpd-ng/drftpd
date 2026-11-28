@@ -104,7 +104,7 @@ public class ZipscriptVFSDataMP3 {
                         logger.debug("Slave went offline while retrieving MP3INFO for {}, trying next file", file.getPath());
                     } catch (RemoteIOException e) {
                         // continue, the next mp3 might work
-                        logger.warn("Slave failed to retrieve MP3INFO for {}: {}", file.getPath(), e.getCause() != null ? e.getCause().getMessage() : e.getMessage());
+                        logger.warn("Slave failed to retrieve MP3INFO for {}: {}", file.getPath(), e.getCause() != null ? e.getCause().getMessage() : e.getMessage(), e);
                     }
                 }
 

@@ -135,7 +135,7 @@ public class ZipscriptVFSDataZip {
                 logger.debug("Slave went offline while retrieving DIZINFO for {}, trying next file", file.getPath());
             } catch (RemoteIOException e) {
                 // continue, the next zip might work
-                logger.warn("Slave failed to retrieve DIZINFO for {}: {}", file.getPath(), e.getCause() != null ? e.getCause().getMessage() : e.getMessage());
+                logger.warn("Slave failed to retrieve DIZINFO for {}: {}", file.getPath(), e.getCause() != null ? e.getCause().getMessage() : e.getMessage(), e);
             }
 
             // If we have valid dizinfo stop the loop
