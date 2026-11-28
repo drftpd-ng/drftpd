@@ -88,7 +88,7 @@ public class CommitManager {
 
     /**
      * Adds a {@link Commitable} object to the commit queue.
-     * If the object is already present on the queue, this call is just ignored.
+     * If the object itself (not an equal one) is already present on the queue, this call is just ignored.
      *
      * @param object The Commitable object
      */
@@ -239,16 +239,20 @@ public class CommitManager {
             return _time;
         }
 
+        /**
+         * Matches the very same object only, not an equal one: inodes are equal when they have the same path,
+         * so a file deleted and uploaded again (or a directory removed and created again) within the commit
+         * delay found the deleted inode still queued, and the new one was never queued and never written.
+         * The same goes for a stale inode removing the entry of a new one with the same path.
+         */
         @Override
         public boolean equals(Object obj) {
-            if (obj == this) return true;
-            if (obj == null) return false;
-            return (obj instanceof Commitable) && _object.equals(obj);
+            return obj == this || obj == _object;
         }
 
         @Override
         public int hashCode() {
-            return _object.hashCode();
+            return System.identityHashCode(_object);
         }
     }
 

@@ -152,7 +152,7 @@ public class VirtualFileSystem {
     /**
      * Deletes a directory or a file from the dir tree, deleting data from the
      * disk also.<br>
-     * The inode is marked as deleted first, under the same lock as {@link #writeInode(VirtualFileSystemInode)}:
+     * The inode is marked as deleted first, under the lock taken by {@link #writeInode(VirtualFileSystemInode)}:
      * the json files of its children (for a directory) can still be queued in the {@link CommitManager}, or be
      * committed later by a transfer or a plugin that still holds them, and writing them would re-create the
      * deleted directory on disk, which then comes back after a restart.
@@ -161,9 +161,11 @@ public class VirtualFileSystem {
      */
     protected void deleteInode(VirtualFileSystemInode inode) {
         synchronized (_diskLock) {
+            // A write in progress ends before this, the later ones see the mark: no need to hold the lock
+            // while the tree is removed
             inode.markDeleted();
-            recursiveDelete(new File(getRealPath(inode.getPath())));
         }
+        recursiveDelete(new File(getRealPath(inode.getPath())));
     }
 
     /**

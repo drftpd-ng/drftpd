@@ -147,6 +147,41 @@ public class VirtualFileSystemDeleteTest {
     }
 
     /**
+     * RMD of a release whose files are still queued, then MKD and a new upload of the same names within the
+     * commit delay: the commit queue matched the new inodes with the deleted ones (same path) and ignored
+     * them, so the new release was never written (the deleted inodes are skipped when they are written).
+     */
+    @Test
+    void recreatedInodesWithTheSamePathAreQueued() throws Exception {
+        CommitManager cm = CommitManager.getCommitManager();
+        VirtualFileSystemDirectory old = dir(_root, DIR);
+        old.createDirectory("Sample", "drftpd", "drftpd");
+        old.createFile("a.rar", "drftpd", "drftpd", "slaveA", 100L);
+        VirtualFileSystemInode oldSample = old.getInodeByName("Sample");
+        VirtualFileSystemInode oldFile = old.getInodeByName("a.rar");
+        assertTrue(cm.contains(oldSample));
+        assertTrue(cm.contains(oldFile));
+        old.delete();
+
+        _root.createDirectory(DIR, "drftpd", "drftpd");
+        VirtualFileSystemDirectory fresh = dir(_root, DIR);
+        int before = cm.getQueueSize();
+        fresh.createDirectory("Sample", "drftpd", "drftpd");
+        fresh.createFile("a.rar", "drftpd", "drftpd", "slaveB", 40L);
+        VirtualFileSystemInode newSample = fresh.getInodeByName("Sample");
+        VirtualFileSystemInode newFile = fresh.getInodeByName("a.rar");
+        assertNotSame(oldFile, newFile);
+
+        assertEquals(before + 2, cm.getQueueSize(), "the new Sample/ and a.rar were not queued");
+        // Each inode has its own entry: removing the stale one must leave the new one queued
+        assertTrue(cm.remove(oldFile));
+        assertTrue(cm.remove(oldSample));
+        assertTrue(cm.contains(newFile));
+        assertTrue(cm.remove(newFile));
+        assertTrue(cm.remove(newSample));
+    }
+
+    /**
      * Deleting a file only stops that file: its directory and siblings are still written.
      */
     @Test
