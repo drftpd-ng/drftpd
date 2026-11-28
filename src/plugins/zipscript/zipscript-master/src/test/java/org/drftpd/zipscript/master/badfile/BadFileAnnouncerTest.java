@@ -17,6 +17,7 @@
  */
 package org.drftpd.zipscript.master.badfile;
 
+import org.drftpd.zipscript.master.RaceNameMasker;
 import org.junit.jupiter.api.Test;
 
 import java.io.InputStream;
@@ -66,7 +67,7 @@ class BadFileAnnouncerTest {
     void envHasThemeVariables() {
         BadFileEvent event = new BadFileEvent("bob", null, "a.rar", BadFileReason.OTHER, "banned genre");
         Map<String, Object> env = new HashMap<>();
-        BadFileAnnouncer.fillEnv(env, event, "grp", "MP3", "5", "Rel-GRP");
+        BadFileAnnouncer.fillEnv(env, event, "grp", new RaceNameMasker(new Properties()), "MP3", "MP3", "5", "Rel-GRP");
         assertEquals("bob", env.get("user"));
         assertEquals("grp", env.get("group"));
         assertEquals("MP3", env.get("section"));
@@ -75,6 +76,29 @@ class BadFileAnnouncerTest {
         assertEquals("OTHER", env.get("reason"));
         assertEquals("banned genre", env.get("detail"));
         assertEquals("store.bad", BadFileAnnouncer.ANNOUNCE_TYPE);
+    }
+
+    @Test
+    void hideuserMasksUserAndGroup() {
+        Properties props = new Properties();
+        props.setProperty("hideuser.enabled", "true");
+        props.setProperty("hideuser.groups", "testers");
+        RaceNameMasker masker = new RaceNameMasker(props);
+        BadFileEvent event = new BadFileEvent("lambda", null, "bad.bin", BadFileReason.OTHER, "x");
+
+        Map<String, Object> env = new HashMap<>();
+        BadFileAnnouncer.fillEnv(env, event, "testers", masker, "TV", "TV", "5", "Rel-GRP");
+        assertEquals("Anonymous", env.get("user"));
+        assertEquals("Anonymous", env.get("group"));
+
+        env.clear();
+        BadFileAnnouncer.fillEnv(env, event, "others", masker, "TV", "TV", "5", "Rel-GRP");
+        assertEquals("lambda", env.get("user"));
+        assertEquals("others", env.get("group"));
+
+        env.clear();
+        BadFileAnnouncer.fillEnv(env, event, "", masker, "TV", "TV", "5", "Rel-GRP");
+        assertEquals("lambda", env.get("user"));
     }
 
     @Test
