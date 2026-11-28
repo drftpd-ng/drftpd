@@ -17,6 +17,7 @@
  */
 package org.drftpd.autofreespace.master;
 
+import org.drftpd.master.cron.SafeTimerTask;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
@@ -157,7 +158,7 @@ public class AutoFreeSpace implements PluginInterface {
         return result;
     }
 
-    private static class MrCleanIt extends TimerTask {
+    private static class MrCleanIt extends SafeTimerTask {
         // This contains a list of all releases that (would) have been deleted.
         // Only useful when option "announce.only" is enabled
         // Also this will grow indefinitely and could potentially be a memory hog
@@ -178,7 +179,7 @@ public class AutoFreeSpace implements PluginInterface {
             isRunning = false;
         }
 
-        public void run() {
+        protected void safeRun() {
             // Make sure we start with a clean list
             if (!isRunning) {
                 logger.error("Invoked task but we should not be running, stopping");

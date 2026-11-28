@@ -23,7 +23,7 @@ import org.drftpd.master.vfs.DirectoryHandle;
 
 import java.io.FileNotFoundException;
 import java.util.Iterator;
-import java.util.TimerTask;
+import org.drftpd.master.cron.SafeTimerTask;
 
 /**
  * Task that runs every minute checking scan queue for items old enough to scan
@@ -31,12 +31,12 @@ import java.util.TimerTask;
  *
  * @author scitz0
  */
-public class ScanTask extends TimerTask {
+public class ScanTask extends SafeTimerTask {
 
     public ScanTask() {
     }
 
-    public void run() {
+    protected void safeRun() {
         for (Iterator<DirectoryHandle> iter = DirsToCheck.getDirsToCheck().get().iterator(); iter.hasNext(); ) {
             DirectoryHandle dir = iter.next();
 

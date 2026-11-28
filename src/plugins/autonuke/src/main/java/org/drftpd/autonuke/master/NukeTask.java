@@ -33,20 +33,20 @@ import org.drftpd.master.vfs.DirectoryHandle;
 
 import java.io.FileNotFoundException;
 import java.util.Iterator;
-import java.util.TimerTask;
+import org.drftpd.master.cron.SafeTimerTask;
 
 /**
  * Task that runs every minute checking nuke queue for items old enough to nuke
  *
  * @author scitz0
  */
-public class NukeTask extends TimerTask {
+public class NukeTask extends SafeTimerTask {
     private static final Logger logger = LogManager.getLogger(NukeTask.class);
 
     public NukeTask() {
     }
 
-    public void run() {
+    protected void safeRun() {
         for (Iterator<NukeItem> iter = DirsToNuke.getDirsToNuke().get().iterator(); iter.hasNext(); ) {
             NukeItem ni = iter.next();
             if (System.currentTimeMillis() >= ni.getTime()) {
