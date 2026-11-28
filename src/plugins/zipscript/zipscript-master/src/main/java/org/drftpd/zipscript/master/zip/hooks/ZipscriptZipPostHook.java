@@ -46,6 +46,7 @@ import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.zipscript.common.zip.DizInfo;
 import org.drftpd.zipscript.common.zip.DizStatus;
+import org.drftpd.zipscript.master.Percent;
 import org.drftpd.zipscript.master.sfv.ZipscriptStrictness;
 import org.drftpd.zipscript.master.RaceNameMasker;
 import org.drftpd.zipscript.master.zip.ZipTools;
@@ -270,6 +271,10 @@ public class ZipscriptZipPostHook extends ZipTools {
             ZipscriptVFSDataZip zipData = new ZipscriptVFSDataZip(dir);
             DizInfo dizInfo = zipData.getDizInfo();
             DizStatus dizStatus = zipData.getDizStatus();
+            if (dizInfo.getTotal() <= 0) {
+                // a .diz without a file count has no race to show
+                return;
+            }
 
             Collection<UploaderPosition> racers = RankUtils.userSort(getZipFiles(dir),
                     "bytes", "high");
@@ -312,7 +317,7 @@ public class ZipscriptZipPostHook extends ZipTools {
                 raceenv.put("files", "" + stat.getFiles());
                 raceenv.put("bytes", Bytes.formatBytes(stat.getBytes()));
                 raceenv.put("position", String.valueOf(position));
-                raceenv.put("percent", (stat.getFiles() * 100) / dizInfo.getTotal() + "%");
+                raceenv.put("percent", Percent.of(stat.getFiles(), dizInfo.getTotal()) + "%");
 
                 raceTextBuilder.append(ReplacerUtils.jprintf(racerline, raceenv));
                 raceTextBuilder.append('\n');
@@ -333,7 +338,7 @@ public class ZipscriptZipPostHook extends ZipTools {
                 raceenv.put("position", String.valueOf(position));
                 raceenv.put("bytes", Bytes.formatBytes(stat.getBytes()));
                 raceenv.put("files", Integer.toString(stat.getFiles()));
-                raceenv.put("percent", (stat.getFiles() * 100) / dizInfo.getTotal() + "%");
+                raceenv.put("percent", Percent.of(stat.getFiles(), dizInfo.getTotal()) + "%");
                 raceenv.put("speed", Bytes.formatBytes(stat.getXferspeed()) + "/s");
 
                 raceTextBuilder.append(ReplacerUtils.jprintf(groupline, raceenv));
@@ -347,7 +352,7 @@ public class ZipscriptZipPostHook extends ZipTools {
             env.put("completefiles", dizStatus.getPresent() + "/" + dizInfo.getTotal());
             env.put("totalbytes", Bytes.formatBytes(getZipTotalBytes(dir)));
             env.put("totalspeed", Bytes.formatBytes(getXferspeed(dir)) + "/s");
-            env.put("totalpercent", (getZipFiles(dir).size() * 100) / dizInfo.getTotal() + "%");
+            env.put("totalpercent", Percent.of(getZipFiles(dir).size(), dizInfo.getTotal()) + "%");
 
             raceTextBuilder.append(_bundle.getString("cwd.totals.body"));
             raceTextBuilder.append('\n');
