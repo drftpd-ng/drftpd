@@ -28,7 +28,9 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -55,10 +57,42 @@ public class RemoteSlaveSysInfoTest {
 
         volatile boolean _online = true;
         volatile String _offlineReason;
+        // run once by the isOnline() call with this number, see testFetchResponseWhenReplyIsGone...
+        int _isOnlineCalls;
+        int _hookAtCall;
+        volatile Runnable _isOnlineHook;
+        // plays the slave side of simpleDelete/simpleRename
+        RemoteSlave.SysInfoSender _deleteSender;
+        final List<String> _queued = new ArrayList<>();
 
         @Override
         public boolean isOnline() {
+            if (_isOnlineHook != null && ++_isOnlineCalls == _hookAtCall) {
+                Runnable hook = _isOnlineHook;
+                _isOnlineHook = null;
+                hook.run();
+            }
             return _online;
+        }
+
+        @Override
+        public void commit() {
+        }
+
+        @Override
+        String issueDelete(String path) throws SlaveUnavailableException {
+            return _deleteSender.send();
+        }
+
+        @Override
+        String issueRename(String from, String toDirPath, String toName) throws SlaveUnavailableException {
+            return _deleteSender.send();
+        }
+
+        @Override
+        protected void addQueueRename(String fileName, String destName) {
+            super.addQueueRename(fileName, destName);
+            _queued.add(fileName);
         }
 
         /** Records the reason instead of tearing down a connection (there is none). */
@@ -77,6 +111,11 @@ public class RemoteSlaveSysInfoTest {
             if (generation == getConnectionGeneration()) {
                 setOffline(reason);
             }
+        }
+
+        @Override
+        public void setOffline(Throwable t, long generation) {
+            setOffline(String.valueOf(t.getMessage()), generation);
         }
     }
 
@@ -417,16 +456,97 @@ public class RemoteSlaveSysInfoTest {
     public void testOldReaderDoesNotRecycleItsPingIndexIntoNewPool() throws Exception {
         long generation = _slave.getConnectionGeneration();
         String ping = _slave.fetchIndex();
-        // a ping of the same connection that got lost goes back into the pool
-        assertTrue(_slave.recycleIndex(ping, generation));
+        // a lost ping of the same connection: its index comes back with the late reply, which nobody gets
+        assertTrue(_slave.abandonPingIndex(ping, generation));
+        assertFalse(_slave.storeResponse(reply(ping)));
+        assertEquals(256, drainPool().size());
+        assertTrue(indexPoolIsEmpty());
 
+        _slave.resetIndexes();
         ping = _slave.fetchIndex();
+        generation = _slave.getConnectionGeneration();
         _slave.resetIndexes();
         // the reader of the old connection gives up on its ping after the reconnect: the rebuilt pool is full,
         // pushing into it used to fail with "Deque full" and drop the new connection
-        assertFalse(_slave.recycleIndex(ping, generation));
+        assertFalse(_slave.abandonPingIndex(ping, generation));
+        // and a command of the new connection that uses the index gets its reply
+        assertTrue(_slave.storeResponse(reply(ping)));
         assertEquals(256, drainPool().size());
         assertTrue(indexPoolIsEmpty());
+    }
+
+    @Test
+    public void testFetchResponseWhenReplyIsGoneDoesNotPushIndexTwice() throws Exception {
+        long generation = _slave.getConnectionGeneration();
+        String index = _slave.fetchIndex();
+        assertTrue(_slave.storeResponse(reply(index)));
+        // a second waiter on the same index (a legacy caller) takes the reply between our wait and our remove;
+        // isOnline() is called once in the wait loop condition and once right before the remove
+        _slave._hookAtCall = 2;
+        _slave._isOnlineHook = () -> {
+            try {
+                assertNotNull(_slave.fetchResponse(index, 1000, generation));
+            } catch (Exception e) {
+                throw new AssertionError(e);
+            }
+        };
+        // used to push the index a second time ("Deque full") and return null
+        assertThrows(SlaveUnavailableException.class, () -> _slave.fetchResponse(index, 1000, generation));
+        assertNull(_slave._isOnlineHook, "hook did not run");
+        assertEquals(256, drainPool().size());
+        assertTrue(indexPoolIsEmpty());
+    }
+
+    /** Takes an index like BasicIssuer; the first command is lost in a reconnect, later ones are answered. */
+    private void lostInReconnectThenAnswered(AtomicInteger sent) {
+        _slave._deleteSender = () -> {
+            String index = _slave.fetchIndex();
+            if (sent.incrementAndGet() == 1) {
+                _slave.resetIndexes();
+            } else {
+                assertTrue(_slave.storeResponse(reply(index)));
+            }
+            return index;
+        };
+    }
+
+    @Test
+    public void testSimpleDeleteLostInReconnectIsSentAgainNotQueued() {
+        AtomicInteger sent = new AtomicInteger();
+        lostInReconnectThenAnswered(sent);
+        // used to throw IllegalStateException("Slave is online, you cannot queue an operation")
+        _slave.simpleDelete("/dir/file");
+        assertEquals(2, sent.get());
+        assertTrue(_slave._queued.isEmpty());
+        assertNull(_slave._offlineReason);
+    }
+
+    @Test
+    public void testSimpleRenameLostInReconnectIsSentAgainNotQueued() {
+        AtomicInteger sent = new AtomicInteger();
+        lostInReconnectThenAnswered(sent);
+        _slave.simpleRename("/dir/a", "/dir", "b");
+        assertEquals(2, sent.get());
+        assertTrue(_slave._queued.isEmpty());
+        assertNull(_slave._offlineReason);
+    }
+
+    @Test
+    public void testSimpleDeleteWhileOfflineIsQueued() {
+        _slave._online = false;
+        _slave._deleteSender = _slave::fetchIndex;
+        _slave.simpleDelete("/dir/file");
+        assertEquals(List.of("/dir/file"), _slave._queued);
+    }
+
+    @Test
+    public void testSimpleDeleteFailingTwiceWhileOnlineDoesNotThrow() {
+        // e.g. a send error on a connection that does not look closed yet: never queue while online
+        _slave._deleteSender = () -> {
+            throw new SlaveUnavailableException("error sending command");
+        };
+        _slave.simpleDelete("/dir/file");
+        assertTrue(_slave._queued.isEmpty());
     }
 
     @Test

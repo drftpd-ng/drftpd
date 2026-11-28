@@ -94,6 +94,8 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
     // Indexes whose caller gave up waiting without dropping the slave (see fetchSystemInfo).
     // Guarded by itself together with the insertion into _indexWithCommands.
     private final transient Set<String> _abandonedIndexes = new HashSet<>();
+    // Indexes of pings the reader gave up on; recycled when the late reply arrives. Guarded by _abandonedIndexes.
+    private final transient Set<String> _abandonedPingIndexes = new HashSet<>();
     // True from the moment a sysinfo request is issued until its reply has been consumed or discarded, so at
     // most one sysinfo is in flight per slave. Guarded by _abandonedIndexes.
     private transient boolean _sysInfoPending;
@@ -111,9 +113,9 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
     private transient volatile long _connectionGeneration;
     // Passed to setOfflineReal by the callers that mean whatever connection is current.
     private static final long CURRENT_CONNECTION = -1L;
-    private transient ObjectInputStream _sin;
-    private transient Socket _socket;
-    private transient ObjectOutputStream _sout;
+    private transient volatile ObjectInputStream _sin;
+    private transient volatile Socket _socket;
+    private transient volatile ObjectOutputStream _sout;
     private transient ConcurrentHashMap<TransferIndex, RemoteTransfer> _transfers;
     private transient boolean _initRemergeCompleted;
     private final transient Object _commandMonitor;
@@ -616,21 +618,59 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
      * you don't want to utilize asynchronization
      */
     public void simpleDelete(String path) {
-        long generation = getConnectionGeneration();
-        try {
-            fetchResponse(SlaveManager.getBasicIssuer().issueDeleteToSlave(this, path), 300000, generation);
-        } catch (RemoteIOException e) {
-            if (e.getCause() instanceof FileNotFoundException) {
+        for (int attempt = 1; ; attempt++) {
+            long generation = getConnectionGeneration();
+            try {
+                fetchResponse(issueDelete(path), 300000, generation);
+                return;
+            } catch (RemoteIOException e) {
+                if (e.getCause() instanceof FileNotFoundException) {
+                    return;
+                }
+
+                setOffline("IOException deleting file, check logs for specific error", generation);
+                logger.error("IOException deleting file, file will be deleted when slave comes online", e);
+            } catch (SlaveUnavailableException e) {
+                // offline (the delete is queued below), or the slave reconnected while we waited
+            }
+            if (queueIfOffline(path, null)) {
+                // Already offline and we ARE successful in deleting the file
                 return;
             }
-
-            setOffline("IOException deleting file, check logs for specific error", generation);
-            addQueueDelete(path);
-            logger.error("IOException deleting file, file will be deleted when slave comes online", e);
-        } catch (SlaveUnavailableException e) {
-            // Already offline and we ARE successful in deleting the file
-            addQueueDelete(path);
+            if (attempt == 2) {
+                logger.error("Could not delete {} on slave {}, which is online again", path, getName());
+                return;
+            }
+            // the command was lost with the previous connection: once more on the current one
         }
+    }
+
+    /**
+     * Queues a delete (destination null) or rename for the next connect if the slave is offline.
+     *
+     * @return false if the slave is online, so nothing was queued
+     */
+    private boolean queueIfOffline(String source, String destination) {
+        if (isOnline()) {
+            return false;
+        }
+        try {
+            addQueueRename(source, destination);
+            return true;
+        } catch (IllegalStateException e) {
+            // it came back online in the meantime
+            return false;
+        }
+    }
+
+    /** Sends a delete to the slave and returns its index. Seam for tests. */
+    String issueDelete(String path) throws SlaveUnavailableException {
+        return SlaveManager.getBasicIssuer().issueDeleteToSlave(this, path);
+    }
+
+    /** Sends a rename to the slave and returns its index. Seam for tests. */
+    String issueRename(String from, String toDirPath, String toName) throws SlaveUnavailableException {
+        return SlaveManager.getBasicIssuer().issueRenameToSlave(this, from, toDirPath, toName);
     }
 
     /**
@@ -644,15 +684,25 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
         } else {
             simplePath = toDirPath + "/" + toName;
         }
-        long generation = getConnectionGeneration();
-        try {
-            fetchResponse(SlaveManager.getBasicIssuer().issueRenameToSlave(this, from, toDirPath, toName),
-                    getActualTimeout(), generation);
-        } catch (RemoteIOException e) {
-            setOffline(e, generation);
-            addQueueRename(from, simplePath);
-        } catch (SlaveUnavailableException e) {
-            addQueueRename(from, simplePath);
+        for (int attempt = 1; ; attempt++) {
+            long generation = getConnectionGeneration();
+            try {
+                fetchResponse(issueRename(from, toDirPath, toName), getActualTimeout(), generation);
+                return;
+            } catch (RemoteIOException e) {
+                setOffline(e, generation);
+            } catch (SlaveUnavailableException e) {
+                // offline (the rename is queued below), or the slave reconnected while we waited
+            }
+            if (queueIfOffline(from, simplePath)) {
+                return;
+            }
+            if (attempt == 2) {
+                logger.error("Could not rename {} to {} on slave {}, which is online again", from, simplePath,
+                        getName());
+                return;
+            }
+            // the command was lost with the previous connection: once more on the current one
         }
     }
 
@@ -695,6 +745,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
                 _indexWithCommands.clear();
             }
             _abandonedIndexes.clear();
+            _abandonedPingIndexes.clear();
             _sysInfoPending = false;
             _sysInfoCache = null;
             return _connectionGeneration;
@@ -767,12 +818,12 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
         }
 
         new Thread(new InitiateRemergeThread(), "RemoteSlaveRemerge - " + getName()).start();
-        start(in, generation);
+        start(in, socket, generation);
     }
 
     /** Starts the reader thread of the connection of this generation; it only ever reads that connection's stream. */
-    private void start(ObjectInputStream in, long generation) {
-        Thread t = new Thread(() -> run(in, generation));
+    private void start(ObjectInputStream in, Socket socket, long generation) {
+        Thread t = new Thread(() -> run(in, socket, generation));
         t.setName("RemoteSlave - " + getName());
         t.start();
     }
@@ -992,6 +1043,11 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
                 _sysInfoPending = false;
                 return false;
             }
+            if (_abandonedPingIndexes.remove(ar.getIndex())) {
+                logger.debug("Discarding late reply for lost ping {}", ar.getIndex());
+                _indexPool.push(ar.getIndex());
+                return false;
+            }
             _indexWithCommands.put(ar.getIndex(), ar);
             return true;
         }
@@ -1090,6 +1146,11 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
                 throw new SlaveUnavailableException("Slave went offline while processing command");
             }
             rar = _indexWithCommands.remove(index);
+            if (rar == null) {
+                // gone between the wait and here: taken by another waiter on the same index (which already put it
+                // back), or cleared by setOffline. Pushing it again would put it in the pool twice.
+                throw new SlaveUnavailableException("Slave went offline while processing command");
+            }
             _indexPool.push(index);
         }
 
@@ -1172,21 +1233,24 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
     /** Runs the reader for the current connection. connect() starts the reader with its own stream instead. */
     public void run() {
         ObjectInputStream in;
+        Socket socket;
         long generation;
         synchronized (_abandonedIndexes) {
             in = _sin;
+            socket = _socket;
             generation = _connectionGeneration;
         }
-        run(in, generation);
+        run(in, socket, generation);
     }
 
     /**
      * The reader thread of one connection.
      *
      * @param in         the stream of that connection; never the one of a later connection
+     * @param socket     the socket of that connection
      * @param generation the generation of that connection
      */
-    private void run(ObjectInputStream in, long generation) {
+    private void run(ObjectInputStream in, Socket socket, long generation) {
         logger.debug("Starting RemoteSlave for {}", getName());
 
         try {
@@ -1209,11 +1273,15 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
                         && ((getActualTimeout() / 2 < (System.currentTimeMillis() - _lastResponseReceived))
                         || (getActualTimeout() / 2 < (System.currentTimeMillis() - _lastCommandSent)))) {
                     if (pingIndex != null) {
-                        logger.error("Ping lost, no response from slave, sending new ping to slave");
-                        if (!recycleIndex(pingIndex, generation)) {
+                        if (!abandonPingIndex(pingIndex, generation)) {
                             // the slave reconnected: the pool was rebuilt with this index, and this reader is done
                             return;
                         }
+                        logger.error("Ping lost, no response from slave, sending new ping to slave");
+                    }
+                    if (_connectionGeneration != generation) {
+                        // do not ping the new connection from the reader of the previous one
+                        return;
                     }
                     pingIndex = SlaveManager.getBasicIssuer().issuePingToSlave(this);
                 } else if (getActualTimeout() < (System.currentTimeMillis() - _lastResponseReceived)) {
@@ -1223,11 +1291,11 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
                     throw new SlaveUnavailableException();
                 }
 
-                if (isOnline() && !_initRemergeCompleted) {
+                if (isOnline() && _connectionGeneration == generation && !_initRemergeCompleted) {
                     if (_remergePaused.get()) {
                         // Do we need to resume?
                         if (_remergeQueue.size() <= Integer.parseInt(GlobalContext.getConfig().getMainProperties().getProperty("remerge.resume.threshold", "50"))) {
-                            _socket.setSoTimeout(_prevSocketTimeout); // Restore old time out
+                            socket.setSoTimeout(_prevSocketTimeout); // Restore old time out
                             SlaveManager.getBasicIssuer().issueRemergeResumeToSlave(this);
                             _remergePaused.set(false);
                             logger.debug("Issued remerge resume to slave, current remerge queue is {}", _remergeQueue.size());
@@ -1236,9 +1304,9 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
                         // Do we need to pause?
                         if (_remergeQueue.size() > Integer.parseInt(GlobalContext.getConfig().getMainProperties().getProperty("remerge.pause.threshold", "250"))) {
                             SlaveManager.getBasicIssuer().issueRemergePauseToSlave(this);
-                            _prevSocketTimeout = _socket.getSoTimeout();
+                            _prevSocketTimeout = socket.getSoTimeout();
                             // Set lower timeout so it reacts faster when queueSize goes back down
-                            _socket.setSoTimeout(100);
+                            socket.setSoTimeout(100);
                             _remergePaused.set(true);
                             logger.debug("Issued remerge pause to slave, current remerge queue is {}", _remergeQueue.size());
                         }
@@ -1281,7 +1349,16 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
                             continue;
                         }
                         if (pingIndex != null && pingIndex.equals(ar.getIndex())) {
-                            fetchResponse(pingIndex, getActualTimeout(), generation);
+                            try {
+                                fetchResponse(pingIndex, getActualTimeout(), generation);
+                            } catch (SlaveUnavailableException e) {
+                                if (_connectionGeneration != generation) {
+                                    logger.debug("Slave {} reconnected, reader of the previous connection exits",
+                                            getName());
+                                    return;
+                                }
+                                throw e;
+                            }
                             pingIndex = null;
                         } else if (ar.getIndex().equals("SiteBotMessage")) {
                             String message = ((AsyncResponseSiteBotMessage) ar).getMessage();
@@ -1299,17 +1376,19 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
     }
 
     /**
-     * Puts an index back into the pool, unless the slave reconnected since it was taken: the rebuilt pool already
-     * holds it then.
+     * Gives up on a ping whose reply did not come: its index goes back into the pool when the late reply arrives
+     * (see storeResponse), not before, so that reply cannot be taken for the reply of a later command that reuses
+     * the index. Nothing is done if the slave reconnected since the ping was sent: the rebuilt pool already holds
+     * the index.
      *
-     * @return false if the index was left alone because the connection of this generation is gone
+     * @return false if the connection of this generation is gone
      */
-    boolean recycleIndex(String index, long generation) {
+    boolean abandonPingIndex(String index, long generation) {
         synchronized (_abandonedIndexes) {
             if (_connectionGeneration != generation) {
                 return false;
             }
-            _indexPool.push(index);
+            _abandonedPingIndexes.add(index);
             return true;
         }
     }
