@@ -49,6 +49,8 @@ public abstract class VirtualFileSystemInode implements Commitable {
     protected long _lastModified;
     protected long _creationTime;
     private transient boolean _inodeLoaded;
+    // Set once this inode has been deleted, see isDeleted()
+    private transient volatile boolean _deleted;
 
     public VirtualFileSystemInode(String user, String group) {
         _username = user;
@@ -79,7 +81,33 @@ public abstract class VirtualFileSystemInode implements Commitable {
      */
     public void commit() {
         //logger.debug("Committing " + getPath());
+        if (isDeleted()) {
+            // Writing it would re-create its json file (and the deleted directories above it)
+            return;
+        }
         CommitManager.getCommitManager().add(this);
+    }
+
+    /**
+     * @return true if this inode or one of the directories above it has been deleted.<br>
+     * Deleting a directory only marks the directory itself: its children (files or subdirectories still in
+     * memory, queued in the {@link CommitManager} or committed later by a transfer or a plugin that still holds
+     * them) are found deleted through their parent chain, which is kept after the delete.
+     */
+    protected boolean isDeleted() {
+        for (VirtualFileSystemInode inode = this; inode != null; inode = inode._parent) {
+            if (inode._deleted) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Marks this inode as deleted, called by {@link VirtualFileSystem#deleteInode(VirtualFileSystemInode)}.
+     */
+    void markDeleted() {
+        _deleted = true;
     }
 
     /**
@@ -90,7 +118,7 @@ public abstract class VirtualFileSystemInode implements Commitable {
         logger.info("delete({})", this);
 
         String path = getPath();
-        VirtualFileSystem.getVirtualFileSystem().deleteInode(getPath());
+        VirtualFileSystem.getVirtualFileSystem().deleteInode(this);
         _parent.removeChild(this);
         CommitManager.getCommitManager().remove(this);
 

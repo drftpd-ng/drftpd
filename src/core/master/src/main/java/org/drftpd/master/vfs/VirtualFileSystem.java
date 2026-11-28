@@ -44,6 +44,8 @@ public class VirtualFileSystem {
     private static final Logger logger = LogManager.getLogger(VirtualFileSystem.class);
     private static final DirInodeFilenameFilter dirFilter = new DirInodeFilenameFilter();
     private static VirtualFileSystem _vfs = null;
+    // Orders json writes against deletes, see deleteInode()
+    private final Object _diskLock = new Object();
     private VirtualFileSystemRoot _root = null;
 
     /**
@@ -149,12 +151,19 @@ public class VirtualFileSystem {
 
     /**
      * Deletes a directory or a file from the dir tree, deleting data from the
-     * disk also.
+     * disk also.<br>
+     * The inode is marked as deleted first, under the same lock as {@link #writeInode(VirtualFileSystemInode)}:
+     * the json files of its children (for a directory) can still be queued in the {@link CommitManager}, or be
+     * committed later by a transfer or a plugin that still holds them, and writing them would re-create the
+     * deleted directory on disk, which then comes back after a restart.
      *
-     * @param path
+     * @param inode the inode to delete
      */
-    protected void deleteInode(String path) {
-        recursiveDelete(new File(getRealPath(path)));
+    protected void deleteInode(VirtualFileSystemInode inode) {
+        synchronized (_diskLock) {
+            inode.markDeleted();
+            recursiveDelete(new File(getRealPath(inode.getPath())));
+        }
     }
 
     /**
@@ -321,6 +330,16 @@ public class VirtualFileSystem {
      * @param inode
      */
     protected void writeInode(VirtualFileSystemInode inode) {
+        synchronized (_diskLock) {
+            if (inode.isDeleted()) {
+                logger.debug("Not writing {}, it or a directory above it has been deleted", inode.getPath());
+                return;
+            }
+            writeInodeUnlocked(inode);
+        }
+    }
+
+    private void writeInodeUnlocked(VirtualFileSystemInode inode) {
         String fullPath = getRealPath(inode.getPath());
         if (inode instanceof VirtualFileSystemRoot) {
             new File(fileSystemPath).mkdirs();
