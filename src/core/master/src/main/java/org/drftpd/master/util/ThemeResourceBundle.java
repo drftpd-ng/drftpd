@@ -65,9 +65,11 @@ public class ThemeResourceBundle extends ResourceBundle {
         try {
             String configurationPath = configPath(_confDirectory);
             Path targetPath = new File(configurationPath).toPath();
-            Stream<Path> pathStream = Files.walk(targetPath);
-            List<Path> themeFiles = pathStream.filter(f -> f.getFileName().toString().endsWith(".theme.default"))
-                    .collect(Collectors.toList());
+            List<Path> themeFiles;
+            try (Stream<Path> pathStream = Files.walk(targetPath)) {
+                themeFiles = pathStream.filter(f -> f.getFileName().toString().endsWith(".theme.default"))
+                        .collect(Collectors.toList());
+            }
             for (Path themeFile : themeFiles) {
                 ExtendedPropertyResourceBundle bundle;
                 try (FileInputStream theme = new FileInputStream(themeFile.toFile())) {
@@ -91,7 +93,6 @@ public class ThemeResourceBundle extends ResourceBundle {
                 List<String> allKeys = IteratorUtils.toList(childBundle.getKeys().asIterator());
                 combineBundles(themeFile, childBundle, allKeys);
             }
-            pathStream.close();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

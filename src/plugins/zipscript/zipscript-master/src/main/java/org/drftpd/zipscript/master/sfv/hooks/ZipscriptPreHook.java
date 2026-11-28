@@ -36,7 +36,7 @@ import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.zipscript.common.sfv.SFVInfo;
 import org.drftpd.zipscript.master.sfv.ZipscriptStrictness;
-import org.drftpd.zipscript.master.sfv.banned.BannedFilenames;
+import org.drftpd.zipscript.master.sfv.banned.ZipscriptBannedFilenamesPreHook;
 import org.drftpd.zipscript.master.badfile.BadFileEvent;
 import org.drftpd.zipscript.master.badfile.BadFileReason;
 import org.drftpd.zipscript.master.sfv.vfs.ZipscriptVFSDataSFV;
@@ -154,7 +154,7 @@ public class ZipscriptPreHook {
                                 "Requested action not taken. File not found in sfv."));
                         // a banned name is refused by the banned.filenames hook with its own reply, it
                         // is not a file "not in the sfv"
-                        if (!isBannedName(cfg, checkFile.getParent().getPath(), checkFile.getName())) {
+                        if (!ZipscriptBannedFilenamesPreHook.isBanned(checkFile.getParent().getPath(), checkFile.getName())) {
                             GlobalContext.getEventService().publishAsync(new BadFileEvent(request.getUser(),
                                     checkFile.getParent(), checkFile.getName(), BadFileReason.NOT_IN_SFV, ""));
                         }
@@ -183,13 +183,6 @@ public class ZipscriptPreHook {
                     checkFile.getParent().getPath(), checkFile.getName());
         }
         return request;
-    }
-
-    /**
-     * @return true if banned.filenames in the config refuses this file name in this directory
-     */
-    static boolean isBannedName(Properties cfg, String dirPath, String name) {
-        return BannedFilenames.fromProperties(cfg).isBanned(dirPath, name);
     }
 
     /**

@@ -15,8 +15,9 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.drftpd.zipscript.master.sfv.hooks;
+package org.drftpd.zipscript.master.sfv.banned;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Properties;
@@ -24,15 +25,21 @@ import java.util.Properties;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class ZipscriptPreHookTest {
+class ZipscriptBannedFilenamesPreHookTest {
+
+    @AfterEach
+    void reset() {
+        ZipscriptBannedFilenamesPreHook.setBanned(BannedFilenames.fromProperties(new Properties()));
+    }
 
     @Test
-    void bannedNameIsNotReportedAsNotInSfv() {
+    void sharedListDecidesIsBanned() {
+        assertFalse(ZipscriptBannedFilenamesPreHook.isBanned("/TV/Rel-GRP", "Thumbs.db"));
         Properties cfg = new Properties();
         cfg.setProperty("banned.filenames", "thumbs.db,*.url");
-        assertTrue(ZipscriptPreHook.isBannedName(cfg, "/TV/Rel-GRP", "Thumbs.db"));
-        assertTrue(ZipscriptPreHook.isBannedName(cfg, "/TV/Rel-GRP", "x.url"));
-        assertFalse(ZipscriptPreHook.isBannedName(cfg, "/TV/Rel-GRP", "extra.bin"));
-        assertFalse(ZipscriptPreHook.isBannedName(new Properties(), "/TV/Rel-GRP", "Thumbs.db"));
+        ZipscriptBannedFilenamesPreHook.setBanned(BannedFilenames.fromProperties(cfg));
+        assertTrue(ZipscriptBannedFilenamesPreHook.isBanned("/TV/Rel-GRP", "Thumbs.db"));
+        assertTrue(ZipscriptBannedFilenamesPreHook.isBanned("/TV/Rel-GRP", "x.url"));
+        assertFalse(ZipscriptBannedFilenamesPreHook.isBanned("/TV/Rel-GRP", "extra.bin"));
     }
 }

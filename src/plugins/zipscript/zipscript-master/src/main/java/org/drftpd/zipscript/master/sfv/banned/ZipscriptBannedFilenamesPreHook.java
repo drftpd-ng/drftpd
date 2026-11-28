@@ -28,13 +28,16 @@ import org.drftpd.master.commands.CommandResponse;
 import org.drftpd.master.event.ReloadEvent;
 import org.drftpd.master.vfs.FileHandle;
 
+import java.util.Properties;
+
 /**
  * Refuses STOR of files whose name matches {@code banned.filenames} in zipscript.conf (off when empty).
  */
 public class ZipscriptBannedFilenamesPreHook {
 
     // parsed once and again on SITE RELOAD, so STOR does not read zipscript.conf every time
-    private volatile BannedFilenames _banned;
+    // static so the sfv pre check applies the same list as this hook
+    private static volatile BannedFilenames _banned = BannedFilenames.fromProperties(new Properties());
 
     public ZipscriptBannedFilenamesPreHook() {
         AnnotationProcessor.process(this);
@@ -44,6 +47,17 @@ public class ZipscriptBannedFilenamesPreHook {
     @EventSubscriber
     public void onReloadEvent(ReloadEvent event) {
         loadConf();
+    }
+
+    /**
+     * @return true if the currently loaded banned.filenames list refuses this file name in this directory
+     */
+    public static boolean isBanned(String dirPath, String name) {
+        return _banned.isBanned(dirPath, name);
+    }
+
+    static void setBanned(BannedFilenames banned) {
+        _banned = banned;
     }
 
     private void loadConf() {
