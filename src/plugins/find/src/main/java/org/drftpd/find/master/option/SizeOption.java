@@ -63,7 +63,7 @@ public class SizeOption implements OptionInterface {
                     params.setMaxSize(Bytes.parseBytes(range[1]));
                 }
             } catch (NumberFormatException e) {
-                throw new ImproperUsageException(e);
+                throw new ImproperUsageException("Invalid size in " + option + " option: " + e.getMessage(), e);
             }
         } else if (option.equalsIgnoreCase("-0byte")) {
             params.setMinSize(0L);

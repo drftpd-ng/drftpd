@@ -56,7 +56,13 @@ public class AutoFreeSpaceSettings {
 
         // Quickly set the ones that are single:
         _onlyAnnounce = p.getProperty("announce.only", "false").equalsIgnoreCase("true");
-        _minFreeSpace = Bytes.parseBytes(p.getProperty("keepFree", "100GB").trim());
+        String keepFree = p.getProperty("keepFree", "100GB").trim();
+        try {
+            _minFreeSpace = Bytes.parseBytes(keepFree);
+        } catch (NumberFormatException e) {
+            logger.warn("Invalid keepFree value '{}' in autofreespace.conf, using the default 100GB", keepFree);
+            _minFreeSpace = Bytes.parseBytes("100GB");
+        }
         _cycleTime = Long.parseLong(p.getProperty("cycleTime", "1440").trim()) * 60000L;
         _maxIterations = Integer.parseInt(p.getProperty("max.iterations", "5").trim());
 

@@ -49,7 +49,12 @@ public class MinfreespaceFilter extends DiskFilter {
 
     public MinfreespaceFilter(DiskSelectionFilter diskSelection, Properties p, Integer i) {
         super(diskSelection, p, i);
-        _minfreespace = Bytes.parseBytes(PropertyHelper.getProperty(p, i + ".minfreespace"));
+        String minfreespace = PropertyHelper.getProperty(p, i + ".minfreespace");
+        try {
+            _minfreespace = Bytes.parseBytes(minfreespace);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(i + ".minfreespace is not a valid size: " + minfreespace, e);
+        }
         _multiplier = DiskFilter.parseMultiplier(p.getProperty(i + ".multiplier", "0"));
         _assignList = AssignRoot.parseAssign(this, p.getProperty(i + ".assign", "all"));
     }

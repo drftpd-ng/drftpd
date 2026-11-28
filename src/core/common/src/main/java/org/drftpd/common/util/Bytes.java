@@ -20,8 +20,13 @@ package org.drftpd.common.util;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * See http://physics.nist.gov/cuu/Units/binary.html for an explanation of
@@ -123,44 +128,49 @@ public class Bytes {
         return 0;
     }
 
+    private static final Pattern SIZE_PATTERN =
+            Pattern.compile("([+-]?(?:\\d+(?:\\.\\d*)?|\\.\\d+))(?:([KMGTPE])(I)?)?B?");
+
     /**
      * Parse a string representation of an amount of bytes. The suffix b is
      * optional and makes no different, this method is case insensitive.
      * <p>
      * For example: 1000 = 1000 bytes 1000b = 1000 bytes 1000B = 1000 bytes 1k =
      * 1000 bytes 1kb = 1000 bytes 1t = 1 terrabyte 1tib = 1 tebibyte
+     * <p>
+     * The number may be fractional and signed. Anything else (null, empty,
+     * unknown suffix, several dots, exponent notation, NaN, a value that does
+     * not fit in a long) is rejected.
+     *
+     * @throws NumberFormatException if the string is not a valid size or is out of range
      */
     public static long parseBytes(String str) throws NumberFormatException {
-        str = str.toUpperCase();
-
-        if (str.endsWith("B")) {
-            str = str.substring(0, str.length() - 1);
+        if (str == null) {
+            throw new NumberFormatException("Invalid size: null");
         }
-
-        boolean binary = false;
-
-        if (str.endsWith("I")) {
-            str = str.substring(0, str.length() - 1);
-            binary = true;
+        Matcher m = SIZE_PATTERN.matcher(str.trim().toUpperCase(Locale.ROOT));
+        if (!m.matches()) {
+            throw new NumberFormatException("Invalid size '" + str + "', expected a number with an optional unit such as 500, 1.5G or 10MiB");
         }
-
-        char suffix = Character.toUpperCase(str.charAt(str.length() - 1));
-
-        if (Character.isDigit(suffix)) {
-            return Math.round(Double.parseDouble(str));
-        }
-
-        str = str.substring(0, str.length() - 1);
-
-        for (Multiple multiple : MULTIPLES) {
-            if (suffix == multiple.getSuffix()) {
-                return Math.round(Double.parseDouble(str)
-                        * (binary ? multiple.getBinaryMultiple() : multiple
-                        .getMultiple()));
+        BigDecimal value = new BigDecimal(m.group(1));
+        if (m.group(2) != null) {
+            char suffix = m.group(2).charAt(0);
+            boolean binary = m.group(3) != null;
+            for (Multiple multiple : MULTIPLES) {
+                if (suffix == multiple.getSuffix()) {
+                    value = value.multiply(BigDecimal.valueOf(binary ? multiple.getBinaryMultiple() : multiple.getMultiple()));
+                    break;
+                }
             }
+        } else if (m.group(3) != null) {
+            throw new NumberFormatException("Invalid size '" + str + "'");
         }
-
-        throw new IllegalArgumentException("Unknown suffix " + suffix);
+        try {
+            // round half up like Math.round
+            return value.add(new BigDecimal("0.5")).setScale(0, RoundingMode.FLOOR).longValueExact();
+        } catch (ArithmeticException e) {
+            throw new NumberFormatException("Size '" + str + "' is out of range");
+        }
     }
 
     private static class Multiple {
