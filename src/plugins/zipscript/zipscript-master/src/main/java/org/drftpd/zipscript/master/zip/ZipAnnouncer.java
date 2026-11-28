@@ -41,6 +41,7 @@ import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.master.vfs.InodeHandle;
 import org.drftpd.zipscript.common.zip.DizInfo;
+import org.drftpd.zipscript.master.Percent;
 import org.drftpd.zipscript.master.AnnounceThresholds;
 import org.drftpd.zipscript.master.announce.ReleaseTypes;
 import org.drftpd.zipscript.master.announce.TypeAwareBundle;
@@ -100,6 +101,10 @@ public class ZipAnnouncer extends AbstractAnnouncer {
 
     @EventSubscriber
     public void onZipTransferEvent(ZipTransferEvent zipEvent) {
+        if (zipEvent.getDizInfo().getTotal() <= 0) {
+            // a .diz without a file count has no race to announce
+            return;
+        }
         ReleaseTypes.apply(_bundle, zipEvent.getDirectory(), zipEvent.getTransferFile().getName());
         try {
             outputZipSTOR(zipEvent);
@@ -230,7 +235,7 @@ public class ZipAnnouncer extends AbstractAnnouncer {
                         raceenv.put("size", Bytes.formatBytes(stat.getBytes()));
                         raceenv.put("position", String.valueOf(position));
                         raceenv.put("percent",
-                                (stat.getFiles() * 100) / zipEvent.getDizInfo().getTotal() + "%");
+                                Percent.of(stat.getFiles(), zipEvent.getDizInfo().getTotal()) + "%");
                         raceenv.put("alup",
                                 UserTransferStats.getStatsPlace("ALUP",
                                         raceuser, GlobalContext.getGlobalContext().getUserManager()));
@@ -275,7 +280,7 @@ public class ZipAnnouncer extends AbstractAnnouncer {
                         raceenv.put("size", Bytes.formatBytes(stat.getBytes()));
                         raceenv.put("files", Integer.toString(stat.getFiles()));
                         raceenv.put("percent",
-                                (stat.getFiles() * 100) / zipEvent.getDizInfo().getTotal() + "%");
+                                Percent.of(stat.getFiles(), zipEvent.getDizInfo().getTotal()) + "%");
                         raceenv.put("speed",
                                 Bytes.formatBytes(stat.getXferspeed()) + "/s");
 
@@ -304,7 +309,7 @@ public class ZipAnnouncer extends AbstractAnnouncer {
                     env.put("leadfiles", Integer.toString(stat.getFiles()));
                     env.put("leadsize", Bytes.formatBytes(stat.getBytes()));
                     env.put("leadpercent",
-                            (stat.getFiles() * 100) / zipEvent.getDizInfo().getTotal() +
+                            Percent.of(stat.getFiles(), zipEvent.getDizInfo().getTotal()) +
                                     "%");
                     env.put("filesleft", Integer.toString(zipEvent.getDizStatus().getMissing()));
 
@@ -367,7 +372,7 @@ public class ZipAnnouncer extends AbstractAnnouncer {
             env.put("files", Integer.toString(total));
             env.put("filesdone", Integer.toString(present));
             env.put("filesleft", Integer.toString(zipEvent.getDizStatus().getMissing()));
-            env.put("percentdone", (present * 100) / total + "%");
+            env.put("percentdone", Percent.of(present, total) + "%");
             env.put("racespeed", Bytes.formatBytes(ZipTools.getXferspeed(dir)) + "/s");
 
             Collection<UploaderPosition> uploaders = RankUtils.userSort(
@@ -379,7 +384,7 @@ public class ZipAnnouncer extends AbstractAnnouncer {
             env.put("leadspeed", Bytes.formatBytes(stat.getXferspeed()) + "/s");
             env.put("leadfiles", Integer.toString(stat.getFiles()));
             env.put("leadsize", Bytes.formatBytes(stat.getBytes()));
-            env.put("leadpercent", (stat.getFiles() * 100) / total + "%");
+            env.put("leadpercent", Percent.of(stat.getFiles(), total) + "%");
             User leaduser = null;
             try {
                 leaduser = GlobalContext.getGlobalContext().getUserManager().getUserByName(stat.getUsername());

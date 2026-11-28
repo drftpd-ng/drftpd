@@ -47,6 +47,7 @@ import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.zipscript.common.sfv.SFVInfo;
 import org.drftpd.zipscript.common.sfv.SFVStatus;
+import org.drftpd.zipscript.master.Percent;
 import org.drftpd.zipscript.master.RaceNameMasker;
 import org.drftpd.zipscript.master.sfv.SFVTools;
 import org.drftpd.zipscript.master.sfv.ZipscriptStrictness;
@@ -183,7 +184,7 @@ public class ZipscriptPostHook extends SFVTools {
                     // Good! transfer checksum matches sfv checksum
                     response.addComment("checksum match: SLAVE/SFV:" +
                             Checksum.formatChecksum(checksum));
-                    if (transferFile.exists()) {
+                    if (transferFile.exists() && sfv.getSize() > 0) {
                         try {
                             BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
                             RemoteSlave transferSlave = response.getObject(DataConnectionHandler.TRANSFER_SLAVE);
@@ -348,6 +349,10 @@ public class ZipscriptPostHook extends SFVTools {
             ZipscriptVFSDataSFV sfvData = new ZipscriptVFSDataSFV(dir);
             SFVInfo sfvInfo = sfvData.getSFVInfo();
             SFVStatus sfvStatus = sfvData.getSFVStatus();
+            if (sfvInfo.getSize() <= 0) {
+                // an .sfv without a valid entry has no race to show
+                return;
+            }
             Collection<UploaderPosition> racers = RankUtils.userSort(getSFVFiles(dir, sfvData),
                     "bytes", "high");
             Collection<GroupPosition> groups = RankUtils.topFileGroup(getSFVFiles(dir, sfvData));
@@ -391,7 +396,7 @@ public class ZipscriptPostHook extends SFVTools {
                 raceenv.put("files", "" + stat.getFiles());
                 raceenv.put("bytes", Bytes.formatBytes(stat.getBytes()));
                 raceenv.put("position", String.valueOf(position));
-                raceenv.put("percent", (stat.getFiles() * 100) / sfvInfo.getSize() + "%");
+                raceenv.put("percent", Percent.of(stat.getFiles(), sfvInfo.getSize()) + "%");
 
                 raceTextBuilder.append(ReplacerUtils.jprintf(racerline, raceenv));
                 raceTextBuilder.append('\n');
@@ -412,7 +417,7 @@ public class ZipscriptPostHook extends SFVTools {
                 raceenv.put("position", String.valueOf(position));
                 raceenv.put("bytes", Bytes.formatBytes(stat.getBytes()));
                 raceenv.put("files", Integer.toString(stat.getFiles()));
-                raceenv.put("percent", (stat.getFiles() * 100) / sfvInfo.getSize() + "%");
+                raceenv.put("percent", Percent.of(stat.getFiles(), sfvInfo.getSize()) + "%");
                 raceenv.put("speed", Bytes.formatBytes(stat.getXferspeed()) + "/s");
                 raceTextBuilder.append(ReplacerUtils.jprintf(groupline, raceenv));
                 raceTextBuilder.append('\n');
@@ -425,7 +430,7 @@ public class ZipscriptPostHook extends SFVTools {
             env.put("completefiles", sfvStatus.getPresent() + "/" + sfvInfo.getSize());
             env.put("totalbytes", Bytes.formatBytes(getSFVTotalBytes(dir, sfvData)));
             env.put("totalspeed", Bytes.formatBytes(getXferspeed(dir, sfvData)) + "/s");
-            env.put("totalpercent", (sfvStatus.getPresent() * 100) / sfvInfo.getSize() + "%");
+            env.put("totalpercent", Percent.of(sfvStatus.getPresent(), sfvInfo.getSize()) + "%");
 
             raceTextBuilder.append(_bundle.getString("cwd.totals.body"));
             raceTextBuilder.append('\n');

@@ -34,6 +34,7 @@ import org.drftpd.zipscript.common.sfv.SFVInfo;
 import org.drftpd.zipscript.common.sfv.SFVStatus;
 import org.drftpd.zipscript.common.zip.DizInfo;
 import org.drftpd.zipscript.common.zip.DizStatus;
+import org.drftpd.zipscript.master.Percent;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -90,11 +91,11 @@ public class ZipscriptDataExtension implements IndexDataExtensionInterface {
         } else if (sfvStatus != null) {
             FIELD_PRESENT.setIntValue(sfvStatus.getPresent());
             FIELD_MISSING.setIntValue(sfvStatus.getMissing());
-            FIELD_PERCENT.setIntValue((sfvStatus.getPresent() * 100) / sfvInfo.getSize());
+            FIELD_PERCENT.setIntValue(Percent.of(sfvStatus.getPresent(), sfvInfo.getSize()));
         } else {
             FIELD_PRESENT.setIntValue(dizStatus.getPresent());
             FIELD_MISSING.setIntValue(dizStatus.getMissing());
-            FIELD_PERCENT.setIntValue((dizStatus.getPresent() * 100) / dizInfo.getTotal());
+            FIELD_PERCENT.setIntValue(Percent.of(dizStatus.getPresent(), dizInfo.getTotal()));
         }
     }
 

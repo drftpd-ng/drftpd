@@ -43,6 +43,7 @@ import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.master.vfs.InodeHandle;
 import org.drftpd.zipscript.common.sfv.SFVInfo;
+import org.drftpd.zipscript.master.Percent;
 import org.drftpd.zipscript.master.announce.ReleaseTypes;
 import org.drftpd.zipscript.master.announce.TypeAwareBundle;
 import org.drftpd.zipscript.master.announce.UpdateThrottle;
@@ -99,6 +100,10 @@ public class SFVAnnouncer extends AbstractAnnouncer {
 
     @EventSubscriber
     public void onSFVMemberTransferEvent(SFVMemberTransferEvent sfvEvent) {
+        if (sfvEvent.getSFVInfo().getSize() <= 0) {
+            // an .sfv without a valid entry has no race to announce
+            return;
+        }
         ReleaseTypes.apply(_bundle, sfvEvent.getDirectory(), sfvEvent.getTransferFile().getName());
         try {
             outputSFVMemberSTOR(sfvEvent);
@@ -154,7 +159,7 @@ public class SFVAnnouncer extends AbstractAnnouncer {
                             fillEnvSection(env, sfvEvent, writer, true);
                             env.put("filesleft",
                                     Integer.toString(sfvStatus.getMissing()));
-                            env.put("percentdone", (sfvStatus.getPresent() * 100) / sfvEvent.getSFVInfo().getSize() + "%");
+                            env.put("percentdone", Percent.of(sfvStatus.getPresent(), sfvEvent.getSFVInfo().getSize()) + "%");
                             sayOutput(ReplacerUtils.jprintf("sfv.store.race", env, _bundle), writer);
                         }
                     }
@@ -182,7 +187,7 @@ public class SFVAnnouncer extends AbstractAnnouncer {
                         env.put("leadfiles", Integer.toString(stat.getFiles()));
                         env.put("leadsize", Bytes.formatBytes(stat.getBytes()));
                         env.put("leadpercent",
-                                (stat.getFiles() * 100) / sfvEvent.getSFVInfo().getSize() +
+                                Percent.of(stat.getFiles(), sfvEvent.getSFVInfo().getSize()) +
                                         "%");
                         env.put("filesleft", Integer.toString(sfvStatus.getMissing()));
 
@@ -289,7 +294,7 @@ public class SFVAnnouncer extends AbstractAnnouncer {
                             raceenv.put("size", Bytes.formatBytes(stat.getBytes()));
                             raceenv.put("position", String.valueOf(position));
                             raceenv.put("percent",
-                                    (stat.getFiles() * 100) / sfvEvent.getSFVInfo().getSize() + "%");
+                                    Percent.of(stat.getFiles(), sfvEvent.getSFVInfo().getSize()) + "%");
                             raceenv.put("alup",
                                     UserTransferStats.getStatsPlace("ALUP", raceuser,
                                             GlobalContext.getGlobalContext().getUserManager()));
@@ -334,7 +339,7 @@ public class SFVAnnouncer extends AbstractAnnouncer {
                             raceenv.put("size", Bytes.formatBytes(stat.getBytes()));
                             raceenv.put("files", Integer.toString(stat.getFiles()));
                             raceenv.put("percent",
-                                    (stat.getFiles() * 100) / sfvEvent.getSFVInfo().getSize() + "%");
+                                    Percent.of(stat.getFiles(), sfvEvent.getSFVInfo().getSize()) + "%");
                             raceenv.put("speed",
                                     Bytes.formatBytes(stat.getXferspeed()) + "/s");
 
@@ -393,7 +398,7 @@ public class SFVAnnouncer extends AbstractAnnouncer {
             env.put("files", Integer.toString(total));
             env.put("filesdone", Integer.toString(present));
             env.put("filesleft", Integer.toString(sfvEvent.getSFVStatus().getMissing()));
-            env.put("percentdone", (present * 100) / total + "%");
+            env.put("percentdone", Percent.of(present, total) + "%");
             env.put("racespeed", Bytes.formatBytes(SFVTools.getXferspeed(dir, sfvEvent.getSFVData())) + "/s");
 
             Collection<UploaderPosition> uploaders = RankUtils.userSort(
@@ -405,7 +410,7 @@ public class SFVAnnouncer extends AbstractAnnouncer {
             env.put("leadspeed", Bytes.formatBytes(stat.getXferspeed()) + "/s");
             env.put("leadfiles", Integer.toString(stat.getFiles()));
             env.put("leadsize", Bytes.formatBytes(stat.getBytes()));
-            env.put("leadpercent", (stat.getFiles() * 100) / total + "%");
+            env.put("leadpercent", Percent.of(stat.getFiles(), total) + "%");
             User leaduser = null;
             try {
                 leaduser = GlobalContext.getGlobalContext().getUserManager().getUserByName(stat.getUsername());

@@ -32,6 +32,7 @@ import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.master.vfs.VirtualFileSystem;
 import org.drftpd.zipscript.common.sfv.SFVInfo;
 import org.drftpd.zipscript.common.sfv.SFVStatus;
+import org.drftpd.zipscript.master.Percent;
 import org.drftpd.zipscript.master.sfv.SFVTools;
 import org.drftpd.zipscript.master.sfv.vfs.ZipscriptVFSDataSFV;
 import org.reflections.Reflections;
@@ -85,16 +86,15 @@ public class ZipscriptList extends SFVTools implements AddListElementsInterface 
                     if (sfvfile.getSize() != 0) {
                         env.put("complete.total", "" + sfvfile.getSize());
                         env.put("complete.number", "" + sfvstatus.getPresent());
-                        env.put("complete.percent", "" + (sfvstatus.getPresent() * 100)
-                                / sfvfile.getSize());
+                        env.put("complete.percent", Percent.of(sfvstatus.getPresent(), sfvfile.getSize()) + "");
                         env.put("complete.totalbytes", Bytes.formatBytes(getSFVTotalBytes(dir, sfvData)));
                         statusBarEntries.add(container.getSession().jprintf(bundle, "zip.statusbar.complete", env, container.getUser()));
 
                         if (sfvstatus.getOffline() != 0) {
                             env.put("offline.number", "" + sfvstatus.getOffline());
-                            env.put("offline.percent", "" + (sfvstatus.getOffline() * 100) / sfvstatus.getPresent());
+                            env.put("offline.percent", "" + Percent.of(sfvstatus.getOffline(), sfvstatus.getPresent()));
                             env.put("online.number", "" + sfvstatus.getPresent());
-                            env.put("online.percent", "" + (sfvstatus.getAvailable() * 100) / sfvstatus.getPresent());
+                            env.put("online.percent", "" + Percent.of(sfvstatus.getAvailable(), sfvstatus.getPresent()));
                             statusBarEntries.add(container.getSession().jprintf(bundle, "zip.statusbar.offline", env, container.getUser()));
                         }
                     }

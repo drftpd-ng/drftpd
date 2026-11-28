@@ -23,6 +23,7 @@ import org.drftpd.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.common.exceptions.RemoteIOException;
 import org.drftpd.common.extensibility.CommandHook;
 import org.drftpd.common.extensibility.HookType;
+import org.drftpd.common.dynamicdata.Key;
 import org.drftpd.common.util.Bytes;
 import org.drftpd.common.util.ConfigLoader;
 import org.drftpd.master.GlobalContext;
@@ -46,6 +47,7 @@ import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.zipscript.common.zip.DizInfo;
 import org.drftpd.zipscript.common.zip.DizStatus;
+import org.drftpd.zipscript.master.Percent;
 import org.drftpd.zipscript.master.sfv.ZipscriptStrictness;
 import org.drftpd.zipscript.master.RaceNameMasker;
 import org.drftpd.zipscript.master.zip.ZipTools;
@@ -68,13 +70,18 @@ public class ZipscriptZipPostHook extends ZipTools {
 
     private static final Logger logger = LogManager.getLogger(ZipscriptZipPostHook.class);
 
+    /** Set on the STOR response by the integrity check when the zip passed it. */
+    public static final Key<Boolean> ZIP_INTEGRITY_OK = new Key<>(ZipscriptZipPostHook.class, "zip_integrity_ok");
+
     private final ResourceBundle _bundle;
 
     public ZipscriptZipPostHook(CommandManagerInterface manager) {
         _bundle = manager.getResourceBundle();
     }
 
-    @CommandHook(commands = "doSTOR", priority = 13, type = HookType.POST)
+    // Runs before the SFV post hook (priority 10), which publishes the transfer event for a zip that has
+    // an entry in the SFV: a zip removed by this check must be gone before any announce is made for it.
+    @CommandHook(commands = "doSTOR", priority = 9, type = HookType.POST)
     public void doZipscriptSTORZipPostCheck(CommandRequest request, CommandResponse response) {
         logger.debug("doZipscriptSTORZipPostCheck() called");
 
@@ -109,24 +116,7 @@ public class ZipscriptZipPostHook extends ZipTools {
                         String index = ZipscriptVFSDataZip.getZipIssuer().issueZipCRCToSlave(rslave, transferFile.getPath());
                         if (getZipIntegrityFromIndex(rslave, index)) {
                             response.addComment("Zip integrity check OK");
-                            if (transferFile.exists()) {
-                                try {
-                                    BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
-                                    RemoteSlave transferSlave = response.getObject(DataConnectionHandler.TRANSFER_SLAVE);
-                                    InetAddress transferSlaveInetAddr = response.getObject(DataConnectionHandler.TRANSFER_SLAVE_INET_ADDRESS);
-                                    char transferType = response.getObject(DataConnectionHandler.TRANSFER_TYPE);
-                                    ZipscriptVFSDataZip zipData = new ZipscriptVFSDataZip(request.getCurrentDirectory());
-                                    GlobalContext.getEventService().publishAsync(new ZipTransferEvent(conn, "STOR",
-                                            transferFile, conn.getClientAddress(), transferSlave, transferSlaveInetAddr,
-                                            transferType, zipData, zipData.getDizInfo(), zipData.getDizStatus()));
-                                } catch (KeyNotFoundException e1) {
-                                    logger.warn("Unable to fire ZipTransferEvent for [{}]", transferFile, e1);
-                                    // one or more bits of information didn't get populated correctly, have to skip the event
-                                } catch (IOException e) {
-                                    logger.warn("Unable to fire ZipTransferEvent for [{}]", transferFile, e);
-                                    // Do nothing, from user perspective STOR has completed so no point informing them
-                                }
-                            }
+                            response.setObject(ZIP_INTEGRITY_OK, true);
                         } else {
                             response.addComment("Zip integrity check failed, deleting file");
                             try {
@@ -149,6 +139,37 @@ public class ZipscriptZipPostHook extends ZipTools {
             } catch (FileNotFoundException e) {
                 response.addComment("File has already been deleted, skipping zip integrity check");
             }
+        }
+    }
+
+    /**
+     * Announces a zip that passed the integrity check. This runs after the SFV post hook, which deletes a
+     * zip whose checksum does not match the SFV, so no event is published for a file that is gone.
+     */
+    @CommandHook(commands = "doSTOR", priority = 13, type = HookType.POST)
+    public void doZipscriptSTORZipEventHook(CommandRequest request, CommandResponse response) {
+        if (!response.getObject(ZIP_INTEGRITY_OK, false)) {
+            return;
+        }
+        try {
+            FileHandle transferFile = response.getObject(DataConnectionHandler.TRANSFER_FILE);
+            if (!transferFile.exists()) {
+                return;
+            }
+            BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
+            RemoteSlave transferSlave = response.getObject(DataConnectionHandler.TRANSFER_SLAVE);
+            InetAddress transferSlaveInetAddr = response.getObject(DataConnectionHandler.TRANSFER_SLAVE_INET_ADDRESS);
+            char transferType = response.getObject(DataConnectionHandler.TRANSFER_TYPE);
+            ZipscriptVFSDataZip zipData = new ZipscriptVFSDataZip(transferFile.getParent());
+            GlobalContext.getEventService().publishAsync(new ZipTransferEvent(conn, "STOR",
+                    transferFile, conn.getClientAddress(), transferSlave, transferSlaveInetAddr,
+                    transferType, zipData, zipData.getDizInfo(), zipData.getDizStatus()));
+        } catch (KeyNotFoundException e1) {
+            logger.warn("Unable to fire ZipTransferEvent", e1);
+            // one or more bits of information didn't get populated correctly, have to skip the event
+        } catch (IOException | NoAvailableSlaveException e) {
+            logger.warn("Unable to fire ZipTransferEvent", e);
+            // Do nothing, from user perspective STOR has completed so no point informing them
         }
     }
 
@@ -270,6 +291,10 @@ public class ZipscriptZipPostHook extends ZipTools {
             ZipscriptVFSDataZip zipData = new ZipscriptVFSDataZip(dir);
             DizInfo dizInfo = zipData.getDizInfo();
             DizStatus dizStatus = zipData.getDizStatus();
+            if (dizInfo.getTotal() <= 0) {
+                // a .diz without a file count has no race to show
+                return;
+            }
 
             Collection<UploaderPosition> racers = RankUtils.userSort(getZipFiles(dir),
                     "bytes", "high");
@@ -312,7 +337,7 @@ public class ZipscriptZipPostHook extends ZipTools {
                 raceenv.put("files", "" + stat.getFiles());
                 raceenv.put("bytes", Bytes.formatBytes(stat.getBytes()));
                 raceenv.put("position", String.valueOf(position));
-                raceenv.put("percent", (stat.getFiles() * 100) / dizInfo.getTotal() + "%");
+                raceenv.put("percent", Percent.of(stat.getFiles(), dizInfo.getTotal()) + "%");
 
                 raceTextBuilder.append(ReplacerUtils.jprintf(racerline, raceenv));
                 raceTextBuilder.append('\n');
@@ -333,7 +358,7 @@ public class ZipscriptZipPostHook extends ZipTools {
                 raceenv.put("position", String.valueOf(position));
                 raceenv.put("bytes", Bytes.formatBytes(stat.getBytes()));
                 raceenv.put("files", Integer.toString(stat.getFiles()));
-                raceenv.put("percent", (stat.getFiles() * 100) / dizInfo.getTotal() + "%");
+                raceenv.put("percent", Percent.of(stat.getFiles(), dizInfo.getTotal()) + "%");
                 raceenv.put("speed", Bytes.formatBytes(stat.getXferspeed()) + "/s");
 
                 raceTextBuilder.append(ReplacerUtils.jprintf(groupline, raceenv));
@@ -347,7 +372,7 @@ public class ZipscriptZipPostHook extends ZipTools {
             env.put("completefiles", dizStatus.getPresent() + "/" + dizInfo.getTotal());
             env.put("totalbytes", Bytes.formatBytes(getZipTotalBytes(dir)));
             env.put("totalspeed", Bytes.formatBytes(getXferspeed(dir)) + "/s");
-            env.put("totalpercent", (getZipFiles(dir).size() * 100) / dizInfo.getTotal() + "%");
+            env.put("totalpercent", Percent.of(getZipFiles(dir).size(), dizInfo.getTotal()) + "%");
 
             raceTextBuilder.append(_bundle.getString("cwd.totals.body"));
             raceTextBuilder.append('\n');

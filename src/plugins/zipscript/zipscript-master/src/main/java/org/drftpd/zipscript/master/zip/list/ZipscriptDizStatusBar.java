@@ -27,6 +27,7 @@ import org.drftpd.master.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.zipscript.common.zip.DizInfo;
 import org.drftpd.zipscript.common.zip.DizStatus;
+import org.drftpd.zipscript.master.Percent;
 import org.drftpd.zipscript.master.sfv.list.NoEntryAvailableException;
 import org.drftpd.zipscript.master.sfv.list.ZipscriptListStatusBarInterface;
 import org.drftpd.zipscript.master.zip.ZipTools;
@@ -59,16 +60,15 @@ public class ZipscriptDizStatusBar extends ZipTools implements ZipscriptListStat
                 if (dizInfo.getTotal() != 0) {
                     env.put("complete.total", "" + dizInfo.getTotal());
                     env.put("complete.number", "" + dizStatus.getPresent());
-                    env.put("complete.percent", "" + (dizStatus.getPresent() * 100)
-                            / dizInfo.getTotal());
+                    env.put("complete.percent", Percent.of(dizStatus.getPresent(), dizInfo.getTotal()) + "");
                     env.put("complete.totalbytes", Bytes.formatBytes(getZipTotalBytes(dir)));
                     statusBarEntries.add(container.getSession().jprintf(bundle, "diz.statusbar.complete", env, container.getUser()));
 
                     if (dizStatus.getOffline() != 0) {
                         env.put("offline.number", "" + dizStatus.getOffline());
-                        env.put("offline.percent", "" + (dizStatus.getOffline() * 100) / dizStatus.getPresent());
+                        env.put("offline.percent", "" + Percent.of(dizStatus.getOffline(), dizStatus.getPresent()));
                         env.put("online.number", "" + dizStatus.getPresent());
-                        env.put("online.percent", "" + (dizStatus.getAvailable() * 100) / dizStatus.getPresent());
+                        env.put("online.percent", "" + Percent.of(dizStatus.getAvailable(), dizStatus.getPresent()));
                         statusBarEntries.add(container.getSession().jprintf(bundle, "diz.statusbar.offline", env, container.getUser()));
                     }
                     return statusBarEntries;
