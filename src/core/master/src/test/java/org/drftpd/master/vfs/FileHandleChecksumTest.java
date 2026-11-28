@@ -90,7 +90,7 @@ public class FileHandleChecksumTest {
         }
 
         @Override
-        public void setOffline(Throwable t) {
+        public void setOffline(Throwable t, long generation) {
             wentOffline = true;
         }
     }

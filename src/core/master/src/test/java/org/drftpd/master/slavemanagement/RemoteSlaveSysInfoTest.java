@@ -24,6 +24,10 @@ import org.drftpd.slave.network.AsyncResponseSystemInfo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.lang.reflect.Field;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -62,6 +66,17 @@ public class RemoteSlaveSysInfoTest {
         public void setOffline(String reason) {
             _offlineReason = reason;
             _online = false;
+        }
+
+        /**
+         * Same guard as RemoteSlave (tested on a real slave in RemoteSlaveSetOfflineTest): only a failure on the
+         * current connection is recorded. The tests here check which generation the callers pass.
+         */
+        @Override
+        public void setOffline(String reason, long generation) {
+            if (generation == getConnectionGeneration()) {
+                setOffline(reason);
+            }
         }
     }
 
@@ -366,6 +381,77 @@ public class RemoteSlaveSysInfoTest {
         } finally {
             pool.shutdownNow();
         }
+    }
+
+    @Test
+    public void testFetchResponseUsesGenerationReadBeforeSend() throws Exception {
+        long generation = _slave.getConnectionGeneration();
+        // the command is issued on the old connection...
+        String stale = _slave.fetchIndex();
+        // ...the slave reconnects before the caller gets to fetchResponse, and a command of the new connection,
+        // sent with the same index taken from the rebuilt pool, already has its reply
+        _slave.resetIndexes();
+        assertTrue(drainPool().contains(stale));
+        AsyncResponse newReply = reply(stale);
+        assertTrue(_slave.storeResponse(newReply));
+
+        // without the generation from before the send, the old caller would take the new connection's reply and
+        // push the index into the rebuilt pool (or time out and drop the new connection)
+        assertThrows(SlaveUnavailableException.class, () -> _slave.fetchResponse(stale, 1000, generation));
+        assertNull(_slave._offlineReason);
+        assertTrue(_slave.isOnline());
+        // the reply is still there for the caller of the new connection
+        assertSame(newReply, _slave.fetchResponse(stale, 1000, _slave.getConnectionGeneration()));
+        // which put the index back once
+        assertEquals(stale, _slave.fetchIndex());
+        assertTrue(indexPoolIsEmpty());
+    }
+
+    private boolean indexPoolIsEmpty() throws ReflectiveOperationException {
+        Field f = RemoteSlave.class.getDeclaredField("_indexPool");
+        f.setAccessible(true);
+        return ((java.util.Collection<?>) f.get(_slave)).isEmpty();
+    }
+
+    @Test
+    public void testOldReaderDoesNotRecycleItsPingIndexIntoNewPool() throws Exception {
+        long generation = _slave.getConnectionGeneration();
+        String ping = _slave.fetchIndex();
+        // a ping of the same connection that got lost goes back into the pool
+        assertTrue(_slave.recycleIndex(ping, generation));
+
+        ping = _slave.fetchIndex();
+        _slave.resetIndexes();
+        // the reader of the old connection gives up on its ping after the reconnect: the rebuilt pool is full,
+        // pushing into it used to fail with "Deque full" and drop the new connection
+        assertFalse(_slave.recycleIndex(ping, generation));
+        assertEquals(256, drainPool().size());
+        assertTrue(indexPoolIsEmpty());
+    }
+
+    @Test
+    public void testOldReaderFailingOnItsStreamKeepsNewConnection() {
+        long generation = _slave.getConnectionGeneration();
+        // the reader of the old connection is blocked on its stream when the slave reconnects; the old stream is
+        // then closed and the read fails
+        ObjectInputStream oldStream;
+        try {
+            oldStream = new ObjectInputStream() {
+                @Override
+                protected Object readObjectOverride() throws IOException {
+                    _slave.resetIndexes();
+                    throw new EOFException("old connection closed");
+                }
+            };
+        } catch (IOException e) {
+            throw new AssertionError(e);
+        }
+        assertThrows(SlaveUnavailableException.class, () -> _slave.readAsyncResponse(oldStream, generation));
+        // the failure of the old connection does not drop the new one
+        assertNull(_slave._offlineReason);
+        assertTrue(_slave.isOnline());
+        // and that reader does not read from any stream once the generation changed
+        assertThrows(SlaveUnavailableException.class, () -> _slave.readAsyncResponse(oldStream, generation));
     }
 
     @Test

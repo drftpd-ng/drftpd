@@ -19,6 +19,7 @@ package org.drftpd.master.slavemanagement;
 
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.Socket;
 import java.util.concurrent.CountDownLatch;
@@ -72,10 +73,49 @@ public class RemoteSlaveSetOfflineTest {
         }
     }
 
+    /** Does not write the slave to disk. */
+    private static class QuietSlave extends RemoteSlave {
+        QuietSlave() {
+            super("quiet");
+        }
+
+        @Override
+        public void setProperty(String name, String value) {
+        }
+    }
+
     private static void setSocket(RemoteSlave slave, Socket socket) throws ReflectiveOperationException {
         Field f = RemoteSlave.class.getDeclaredField("_socket");
         f.setAccessible(true);
         f.set(slave, socket);
+    }
+
+    private static Socket getSocket(RemoteSlave slave) throws ReflectiveOperationException {
+        Field f = RemoteSlave.class.getDeclaredField("_socket");
+        f.setAccessible(true);
+        return (Socket) f.get(slave);
+    }
+
+    @Test
+    public void testSetOfflineForPreviousConnectionKeepsCurrentOne() throws Exception {
+        QuietSlave slave = new QuietSlave();
+        slave.resetIndexes();
+        long previous = slave.getConnectionGeneration();
+        // the slave reconnects: connect() installs the new socket and bumps the generation together
+        slave.resetIndexes();
+        CountingSocket current = new CountingSocket();
+        setSocket(slave, current);
+
+        // a command of the previous connection failed: its caller passes the generation it read before sending
+        slave.setOffline("Slave has taken too long while waiting for reply 0a", previous);
+        slave.setOffline(new IOException("error reply on the previous connection"), previous);
+        assertEquals(0, current._closed.get());
+        assertSame(current, getSocket(slave));
+
+        // a failure on the current connection still drops it
+        slave.setOffline("IOException reading AsyncResponse", slave.getConnectionGeneration());
+        assertEquals(1, current._closed.get());
+        assertNull(getSocket(slave));
     }
 
     @Test
@@ -102,6 +142,8 @@ public class RemoteSlaveSetOfflineTest {
         int closed = socket._closed.get();
         slave.setOffline("again");
         assertEquals(closed, socket._closed.get());
-        assertEquals(2, slave._lastOnlineWrites.get());
+        // only the caller that took the connection tears it down
+        assertEquals(1, socket._closed.get());
+        assertEquals(1, slave._lastOnlineWrites.get());
     }
 }
