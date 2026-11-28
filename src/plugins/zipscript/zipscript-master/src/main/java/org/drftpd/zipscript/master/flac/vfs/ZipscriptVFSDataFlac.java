@@ -164,6 +164,34 @@ public class ZipscriptVFSDataFlac {
         throw new FileNotFoundException("Unable to obtain info for FLAC file");
     }
 
+    /**
+     * Like {@link #getFlacInfo()} for a file, but also returns the info of a file that has no usable
+     * tag (no Vorbis comment, or an empty genre or year), which getFlacInfo rejects. The audio rules
+     * need it to treat such a file as having unknown values.
+     *
+     * @return the info reported by the slave, null if the slave could not parse the file as FLAC
+     */
+    public FlacInfo getFlacInfoForRules() throws IOException, NoAvailableSlaveException {
+        try {
+            return getFlacInfo();
+        } catch (FileNotFoundException e) {
+            if (!(_inode instanceof FileHandle)) {
+                throw e;
+            }
+            FileHandle file = (FileHandle) _inode;
+            if (file.isUploading() || file.getSize() <= 0 || file.getXfertime() == -1) {
+                throw e;
+            }
+            try {
+                RemoteSlave rslave = file.getASlaveForFunction();
+                String index = getFlacIssuer().issueFlacFileToSlave(rslave, file.getPath());
+                return fetchFlacInfoFromIndex(rslave, index);
+            } catch (SlaveUnavailableException | RemoteIOException ex) {
+                throw new IOException(ex.getMessage(), ex);
+            }
+        }
+    }
+
     private FlacInfo getFlacInfoFromInode(InodeHandle vfsInodeHandle) throws FileNotFoundException, KeyNotFoundException {
         return vfsInodeHandle.getPluginMetaData(FlacInfo.FLACINFO);
     }

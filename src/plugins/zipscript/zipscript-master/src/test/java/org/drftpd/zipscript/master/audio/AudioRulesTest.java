@@ -68,6 +68,24 @@ class AudioRulesTest {
     }
 
     @Test
+    void untaggedFileFailsAllowedLists() {
+        AudioRules r = AudioRules.load(cfg("S.audio.enabled", "true",
+                "S.audio.allowed.genres", "Rock", "S.audio.allowed.years", "1990-1999",
+                "S.audio.allowed.bitrates", "320"), "S");
+        // no ID3 tag: genre and year are unknown, the bitrate comes from the audio frames
+        assertEquals(3, r.evaluate(null, null, 192, false).size());
+        assertEquals(2, r.evaluate("", "", 320, false).size());
+        assertTrue(r.evaluate("Rock", "1995", 320, false).isEmpty());
+    }
+
+    @Test
+    void untaggedFileIsNotBanned() {
+        AudioRules r = AudioRules.load(cfg("S.audio.enabled", "true",
+                "S.audio.banned.genres", "Rap"), "S");
+        assertTrue(r.evaluate(null, null, 192, false).isEmpty());
+    }
+
+    @Test
     void allowedYears() {
         AudioRules r = AudioRules.load(cfg("S.audio.enabled", "true",
                 "S.audio.allowed.years", "1990-1999, 2005, bogus"), "S");

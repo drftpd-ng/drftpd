@@ -165,6 +165,34 @@ public class ZipscriptVFSDataMP3 {
         throw new FileNotFoundException("Unable to obtain info for MP3 file");
     }
 
+    /**
+     * Like {@link #getMP3Info()} for a file, but also returns the info of a file that has no usable
+     * tag (no ID3 tag, or an empty genre or year), which getMP3Info rejects. The audio rules need
+     * it to treat such a file as having unknown values.
+     *
+     * @return the info reported by the slave, null if the slave could not parse the file as MP3
+     */
+    public MP3Info getMP3InfoForRules() throws IOException, NoAvailableSlaveException {
+        try {
+            return getMP3Info();
+        } catch (FileNotFoundException e) {
+            if (!(_inode instanceof FileHandle)) {
+                throw e;
+            }
+            FileHandle file = (FileHandle) _inode;
+            if (file.isUploading() || file.getSize() <= 0 || file.getXfertime() == -1) {
+                throw e;
+            }
+            try {
+                RemoteSlave rslave = file.getASlaveForFunction();
+                String index = getMP3Issuer().issueMP3FileToSlave(rslave, file.getPath());
+                return fetchMP3InfoFromIndex(rslave, index);
+            } catch (SlaveUnavailableException | RemoteIOException ex) {
+                throw new IOException(ex.getMessage(), ex);
+            }
+        }
+    }
+
     private MP3Info getMP3InfoFromInode(InodeHandle vfsInodeHandle) throws FileNotFoundException, KeyNotFoundException {
         return vfsInodeHandle.getPluginMetaData(MP3Info.MP3INFO);
     }
