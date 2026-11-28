@@ -191,6 +191,8 @@ public class FileHandle extends InodeHandle implements FileHandleInterface {
             while (true) {
                 synchronized (getInode()) {
                     RemoteSlave rslave = getASlaveForFunction(missingOn);
+                    // an error from a connection that is gone by now must not drop the slave's new connection
+                    long generation = rslave.getConnectionGeneration();
                     try {
                         checksum = rslave.getCheckSumForPath(getPath());
                     } catch (FileNotFoundException e) {
@@ -203,7 +205,7 @@ public class FileHandle extends InodeHandle implements FileHandleInterface {
                         missingOn.add(rslave);
                         continue;
                     } catch (IOException e) {
-                        rslave.setOffline(e);
+                        rslave.setOffline(e, generation);
                         continue;
                     } catch (SlaveUnavailableException e) {
                         continue;

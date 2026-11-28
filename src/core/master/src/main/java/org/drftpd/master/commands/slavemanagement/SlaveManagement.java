@@ -313,15 +313,17 @@ public class SlaveManagement extends CommandInterface {
         }
 
         rslave.setRemerging(true);
+        // the remerge runs on this connection: if the slave reconnects meanwhile, a failure must not drop the new one
+        long generation = rslave.getConnectionGeneration();
         try {
             rslave.fetchResponse(SlaveManager.getBasicIssuer().issueRemergeToSlave(rslave,
-                    request.getCurrentDirectory().getPath(), false, 0L, 0L, false), 0);
+                    request.getCurrentDirectory().getPath(), false, 0L, 0L, false), 0, generation);
         } catch (RemoteIOException e) {
-            rslave.setOffline("IOException during remerge()");
+            rslave.setOffline("IOException during remerge()", generation);
 
             return new CommandResponse(200, "IOException during remerge()");
         } catch (SlaveUnavailableException e) {
-            rslave.setOffline("Slave Unavailable during remerge()");
+            rslave.setOffline("Slave Unavailable during remerge()", generation);
 
             return new CommandResponse(200, "Slave Unavailable during remerge()");
         }
@@ -344,7 +346,7 @@ public class SlaveManagement extends CommandInterface {
                 SlaveManager.getBasicIssuer().issueRemergeResumeToSlave(rslave);
                 rslave._remergePaused.set(false);
             } catch (SlaveUnavailableException e) {
-                rslave.setOffline("Slave Unavailable during remerge()");
+                rslave.setOffline("Slave Unavailable during remerge()", generation);
                 return new CommandResponse(200, "Slave Unavailable during remerge()");
             }
         }

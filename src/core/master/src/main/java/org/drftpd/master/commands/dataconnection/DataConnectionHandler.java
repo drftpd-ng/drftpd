@@ -868,18 +868,19 @@ public class DataConnectionHandler extends CommandInterface {
 
             if (ts.isPort()) {
                 String index;
+                long generation = ts.getTransferSlave().getConnectionGeneration();
                 try {
                     index = SlaveManager.getBasicIssuer().issueConnectToSlave(ts.getTransferSlave(), ts.getPortAddress()
                             .getAddress().getHostAddress(), ts.getPortAddress()
                             .getPort(), ts.getSendFilesEncrypted(), ts.getSSLHandshakeClientMode());
-                    ConnectInfo ci = ts.getTransferSlave().fetchTransferResponseFromIndex(index);
+                    ConnectInfo ci = ts.getTransferSlave().fetchTransferResponseFromIndex(index, generation);
                     ts.setTransfer(ts.getTransferSlave().getTransfer(ci.getTransferIndex()));
                 } catch (SlaveUnavailableException e) {
                     return StandardCommandManager.genericResponse("RESPONSE_450_SLAVE_UNAVAILABLE");
                 } catch (RemoteIOException e) {
                     // couldn't talk to the slave, this is bad - TODO: Should we allow certain IO Exceptions?
                     // This is setting stuff up, so whatever action we want it is not possible by the slave
-                    ts.getTransferSlave().setOffline(e);
+                    ts.getTransferSlave().setOffline(e, generation);
                     return StandardCommandManager.genericResponse("RESPONSE_450_SLAVE_UNAVAILABLE");
                 } catch (SSLUnavailableException e) {
                     return new CommandResponse(421, e.getMessage());

@@ -94,6 +94,8 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
     // Indexes whose caller gave up waiting without dropping the slave (see fetchSystemInfo).
     // Guarded by itself together with the insertion into _indexWithCommands.
     private final transient Set<String> _abandonedIndexes = new HashSet<>();
+    // Indexes of pings the reader gave up on; recycled when the late reply arrives. Guarded by _abandonedIndexes.
+    private final transient Set<String> _abandonedPingIndexes = new HashSet<>();
     // True from the moment a sysinfo request is issued until its reply has been consumed or discarded, so at
     // most one sysinfo is in flight per slave. Guarded by _abandonedIndexes.
     private transient boolean _sysInfoPending;
@@ -107,11 +109,13 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
     // Incremented each time the index pool is rebuilt for a new connection (see resetIndexes). A thread waiting for
     // a reply compares it with the value it saw when it issued its request: if it changed, its index belongs to the
     // previous connection and must not be abandoned, recycled or matched against the rebuilt pool. Only written
-    // while holding _abandonedIndexes.
+    // while holding _abandonedIndexes, together with _socket, _sin and _sout (see connect and setOfflineReal).
     private transient volatile long _connectionGeneration;
-    private transient ObjectInputStream _sin;
-    private transient Socket _socket;
-    private transient ObjectOutputStream _sout;
+    // Passed to setOfflineReal by the callers that mean whatever connection is current.
+    private static final long CURRENT_CONNECTION = -1L;
+    private transient volatile ObjectInputStream _sin;
+    private transient volatile Socket _socket;
+    private transient volatile ObjectOutputStream _sout;
     private transient ConcurrentHashMap<TransferIndex, RemoteTransfer> _transfers;
     private transient boolean _initRemergeCompleted;
     private final transient Object _commandMonitor;
@@ -389,14 +393,19 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
      *
      * @throws ProtocolException
      */
-    private void initializeSlaveAfterThreadIsRunning() throws IOException,
+    private void initializeSlaveAfterThreadIsRunning(long generation) throws IOException,
             SlaveUnavailableException, ProtocolException {
         commit();
-        processQueue();
+        processQueue(generation);
 
         // checking ssl availability
         String checkSSLIndex = SlaveManager.getBasicIssuer().issueCheckSSL(this);
-        getTransientKeyedMap().setObject(SSL, fetchCheckSSLFromIndex(checkSSLIndex));
+        try {
+            getTransientKeyedMap().setObject(SSL,
+                    ((AsyncResponseSSLCheck) fetchResponse(checkSSLIndex, getActualTimeout(), generation)).isSSLReady());
+        } catch (RemoteIOException e) {
+            throw new FatalException("Slave had an error processing the ssl check");
+        }
 
         long skipAgeCutoff = 0L;
 
@@ -441,7 +450,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
         }
 
         try {
-            fetchResponse(remergeIndex, 0);
+            fetchResponse(remergeIndex, 0, generation);
         } catch (RemoteIOException e) {
             throw new IOException(e.getMessage());
         }
@@ -475,14 +484,16 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
             return false;
         }
 
+        long generation = getConnectionGeneration();
         try {
             String index = SlaveManager.getBasicIssuer().issuePingToSlave(this);
-            fetchResponse(index);
+            fetchResponse(index, getActualTimeout(), generation);
         } catch (SlaveUnavailableException e) {
-            setOffline(e);
+            setOffline(e, generation);
             return false;
         } catch (RemoteIOException e) {
-            setOffline("The slave encountered an IOException while running ping...this is almost not possible");
+            setOffline("The slave encountered an IOException while running ping...this is almost not possible",
+                    generation);
             return false;
         }
 
@@ -508,6 +519,10 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
     }
 
     public void processQueue() throws IOException, SlaveUnavailableException {
+        processQueue(getConnectionGeneration());
+    }
+
+    private void processQueue(long generation) throws IOException, SlaveUnavailableException {
         QueuedOperation item = null;
         while ((item = _renameQueue.poll()) != null) {
             String sourceFile = item.getSource();
@@ -515,7 +530,8 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 
             if (destFile == null) { // delete
                 try {
-                    fetchResponse(SlaveManager.getBasicIssuer().issueDeleteToSlave(this, sourceFile), 300000);
+                    fetchResponse(SlaveManager.getBasicIssuer().issueDeleteToSlave(this, sourceFile), 300000,
+                            generation);
                 } catch (RemoteIOException e) {
                     if (!(e.getCause() instanceof FileNotFoundException)) {
                         throw e.getCause();
@@ -527,7 +543,8 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
                 String fileName = destFile.substring(destFile.lastIndexOf("/") + 1);
                 String destDir = destFile.substring(0, destFile.lastIndexOf("/"));
                 try {
-                    fetchResponse(SlaveManager.getBasicIssuer().issueRenameToSlave(this, sourceFile, destDir, fileName));
+                    fetchResponse(SlaveManager.getBasicIssuer().issueRenameToSlave(this, sourceFile, destDir, fileName),
+                            getActualTimeout(), generation);
                 } catch (RemoteIOException e) {
                     if (!(e.getCause() instanceof FileNotFoundException)) {
                         throw e.getCause();
@@ -601,20 +618,59 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
      * you don't want to utilize asynchronization
      */
     public void simpleDelete(String path) {
-        try {
-            fetchResponse(SlaveManager.getBasicIssuer().issueDeleteToSlave(this, path), 300000);
-        } catch (RemoteIOException e) {
-            if (e.getCause() instanceof FileNotFoundException) {
+        for (int attempt = 1; ; attempt++) {
+            long generation = getConnectionGeneration();
+            try {
+                fetchResponse(issueDelete(path), 300000, generation);
+                return;
+            } catch (RemoteIOException e) {
+                if (e.getCause() instanceof FileNotFoundException) {
+                    return;
+                }
+
+                setOffline("IOException deleting file, check logs for specific error", generation);
+                logger.error("IOException deleting file, file will be deleted when slave comes online", e);
+            } catch (SlaveUnavailableException e) {
+                // offline (the delete is queued below), or the slave reconnected while we waited
+            }
+            if (queueIfOffline(path, null)) {
+                // Already offline and we ARE successful in deleting the file
                 return;
             }
-
-            setOffline("IOException deleting file, check logs for specific error");
-            addQueueDelete(path);
-            logger.error("IOException deleting file, file will be deleted when slave comes online", e);
-        } catch (SlaveUnavailableException e) {
-            // Already offline and we ARE successful in deleting the file
-            addQueueDelete(path);
+            if (attempt == 2) {
+                logger.error("Could not delete {} on slave {}, which is online again", path, getName());
+                return;
+            }
+            // the command was lost with the previous connection: once more on the current one
         }
+    }
+
+    /**
+     * Queues a delete (destination null) or rename for the next connect if the slave is offline.
+     *
+     * @return false if the slave is online, so nothing was queued
+     */
+    private boolean queueIfOffline(String source, String destination) {
+        if (isOnline()) {
+            return false;
+        }
+        try {
+            addQueueRename(source, destination);
+            return true;
+        } catch (IllegalStateException e) {
+            // it came back online in the meantime
+            return false;
+        }
+    }
+
+    /** Sends a delete to the slave and returns its index. Seam for tests. */
+    String issueDelete(String path) throws SlaveUnavailableException {
+        return SlaveManager.getBasicIssuer().issueDeleteToSlave(this, path);
+    }
+
+    /** Sends a rename to the slave and returns its index. Seam for tests. */
+    String issueRename(String from, String toDirPath, String toName) throws SlaveUnavailableException {
+        return SlaveManager.getBasicIssuer().issueRenameToSlave(this, from, toDirPath, toName);
     }
 
     /**
@@ -628,13 +684,25 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
         } else {
             simplePath = toDirPath + "/" + toName;
         }
-        try {
-            fetchResponse(SlaveManager.getBasicIssuer().issueRenameToSlave(this, from, toDirPath, toName));
-        } catch (RemoteIOException e) {
-            setOffline(e);
-            addQueueRename(from, simplePath);
-        } catch (SlaveUnavailableException e) {
-            addQueueRename(from, simplePath);
+        for (int attempt = 1; ; attempt++) {
+            long generation = getConnectionGeneration();
+            try {
+                fetchResponse(issueRename(from, toDirPath, toName), getActualTimeout(), generation);
+                return;
+            } catch (RemoteIOException e) {
+                setOffline(e, generation);
+            } catch (SlaveUnavailableException e) {
+                // offline (the rename is queued below), or the slave reconnected while we waited
+            }
+            if (queueIfOffline(from, simplePath)) {
+                return;
+            }
+            if (attempt == 2) {
+                logger.error("Could not rename {} to {} on slave {}, which is online again", from, simplePath,
+                        getName());
+                return;
+            }
+            // the command was lost with the previous connection: once more on the current one
         }
     }
 
@@ -642,62 +710,90 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
         return moreInfo();
     }
 
-    /** Rebuilds the pool of command indexes and forgets everything that was in flight. */
-    void resetIndexes() {
+    /**
+     * Rebuilds the pool of command indexes and forgets everything that was in flight.
+     *
+     * @return the generation of the new connection
+     */
+    long resetIndexes() {
+        // All of it under the lock: whoever pushes an index back (a waiter, the reader recycling its ping index)
+        // checks the generation under this lock, so it either runs before the increment, on the old pool that is
+        // about to be cleared, or sees the new generation and leaves the rebuilt pool alone. A fetchIndex() that
+        // overlaps the rebuild may get an index of either pool, but its caller read the generation before and
+        // sees that it changed.
         synchronized (_abandonedIndexes) {
-            // before rebuilding anything: from now on every waiter of the previous connection leaves our indexes alone
             _connectionGeneration++;
-        }
-        if (_indexPool == null) {
-            _indexPool = new LinkedBlockingDeque<>(256);
-        } else {
-            _indexPool.clear();
-        }
-
-        for (int i = 0; i < 256; i++) {
-            String key = Integer.toHexString(i);
-
-            if (key.length() < 2) {
-                key = "0" + key;
+            if (_indexPool == null) {
+                _indexPool = new LinkedBlockingDeque<>(256);
+            } else {
+                _indexPool.clear();
             }
 
-            _indexPool.push(key);
-        }
+            for (int i = 0; i < 256; i++) {
+                String key = Integer.toHexString(i);
 
-        if (_indexWithCommands == null) {
-            _indexWithCommands = new ConcurrentHashMap<>();
-        } else {
-            _indexWithCommands.clear();
-        }
-        synchronized (_abandonedIndexes) {
+                if (key.length() < 2) {
+                    key = "0" + key;
+                }
+
+                _indexPool.push(key);
+            }
+
+            if (_indexWithCommands == null) {
+                _indexWithCommands = new ConcurrentHashMap<>();
+            } else {
+                _indexWithCommands.clear();
+            }
             _abandonedIndexes.clear();
+            _abandonedPingIndexes.clear();
             _sysInfoPending = false;
             _sysInfoCache = null;
+            return _connectionGeneration;
         }
+    }
+
+    /**
+     * The generation of the current connection, incremented on each connect. A caller that may react to the
+     * failure of a command with {@link #setOffline(String, long)} reads it before issuing the command, so that a
+     * failure on a previous connection does not drop the current one.
+     */
+    public long getConnectionGeneration() {
+        return _connectionGeneration;
     }
 
     public synchronized void connect(Socket socket, ObjectInputStream in,
                                      ObjectOutputStream out) {
-        _socket = socket;
-        _sout = out;
-
         // Extract TLS session info if this is an SSL socket
+        String tlsProtocol;
+        String tlsCipherSuite;
         if (socket instanceof SSLSocket sslSocket) {
             SSLSession session = sslSocket.getSession();
-            _tlsProtocol = session.getProtocol();
-            _tlsCipherSuite = session.getCipherSuite();
+            tlsProtocol = session.getProtocol();
+            tlsCipherSuite = session.getCipherSuite();
         } else {
-            _tlsProtocol = "N/A";
-            _tlsCipherSuite = "N/A";
+            tlsProtocol = "N/A";
+            tlsCipherSuite = "N/A";
         }
-        _remoteAddress = socket.getInetAddress().getHostAddress();
-        _sin = in;
-        resetIndexes();
+        String remoteAddress = socket.getInetAddress().getHostAddress();
 
-        if (_transfers == null) {
-            _transfers = new ConcurrentHashMap<>();
-        } else {
-            _transfers.clear();
+        long generation;
+        // The new streams and the new generation become visible together: a setOffline for the previous
+        // connection either ran before (and tore down the previous streams) or sees the new generation and
+        // leaves these alone.
+        synchronized (_abandonedIndexes) {
+            _socket = socket;
+            _sout = out;
+            _sin = in;
+            _tlsProtocol = tlsProtocol;
+            _tlsCipherSuite = tlsCipherSuite;
+            _remoteAddress = remoteAddress;
+            generation = resetIndexes();
+
+            if (_transfers == null) {
+                _transfers = new ConcurrentHashMap<>();
+            } else {
+                _transfers.clear();
+            }
         }
 
         _errors = 0;
@@ -708,25 +804,26 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
         try {
             GlobalContext.getGlobalContext().getSlaveManager().getProtocolCentral().handshakeWithSlave(this);
         } catch (ProtocolException e) {
-            setOffline(e);
+            setOffline(e, generation);
         }
 
         class InitiateRemergeThread implements Runnable {
             public void run() {
                 try {
-                    initializeSlaveAfterThreadIsRunning();
+                    initializeSlaveAfterThreadIsRunning(generation);
                 } catch (Exception e) {
-                    setOffline(e);
+                    setOffline(e, generation);
                 }
             }
         }
 
         new Thread(new InitiateRemergeThread(), "RemoteSlaveRemerge - " + getName()).start();
-        start();
+        start(in, socket, generation);
     }
 
-    private void start() {
-        Thread t = new Thread(this);
+    /** Starts the reader thread of the connection of this generation; it only ever reads that connection's stream. */
+    private void start(ObjectInputStream in, Socket socket, long generation) {
+        Thread t = new Thread(() -> run(in, socket, generation));
         t.setName("RemoteSlave - " + getName());
         t.start();
     }
@@ -946,6 +1043,11 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
                 _sysInfoPending = false;
                 return false;
             }
+            if (_abandonedPingIndexes.remove(ar.getIndex())) {
+                logger.debug("Discarding late reply for lost ping {}", ar.getIndex());
+                _indexPool.push(ar.getIndex());
+                return false;
+            }
             _indexWithCommands.put(ar.getIndex(), ar);
             return true;
         }
@@ -966,13 +1068,25 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
     /**
      * returns an AsyncResponse for that index and throws any exceptions thrown
      * on the Slave side
+     * <p>
+     * Takes the generation on entry, so a reconnect between issuing the command and this call goes unnoticed: use
+     * {@link #fetchResponse(String, int, long)} with the generation read before the command was issued.
      */
     public AsyncResponse fetchResponse(String index, int wait) throws SlaveUnavailableException, RemoteIOException {
+        return fetchResponse(index, wait, _connectionGeneration);
+    }
+
+    /**
+     * Like {@link #fetchResponse(String, int)}, for a command issued on the connection of the given generation
+     * ({@link #getConnectionGeneration()}, read before the command is issued). If the slave reconnected since, the
+     * index may belong to either pool: it is left alone and {@link SlaveUnavailableException} is thrown, and a
+     * timeout does not drop the new connection.
+     */
+    public AsyncResponse fetchResponse(String index, int wait, long generation)
+            throws SlaveUnavailableException, RemoteIOException {
         long total = System.currentTimeMillis();
         long lastUpdate = 0L;
         long reportIdle = 60000L;
-        // the index was issued on the connection of this generation; after a reconnect it belongs to the old pool
-        long generation = _connectionGeneration;
 
         while (isOnline() && _connectionGeneration == generation && !_indexWithCommands.containsKey(index)) {
             // will wait a maximum of 50 milliseconds before waking up
@@ -990,8 +1104,8 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
                 // Ignore interupt
             }
 
-            if ((wait != 0) && ((System.currentTimeMillis() - total) >= wait) && _connectionGeneration == generation) {
-                setOffline("Slave has taken too long while waiting for reply " + index);
+            if ((wait != 0) && ((System.currentTimeMillis() - total) >= wait)) {
+                setOffline("Slave has taken too long while waiting for reply " + index, generation);
             }
 
             // Handle remerge status reporting if we are remerging
@@ -1032,6 +1146,11 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
                 throw new SlaveUnavailableException("Slave went offline while processing command");
             }
             rar = _indexWithCommands.remove(index);
+            if (rar == null) {
+                // gone between the wait and here: taken by another waiter on the same index (which already put it
+                // back), or cleared by setOffline. Pushing it again would put it in the pool twice.
+                throw new SlaveUnavailableException("Slave went offline while processing command");
+            }
             _indexPool.push(index);
         }
 
@@ -1043,7 +1162,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
             }
 
             logger.error("Exception on slave that is unable to be handled by the master", t);
-            setOffline("Exception on slave that is unable to be handled by the master");
+            setOffline("Exception on slave that is unable to be handled by the master", generation);
             throw new SlaveUnavailableException("Exception on slave that is unable to be handled by the master");
         }
         return rar;
@@ -1093,8 +1212,10 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 
     public long getCheckSumForPath(String path) throws IOException,
             SlaveUnavailableException {
+        long generation = getConnectionGeneration();
         try {
-            return fetchChecksumFromIndex(SlaveManager.getBasicIssuer().issueChecksumToSlave(this, path));
+            return ((AsyncResponseChecksum) fetchResponse(SlaveManager.getBasicIssuer().issueChecksumToSlave(this, path),
+                    getActualTimeout(), generation)).getChecksum();
         } catch (RemoteIOException e) {
             throw e.getCause();
         }
@@ -1109,18 +1230,36 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
         }
     }
 
+    /** Runs the reader for the current connection. connect() starts the reader with its own stream instead. */
     public void run() {
+        ObjectInputStream in;
+        Socket socket;
+        long generation;
+        synchronized (_abandonedIndexes) {
+            in = _sin;
+            socket = _socket;
+            generation = _connectionGeneration;
+        }
+        run(in, socket, generation);
+    }
+
+    /**
+     * The reader thread of one connection.
+     *
+     * @param in         the stream of that connection; never the one of a later connection
+     * @param socket     the socket of that connection
+     * @param generation the generation of that connection
+     */
+    private void run(ObjectInputStream in, Socket socket, long generation) {
         logger.debug("Starting RemoteSlave for {}", getName());
 
-        // the generation of the connection this reader thread was started for
-        long generation = _connectionGeneration;
         try {
             String pingIndex = null;
             while (isOnline() && _connectionGeneration == generation) {
                 AsyncResponse ar = null;
 
                 try {
-                    ar = readAsyncResponse();
+                    ar = readAsyncResponse(in, generation);
                     _lastResponseReceived = System.currentTimeMillis();
                 } catch (SlaveUnavailableException e3) {
                     // no reason for slave thread to be running if the slave is not online
@@ -1134,22 +1273,29 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
                         && ((getActualTimeout() / 2 < (System.currentTimeMillis() - _lastResponseReceived))
                         || (getActualTimeout() / 2 < (System.currentTimeMillis() - _lastCommandSent)))) {
                     if (pingIndex != null) {
+                        if (!abandonPingIndex(pingIndex, generation)) {
+                            // the slave reconnected: the pool was rebuilt with this index, and this reader is done
+                            return;
+                        }
                         logger.error("Ping lost, no response from slave, sending new ping to slave");
-                        _indexPool.push(pingIndex);
+                    }
+                    if (_connectionGeneration != generation) {
+                        // do not ping the new connection from the reader of the previous one
+                        return;
                     }
                     pingIndex = SlaveManager.getBasicIssuer().issuePingToSlave(this);
                 } else if (getActualTimeout() < (System.currentTimeMillis() - _lastResponseReceived)) {
                     setOffline("Slave seems to have gone offline, have not received a response in "
                             + (System.currentTimeMillis() - _lastResponseReceived)
-                            + " milliseconds");
+                            + " milliseconds", generation);
                     throw new SlaveUnavailableException();
                 }
 
-                if (isOnline() && !_initRemergeCompleted) {
+                if (isOnline() && _connectionGeneration == generation && !_initRemergeCompleted) {
                     if (_remergePaused.get()) {
                         // Do we need to resume?
                         if (_remergeQueue.size() <= Integer.parseInt(GlobalContext.getConfig().getMainProperties().getProperty("remerge.resume.threshold", "50"))) {
-                            _socket.setSoTimeout(_prevSocketTimeout); // Restore old time out
+                            socket.setSoTimeout(_prevSocketTimeout); // Restore old time out
                             SlaveManager.getBasicIssuer().issueRemergeResumeToSlave(this);
                             _remergePaused.set(false);
                             logger.debug("Issued remerge resume to slave, current remerge queue is {}", _remergeQueue.size());
@@ -1158,9 +1304,9 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
                         // Do we need to pause?
                         if (_remergeQueue.size() > Integer.parseInt(GlobalContext.getConfig().getMainProperties().getProperty("remerge.pause.threshold", "250"))) {
                             SlaveManager.getBasicIssuer().issueRemergePauseToSlave(this);
-                            _prevSocketTimeout = _socket.getSoTimeout();
+                            _prevSocketTimeout = socket.getSoTimeout();
                             // Set lower timeout so it reacts faster when queueSize goes back down
-                            _socket.setSoTimeout(100);
+                            socket.setSoTimeout(100);
                             _remergePaused.set(true);
                             logger.debug("Issued remerge pause to slave, current remerge queue is {}", _remergeQueue.size());
                         }
@@ -1203,7 +1349,16 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
                             continue;
                         }
                         if (pingIndex != null && pingIndex.equals(ar.getIndex())) {
-                            fetchResponse(pingIndex);
+                            try {
+                                fetchResponse(pingIndex, getActualTimeout(), generation);
+                            } catch (SlaveUnavailableException e) {
+                                if (_connectionGeneration != generation) {
+                                    logger.debug("Slave {} reconnected, reader of the previous connection exits",
+                                            getName());
+                                    return;
+                                }
+                                throw e;
+                            }
                             pingIndex = null;
                         } else if (ar.getIndex().equals("SiteBotMessage")) {
                             String message = ((AsyncResponseSiteBotMessage) ar).getMessage();
@@ -1216,7 +1371,25 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
             }
         } catch (Throwable e) {
             logger.error("Slave thread threw an error, dropping slave offline", e);
-            setOffline("error: " + e.getMessage());
+            setOffline("error: " + e.getMessage(), generation);
+        }
+    }
+
+    /**
+     * Gives up on a ping whose reply did not come: its index goes back into the pool when the late reply arrives
+     * (see storeResponse), not before, so that reply cannot be taken for the reply of a later command that reuses
+     * the index. Nothing is done if the slave reconnected since the ping was sent: the rebuilt pool already holds
+     * the index.
+     *
+     * @return false if the connection of this generation is gone
+     */
+    boolean abandonPingIndex(String index, long generation) {
+        synchronized (_abandonedIndexes) {
+            if (_connectionGeneration != generation) {
+                return false;
+            }
+            _abandonedPingIndexes.add(index);
+            return true;
         }
     }
 
@@ -1243,98 +1416,142 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 
     public void setOffline(String reason) {
         logger.debug("setOffline() {}", reason);
-        setOfflineReal(reason);
+        setOfflineReal(reason, CURRENT_CONNECTION);
     }
 
-    private void setOfflineReal(String reason) {
-        // If remerging and remerge is paused, wake it
-        if (isRemerging()) {
-            if (_remergePaused.get()) {
-                try {
-                    SlaveManager.getBasicIssuer().issueRemergeResumeToSlave(this);
-                } catch (SlaveUnavailableException e) {
-                    // Socket already closed to slave, ignore.
-                }
-                _remergePaused.set(false);
-            }
-            setRemerging(false);
+    /**
+     * Puts the slave offline because of a failure on the connection of the given generation
+     * ({@link #getConnectionGeneration()}, read before the failed command was issued). Does nothing if the slave
+     * has reconnected since: the failure belongs to a connection that is already gone.
+     */
+    public void setOffline(String reason, long generation) {
+        if (isPreviousConnection(generation, reason)) {
+            return;
         }
-        // If the slave is still processing the remerge queue clear all
-        // outstanding entries
-        _lastRemergeCommandReceived = 0L;
-        _remergeQueue.clear();
-        _crcQueue.clear();
-        // Read each field once: setOffline can run on several threads at the same time (closing the socket makes
-        // the reader thread fail and call setOffline too), so another caller may null a field between a check
-        // and its use. Closing twice is harmless, a caller that comes after the fields were cleared skips this.
-        ObjectInputStream sin = _sin;
+        logger.debug("setOffline() {}", reason);
+        setOfflineReal(reason, generation);
+    }
+
+    public void setOffline(Throwable t) {
+        logger.info("setOffline()", t);
+        setOfflineReal(offlineReason(t), CURRENT_CONNECTION);
+    }
+
+    /** {@link #setOffline(String, long)} for a failure given as a Throwable. */
+    public void setOffline(Throwable t, long generation) {
+        if (isPreviousConnection(generation, offlineReason(t))) {
+            return;
+        }
+        logger.info("setOffline()", t);
+        setOfflineReal(offlineReason(t), generation);
+    }
+
+    private static String offlineReason(Throwable t) {
+        return t.getMessage() == null ? "No Message" : t.getMessage();
+    }
+
+    private boolean isPreviousConnection(long generation, String reason) {
+        if (generation != CURRENT_CONNECTION && generation != _connectionGeneration) {
+            logger.debug("Not setting {} offline for a failure on a previous connection: {}", getName(), reason);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * @param generation the connection to tear down, or CURRENT_CONNECTION for whatever connection is current
+     */
+    private void setOfflineReal(String reason, long generation) {
+        if (isPreviousConnection(generation, reason)) {
+            return;
+        }
+        // If remerging and remerge is paused, wake it (while the connection is still open)
+        if (isRemerging() && _remergePaused.get()) {
+            try {
+                SlaveManager.getBasicIssuer().issueRemergeResumeToSlave(this);
+            } catch (SlaveUnavailableException e) {
+                // Socket already closed to slave, ignore.
+            }
+        }
+        ObjectInputStream sin;
+        ObjectOutputStream sout;
+        Socket socket;
+        boolean wasAvailable;
+        // The generation is checked and the connection taken under the lock connect() installs a new connection
+        // under, so both see the same connection. setOffline can run on several threads at the same time (closing
+        // the socket makes the reader thread fail and call setOffline too): only the first caller gets the streams,
+        // the others find them null and close nothing. No I/O and no events under the lock.
+        synchronized (_abandonedIndexes) {
+            if (isPreviousConnection(generation, reason)) {
+                return;
+            }
+            if (isRemerging()) {
+                _remergePaused.set(false);
+                setRemerging(false);
+            }
+            // If the slave is still processing the remerge queue clear all
+            // outstanding entries
+            _lastRemergeCommandReceived = 0L;
+            _remergeQueue.clear();
+            _crcQueue.clear();
+            sin = _sin;
+            _sin = null;
+            sout = _sout;
+            _sout = null;
+            socket = _socket;
+            _socket = null;
+            // Connection details are only meaningful while connected, do not keep stale values
+            _tlsProtocol = null;
+            _tlsCipherSuite = null;
+            _remoteAddress = null;
+            if (_indexWithCommands != null)
+                _indexWithCommands.clear();
+            if (_transfers != null)
+                _transfers.clear();
+            _status = null;
+            wasAvailable = _isAvailable;
+            setAvailable(false);
+        }
         if (sin != null) {
             try {
                 sin.close();
             } catch (IOException e) {
             }
-            _sin = null;
         }
-        ObjectOutputStream sout = _sout;
         if (sout != null) {
             try {
                 sout.flush();
                 sout.close();
             } catch (IOException e) {
             }
-            _sout = null;
         }
-        Socket socket = _socket;
         if (socket != null) {
             setProperty("lastOnline", Long.toString(System.currentTimeMillis()));
             try {
                 socket.close();
             } catch (IOException e) {
             }
-            _socket = null;
         }
-        // Connection details are only meaningful while connected, do not keep stale values
-        _tlsProtocol = null;
-        _tlsCipherSuite = null;
-        _remoteAddress = null;
-        if (_indexWithCommands != null)
-            _indexWithCommands.clear();
-        if (_transfers != null)
-            _transfers.clear();
-        _status = null;
 
-        if (_isAvailable) {
+        if (wasAvailable) {
             GlobalContext.getEventService().publishAsync(
                     new SlaveEvent("DELSLAVE", reason, this));
         } else {
             GlobalContext.getEventService().publishAsync(new SlaveEvent("MSGSLAVE", reason, this));
         }
-
-        setAvailable(false);
-    }
-
-    public void setOffline(Throwable t) {
-        logger.info("setOffline()", t);
-
-        if (t.getMessage() == null) {
-            setOfflineReal("No Message");
-        } else {
-            setOfflineReal(t.getMessage());
-        }
     }
 
     /**
-     * fetches the next AsyncResponse, if IOException is encountered, the slave
-     * is setOffline() and the Exception is thrown
+     * fetches the next AsyncResponse from the stream of the connection of the given generation; if an
+     * IOException is encountered, that connection is setOffline() and SlaveUnavailableException is thrown
      *
      * @throws SlaveUnavailableException
      * @throws SocketTimeoutException
      */
-    private AsyncResponse readAsyncResponse() throws SlaveUnavailableException,
+    AsyncResponse readAsyncResponse(ObjectInputStream in, long generation) throws SlaveUnavailableException,
             SocketTimeoutException {
         Object obj;
-        ObjectInputStream in = _sin;
-        if (!isOnline()) {
+        if (in == null || !isOnline() || _connectionGeneration != generation) {
             throw new SlaveUnavailableException("Slave is unavailable");
         }
         while (true) {
@@ -1342,7 +1559,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
                 obj = in.readObject();
             } catch (ClassNotFoundException e) {
                 logger.error("ClassNotFound reading AsyncResponse", e);
-                setOffline("ClassNotFound reading AsyncResponse");
+                setOffline("ClassNotFound reading AsyncResponse", generation);
                 throw new SlaveUnavailableException(
                         "Slave is unavailable - Class Not Found");
             } catch (SocketTimeoutException e) {
@@ -1350,7 +1567,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
                 throw e;
             } catch (IOException e) {
                 logger.error("IOException reading AsyncResponse", e);
-                setOffline("IOException reading AsyncResponse");
+                setOffline("IOException reading AsyncResponse", generation);
                 throw new SlaveUnavailableException(
                         "Slave is unavailable - IOException");
             }
@@ -1366,6 +1583,14 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
     public ConnectInfo fetchTransferResponseFromIndex(String index)
             throws RemoteIOException, SlaveUnavailableException {
         AsyncResponseTransfer art = (AsyncResponseTransfer) fetchResponse(index);
+
+        return art.getConnectInfo();
+    }
+
+    /** {@link #fetchTransferResponseFromIndex(String)} for a command issued on the connection of that generation. */
+    public ConnectInfo fetchTransferResponseFromIndex(String index, long generation)
+            throws RemoteIOException, SlaveUnavailableException {
+        AsyncResponseTransfer art = (AsyncResponseTransfer) fetchResponse(index, getActualTimeout(), generation);
 
         return art.getConnectInfo();
     }
@@ -1508,7 +1733,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
     public void shutdown() {
         try {
             sendCommand(new AsyncCommand("shutdown", "shutdown"));
-            setOfflineReal("shutdown gracefully");
+            setOfflineReal("shutdown gracefully", CURRENT_CONNECTION);
         } catch (SlaveUnavailableException e) {
         }
     }
