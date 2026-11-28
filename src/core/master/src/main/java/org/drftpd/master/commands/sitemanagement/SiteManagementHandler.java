@@ -97,6 +97,9 @@ public class SiteManagementHandler extends CommandInterface {
         } catch (IOException e) {
             logger.log(Level.FATAL, "Error reloading config", e);
             return new CommandResponse(200, e.getMessage());
+        } catch (RuntimeException e) {
+            logger.log(Level.FATAL, "Error reloading config", e);
+            return new CommandResponse(200, "Error reloading config: " + e);
         }
 
         // Clear base system classloader also
