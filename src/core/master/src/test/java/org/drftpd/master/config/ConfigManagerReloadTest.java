@@ -46,7 +46,15 @@ class ConfigManagerReloadTest {
         File resolvePermsFile() {
             duringBuild.run();
             File conf = dir.resolve("perms.conf").toFile();
-            return conf.exists() ? conf : dir.resolve("perms.conf.dist").toFile();
+            if (conf.exists()) {
+                return conf;
+            }
+            File dist = dir.resolve("perms.conf.dist").toFile();
+            if (!dist.exists()) {
+                // what ConfigLoader.loadConfigFile does
+                throw new RuntimeException("Cant find config file config/perms.conf.dist");
+            }
+            return dist;
         }
 
         @Override
@@ -111,10 +119,6 @@ class ConfigManagerReloadTest {
 
         write("perms.conf", "login_prompt second\nmax_users 6 2\n");
         String[] seen = new String[2];
-        cm.duringBuild = () -> {
-            seen[0] = cm.getLoginPrompt();
-            seen[1] = String.valueOf(cm.getMaxUsersTotal());
-        };
         // from another thread, as a connected user would
         cm.duringBuild = observeFromOtherThread(cm, seen);
         cm.reload();
@@ -150,5 +154,17 @@ class ConfigManagerReloadTest {
         Files.delete(dir.resolve("perms.conf"));   // and there is no .dist either
         cm.reload();
         assertEquals("kept", cm.getLoginPrompt());
+    }
+
+    @Test
+    void invalidLinesAreSkippedAndTheRestIsLoaded() throws IOException {
+        write("perms.conf", "max_users x y\npasv_ports 5000\nmax_users\nlogin_prompt good\n"
+                + "bouncer_ips no-such-host.invalid 127.0.0.1\nmax_users 8 2\n");
+        TestManager cm = new TestManager();
+        cm.reload();
+        assertEquals("good", cm.getLoginPrompt());
+        assertEquals(8, cm.getMaxUsersTotal());
+        assertEquals(2, cm.getMaxUsersExempt());
+        assertEquals(1, cm.getBouncerIps().size());
     }
 }

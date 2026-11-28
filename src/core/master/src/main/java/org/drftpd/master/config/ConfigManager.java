@@ -41,6 +41,7 @@ import java.io.IOException;
 import java.io.LineNumberReader;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -132,7 +133,17 @@ public class ConfigManager implements ConfigInterface {
         try {
             fresh.vfsPerms = new VFSPermissions();
             fresh.directivesMap = loadConfigHandlers(previous);
-            readable = readConf(fresh, resolvePermsFile());
+            File permsFile = null;
+            try {
+                permsFile = resolvePermsFile();
+            } catch (RuntimeException e) {
+                // neither perms.conf nor perms.conf.dist exists
+                if (previous == null) {
+                    throw e;
+                }
+                logger.error("Unable to find {} or its .dist file", permsFileName, e);
+            }
+            readable = permsFile != null && readConf(fresh, permsFile);
         } finally {
             BUILDING.remove();
         }
@@ -235,11 +246,14 @@ public class ConfigManager implements ConfigInterface {
                  * Built-in directives.
                  */
 
+                try {
                 switch (drct) {
                     case "login_prompt" -> s.loginPrompt = Version.expandPlaceholder(line.substring("login_prompt".length()).trim());
                     case "max_users" -> {
-                        s.maxUsersTotal = Integer.parseInt(st.nextToken());
-                        s.maxUsersExempt = Integer.parseInt(st.nextToken());
+                        int total = Integer.parseInt(st.nextToken());
+                        int exempt = Integer.parseInt(st.nextToken());
+                        s.maxUsersTotal = total;
+                        s.maxUsersExempt = exempt;
                     }
                     case "pasv_addr" -> s.pasvAddr = st.nextToken();
                     case "pasv_ports" -> {
@@ -255,7 +269,12 @@ public class ConfigManager implements ConfigInterface {
                     case "bouncer_ips" -> {
                         ArrayList<InetAddress> ips = new ArrayList<>();
                         while (st.hasMoreTokens()) {
-                            ips.add(InetAddress.getByName(st.nextToken()));
+                            String host = st.nextToken();
+                            try {
+                                ips.add(InetAddress.getByName(host));
+                            } catch (UnknownHostException e) {
+                                logger.warn("{} line {}: unknown bouncer_ips host '{}', skipping it", permsFile.getName(), in.getLineNumber(), host);
+                            }
                         }
                         s.bouncerIps = ips;
                     }
@@ -264,6 +283,9 @@ public class ConfigManager implements ConfigInterface {
                             s.hideInStats = s.hideInStats + st.nextToken() + " ";
                     }
                     default -> handleLine(drct, st);
+                }
+                } catch (RuntimeException e) {
+                    logger.warn("{} line {}: ignoring invalid line '{}'", permsFile.getName(), in.getLineNumber(), line, e);
                 }
             }
             return true;
