@@ -79,7 +79,7 @@ public class MediaInfoVFSData {
             // Make sure there is no mediainfo registered
             _file.removePluginMetaData(MediaInfo.MEDIAINFO);
         } catch (Exception e) {
-            logger.warn("Exception while checking inode MediaInfo for file {}: {}", _file, e.getMessage());
+            logger.warn("Exception while checking inode MediaInfo for file {}: {}", _file, e.getMessage(), e);
         }
 
         MediaInfo mediainfo = null;
@@ -104,14 +104,16 @@ public class MediaInfoVFSData {
             } catch (NoAvailableSlaveException e) {
                 // Not an issue, file was available but slave dropped
                 logger.warn("No available slave for file {}: {}", _file, e.getMessage());
+                logger.debug("No available slave for file {}", _file, e);
             } catch (SlaveUnavailableException e) {
                 // okay, it went offline while trying, try next file
                 logger.warn("Slave unavailable while fetching MediaInfo for file {}: {}", _file, e.getMessage());
+                logger.debug("Slave unavailable while fetching MediaInfo for file {}", _file, e);
             } catch (RemoteIOException e) {
-                logger.error("RemoteIOException while fetching MediaInfo for file {}: {}", _file, e.getMessage());
+                logger.error("RemoteIOException while fetching MediaInfo for file {}: {}", _file, e.getMessage(), e);
                 throw new IOException(e.getMessage());
             } catch (Exception e) {
-                logger.error("Unexpected exception while fetching MediaInfo for file {}: {}", _file, e.getMessage());
+                logger.error("Unexpected exception while fetching MediaInfo for file {}: {}", _file, e.getMessage(), e);
             }
 
             if (mediainfo != null) {
@@ -125,7 +127,7 @@ public class MediaInfoVFSData {
                             logger.warn("File {} removed from VFS after invalid MediaInfo.", _file);
                         }
                     } catch (Exception e) {
-                        logger.error("Failed to remove file {} from VFS after invalid MediaInfo: {}", _file, e.getMessage());
+                        logger.error("Failed to remove file {} from VFS after invalid MediaInfo: {}", _file, e.getMessage(), e);
                     }
                     throw new SlaveUnavailableException("File was invalid and has been deleted: "+_file);
                 }

@@ -210,7 +210,7 @@ public class MediaInfoPostHook {
         try {
             nuker = GlobalContext.getGlobalContext().getUserManager().getUserByNameUnchecked(_langNuker);
         } catch (NoSuchUserException | UserFileException e) {
-            logger.error("Error loading audio language nuker '{}': {}", _langNuker, e.getMessage());
+            logger.error("Error loading audio language nuker '{}': {}", _langNuker, e.getMessage(), e);
             return;
         }
         String reason = "Audio language not allowed (found: " + languages + ", allowed: " + allowed + ")";
@@ -218,7 +218,7 @@ public class MediaInfoPostHook {
             NukeData nd = NukeUtils.nuke(release, _langNukex.get(secName), reason, nuker);
             GlobalContext.getEventService().publishAsync(new NukeEvent(nuker, "NUKE", nd));
         } catch (NukeException e) {
-            logger.error("Error nuking {} for audio language: {}", release.getPath(), e.getMessage());
+            logger.error("Error nuking {} for audio language: {}", release.getPath(), e.getMessage(), e);
         }
     }
 

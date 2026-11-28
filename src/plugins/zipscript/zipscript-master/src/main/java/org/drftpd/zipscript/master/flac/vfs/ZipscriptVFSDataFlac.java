@@ -103,7 +103,7 @@ public class ZipscriptVFSDataFlac {
                         logger.debug("Slave went offline while retrieving FLACINFO for {}, trying next file", file.getPath());
                     } catch (RemoteIOException e) {
                         // continue, the next flac might work
-                        logger.warn("Slave failed to retrieve FLACINFO for {}: {}", file.getPath(), e.getCause() != null ? e.getCause().getMessage() : e.getMessage());
+                        logger.warn("Slave failed to retrieve FLACINFO for {}: {}", file.getPath(), e.getCause() != null ? e.getCause().getMessage() : e.getMessage(), e);
                     }
                 }
 
